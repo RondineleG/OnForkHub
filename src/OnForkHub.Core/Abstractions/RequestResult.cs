@@ -109,11 +109,14 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public static RequestResult WithValidations(params Validation[] validations)
     {
-        return new RequestResult
+        var result = new RequestResult { Status = ECustomResultStatus.HasValidation };
+
+        foreach (var validation in validations)
         {
-            Status = ECustomResultStatus.HasValidation,
-            Validations = validations,
-        };
+            result.ValidationResult.AddError(validation.Description, validation.PropertyName);
+        }
+
+        return result;
     }
 
     public static RequestResult WithValidations(IEnumerable<Validation> validations)
@@ -166,6 +169,15 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
                 messages.Add($"{entityError.Key}: {error}");
             }
         }
+
+        if (ValidationResult?.Errors != null && ValidationResult.Errors.Any())
+        {
+            foreach (var validationError in ValidationResult.Errors)
+            {
+                messages.Add($"{validationError.Field}: {validationError.Message}");
+            }
+        }
+
         return string.Join("; ", messages);
     }
 
