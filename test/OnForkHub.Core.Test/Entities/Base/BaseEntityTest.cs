@@ -6,7 +6,7 @@ public class BaseEntityTests
     [Fact]
     public void DeveInicializarPropriedadesQuandoUsarConstrutorPadrao()
     {
-        var entidade = new EntidadeTesteValidaTest();
+        var entidade = new EntidadeValidaTestFixture();
         var dataAtual = DateTime.UtcNow;
 
         entidade.CreatedAt.Should().BeCloseTo(dataAtual, TimeSpan.FromSeconds(1));
@@ -22,7 +22,7 @@ public class BaseEntityTests
     {
         var dataCriacao = DateTime.UtcNow;
 
-        var entidade = new EntidadeTesteValidaTest(id, dataCriacao);
+        var entidade = new EntidadeValidaTestFixture(id, dataCriacao);
 
         entidade.Id.Should().Be(id);
         entidade.CreatedAt.Should().Be(dataCriacao);
@@ -37,7 +37,7 @@ public class BaseEntityTests
     {
         var dataCriacao = DateTime.UtcNow;
 
-        Action acao = () => new EntidadeTesteValidaTest(id, dataCriacao);
+        Action acao = () => new EntidadeValidaTestFixture(id, dataCriacao);
 
         acao.Should()
            .Throw<DomainException>()
@@ -51,7 +51,7 @@ public class BaseEntityTests
         var dataCriacao = DateTime.UtcNow.AddDays(-1);
         var dataAtualizacao = DateTime.UtcNow;
 
-        var entidade = new EntidadeTesteValidaTest(id, dataCriacao, dataAtualizacao);
+        var entidade = new EntidadeValidaTestFixture(id, dataCriacao, dataAtualizacao);
 
         entidade.Id.Should().Be(id);
         entidade.CreatedAt.Should().Be(dataCriacao);
@@ -61,7 +61,7 @@ public class BaseEntityTests
     [Fact]
     public void DeveAtualizarDataAtualizacaoQuandoExecutarUpdate()
     {
-        var entidade = new EntidadeTesteValidaTest();
+        var entidade = new EntidadeValidaTestFixture();
         var antesDoUpdate = DateTime.UtcNow;
 
         entidade.ExecutarUpdate();
@@ -73,7 +73,7 @@ public class BaseEntityTests
     [Fact]
     public void NaoDeveAlterarUpdatedAtSemChamarMetodoUpdate()
     {
-        var entidade = new EntidadeTesteValidaTest();
+        var entidade = new EntidadeValidaTestFixture();
         entidade.UpdatedAt.Should().BeNull();
     }
 
@@ -81,7 +81,7 @@ public class BaseEntityTests
     [Fact]
     public void DeveAtualizarUpdatedAtParaHorarioRecenteAposExecutarUpdateVariasVezes()
     {
-        var entidade = new EntidadeTesteValidaTest();
+        var entidade = new EntidadeValidaTestFixture();
 
         entidade.ExecutarUpdate();
         var primeiraAtualizacao = entidade.UpdatedAt;
@@ -98,7 +98,7 @@ public class BaseEntityTests
     [Fact]
     public void DeveLancarExcecaoQuandoEntidadeNaoForValidaAoExecutarUpdate()
     {
-        var entidade = new EntidadeTesteInvalidaTest();
+        var entidade = new EntidadeInvalidaTestFixture();
 
         Action acao = () => entidade.ExecutarUpdate();
 
@@ -110,7 +110,7 @@ public class BaseEntityTests
     public void DeveManterCreatedAtNoFusoHorarioUtc()
     {
         var dataCriacao = new DateTime(2022, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-        var entidade = new EntidadeTesteValidaTest(1, dataCriacao);
+        var entidade = new EntidadeValidaTestFixture(1, dataCriacao);
 
         entidade.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
         entidade.CreatedAt.Should().Be(dataCriacao);
@@ -122,7 +122,7 @@ public class BaseEntityTests
     {
         var dataCriacao = DateTime.UtcNow;
 
-        Action acao = () => new EntidadeTesteValidaTest(-long.MaxValue, dataCriacao);
+        Action acao = () => new EntidadeValidaTestFixture(-long.MaxValue, dataCriacao);
 
         acao.Should()
            .Throw<DomainException>()
@@ -137,7 +137,7 @@ public class BaseEntityTests
     {
         var dataCriacao = DateTime.UtcNow;
 
-        Action acao = () => new EntidadeTesteValidaTest(id, dataCriacao);
+        Action acao = () => new EntidadeValidaTestFixture(id, dataCriacao);
 
         acao.Should()
            .Throw<DomainException>()
@@ -148,7 +148,7 @@ public class BaseEntityTests
     [Fact]
     public void CreatedAtNaoDeveSerDefaultAoInstanciarEntidade()
     {
-        var entidade = new EntidadeTesteValidaTest();
+        var entidade = new EntidadeValidaTestFixture();
         entidade.CreatedAt.Should().NotBe(default);
     }
 

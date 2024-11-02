@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Test.ValueObjects;
 
-public class EmailTests
+public class EmailTest
 {
     [Fact]
     public void DeveCriarEmailValido()

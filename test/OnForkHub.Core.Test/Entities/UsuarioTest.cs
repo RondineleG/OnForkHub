@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Test.Entities;
 
-public class UsuarioTests
+public class UsuarioTest
 {
     [Fact]
     public void DeveCriarUsuarioComSucesso()

@@ -3,11 +3,11 @@
 namespace OnForkHub.Core.Test.Entities.Base;
 
 
-public class EntidadeTesteValidaTest : BaseEntity
+public class EntidadeValidaTestFixture : BaseEntity
 {
-    public EntidadeTesteValidaTest() : base() { }
+    public EntidadeValidaTestFixture() : base() { }
 
-    public EntidadeTesteValidaTest(long id, DateTime createdAt, DateTime? updatedAt = null)
+    public EntidadeValidaTestFixture(long id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
     public override void Validate()
