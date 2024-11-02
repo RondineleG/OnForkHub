@@ -118,5 +118,5 @@ Este projeto visa criar uma plataforma escalável e distribuída para compartilh
 
 1. Clone este repositório:
    ```bash
-   git clone https://github.com/SeuUsuario/OnForkHub.git
+   git clone https://github.com/RondineleG/OnForkHub.git
    cd OnForkHub
