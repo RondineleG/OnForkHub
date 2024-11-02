@@ -1,0 +1,9 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo 'Pronto para enviar as mudanças!'
+
+echo 'Executando testes unitários...'
+dotnet husky run --name dotnet-test
+
+echo 'Concluídas as alterações de pré-push'

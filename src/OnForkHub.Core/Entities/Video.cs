@@ -94,7 +94,6 @@ public class Video : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult()
-            // Titulo
             .AddErrorIfNullOrWhiteSpace(Titulo, $"{nameof(Titulo)} é obrigatório", nameof(Titulo))
             .AddErrorIf(
                 Titulo.Length < 3,
@@ -106,7 +105,6 @@ public class Video : BaseEntity
                 $"{nameof(Titulo)} deve ter no máximo 50 caracteres",
                 nameof(Titulo)
             )
-            //Descricao
             .AddErrorIfNullOrWhiteSpace(
                 Descricao,
                 $"{nameof(Descricao)} é obrigatório",
@@ -122,7 +120,6 @@ public class Video : BaseEntity
                 $"{nameof(Descricao)} deve ter no máximo 200 caracteres",
                 nameof(Descricao)
             )
-            //UsuarioId
             .AddErrorIf(UsuarioId <= 0, $"{nameof(Descricao)} é obrigatório", nameof(Descricao));
 
         validationResult.ThrowIfInvalid();
