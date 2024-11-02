@@ -56,25 +56,25 @@ public class Usuario : BaseEntity
     // Validações individuais retornando ValidationResult
     private ValidationResult ValidarNome()
     {
-        return ValidationResult.Validate(string.IsNullOrWhiteSpace(Nome), "Nome é obrigatório")
-             & ValidationResult.Validate(Nome?.Length < 3, "Nome deve ter pelo menos 3 caracteres")
-             & ValidationResult.Validate(Nome?.Length > 50, "Nome deve ter no máximo 50 caracteres");
+        return ValidationResult.Validate(() => string.IsNullOrWhiteSpace(Nome), "Nome é obrigatório")
+             & ValidationResult.Validate(() => Nome?.Length < 3, "Nome deve ter pelo menos 3 caracteres")
+             & ValidationResult.Validate(() => Nome?.Length > 50, "Nome deve ter no máximo 50 caracteres");
     }
 
     private ValidationResult ValidarEmail()
     {
-        return ValidationResult.Validate(string.IsNullOrWhiteSpace(Email), "Email é obrigatório")
-             & ValidationResult.Validate(!Email?.Contains("@") ?? false, "Email inválido");
+        return ValidationResult.Validate(() => string.IsNullOrWhiteSpace(Email), "Email é obrigatório")
+             & ValidationResult.Validate(() => !Email?.Contains("@") ?? false, "Email inválido");
     }
 
     private ValidationResult ValidarSalario()
     {
-        return ValidationResult.Validate(Salario < 0, "Salário não pode ser negativo");
+        return ValidationResult.Validate(() => Salario < 0, "Salário não pode ser negativo");
     }
 
     private ValidationResult ValidarPercentualAumento(decimal percentual)
     {
-        return ValidationResult.Validate(percentual <= 0, "Percentual deve ser maior que zero")
-             & ValidationResult.Validate(percentual > 100, "Percentual não pode ser maior que 100%");
+        return ValidationResult.Validate(() => percentual <= 0, "Percentual deve ser maior que zero")
+             & ValidationResult.Validate(() => percentual > 100, "Percentual não pode ser maior que 100%");
     }
 }

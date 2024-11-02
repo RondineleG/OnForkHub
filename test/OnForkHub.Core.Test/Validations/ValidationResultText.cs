@@ -28,7 +28,7 @@ public class ValidationResultTests
     [InlineData(true, "", true)]
     public void DeveValidarCondicaoCorretamente(bool condicao, string mensagem, bool esperadoValido)
     {
-        var result = ValidationResult.Validate(!condicao, mensagem);
+        var result = ValidationResult.Validate(() => !condicao, mensagem);
 
         result.IsValid.Should().Be(esperadoValido);
         if (!esperadoValido)

@@ -27,21 +27,25 @@ public class DomainExceptionTests
     [Fact]
     public void ValidateDeveRetornarSucessoQuandoCondicaoForFalsa()
     {
-        var result = DomainException.Validate(false, "Erro de domínio");
+        var message = "Erro de domínio";
+        var result = DomainException.Validate(() => false, message);
 
         result.IsValid.Should().BeTrue();
         result.ErrorMessage.Should().BeEmpty();
     }
 
+
+
     [Fact]
     public void ValidateDeveRetornarFalhaQuandoCondicaoForVerdadeira()
     {
         var message = "Erro de domínio";
-        var result = DomainException.Validate(true, message);
+        var result = DomainException.Validate(() => true, message);
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be(message);
     }
+
 
     [Fact]
     public void ThrowWhenInvalidDeveLancarExcecaoQuandoHaErros()
