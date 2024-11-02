@@ -12,7 +12,7 @@ public class DomainException : Exception
             throw new DomainException(message);
     }
 
-    public static ValidationResult Validate(bool hasError, string message) => ValidationResult.Validate(hasError, message);
+    public static ValidationResult Validate(Func<bool> hasError, string message) => ValidationResult.Validate(hasError, message);
 
     public static void ThrowWhenInvalid(params ValidationResult[] validations)
     {
