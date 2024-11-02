@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E58FF6FD-F36B-4CB2-A65F-2068CD27C8E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D2DC0BF4-9E7B-4904-A896-4F6492ED63C9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{1C72385E-2236-43B5-81C0-D668CF2004B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.Core", "src\OnForkHub.Core\OnForkHub.Core.csproj", "{102F1B45-F2B1-461A-86C2-387893647020}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{D2C9F810-CE57-4F3B-8E10-BB433DD5EAE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.Core.Test", "test\OnForkHub.Core.Test\OnForkHub.Core.Test.csproj", "{6160A66B-D092-4A6A-AC3A-2E494131187F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{102F1B45-F2B1-461A-86C2-387893647020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{102F1B45-F2B1-461A-86C2-387893647020}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{102F1B45-F2B1-461A-86C2-387893647020}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{102F1B45-F2B1-461A-86C2-387893647020}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6160A66B-D092-4A6A-AC3A-2E494131187F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6160A66B-D092-4A6A-AC3A-2E494131187F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6160A66B-D092-4A6A-AC3A-2E494131187F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6160A66B-D092-4A6A-AC3A-2E494131187F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1C72385E-2236-43B5-81C0-D668CF2004B8} = {E58FF6FD-F36B-4CB2-A65F-2068CD27C8E5}
+		{102F1B45-F2B1-461A-86C2-387893647020} = {1C72385E-2236-43B5-81C0-D668CF2004B8}
+		{D2C9F810-CE57-4F3B-8E10-BB433DD5EAE7} = {D2DC0BF4-9E7B-4904-A896-4F6492ED63C9}
+		{6160A66B-D092-4A6A-AC3A-2E494131187F} = {D2C9F810-CE57-4F3B-8E10-BB433DD5EAE7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {12C1AB3A-8897-4AAD-8681-A37B26ADF8B5}
+	EndGlobalSection
+EndGlobal
