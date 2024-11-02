@@ -5,10 +5,8 @@ public class UsuarioTests
     [Fact]
     public void DeveCriarUsuarioComSucesso()
     {
-        // Arrange & Act
         var usuario = Usuario.Create("João Silva", "joao@email.com");
 
-        // Assert
         usuario.Should().NotBeNull();
         usuario.Nome.Should().Be("João Silva");
         usuario.Email.Value.Should().Be("joao@email.com");
@@ -22,10 +20,8 @@ public class UsuarioTests
     [InlineData("Jo")]
     public void DeveLancarExcecaoQuandoNomeInvalido(string nomeInvalido)
     {
-        // Arrange & Act
         Action act = () => Usuario.Create(nomeInvalido, "email@test.com");
 
-        // Assert
         act.Should().Throw<DomainException>();
     }
 }

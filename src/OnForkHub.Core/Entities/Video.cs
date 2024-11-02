@@ -1,4 +1,5 @@
-﻿using OnForkHub.Core.ValueObjects;
+﻿using OnForkHub.Core.Entities.Base;
+using OnForkHub.Core.ValueObjects;
 
 namespace OnForkHub.Core.Entities;
 

@@ -1,4 +1,6 @@
-﻿namespace OnForkHub.Core.Entities;
+﻿using OnForkHub.Core.Entities.Base;
+
+namespace OnForkHub.Core.Entities;
 
 public class Categoria : BaseEntity
 {
