@@ -13,19 +13,28 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
     }
 
     protected Dictionary<string, List<string>>? _entityErrors;
+
     protected List<string>? _generalErrors;
 
     public DateTime Date { get; set; } = DateTime.Now;
+
     public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= new Dictionary<string, List<string>>();
+
     public EntityWarning? EntityWarning { get; protected init; }
+
     public Error? Error { get; protected init; }
+
     public List<string> GeneralErrors => _generalErrors ??= new List<string>();
+
     public string Id { get; set; } = string.Empty;
+
     public string Message { get; set; } = string.Empty;
+
     public ECustomResultStatus Status { get; set; }
-    public IEnumerable<Validation> Validations { get; protected init; } = Enumerable.Empty<Validation>();
 
     public ValidationResult ValidationResult { get; protected set; }
+
+    public IEnumerable<Validation> Validations { get; protected init; } = Enumerable.Empty<Validation>();
 
     public static RequestResult EntityAlreadyExists(string entity, object id, string description)
     {
@@ -77,6 +86,13 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         return new RequestResult { Status = ECustomResultStatus.NoContent };
     }
 
+    public static RequestResult WithValidationError(string errorMessage, string fieldName = "")
+    {
+        var result = new RequestResult { Status = ECustomResultStatus.HasValidation };
+        result.ValidationResult.AddError(errorMessage, fieldName);
+        return result;
+    }
+
     public static RequestResult WithValidations(params Validation[] validations)
     {
         return new RequestResult { Status = ECustomResultStatus.HasValidation, Validations = validations };
@@ -90,13 +106,6 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
     public static RequestResult WithValidations(string propertyName, string description)
     {
         return WithValidations(new Validation(propertyName, description));
-    }
-
-    public static RequestResult WithValidationError(string errorMessage, string fieldName = "")
-    {
-        var result = new RequestResult { Status = ECustomResultStatus.HasValidation };
-        result.ValidationResult.AddError(errorMessage, fieldName);
-        return result;
     }
 
     public static RequestResult WithValidations(params ValidationErrorMessage[] validations)
@@ -222,6 +231,13 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
         return new RequestResult<T> { Status = ECustomResultStatus.NoContent };
     }
 
+    public new static RequestResult<T> WithValidationError(string errorMessage, string fieldName = "")
+    {
+        var result = new RequestResult<T> { Status = ECustomResultStatus.HasValidation };
+        result.ValidationResult.AddError(errorMessage, fieldName);
+        return result;
+    }
+
     public new static RequestResult<T> WithValidations(params Validation[] validations)
     {
         return new RequestResult<T> { Status = ECustomResultStatus.HasValidation, Validations = validations };
@@ -230,13 +246,6 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
     public new static RequestResult<T> WithValidations(string propertyName, string description)
     {
         return WithValidations(new Validation(propertyName, description));
-    }
-
-    public new static RequestResult<T> WithValidationError(string errorMessage, string fieldName = "")
-    {
-        var result = new RequestResult<T> { Status = ECustomResultStatus.HasValidation };
-        result.ValidationResult.AddError(errorMessage, fieldName);
-        return result;
     }
 
     public new static RequestResult<T> WithValidations(params ValidationErrorMessage[] validations)

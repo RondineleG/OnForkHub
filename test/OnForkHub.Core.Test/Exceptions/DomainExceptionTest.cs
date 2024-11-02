@@ -10,7 +10,7 @@ public class DomainExceptionTests
     {
         var message = "Erro de domínio";
 
-        Action action = () => DomainException.When(true, message);
+        Action action = () => DomainException.ThrowErrorWhen(() => true, message);
 
         action.Should().Throw<DomainException>()
             .WithMessage(message);
@@ -19,33 +19,21 @@ public class DomainExceptionTests
     [Fact]
     public void NaoDeveLancarDomainExceptionQuandoCondicaoForFalsa()
     {
-        Action action = () => DomainException.When(false, "Erro de domínio");
+        Action action = () => DomainException.ThrowErrorWhen(() => false, "Erro de domínio");
 
         action.Should().NotThrow<DomainException>();
     }
 
     [Fact]
-    public void ValidateDeveRetornarSucessoQuandoCondicaoForFalsa()
+    public void ThrowWhenInvalidComErroUnicoDeveLancarExcecaoComMensagemDoErro()
     {
-        var message = "Erro de domínio";
-        var result = DomainException.Validate(() => false, message);
+        var result = ValidationResult.Failure("Erro único");
 
-        result.IsValid.Should().BeTrue();
-        result.ErrorMessage.Should().BeEmpty();
+        Action action = () => DomainException.ThrowWhenInvalid(result);
+
+        action.Should().Throw<DomainException>()
+            .WithMessage("Erro único");
     }
-
-
-
-    [Fact]
-    public void ValidateDeveRetornarFalhaQuandoCondicaoForVerdadeira()
-    {
-        var message = "Erro de domínio";
-        var result = DomainException.Validate(() => true, message);
-
-        result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Be(message);
-    }
-
 
     [Fact]
     public void ThrowWhenInvalidDeveLancarExcecaoQuandoHaErros()
@@ -71,13 +59,22 @@ public class DomainExceptionTests
     }
 
     [Fact]
-    public void ThrowWhenInvalidComErroUnicoDeveLancarExcecaoComMensagemDoErro()
+    public void ValidateDeveRetornarFalhaQuandoCondicaoForVerdadeira()
     {
-        var result = ValidationResult.Failure("Erro único");
+        var message = "Erro de domínio";
+        var result = DomainException.Validate(() => true, message);
 
-        Action action = () => DomainException.ThrowWhenInvalid(result);
+        result.IsValid.Should().BeFalse();
+        result.ErrorMessage.Should().Be(message);
+    }
 
-        action.Should().Throw<DomainException>()
-            .WithMessage("Erro único");
+    [Fact]
+    public void ValidateDeveRetornarSucessoQuandoCondicaoForFalsa()
+    {
+        var message = "Erro de domínio";
+        var result = DomainException.Validate(() => false, message);
+
+        result.IsValid.Should().BeTrue();
+        result.ErrorMessage.Should().BeEmpty();
     }
 }

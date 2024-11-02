@@ -7,6 +7,7 @@ public sealed class ValidationResult
     private readonly List<ValidationErrorMessage> _errors;
 
     public bool IsValid => !_errors.Any();
+
     public bool HasError => !IsValid;
     public string ErrorMessage => string.Join("; ", _errors.Select(e => e.Message));
     public IReadOnlyCollection<ValidationErrorMessage> Errors => new ReadOnlyCollection<ValidationErrorMessage>(_errors);
@@ -24,9 +25,21 @@ public sealed class ValidationResult
     public ValidationResult AddError(string errorMessage, string fieldName = "")
     {
         if (string.IsNullOrWhiteSpace(errorMessage))
-            throw new ArgumentException("Error message cannot be empty", nameof(errorMessage));
+            throw new ArgumentException("A mensagem de erro não pode estar vazia", nameof(errorMessage));
 
         _errors.Add(new ValidationErrorMessage(errorMessage, fieldName));
+        return this;
+    }
+
+    public void ThrowIfInvalid()
+    {
+        if (HasError)
+            throw new DomainException(ErrorMessage);
+    }
+
+    public ValidationResult ThrowIfInvalidAndReturn()
+    {
+        ThrowIfInvalid();
         return this;
     }
 
@@ -66,16 +79,9 @@ public sealed class ValidationResult
         return this;
     }
 
-    public void ThrowIfInvalid()
+    public void ThrowErrorIf(Func<bool> hasError, string message)
     {
-        if (HasError)
-            throw new DomainException(ErrorMessage);
-    }
-
-    public ValidationResult ThrowIfInvalidAndReturn()
-    {
-        ThrowIfInvalid();
-        return this;
+        if (hasError()) throw new DomainException(message);
     }
 
 
@@ -99,7 +105,6 @@ public sealed class ValidationResult
 
     public static ValidationResult Validate(Func<bool> predicate, string errorMessage, string fieldName = "")
       => predicate() ? Failure(errorMessage, fieldName) : Success();
-
 
 
     public static implicit operator bool(ValidationResult validation)
