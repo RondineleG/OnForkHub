@@ -30,22 +30,29 @@ public class Video : BaseEntity
             Titulo = titulo,
             Descricao = descricao,
             Url = Url.Create(url),
-            UsuarioId = usuarioId
+            UsuarioId = usuarioId,
         };
 
         video.Validate();
         return video;
     }
 
-    public static Video Load(long id, string titulo, string descricao,
-        string url, long usuarioId, DateTime createdAt, DateTime? updatedAt = null)
+    public static Video Load(
+        long id,
+        string titulo,
+        string descricao,
+        string url,
+        long usuarioId,
+        DateTime createdAt,
+        DateTime? updatedAt = null
+    )
     {
         var video = new Video
         {
             Titulo = titulo,
             Descricao = descricao,
             Url = Url.Create(url),
-            UsuarioId = usuarioId
+            UsuarioId = usuarioId,
         };
 
         video.SetId(id, createdAt, updatedAt);
@@ -55,8 +62,7 @@ public class Video : BaseEntity
 
     public void AdicionarCategoria(Categoria categoria)
     {
-        DomainException.ThrowErrorWhen(() => categoria == null,
-            "Categoria não pode ser nula");
+        DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
         if (!_categorias.Contains(categoria))
         {
@@ -76,8 +82,7 @@ public class Video : BaseEntity
 
     public void RemoverCategoria(Categoria categoria)
     {
-        DomainException.ThrowErrorWhen(() => categoria == null,
-            "Categoria não pode ser nula");
+        DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
         if (_categorias.Contains(categoria))
         {
@@ -89,16 +94,36 @@ public class Video : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult()
-                // Titulo
-                .AddErrorIfNullOrWhiteSpace(Titulo, $"{nameof(Titulo)} é obrigatório", nameof(Titulo))
-                .AddErrorIf(Titulo.Length < 3, $"{nameof(Titulo)} deve ter pelo menos 3 caracteres", nameof(Titulo))
-                .AddErrorIf(Titulo.Length > 50, $"{nameof(Titulo)} deve ter no máximo 50 caracteres", nameof(Titulo))
-                //Descricao
-                .AddErrorIfNullOrWhiteSpace(Descricao, $"{nameof(Descricao)} é obrigatório", nameof(Descricao))
-                .AddErrorIf(Descricao.Length < 5, $"{nameof(Descricao)} deve ter pelo menos 5 caracteres", nameof(Descricao))
-                .AddErrorIf(Descricao.Length > 200, $"{nameof(Descricao)} deve ter no máximo 200 caracteres", nameof(Descricao))
-                //UsuarioId
-                .AddErrorIf(UsuarioId <= 0, $"{nameof(Descricao)} é obrigatório", nameof(Descricao));
+            // Titulo
+            .AddErrorIfNullOrWhiteSpace(Titulo, $"{nameof(Titulo)} é obrigatório", nameof(Titulo))
+            .AddErrorIf(
+                Titulo.Length < 3,
+                $"{nameof(Titulo)} deve ter pelo menos 3 caracteres",
+                nameof(Titulo)
+            )
+            .AddErrorIf(
+                Titulo.Length > 50,
+                $"{nameof(Titulo)} deve ter no máximo 50 caracteres",
+                nameof(Titulo)
+            )
+            //Descricao
+            .AddErrorIfNullOrWhiteSpace(
+                Descricao,
+                $"{nameof(Descricao)} é obrigatório",
+                nameof(Descricao)
+            )
+            .AddErrorIf(
+                Descricao.Length < 5,
+                $"{nameof(Descricao)} deve ter pelo menos 5 caracteres",
+                nameof(Descricao)
+            )
+            .AddErrorIf(
+                Descricao.Length > 200,
+                $"{nameof(Descricao)} deve ter no máximo 200 caracteres",
+                nameof(Descricao)
+            )
+            //UsuarioId
+            .AddErrorIf(UsuarioId <= 0, $"{nameof(Descricao)} é obrigatório", nameof(Descricao));
 
         validationResult.ThrowIfInvalid();
 

@@ -21,24 +21,21 @@ public class Usuario : BaseEntity
 
     public static Usuario Create(string nome, string email)
     {
-        var usuario = new Usuario
-        {
-            Nome = nome,
-            Email = Email.Create(email)
-        };
+        var usuario = new Usuario { Nome = nome, Email = Email.Create(email) };
 
         usuario.Validate();
         return usuario;
     }
 
-    public static Usuario Load(long id, string nome, string email,
-        DateTime createdAt, DateTime? updatedAt = null)
+    public static Usuario Load(
+        long id,
+        string nome,
+        string email,
+        DateTime createdAt,
+        DateTime? updatedAt = null
+    )
     {
-        var usuario = new Usuario
-        {
-            Nome = nome,
-            Email = Email.Create(email)
-        };
+        var usuario = new Usuario { Nome = nome, Email = Email.Create(email) };
 
         usuario.SetId(id, createdAt, updatedAt);
         usuario.Validate();
@@ -64,8 +61,16 @@ public class Usuario : BaseEntity
     {
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Nome, "Nome é obrigatório", "Nome");
-        validationResult.AddErrorIf(Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
-        validationResult.AddErrorIf(Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
+        validationResult.AddErrorIf(
+            Nome.Length < 3,
+            "Nome deve ter pelo menos 3 caracteres",
+            "Nome"
+        );
+        validationResult.AddErrorIf(
+            Nome.Length > 50,
+            "Nome deve ter no máximo 50 caracteres",
+            "Nome"
+        );
         validationResult.ThrowIfInvalid();
         return validationResult;
     }

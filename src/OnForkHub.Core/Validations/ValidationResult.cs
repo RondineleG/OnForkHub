@@ -10,14 +10,16 @@ public sealed class ValidationResult
 
     public bool HasError => !IsValid;
     public string ErrorMessage => string.Join("; ", _errors.Select(e => e.Message));
-    public IReadOnlyCollection<ValidationErrorMessage> Errors => new ReadOnlyCollection<ValidationErrorMessage>(_errors);
+    public IReadOnlyCollection<ValidationErrorMessage> Errors =>
+        new ReadOnlyCollection<ValidationErrorMessage>(_errors);
 
     public ValidationResult()
     {
         _errors = [];
     }
 
-    private ValidationResult(string errorMessage, string fieldName = "") : this()
+    private ValidationResult(string errorMessage, string fieldName = "")
+        : this()
     {
         AddError(errorMessage, fieldName);
     }
@@ -25,7 +27,10 @@ public sealed class ValidationResult
     public ValidationResult AddError(string errorMessage, string fieldName = "")
     {
         if (string.IsNullOrWhiteSpace(errorMessage))
-            throw new ArgumentException("A mensagem de erro não pode estar vazia", nameof(errorMessage));
+            throw new ArgumentException(
+                "A mensagem de erro não pode estar vazia",
+                nameof(errorMessage)
+            );
 
         _errors.Add(new ValidationErrorMessage(errorMessage, fieldName));
         return this;
@@ -61,14 +66,20 @@ public sealed class ValidationResult
         return this;
     }
 
-    public ValidationResult AddErrorIfNull<T>(T value, string errorMessage, string fieldName = "") where T : class
-        => AddErrorIf(value == null, errorMessage, fieldName);
+    public ValidationResult AddErrorIfNull<T>(T value, string errorMessage, string fieldName = "")
+        where T : class => AddErrorIf(value == null, errorMessage, fieldName);
 
-    public ValidationResult AddErrorIfNullOrEmpty(string value, string errorMessage, string fieldName = "")
-        => AddErrorIf(string.IsNullOrEmpty(value), errorMessage, fieldName);
+    public ValidationResult AddErrorIfNullOrEmpty(
+        string value,
+        string errorMessage,
+        string fieldName = ""
+    ) => AddErrorIf(string.IsNullOrEmpty(value), errorMessage, fieldName);
 
-    public ValidationResult AddErrorIfNullOrWhiteSpace(string value, string errorMessage, string fieldName = "")
-        => AddErrorIf(string.IsNullOrWhiteSpace(value), errorMessage, fieldName);
+    public ValidationResult AddErrorIfNullOrWhiteSpace(
+        string value,
+        string errorMessage,
+        string fieldName = ""
+    ) => AddErrorIf(string.IsNullOrWhiteSpace(value), errorMessage, fieldName);
 
     public ValidationResult Merge(ValidationResult other)
     {
@@ -81,14 +92,14 @@ public sealed class ValidationResult
 
     public void ThrowErrorIf(Func<bool> hasError, string message)
     {
-        if (hasError()) throw new DomainException(message);
+        if (hasError())
+            throw new DomainException(message);
     }
-
 
     public static ValidationResult Success() => new();
 
-    public static ValidationResult Failure(string errorMessage, string fieldName = "")
-        => new(errorMessage, fieldName);
+    public static ValidationResult Failure(string errorMessage, string fieldName = "") =>
+        new(errorMessage, fieldName);
 
     public static ValidationResult Combine(params ValidationResult[] validations)
     {
@@ -103,27 +114,32 @@ public sealed class ValidationResult
         return result;
     }
 
-    public static ValidationResult Validate(Func<bool> predicate, string errorMessage, string fieldName = "")
-      => predicate() ? Failure(errorMessage, fieldName) : Success();
+    public static ValidationResult Validate(
+        Func<bool> predicate,
+        string errorMessage,
+        string fieldName = ""
+    ) => predicate() ? Failure(errorMessage, fieldName) : Success();
 
-
-    public static implicit operator bool(ValidationResult validation)
-        => validation?.IsValid ?? false;
+    public static implicit operator bool(ValidationResult validation) =>
+        validation?.IsValid ?? false;
 
     public static ValidationResult operator &(ValidationResult left, ValidationResult right)
     {
-        if (left == null) return right ?? Success();
-        if (right == null) return left;
+        if (left == null)
+            return right ?? Success();
+        if (right == null)
+            return left;
 
         return !left.IsValid ? left : left.Merge(right);
     }
 
     public static ValidationResult operator |(ValidationResult left, ValidationResult right)
     {
-        if (left == null) return right ?? Success();
-        if (right == null) return left;
+        if (left == null)
+            return right ?? Success();
+        if (right == null)
+            return left;
 
         return left.IsValid ? left : right;
     }
-
 }

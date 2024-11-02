@@ -1,9 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<CSharpier_Bypass>false</CSharpier_Bypass>
+		<CSharpier_LogLevel>Error</CSharpier_LogLevel>
+		<CSharpier_FrameworkVersion>ne8.0</CSharpier_FrameworkVersion>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CSharpier.MSBuild" Version="0.29.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
 </Project>

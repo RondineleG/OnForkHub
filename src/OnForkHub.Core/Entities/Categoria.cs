@@ -14,11 +14,7 @@ public class Categoria : BaseEntity
 
     public static RequestResult<Categoria> Create(string nome, string descricao)
     {
-        var categoria = new Categoria
-        {
-            Nome = nome,
-            Descricao = descricao
-        };
+        var categoria = new Categoria { Nome = nome, Descricao = descricao };
 
         var validationResult = categoria.Validate();
         if (validationResult.Errors.Count > 0)
@@ -27,13 +23,15 @@ public class Categoria : BaseEntity
         return RequestResult<Categoria>.Success(categoria);
     }
 
-    public static RequestResult<Categoria> Load(long id, string nome, string descricao, DateTime createdAt, DateTime? updatedAt = null)
+    public static RequestResult<Categoria> Load(
+        long id,
+        string nome,
+        string descricao,
+        DateTime createdAt,
+        DateTime? updatedAt = null
+    )
     {
-        var categoria = new Categoria
-        {
-            Nome = nome,
-            Descricao = descricao
-        };
+        var categoria = new Categoria { Nome = nome, Descricao = descricao };
 
         var validationResult = categoria.Validate();
         if (validationResult.Errors.Count > 0)
@@ -60,12 +58,19 @@ public class Categoria : BaseEntity
     {
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Nome, "Nome é obrigatório", "Nome");
-        validationResult.AddErrorIf(Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
-        validationResult.AddErrorIf(Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
+        validationResult.AddErrorIf(
+            Nome.Length < 3,
+            "Nome deve ter pelo menos 3 caracteres",
+            "Nome"
+        );
+        validationResult.AddErrorIf(
+            Nome.Length > 50,
+            "Nome deve ter no máximo 50 caracteres",
+            "Nome"
+        );
         validationResult.ThrowIfInvalid();
         return validationResult;
     }
-
 
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
     {

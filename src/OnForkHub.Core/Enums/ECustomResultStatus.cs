@@ -14,5 +14,5 @@ public enum ECustomResultStatus
 
     EntityAlreadyExists,
 
-    NoContent
+    NoContent,
 }

@@ -2,15 +2,16 @@
 
 public class Url : ValueObject
 {
-    private Url()
-    { }
+    private Url() { }
 
     public string Valor { get; private set; }
 
     public static Url Create(string url)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url),
-            "URL não pode ser vazia");
+        DomainException.ThrowErrorWhen(
+            () => string.IsNullOrWhiteSpace(url),
+            "URL não pode ser vazia"
+        );
 
         var urlObj = new Url { Valor = url };
         urlObj.Validate();
@@ -24,7 +25,9 @@ public class Url : ValueObject
 
     private void Validate()
     {
-        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Valor, UriKind.Absolute),
-            "URL inválida");
+        DomainException.ThrowErrorWhen(
+            () => !Uri.IsWellFormedUriString(Valor, UriKind.Absolute),
+            "URL inválida"
+        );
     }
 }

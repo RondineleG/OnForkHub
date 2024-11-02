@@ -12,7 +12,10 @@ public class Email : ValueObject
 
     public static Email Create(string value)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), "Email não pode ser vazio");
+        DomainException.ThrowErrorWhen(
+            () => string.IsNullOrWhiteSpace(value),
+            "Email não pode ser vazio"
+        );
         var email = new Email(value);
         email.Validate();
         return email;

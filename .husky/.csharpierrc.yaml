@@ -1,0 +1,12 @@
+printWidth: 100
+useTabs: false
+tabWidth: 4
+endOfLine: false
+
+overrides:
+    - files: "*.cst"
+      formatter: "csharp"
+      tabWidth: 2
+      useTabs: true
+      printWidth: 10
+      endOfLine: "LF"
