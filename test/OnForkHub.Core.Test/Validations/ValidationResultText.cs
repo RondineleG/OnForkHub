@@ -19,7 +19,11 @@ public class ValidationResultTests
     public void DeveAdicionarErroQuandoStringEstiverApenasComEspacos()
     {
         var valor = "   ";
-        var result = new ValidationResult().AddErrorIfNullOrWhiteSpace(valor, "O valor não pode estar em branco", "Campo");
+        var result = new ValidationResult().AddErrorIfNullOrWhiteSpace(
+            valor,
+            "O valor não pode estar em branco",
+            "Campo"
+        );
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("O valor não pode estar em branco");
@@ -28,8 +32,12 @@ public class ValidationResultTests
     [Fact]
     public void DeveAdicionarErroQuandoStringEstiverVazia()
     {
-        var valor = "";
-        var result = new ValidationResult().AddErrorIfNullOrEmpty(valor, "O valor não pode estar vazio", "Campo");
+        var valor = string.Empty;
+        var result = new ValidationResult().AddErrorIfNullOrEmpty(
+            valor,
+            "O valor não pode estar vazio",
+            "Campo"
+        );
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("O valor não pode estar vazio");
@@ -39,7 +47,11 @@ public class ValidationResultTests
     public void DeveAdicionarErroQuandoValorForNulo()
     {
         string? valorNulo = null;
-        var result = new ValidationResult().AddErrorIfNull(valorNulo, "O valor não pode ser nulo", "Campo");
+        var result = new ValidationResult().AddErrorIfNull(
+            valorNulo,
+            "O valor não pode ser nulo",
+            "Campo"
+        );
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("O valor não pode ser nulo");
@@ -65,8 +77,7 @@ public class ValidationResultTests
 
         Action action = () => result.ThrowIfInvalid();
 
-        action.Should().Throw<DomainException>()
-            .WithMessage(mensagemErro);
+        action.Should().Throw<DomainException>().WithMessage(mensagemErro);
     }
 
     [Fact]
@@ -76,8 +87,7 @@ public class ValidationResultTests
 
         Action action = () => result.Merge(null);
 
-        action.Should().Throw<ArgumentNullException>()
-            .WithMessage("*other*");
+        action.Should().Throw<ArgumentNullException>().WithMessage("*other*");
     }
 
     [Fact]
@@ -120,15 +130,19 @@ public class ValidationResultTests
     public void DeveRetornarErroComMultiplosCamposQuandoAdicionarErros()
     {
         var erros = new List<(string Message, string Field)>
-    {
-        ("Erro no campo 1", "Campo1"),
-        ("Erro no campo 2", "Campo2")
-    };
+        {
+            ("Erro no campo 1", "Campo1"),
+            ("Erro no campo 2", "Campo2"),
+        };
         var result = new ValidationResult().AddErrors(erros);
 
         result.IsValid.Should().BeFalse();
         result.Errors.Count.Should().Be(2);
-        result.Errors.Select(e => e.Message).Should().Contain("Erro no campo 1").And.Contain("Erro no campo 2");
+        result
+            .Errors.Select(e => e.Message)
+            .Should()
+            .Contain("Erro no campo 1")
+            .And.Contain("Erro no campo 2");
     }
 
     [Fact]
@@ -210,7 +224,11 @@ public class ValidationResultTests
     public void NaoDeveAdicionarErroQuandoValorNaoForNulo()
     {
         var valor = "texto";
-        var result = new ValidationResult().AddErrorIfNull(valor, "O valor não pode ser nulo", "Campo");
+        var result = new ValidationResult().AddErrorIfNull(
+            valor,
+            "O valor não pode ser nulo",
+            "Campo"
+        );
 
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();

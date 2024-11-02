@@ -7,7 +7,7 @@ public sealed class ValidationErrorMessage
     public ValidationErrorMessage(string message, string field = "")
     {
         Message = message ?? throw new ArgumentNullException(nameof(message));
-        Field = field ?? "";
+        Field = field ?? string.Empty;
         Timestamp = DateTime.UtcNow;
     }
 
