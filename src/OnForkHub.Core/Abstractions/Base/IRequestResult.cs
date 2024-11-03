@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Enums;
+using OnForkHub.Core.Enums;
 
 namespace OnForkHub.Core.Abstractions.Base;
 

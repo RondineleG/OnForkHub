@@ -1,6 +1,6 @@
-﻿namespace OnForkHub.Core.Abstractions.Base;
+namespace OnForkHub.Core.Abstractions.Base;
 
 public interface IRequestError : IRequestResult
 {
-    Error? Error { get; }
+    RequestError? RequestError { get; }
 }

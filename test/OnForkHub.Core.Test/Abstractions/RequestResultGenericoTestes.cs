@@ -7,61 +7,53 @@ public class RequestResultGenericoTestes
 {
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar sucesso com dados fornecidos")]
     public void DeveRetornarSucessoComDados()
     {
-        // Arrange
         var dados = "Dados de teste";
 
-        // Act
         var resultado = RequestResult<string>.Success(dados);
 
-        // Assert
         resultado.Status.Should().Be(ECustomResultStatus.Success);
         resultado.Data.Should().Be(dados);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve converter dados para resultado de sucesso")]
     public void DeveConverterDadosParaResultadoSucesso()
     {
-        // Arrange
         var dados = "Dados de teste";
 
-        // Act
         RequestResult<string> resultado = dados;
 
-        // Assert
         resultado.Status.Should().Be(ECustomResultStatus.Success);
         resultado.Data.Should().Be(dados);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve converter exceção para resultado de erro")]
     public void DeveConverterExcecaoParaResultadoErro()
     {
-        // Arrange
         var excecao = new Exception("Exceção de teste");
 
-        // Act
         RequestResult<string> resultado = excecao;
 
-        // Assert
         resultado.Status.Should().Be(ECustomResultStatus.HasError);
-        resultado.Error.Should().NotBeNull();
-        resultado.Error!.Description.Should().Be(excecao.Message);
+        resultado.RequestError.Should().NotBeNull();
+        resultado.RequestError!.Description.Should().Be(excecao.Message);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado com validações")]
     public void DeveRetornarResultadoComValidacoes()
     {
-        // Arrange
-        var validacao = new Validation("PropriedadeTeste", "Mensagem de validação de teste");
+        var validacao = new RequestValidation("PropriedadeTeste", "Mensagem de validação de teste");
 
-        // Act
         var resultado = RequestResult<string>.WithValidations(validacao);
 
-        // Assert
         resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
         resultado.Validations.Should().ContainSingle();
         resultado.Validations.First().Should().Be(validacao);
@@ -69,24 +61,22 @@ public class RequestResultGenericoTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado sem conteúdo")]
     public void DeveRetornarResultadoSemConteudo()
     {
-        // Act
         var resultado = RequestResult<string>.WithNoContent();
 
-        // Assert
         resultado.Status.Should().Be(ECustomResultStatus.NoContent);
         resultado.Data.Should().BeNull();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve inicializar RequestResult genérico sem dados")]
     public void DeveInicializarRequestResultGenericoSemDados()
     {
-        // Act
         var resultado = new RequestResult<string>();
 
-        // Assert
         resultado.Status.Should().Be(ECustomResultStatus.Success);
         resultado.Data.Should().BeNull();
         resultado.EntityErrors.Should().NotBeNull().And.BeEmpty();
@@ -95,6 +85,7 @@ public class RequestResultGenericoTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erros de entidade em RequestResult genérico")]
     public void DeveAdicionarErrosDeEntidadeEmRequestResultGenerico()
     {
         var errosDeEntidade = new Dictionary<string, List<string>>
@@ -117,18 +108,20 @@ public class RequestResultGenericoTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar erro com objeto de erro em RequestResult genérico")]
     public void DeveRetornarErroComObjetoErroEmRequestResultGenerico()
     {
-        var error = new Error("Erro específico de teste");
+        var error = new RequestError("Erro específico de teste");
 
         var resultado = RequestResult<string>.WithError(error);
 
         resultado.Status.Should().Be(ECustomResultStatus.HasError);
-        resultado.Error.Should().Be(error);
+        resultado.RequestError.Should().Be(error);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar sem conteúdo em RequestResult genérico")]
     public void DeveRetornarSemConteudoEmRequestResultGenerico()
     {
         var resultado = RequestResult<string>.WithNoContent();
@@ -139,6 +132,7 @@ public class RequestResultGenericoTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erro de validação sem nome de campo")]
     public void DeveAdicionarErroDeValidacaoSemNomeDeCampo()
     {
         var mensagemErro = "Erro de validação genérico";
@@ -153,12 +147,13 @@ public class RequestResultGenericoTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve converter array de validações para RequestResult genérico")]
     public void DeveConverterArrayDeValidacoesParaRequestResultGenerico()
     {
         var validacoes = new[]
         {
-            new Validation("PropriedadeTeste1", "Erro de validação 1"),
-            new Validation("PropriedadeTeste2", "Erro de validação 2"),
+            new RequestValidation("PropriedadeTeste1", "Erro de validação 1"),
+            new RequestValidation("PropriedadeTeste2", "Erro de validação 2"),
         };
 
         RequestResult<string> resultado = validacoes;
@@ -169,6 +164,7 @@ public class RequestResultGenericoTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve formatar mensagens de erro corretamente em RequestResult genérico")]
     public void DeveFormatarMensagensDeErroCorretamenteEmRequestResultGenerico()
     {
         var resultado = new RequestResult<string>();
@@ -183,6 +179,7 @@ public class RequestResultGenericoTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar validação com nome de campo e descrição em RequestResult genérico")]
     public void DeveAdicionarValidacaoComNomeCampoEDescricaoEmRequestResultGenerico()
     {
         var resultado = RequestResult<string>.WithValidations("CampoTeste", "Erro de validação teste");

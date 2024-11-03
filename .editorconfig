@@ -13,16 +13,6 @@ end_of_line = lf
 [*.{cs,vb}]
 csharp_style_namespace_declarations = file_scoped:error
 
-# Global using directives
-dotnet_separate_import_directive_groups = true
-dotnet_sort_system_directives_first = true
-csharp_using_directive_placement = outside_namespace:error
-
-# Force global using directives
-dotnet_diagnostic.IDE0005.severity = error # Remove unnecessary using directives
-dotnet_diagnostic.IDE0065.severity = error # Using directives must be placed outside of a namespace declaration
-dotnet_diagnostic.CS8019.severity = error # Unnecessary using directive
-
 # Estilos adicionais
 dotnet_analyzer_diagnostic.severity = warning
 dotnet_style_qualification_for_field = false
@@ -40,3 +30,13 @@ csharp_style_var_elsewhere = true:suggestion
 
 # Desativar atribuições _= para métodos sem retorno
 dotnet_diagnostic.IDE0058.severity = none
+
+# Ignorar avisos de palavras específicas
+dotnet_diagnostic.CRRSP08.severity = none
+
+# Lista de palavras permitidas
+[*.cs]
+csharp_preferred_words = Invalido
+
+# Desativar o aviso CA1000 para o projeto
+dotnet_diagnostic.CA1000.severity = none

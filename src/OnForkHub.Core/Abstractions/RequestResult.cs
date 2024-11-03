@@ -12,17 +12,17 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         ValidationResult = new ValidationResult();
     }
 
-    protected Dictionary<string, List<string>>? _entityErrors;
+    internal Dictionary<string, List<string>>? _entityErrors;
 
-    protected List<string>? _generalErrors;
+    internal List<string>? _generalErrors;
 
     public DateTime Date { get; set; } = DateTime.Now;
 
     public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= [];
 
-    public EntityWarning? EntityWarning { get; protected init; }
+    public RequestEntityWarning? EntityWarning { get; protected init; }
 
-    public Error? Error { get; protected init; }
+    public RequestError? RequestError { get; protected init; }
 
     public List<string> GeneralErrors => _generalErrors ??= [];
 
@@ -34,7 +34,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public ValidationResult ValidationResult { get; protected set; }
 
-    public IEnumerable<Validation> Validations { get; protected init; } = Enumerable.Empty<Validation>();
+    public IEnumerable<RequestValidation> Validations { get; protected init; } = Enumerable.Empty<RequestValidation>();
 
     public static RequestResult EntityAlreadyExists(string entity, object id, string description)
     {
@@ -58,7 +58,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public static RequestResult WithError(string message)
     {
-        return new RequestResult { Status = ECustomResultStatus.HasError, Error = new Error(message) };
+        return new RequestResult { Status = ECustomResultStatus.HasError, RequestError = new RequestError(message) };
     }
 
     public static RequestResult WithError(Exception exception)
@@ -76,9 +76,9 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         return new RequestResult { Status = ECustomResultStatus.EntityHasError, _entityErrors = entityErrors };
     }
 
-    public static RequestResult WithError(Error error)
+    public static RequestResult WithError(RequestError error)
     {
-        return new RequestResult { Status = ECustomResultStatus.HasError, Error = error };
+        return new RequestResult { Status = ECustomResultStatus.HasError, RequestError = error };
     }
 
     public static RequestResult WithNoContent()
@@ -93,7 +93,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         return result;
     }
 
-    public static RequestResult WithValidations(params Validation[] validations)
+    public static RequestResult WithValidations(params RequestValidation[] validations)
     {
         var result = new RequestResult { Status = ECustomResultStatus.HasValidation };
 
@@ -105,14 +105,14 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         return result;
     }
 
-    public static RequestResult WithValidations(IEnumerable<Validation> validations)
+    public static RequestResult WithValidations(IEnumerable<RequestValidation> validations)
     {
         return WithValidations(validations.ToArray());
     }
 
     public static RequestResult WithValidations(string propertyName, string description)
     {
-        return WithValidations(new Validation(propertyName, description));
+        return WithValidations(new RequestValidation(propertyName, description));
     }
 
     public static RequestResult WithValidations(params ValidationErrorMessage[] validations)
@@ -174,7 +174,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         ECustomResultStatus status
     )
     {
-        return new RequestResult { Status = status, EntityWarning = new EntityWarning(entity, id, description) };
+        return new RequestResult { Status = status, EntityWarning = new RequestEntityWarning(entity, id, description) };
     }
 }
 
@@ -207,12 +207,12 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
         return WithError(ex);
     }
 
-    public static implicit operator RequestResult<T>(Validation[] validations)
+    public static implicit operator RequestResult<T>(RequestValidation[] validations)
     {
         return WithValidations(validations);
     }
 
-    public static implicit operator RequestResult<T>(Validation validation)
+    public static implicit operator RequestResult<T>(RequestValidation validation)
     {
         return WithValidations(validation);
     }
@@ -224,7 +224,7 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> WithError(string message)
     {
-        return new RequestResult<T> { Status = ECustomResultStatus.HasError, Error = new Error(message) };
+        return new RequestResult<T> { Status = ECustomResultStatus.HasError, RequestError = new RequestError(message) };
     }
 
     public static new RequestResult<T> WithError(Exception exception)
@@ -242,9 +242,9 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
         return new RequestResult<T> { Status = ECustomResultStatus.EntityHasError, _entityErrors = entityErrors };
     }
 
-    public static new RequestResult<T> WithError(Error error)
+    public static new RequestResult<T> WithError(RequestError error)
     {
-        return new RequestResult<T> { Status = ECustomResultStatus.HasError, Error = error };
+        return new RequestResult<T> { Status = ECustomResultStatus.HasError, RequestError = error };
     }
 
     public static new RequestResult<T> WithNoContent()
@@ -259,14 +259,14 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
         return result;
     }
 
-    public static new RequestResult<T> WithValidations(params Validation[] validations)
+    public static new RequestResult<T> WithValidations(params RequestValidation[] validations)
     {
         return new RequestResult<T> { Status = ECustomResultStatus.HasValidation, Validations = validations };
     }
 
     public static new RequestResult<T> WithValidations(string propertyName, string description)
     {
-        return WithValidations(new Validation(propertyName, description));
+        return WithValidations(new RequestValidation(propertyName, description));
     }
 
     public static new RequestResult<T> WithValidations(params ValidationErrorMessage[] validations)

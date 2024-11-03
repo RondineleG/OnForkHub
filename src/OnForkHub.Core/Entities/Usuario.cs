@@ -51,13 +51,27 @@ public class Usuario : BaseEntity
         Update();
     }
 
+    public void AtualizarNome(string nome)
+    {
+        Nome = nome;
+        Validate();
+        Update();
+    }
+
+    public void AtualizarEmail(string email)
+    {
+        Email = Email.Create(email);
+        Validate();
+        Update();
+    }
+
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Nome, "Nome é obrigatório", "Nome");
         validationResult.AddErrorIf(Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
         validationResult.AddErrorIf(Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
-        validationResult.ThrowIfInvalid();
+        validationResult.ThrowIfInvalid("Nome do usuário é inválido");
         return validationResult;
     }
 

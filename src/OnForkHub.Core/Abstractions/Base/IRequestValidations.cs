@@ -1,6 +1,6 @@
-﻿namespace OnForkHub.Core.Abstractions.Base;
+namespace OnForkHub.Core.Abstractions.Base;
 
 public interface IRequestValidations : IRequestResult
 {
-    IEnumerable<Validation> Validations { get; }
+    IEnumerable<RequestValidation> Validations { get; }
 }

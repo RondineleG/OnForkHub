@@ -7,6 +7,7 @@ public class RequestResultTestes
 {
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve inicializar com status de sucesso")]
     public void DeveInicializarComStatusSucesso()
     {
         var resultado = new RequestResult();
@@ -19,6 +20,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado de erro ao informar mensagem")]
     public void DeveRetornarResultadoErroQuandoInformadoMensagem()
     {
         var mensagemErro = "Mensagem de erro de teste";
@@ -26,12 +28,13 @@ public class RequestResultTestes
         var resultado = RequestResult.WithError(mensagemErro);
 
         resultado.Status.Should().Be(ECustomResultStatus.HasError);
-        resultado.Error.Should().NotBeNull();
-        resultado.Error!.Description.Should().Be(mensagemErro);
+        resultado.RequestError.Should().NotBeNull();
+        resultado.RequestError!.Description.Should().Be(mensagemErro);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado de erro ao informar exceção")]
     public void DeveRetornarResultadoErroQuandoInformadoExcecao()
     {
         var excecao = new Exception("Exceção de teste");
@@ -39,12 +42,13 @@ public class RequestResultTestes
         var resultado = RequestResult.WithError(excecao);
 
         resultado.Status.Should().Be(ECustomResultStatus.HasError);
-        resultado.Error.Should().NotBeNull();
-        resultado.Error!.Description.Should().Be(excecao.Message);
+        resultado.RequestError.Should().NotBeNull();
+        resultado.RequestError!.Description.Should().Be(excecao.Message);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado de erro ao informar lista de erros")]
     public void DeveRetornarResultadoErroQuandoInformadoListaErros()
     {
         var erros = new List<string> { "Erro 1", "Erro 2" };
@@ -57,6 +61,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erro de entidade")]
     public void DeveAdicionarErroDeEntidade()
     {
         var resultado = new RequestResult();
@@ -72,6 +77,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado de entidade não encontrada")]
     public void DeveRetornarResultadoEntidadeNaoEncontrada()
     {
         var entidade = "EntidadeTeste";
@@ -89,6 +95,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado de erro de validação")]
     public void DeveRetornarResultadoErroValidacao()
     {
         var mensagemErro = "Erro de validação";
@@ -102,12 +109,13 @@ public class RequestResultTestes
         resultado.ValidationResult.Errors.First().Field.Should().Be(nomeCampo);
     }
 
+    private static readonly string[] expected = ["Erro geral 1", "Erro geral 2"];
+
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar múltiplos erros gerais")]
     public void DeveAdicionarMultiplosErrosGerais()
     {
-        string[] expected = ["Erro geral 1", "Erro geral 2"];
-
         var resultado = new RequestResult();
         resultado.AddError("Erro geral 1");
         resultado.AddError("Erro geral 2");
@@ -119,9 +127,10 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar validações como coleção")]
     public void DeveAdicionarValidacoesComoColecao()
     {
-        var validacoes = new List<Validation>
+        var validacoes = new List<RequestValidation>
         {
             new("Campo1", "Erro de validação 1"),
             new("Campo2", "Erro de validação 2"),
@@ -141,6 +150,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve formatar mensagens de erro corretamente")]
     public void DeveFormatarMensagensDeErroCorretamente()
     {
         var resultado = new RequestResult();
@@ -159,6 +169,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erro com lista de erros e exceção")]
     public void DeveAdicionarErroComListaEExcecao()
     {
         var erros = new List<string> { "Erro 1", "Erro 2" };
@@ -173,6 +184,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve inicializar campos de erro apenas quando acessados")]
     public void DeveInicializarCamposDeErroSomenteQuandoAcessados()
     {
         var resultado = new RequestResult();
@@ -186,11 +198,12 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve formatar mensagens de validação no método ToString")]
     public void DeveFormatarMensagensDeValidacaoNoToString()
     {
         var resultado = RequestResult.WithValidations(
-            new Validation("CampoTeste", "Erro de validação 1"),
-            new Validation("CampoTeste", "Erro de validação 2")
+            new RequestValidation("CampoTeste", "Erro de validação 1"),
+            new RequestValidation("CampoTeste", "Erro de validação 2")
         );
 
         var textoFormatado = resultado.ToString();
@@ -201,10 +214,10 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar múltiplos erros para a mesma entidade")]
     public void DeveAdicionarMultiplosErrosParaMesmaEntidade()
     {
         string[] expected = ["Erro de entidade 1", "Erro de entidade 2"];
-
         var resultado = new RequestResult();
         var entidade = "EntidadeTeste";
 
@@ -218,6 +231,7 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar resultado sem conteúdo")]
     public void DeveRetornarResultadoSemConteudo()
     {
         var resultado = RequestResult.WithNoContent();
@@ -229,9 +243,12 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar validação com propriedade e descrição")]
     public void DeveAdicionarValidacaoComPropriedadeEDescricao()
     {
-        var resultado = RequestResult.WithValidations(new Validation("PropriedadeTeste", "Erro de validação de teste"));
+        var resultado = RequestResult.WithValidations(
+            new RequestValidation("PropriedadeTeste", "Erro de validação de teste")
+        );
 
         resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
 
@@ -244,13 +261,14 @@ public class RequestResultTestes
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar erro com objeto de erro personalizado")]
     public void DeveRetornarErroComObjetoErroPersonalizado()
     {
-        var erroPersonalizado = new Error("Erro personalizado");
+        var erroPersonalizado = new RequestError("Erro personalizado");
 
         var resultado = RequestResult.WithError(erroPersonalizado);
 
         resultado.Status.Should().Be(ECustomResultStatus.HasError);
-        resultado.Error.Should().Be(erroPersonalizado);
+        resultado.RequestError.Should().Be(erroPersonalizado);
     }
 }

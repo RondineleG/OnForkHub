@@ -8,7 +8,7 @@ public class Url : ValueObject
 
     public static Url Create(string url)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url), "URL não pode ser vazia");
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url.Trim()), "URL não pode ser vazia");
 
         var urlObj = new Url { Valor = url };
         urlObj.Validate();
@@ -23,5 +23,11 @@ public class Url : ValueObject
     private void Validate()
     {
         DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Valor, UriKind.Absolute), "URL inválida");
+
+        var uri = new Uri(Valor, UriKind.Absolute);
+        DomainException.ThrowErrorWhen(
+            () => uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps,
+            "URL inválida"
+        );
     }
 }

@@ -1,1 +1,1 @@
-﻿Console.WriteLine("Ops");
+Console.WriteLine("Ops");

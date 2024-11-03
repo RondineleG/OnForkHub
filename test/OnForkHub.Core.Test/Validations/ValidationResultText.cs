@@ -6,6 +6,7 @@ public class ValidationResultTests
 {
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erro quando condição for verdadeira")]
     public void DeveAdicionarErroQuandoCondicaoForVerdadeira()
     {
         var result = new ValidationResult().AddErrorIf(true, "Erro de condição", "Campo");
@@ -18,6 +19,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erro quando string estiver apenas com espaços")]
     public void DeveAdicionarErroQuandoStringEstiverApenasComEspacos()
     {
         var valor = "   ";
@@ -33,6 +35,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erro quando string estiver vazia")]
     public void DeveAdicionarErroQuandoStringEstiverVazia()
     {
         var valor = string.Empty;
@@ -44,6 +47,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve adicionar erro quando valor for nulo")]
     public void DeveAdicionarErroQuandoValorForNulo()
     {
         string? valorNulo = null;
@@ -55,6 +59,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve combinar validações com erro")]
     public void DeveCombinarValidacoesComErro()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -68,6 +73,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve lançar exceção com mensagem quando inválido")]
     public void DeveLancarExcecaoComMensagemQuandoInvalido()
     {
         var mensagemErro = "Erro de validação";
@@ -80,17 +86,20 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve lançar exceção ao tentar mesclar com nulo")]
     public void DeveLancarExcecaoQuandoTentarMesclarComNulo()
     {
         var result = new ValidationResult();
+        ValidationResult? validate = null;
 
-        Action action = () => result.Merge(null);
+        Action action = () => result.Merge(validate);
 
         action.Should().Throw<ArgumentNullException>().WithMessage("*other*");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve manter erros ao mesclar com outro resultado de erro")]
     public void DeveManterErrosQuandoMesclarComOutroResultadoDeErro()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -105,6 +114,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve manter sucesso ao mesclar com outro sucesso")]
     public void DeveManterSucessoAoMesclarComOutroSucesso()
     {
         var result1 = ValidationResult.Success();
@@ -118,6 +128,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar erro com campo específico ao usar Failure")]
     public void DeveRetornarErroComCampoEspecificoAoUsarFailure()
     {
         var result = ValidationResult.Failure("Erro específico", "CampoEspecifico");
@@ -130,6 +141,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar erro com múltiplos campos ao adicionar erros")]
     public void DeveRetornarErroComMultiplosCamposQuandoAdicionarErros()
     {
         var erros = new List<(string Message, string Field)>
@@ -146,6 +158,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar falha ao chamar Failure")]
     public void DeveRetornarFalhaQuandoChamarFailure()
     {
         var mensagemErro = "Erro de validação";
@@ -157,6 +170,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar primeira falha ao usar operador E")]
     public void DeveRetornarPrimeiraFalhaQuandoUsarOperadorE()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -170,6 +184,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar sucesso ao chamar Success")]
     public void DeveRetornarSucessoQuandoChamarSuccess()
     {
         var result = ValidationResult.Success();
@@ -180,6 +195,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar sucesso quando todas as validações são sucesso")]
     public void DeveRetornarSucessoQuandoTodasAsValidacoesSaoSucesso()
     {
         var result1 = ValidationResult.Success();
@@ -193,6 +209,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve retornar sucesso ao usar operador E com todos válidos")]
     public void DeveRetornarSucessoQuandoUsarOperadorEComTodosValidos()
     {
         var result1 = ValidationResult.Success();
@@ -206,6 +223,8 @@ public class ValidationResultTests
     [Theory]
     [InlineData(false, "Erro de validação", false)]
     [InlineData(true, "", true)]
+    [Trait("Category", "Unit")]
+    [DisplayName("Deve validar condição corretamente")]
     public void DeveValidarCondicaoCorretamente(bool condicao, string mensagem, bool esperadoValido)
     {
         var result = ValidationResult.Validate(() => !condicao, mensagem);
@@ -219,6 +238,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Não deve adicionar erro quando condição for falsa")]
     public void NaoDeveAdicionarErroQuandoCondicaoForFalsa()
     {
         var result = new ValidationResult().AddErrorIf(false, "Erro de condição", "Campo");
@@ -229,6 +249,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Não deve adicionar erro quando valor não for nulo")]
     public void NaoDeveAdicionarErroQuandoValorNaoForNulo()
     {
         var valor = "texto";
@@ -240,6 +261,7 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Não deve lançar exceção quando válido")]
     public void NaoDeveLancarExcecaoQuandoValido()
     {
         var result = ValidationResult.Success();

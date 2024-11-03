@@ -10,6 +10,7 @@ public sealed class ValidationResult
 
     public bool HasError => !IsValid;
     public string ErrorMessage => string.Join("; ", _errors.Select(e => e.Message));
+
     public IReadOnlyCollection<ValidationErrorMessage> Errors =>
         new ReadOnlyCollection<ValidationErrorMessage>(_errors);
 
@@ -40,6 +41,14 @@ public sealed class ValidationResult
         if (HasError)
         {
             throw new DomainException(ErrorMessage);
+        }
+    }
+
+    public void ThrowIfInvalid(string errorMessage)
+    {
+        if (HasError)
+        {
+            throw new DomainException(errorMessage);
         }
     }
 

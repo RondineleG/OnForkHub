@@ -4,8 +4,9 @@ namespace OnForkHub.Core.Test.Exceptions;
 
 public class DomainExceptionTests
 {
-    [Fact(DisplayName = nameof(DeveLancarDomainExceptionQuandoCondicaoForVerdadeira))]
+    [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Deve lançar DomainException quando a condição for verdadeira")]
     public void DeveLancarDomainExceptionQuandoCondicaoForVerdadeira()
     {
         var message = "Erro de domínio";
@@ -17,6 +18,7 @@ public class DomainExceptionTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Não deve lançar DomainException quando a condição for falsa")]
     public void NaoDeveLancarDomainExceptionQuandoCondicaoForFalsa()
     {
         Action action = () => DomainException.ThrowErrorWhen(() => false, "Erro de domínio");
@@ -26,6 +28,7 @@ public class DomainExceptionTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("ThrowWhenInvalid com erro único deve lançar exceção com mensagem do erro")]
     public void ThrowWhenInvalidComErroUnicoDeveLancarExcecaoComMensagemDoErro()
     {
         var result = ValidationResult.Failure("Erro único");
@@ -37,6 +40,7 @@ public class DomainExceptionTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("ThrowWhenInvalid deve lançar exceção com mensagens de múltiplos erros")]
     public void ThrowWhenInvalidDeveLancarExcecaoQuandoHaErros()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -49,6 +53,7 @@ public class DomainExceptionTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("ThrowWhenInvalid não deve lançar exceção quando não há erros")]
     public void ThrowWhenInvalidNaoDeveLancarExcecaoQuandoNaoHaErros()
     {
         var result1 = ValidationResult.Success();
@@ -61,6 +66,7 @@ public class DomainExceptionTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Validate deve retornar falha quando a condição for verdadeira")]
     public void ValidateDeveRetornarFalhaQuandoCondicaoForVerdadeira()
     {
         var message = "Erro de domínio";
@@ -72,6 +78,7 @@ public class DomainExceptionTests
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Validate deve retornar sucesso quando a condição for falsa")]
     public void ValidateDeveRetornarSucessoQuandoCondicaoForFalsa()
     {
         var message = "Erro de domínio";
