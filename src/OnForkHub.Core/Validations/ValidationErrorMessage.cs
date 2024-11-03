@@ -15,9 +15,9 @@ public sealed class ValidationErrorMessage(string message, string field = "")
         return JsonSerializer.Serialize(
             new
             {
-                this.Field,
-                this.Message,
-                this.Timestamp,
+                Field,
+                Message,
+                Timestamp,
             }
         );
     }

@@ -44,25 +44,25 @@ public class Categoria : BaseEntity
 
     public RequestResult AtualizarDados(string nome, string descricao)
     {
-        this.Nome = nome;
-        this.Descricao = descricao;
+        Nome = nome;
+        Descricao = descricao;
 
-        var validationResult = this.Validate();
+        var validationResult = Validate();
         if (validationResult.Errors.Count > 0)
         {
             return RequestResult.WithError(validationResult.ErrorMessage);
         }
 
-        this.Update();
+        Update();
         return RequestResult.Success();
     }
 
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(this.Nome, "Nome é obrigatório", "Nome");
-        validationResult.AddErrorIf(this.Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
-        validationResult.AddErrorIf(this.Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
+        validationResult.AddErrorIfNullOrWhiteSpace(Nome, "Nome é obrigatório", "Nome");
+        validationResult.AddErrorIf(Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
+        validationResult.AddErrorIf(Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
         validationResult.ThrowIfInvalid();
         return validationResult;
     }
@@ -70,8 +70,8 @@ public class Categoria : BaseEntity
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
     {
         DomainException.ThrowErrorWhen(() => id <= 0, "Id deve ser maior que zero");
-        this.Id = id;
-        this.CreatedAt = createdAt;
-        this.UpdatedAt = updatedAt;
+        Id = id;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
     }
 }

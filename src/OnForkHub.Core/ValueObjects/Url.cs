@@ -17,11 +17,11 @@ public class Url : ValueObject
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return this.Valor.ToLower(System.Globalization.CultureInfo.CurrentCulture);
+        yield return Valor.ToLower(System.Globalization.CultureInfo.CurrentCulture);
     }
 
     private void Validate()
     {
-        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(this.Valor, UriKind.Absolute), "URL inválida");
+        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Valor, UriKind.Absolute), "URL inválida");
     }
 }

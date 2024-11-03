@@ -6,22 +6,22 @@ public sealed class ValidationResult
 {
     private readonly List<ValidationErrorMessage> _errors;
 
-    public bool IsValid => this._errors.Count == 0;
+    public bool IsValid => _errors.Count == 0;
 
-    public bool HasError => !this.IsValid;
-    public string ErrorMessage => string.Join("; ", this._errors.Select(e => e.Message));
+    public bool HasError => !IsValid;
+    public string ErrorMessage => string.Join("; ", _errors.Select(e => e.Message));
     public IReadOnlyCollection<ValidationErrorMessage> Errors =>
-        new ReadOnlyCollection<ValidationErrorMessage>(this._errors);
+        new ReadOnlyCollection<ValidationErrorMessage>(_errors);
 
     public ValidationResult()
     {
-        this._errors = [];
+        _errors = [];
     }
 
     private ValidationResult(string errorMessage, string fieldName = "")
         : this()
     {
-        this.AddError(errorMessage, fieldName);
+        AddError(errorMessage, fieldName);
     }
 
     public ValidationResult AddError(string errorMessage, string fieldName = "")
@@ -31,21 +31,21 @@ public sealed class ValidationResult
             throw new ArgumentException("A mensagem de erro não pode estar vazia", nameof(errorMessage));
         }
 
-        this._errors.Add(new ValidationErrorMessage(errorMessage, fieldName));
+        _errors.Add(new ValidationErrorMessage(errorMessage, fieldName));
         return this;
     }
 
     public void ThrowIfInvalid()
     {
-        if (this.HasError)
+        if (HasError)
         {
-            throw new DomainException(this.ErrorMessage);
+            throw new DomainException(ErrorMessage);
         }
     }
 
     public ValidationResult ThrowIfInvalidAndReturn()
     {
-        this.ThrowIfInvalid();
+        ThrowIfInvalid();
         return this;
     }
 
@@ -53,7 +53,7 @@ public sealed class ValidationResult
     {
         foreach (var (message, field) in errors)
         {
-            this.AddError(message, field);
+            AddError(message, field);
         }
         return this;
     }
@@ -62,7 +62,7 @@ public sealed class ValidationResult
     {
         if (condition)
         {
-            this.AddError(errorMessage, fieldName);
+            AddError(errorMessage, fieldName);
         }
         return this;
     }
@@ -70,24 +70,24 @@ public sealed class ValidationResult
     public ValidationResult AddErrorIfNull<T>(T value, string errorMessage, string fieldName = "")
         where T : class
     {
-        return this.AddErrorIf(value == null, errorMessage, fieldName);
+        return AddErrorIf(value == null, errorMessage, fieldName);
     }
 
     public ValidationResult AddErrorIfNullOrEmpty(string value, string errorMessage, string fieldName = "")
     {
-        return this.AddErrorIf(string.IsNullOrEmpty(value), errorMessage, fieldName);
+        return AddErrorIf(string.IsNullOrEmpty(value), errorMessage, fieldName);
     }
 
     public ValidationResult AddErrorIfNullOrWhiteSpace(string value, string errorMessage, string fieldName = "")
     {
-        return this.AddErrorIf(string.IsNullOrWhiteSpace(value), errorMessage, fieldName);
+        return AddErrorIf(string.IsNullOrWhiteSpace(value), errorMessage, fieldName);
     }
 
     public ValidationResult Merge(ValidationResult other)
     {
         ArgumentNullException.ThrowIfNull(other);
 
-        this._errors.AddRange(other._errors);
+        _errors.AddRange(other._errors);
         return this;
     }
 

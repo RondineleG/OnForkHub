@@ -6,15 +6,15 @@ public abstract class BaseEntity : IAggregateRoot
 {
     protected BaseEntity()
     {
-        this.CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTime.UtcNow;
     }
 
     protected BaseEntity(long id, DateTime createdAt, DateTime? updatedAt = null)
     {
         DomainException.ThrowErrorWhen(() => id <= 0, "Id deve ser maior que zero");
-        this.Id = id;
-        this.CreatedAt = createdAt;
-        this.UpdatedAt = updatedAt;
+        Id = id;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
     }
 
     public DateTime CreatedAt { get; protected set; }
@@ -27,6 +27,6 @@ public abstract class BaseEntity : IAggregateRoot
 
     protected void Update()
     {
-        this.UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

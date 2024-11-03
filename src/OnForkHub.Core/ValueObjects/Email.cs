@@ -4,8 +4,8 @@ public partial class Email : ValueObject
 {
     private Email(string value)
     {
-        this.Value = value;
-        this.Validate();
+        Value = value;
+        Validate();
     }
 
     public string Value { get; private set; }
@@ -20,13 +20,13 @@ public partial class Email : ValueObject
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return this.Value.ToLower(System.Globalization.CultureInfo.CurrentCulture);
+        yield return Value.ToLower(System.Globalization.CultureInfo.CurrentCulture);
     }
 
     private void Validate()
     {
         var regex = MyRegex();
-        DomainException.ThrowErrorWhen(() => !regex.IsMatch(this.Value), "Email inválido");
+        DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), "Email inválido");
     }
 
     [GeneratedRegex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")]

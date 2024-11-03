@@ -8,12 +8,12 @@ public class Video : BaseEntity
 {
     private Video()
     {
-        this._categorias = [];
+        _categorias = [];
     }
 
     private readonly List<Categoria> _categorias;
 
-    public IReadOnlyCollection<Categoria> Categorias => this._categorias.AsReadOnly();
+    public IReadOnlyCollection<Categoria> Categorias => _categorias.AsReadOnly();
 
     public string Descricao { get; private set; } = string.Empty;
 
@@ -64,63 +64,51 @@ public class Video : BaseEntity
     {
         DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
-        if (!this._categorias.Contains(categoria))
+        if (!_categorias.Contains(categoria))
         {
-            this._categorias.Add(categoria);
-            this.Update();
+            _categorias.Add(categoria);
+            Update();
         }
     }
 
     public void AtualizarDados(string titulo, string descricao, string url)
     {
-        this.Titulo = titulo;
-        this.Descricao = descricao;
-        this.Url = Url.Create(url);
-        this.Validate();
-        this.Update();
+        Titulo = titulo;
+        Descricao = descricao;
+        Url = Url.Create(url);
+        Validate();
+        Update();
     }
 
     public void RemoverCategoria(Categoria categoria)
     {
         DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
-        if (this._categorias.Contains(categoria))
+        if (_categorias.Contains(categoria))
         {
-            this._categorias.Remove(categoria);
-            this.Update();
+            _categorias.Remove(categoria);
+            Update();
         }
     }
 
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult()
-            .AddErrorIfNullOrWhiteSpace(this.Titulo, $"{nameof(this.Titulo)} é obrigatório", nameof(this.Titulo))
+            .AddErrorIfNullOrWhiteSpace(Titulo, $"{nameof(Titulo)} é obrigatório", nameof(Titulo))
+            .AddErrorIf(Titulo.Length < 3, $"{nameof(Titulo)} deve ter pelo menos 3 caracteres", nameof(Titulo))
+            .AddErrorIf(Titulo.Length > 50, $"{nameof(Titulo)} deve ter no máximo 50 caracteres", nameof(Titulo))
+            .AddErrorIfNullOrWhiteSpace(Descricao, $"{nameof(Descricao)} é obrigatório", nameof(Descricao))
             .AddErrorIf(
-                this.Titulo.Length < 3,
-                $"{nameof(this.Titulo)} deve ter pelo menos 3 caracteres",
-                nameof(this.Titulo)
-            )
-            .AddErrorIf(
-                this.Titulo.Length > 50,
-                $"{nameof(this.Titulo)} deve ter no máximo 50 caracteres",
-                nameof(this.Titulo)
-            )
-            .AddErrorIfNullOrWhiteSpace(
-                this.Descricao,
-                $"{nameof(this.Descricao)} é obrigatório",
-                nameof(this.Descricao)
+                Descricao.Length < 5,
+                $"{nameof(Descricao)} deve ter pelo menos 5 caracteres",
+                nameof(Descricao)
             )
             .AddErrorIf(
-                this.Descricao.Length < 5,
-                $"{nameof(this.Descricao)} deve ter pelo menos 5 caracteres",
-                nameof(this.Descricao)
+                Descricao.Length > 200,
+                $"{nameof(Descricao)} deve ter no máximo 200 caracteres",
+                nameof(Descricao)
             )
-            .AddErrorIf(
-                this.Descricao.Length > 200,
-                $"{nameof(this.Descricao)} deve ter no máximo 200 caracteres",
-                nameof(this.Descricao)
-            )
-            .AddErrorIf(this.UsuarioId <= 0, $"{nameof(this.Descricao)} é obrigatório", nameof(this.Descricao));
+            .AddErrorIf(UsuarioId <= 0, $"{nameof(Descricao)} é obrigatório", nameof(Descricao));
 
         validationResult.ThrowIfInvalid();
 
@@ -129,8 +117,8 @@ public class Video : BaseEntity
 
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
     {
-        this.Id = id;
-        this.CreatedAt = createdAt;
-        this.UpdatedAt = updatedAt;
+        Id = id;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
     }
 }

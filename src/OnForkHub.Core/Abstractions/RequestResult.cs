@@ -8,8 +8,8 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 {
     public RequestResult()
     {
-        this.Status = ECustomResultStatus.Success;
-        this.ValidationResult = new ValidationResult();
+        Status = ECustomResultStatus.Success;
+        ValidationResult = new ValidationResult();
     }
 
     protected Dictionary<string, List<string>>? _entityErrors;
@@ -18,13 +18,13 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public DateTime Date { get; set; } = DateTime.Now;
 
-    public Dictionary<string, List<string>> EntityErrors => this._entityErrors ??= [];
+    public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= [];
 
     public EntityWarning? EntityWarning { get; protected init; }
 
     public Error? Error { get; protected init; }
 
-    public List<string> GeneralErrors => this._generalErrors ??= [];
+    public List<string> GeneralErrors => _generalErrors ??= [];
 
     public string Id { get; set; } = string.Empty;
 
@@ -124,31 +124,31 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public void AddEntityError(string entity, string message)
     {
-        this.Status = ECustomResultStatus.EntityHasError;
-        if (!this.EntityErrors.TryGetValue(entity, out var value))
+        Status = ECustomResultStatus.EntityHasError;
+        if (!EntityErrors.TryGetValue(entity, out var value))
         {
             value = [];
-            this.EntityErrors[entity] = value;
+            EntityErrors[entity] = value;
         }
         value.Add(message);
     }
 
     public void AddError(string message)
     {
-        this.Status = ECustomResultStatus.HasError;
-        this.GeneralErrors.Add(message);
+        Status = ECustomResultStatus.HasError;
+        GeneralErrors.Add(message);
     }
 
     public override string ToString()
     {
         var messages = new List<string>();
 
-        if (this.GeneralErrors.Count != 0)
+        if (GeneralErrors.Count != 0)
         {
-            messages.AddRange(this.GeneralErrors);
+            messages.AddRange(GeneralErrors);
         }
 
-        foreach (var entityError in this.EntityErrors)
+        foreach (var entityError in EntityErrors)
         {
             foreach (var error in entityError.Value)
             {
@@ -156,9 +156,9 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
             }
         }
 
-        if (this.ValidationResult?.Errors != null && this.ValidationResult.Errors.Count != 0)
+        if (ValidationResult?.Errors != null && ValidationResult.Errors.Count != 0)
         {
-            foreach (var validationError in this.ValidationResult.Errors)
+            foreach (var validationError in ValidationResult.Errors)
             {
                 messages.Add($"{validationError.Field}: {validationError.Message}");
             }

@@ -13,14 +13,14 @@ public class EntidadeInvalidaTestFixture : BaseEntity
 
     public void ExecutarUpdate()
     {
-        this.Validate();
-        this.Update();
+        Validate();
+        Update();
     }
 
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        ValidationResult.ThrowErrorIf(() => this.Id <= 0, "Id deve ser maior que zero");
+        ValidationResult.ThrowErrorIf(() => Id <= 0, "Id deve ser maior que zero");
         return validationResult;
     }
 }

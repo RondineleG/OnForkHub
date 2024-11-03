@@ -4,18 +4,18 @@ public abstract class ValueObject
 {
     public override bool Equals(object obj)
     {
-        if ((obj == null) || (obj.GetType() != this.GetType()))
+        if ((obj == null) || (obj.GetType() != GetType()))
         {
             return false;
         }
 
         var other = (ValueObject)obj;
-        return this.GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
+        return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
     }
 
     public override int GetHashCode()
     {
-        return this.GetEqualityComponents().Select(x => (x != null) ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
+        return GetEqualityComponents().Select(x => (x != null) ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
     }
 
     protected static bool EqualOperator(ValueObject left, ValueObject right)
