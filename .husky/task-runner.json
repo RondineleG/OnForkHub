@@ -28,7 +28,8 @@
             "name": "dotnet-test",
             "group": "pre-push-operations",
             "command": "dotnet",
-            "args": ["test", "--filter", "Category=Unit"]
-          }
+            "args": ["test", "--filter", "Category=Unit", "--logger", "console;verbosity=detailed"]
+        }
+        
     ]
 }

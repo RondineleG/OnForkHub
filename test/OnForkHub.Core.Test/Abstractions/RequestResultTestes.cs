@@ -95,11 +95,11 @@ public class RequestResultTestes
         resultado.ValidationResult.Errors.First().Field.Should().Be(nomeCampo);
     }
 
-    private static readonly string[] expected = ["Erro geral 1", "Erro geral 2"];
-
     [Fact]
     public void DeveAdicionarMultiplosErrosGerais()
     {
+        string[] expected = ["Erro geral 1", "Erro geral 2"];
+
         var resultado = new RequestResult();
         resultado.AddError("Erro geral 1");
         resultado.AddError("Erro geral 2");
@@ -118,11 +118,16 @@ public class RequestResultTestes
             new("Campo2", "Erro de validação 2"),
         };
 
-        var resultado = RequestResult.WithValidations(validacoes);
+        var resultado = RequestResult.WithValidations(validacoes.ToArray());
 
         resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
-        resultado.Validations.Should().HaveCount(2);
-        resultado.Validations.Should().Contain(validacoes);
+        resultado.ValidationResult.Errors.Should().HaveCount(2);
+        resultado
+            .ValidationResult.Errors.Should()
+            .Contain(error => error.Message == "Erro de validação 1" && error.Field == "Campo1");
+        resultado
+            .ValidationResult.Errors.Should()
+            .Contain(error => error.Message == "Erro de validação 2" && error.Field == "Campo2");
     }
 
     [Fact]
@@ -184,6 +189,8 @@ public class RequestResultTestes
     [Fact]
     public void DeveAdicionarMultiplosErrosParaMesmaEntidade()
     {
+        string[] expected = ["Erro de entidade 1", "Erro de entidade 2"];
+
         var resultado = new RequestResult();
         var entidade = "EntidadeTeste";
 
@@ -208,12 +215,15 @@ public class RequestResultTestes
     [Fact]
     public void DeveAdicionarValidacaoComPropriedadeEDescricao()
     {
-        var resultado = RequestResult.WithValidations("PropriedadeTeste", "Erro de validação de teste");
+        var resultado = RequestResult.WithValidations(new Validation("PropriedadeTeste", "Erro de validação de teste"));
 
         resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
-        resultado.Validations.Should().ContainSingle();
-        resultado.Validations.First().PropertyName.Should().Be("PropriedadeTeste");
-        resultado.Validations.First().Description.Should().Be("Erro de validação de teste");
+
+        resultado.ValidationResult.Errors.Should().ContainSingle();
+
+        var erro = resultado.ValidationResult.Errors.First();
+        erro.Field.Should().Be("PropriedadeTeste");
+        erro.Message.Should().Be("Erro de validação de teste");
     }
 
     [Fact]

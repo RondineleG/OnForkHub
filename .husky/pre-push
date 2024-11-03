@@ -4,6 +4,9 @@
 echo "🚀 Pronto para enviar as mudanças!"
 
 echo "🧪 Executando testes unitários..."
-dotnet husky run --name dotnet-test
+dotnet test --filter "Category=Unit" --logger "console;verbosity=detailed" || (
+    echo "❌ Alguns testes falharam. Corrija os testes antes de fazer push."
+    exit 1
+)
 
-echo "✅ Concluídas as alterações de pré-push"
+echo "✅ Todos os testes passaram!"
