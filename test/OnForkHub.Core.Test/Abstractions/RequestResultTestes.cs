@@ -6,6 +6,7 @@ namespace OnForkHub.Core.Test.Abstractions;
 public class RequestResultTestes
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveInicializarComStatusSucesso()
     {
         var resultado = new RequestResult();
@@ -17,6 +18,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoErroQuandoInformadoMensagem()
     {
         var mensagemErro = "Mensagem de erro de teste";
@@ -29,6 +31,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoErroQuandoInformadoExcecao()
     {
         var excecao = new Exception("Exceção de teste");
@@ -41,6 +44,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoErroQuandoInformadoListaErros()
     {
         var erros = new List<string> { "Erro 1", "Erro 2" };
@@ -52,6 +56,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErroDeEntidade()
     {
         var resultado = new RequestResult();
@@ -66,6 +71,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoEntidadeNaoEncontrada()
     {
         var entidade = "EntidadeTeste";
@@ -82,6 +88,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoErroValidacao()
     {
         var mensagemErro = "Erro de validação";
@@ -96,6 +103,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarMultiplosErrosGerais()
     {
         string[] expected = ["Erro geral 1", "Erro geral 2"];
@@ -110,6 +118,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarValidacoesComoColecao()
     {
         var validacoes = new List<Validation>
@@ -131,6 +140,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveFormatarMensagensDeErroCorretamente()
     {
         var resultado = new RequestResult();
@@ -148,6 +158,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErroComListaEExcecao()
     {
         var erros = new List<string> { "Erro 1", "Erro 2" };
@@ -161,6 +172,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveInicializarCamposDeErroSomenteQuandoAcessados()
     {
         var resultado = new RequestResult();
@@ -173,6 +185,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveFormatarMensagensDeValidacaoNoToString()
     {
         var resultado = RequestResult.WithValidations(
@@ -187,6 +200,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarMultiplosErrosParaMesmaEntidade()
     {
         string[] expected = ["Erro de entidade 1", "Erro de entidade 2"];
@@ -203,6 +217,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoSemConteudo()
     {
         var resultado = RequestResult.WithNoContent();
@@ -213,6 +228,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarValidacaoComPropriedadeEDescricao()
     {
         var resultado = RequestResult.WithValidations(new Validation("PropriedadeTeste", "Erro de validação de teste"));
@@ -227,6 +243,7 @@ public class RequestResultTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarErroComObjetoErroPersonalizado()
     {
         var erroPersonalizado = new Error("Erro personalizado");

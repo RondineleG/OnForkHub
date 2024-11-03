@@ -6,6 +6,7 @@ namespace OnForkHub.Core.Test.Abstractions;
 public class RequestResultGenericoTestes
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarSucessoComDados()
     {
         // Arrange
@@ -20,6 +21,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveConverterDadosParaResultadoSucesso()
     {
         // Arrange
@@ -34,6 +36,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveConverterExcecaoParaResultadoErro()
     {
         // Arrange
@@ -49,6 +52,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoComValidacoes()
     {
         // Arrange
@@ -64,6 +68,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarResultadoSemConteudo()
     {
         // Act
@@ -75,6 +80,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveInicializarRequestResultGenericoSemDados()
     {
         // Act
@@ -88,6 +94,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErrosDeEntidadeEmRequestResultGenerico()
     {
         var errosDeEntidade = new Dictionary<string, List<string>>
@@ -109,6 +116,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarErroComObjetoErroEmRequestResultGenerico()
     {
         var error = new Error("Erro específico de teste");
@@ -120,6 +128,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarSemConteudoEmRequestResultGenerico()
     {
         var resultado = RequestResult<string>.WithNoContent();
@@ -129,6 +138,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErroDeValidacaoSemNomeDeCampo()
     {
         var mensagemErro = "Erro de validação genérico";
@@ -142,6 +152,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveConverterArrayDeValidacoesParaRequestResultGenerico()
     {
         var validacoes = new[]
@@ -157,6 +168,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveFormatarMensagensDeErroCorretamenteEmRequestResultGenerico()
     {
         var resultado = new RequestResult<string>();
@@ -170,6 +182,7 @@ public class RequestResultGenericoTestes
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarValidacaoComNomeCampoEDescricaoEmRequestResultGenerico()
     {
         var resultado = RequestResult<string>.WithValidations("CampoTeste", "Erro de validação teste");

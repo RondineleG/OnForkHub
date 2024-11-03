@@ -5,6 +5,7 @@ namespace OnForkHub.Core.Test.Validations;
 public class ValidationResultTests
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErroQuandoCondicaoForVerdadeira()
     {
         var result = new ValidationResult().AddErrorIf(true, "Erro de condição", "Campo");
@@ -16,6 +17,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErroQuandoStringEstiverApenasComEspacos()
     {
         var valor = "   ";
@@ -30,6 +32,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErroQuandoStringEstiverVazia()
     {
         var valor = string.Empty;
@@ -40,6 +43,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAdicionarErroQuandoValorForNulo()
     {
         string? valorNulo = null;
@@ -50,6 +54,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveCombinarValidacoesComErro()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -62,6 +67,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveLancarExcecaoComMensagemQuandoInvalido()
     {
         var mensagemErro = "Erro de validação";
@@ -73,6 +79,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveLancarExcecaoQuandoTentarMesclarComNulo()
     {
         var result = new ValidationResult();
@@ -83,6 +90,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveManterErrosQuandoMesclarComOutroResultadoDeErro()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -96,6 +104,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveManterSucessoAoMesclarComOutroSucesso()
     {
         var result1 = ValidationResult.Success();
@@ -108,6 +117,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarErroComCampoEspecificoAoUsarFailure()
     {
         var result = ValidationResult.Failure("Erro específico", "CampoEspecifico");
@@ -119,6 +129,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarErroComMultiplosCamposQuandoAdicionarErros()
     {
         var erros = new List<(string Message, string Field)>
@@ -134,6 +145,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarFalhaQuandoChamarFailure()
     {
         var mensagemErro = "Erro de validação";
@@ -144,6 +156,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarPrimeiraFalhaQuandoUsarOperadorE()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -156,6 +169,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarSucessoQuandoChamarSuccess()
     {
         var result = ValidationResult.Success();
@@ -165,6 +179,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarSucessoQuandoTodasAsValidacoesSaoSucesso()
     {
         var result1 = ValidationResult.Success();
@@ -177,6 +192,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveRetornarSucessoQuandoUsarOperadorEComTodosValidos()
     {
         var result1 = ValidationResult.Success();
@@ -202,6 +218,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void NaoDeveAdicionarErroQuandoCondicaoForFalsa()
     {
         var result = new ValidationResult().AddErrorIf(false, "Erro de condição", "Campo");
@@ -211,6 +228,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void NaoDeveAdicionarErroQuandoValorNaoForNulo()
     {
         var valor = "texto";
@@ -221,6 +239,7 @@ public class ValidationResultTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void NaoDeveLancarExcecaoQuandoValido()
     {
         var result = ValidationResult.Success();

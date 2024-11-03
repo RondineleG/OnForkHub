@@ -5,7 +5,7 @@ namespace OnForkHub.Core.Test.Exceptions;
 public class DomainExceptionTests
 {
     [Fact(DisplayName = nameof(DeveLancarDomainExceptionQuandoCondicaoForVerdadeira))]
-    [Trait("Domain", "Exceptions - DomainException")]
+    [Trait("Category", "Unit")]
     public void DeveLancarDomainExceptionQuandoCondicaoForVerdadeira()
     {
         var message = "Erro de domínio";
@@ -16,6 +16,7 @@ public class DomainExceptionTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void NaoDeveLancarDomainExceptionQuandoCondicaoForFalsa()
     {
         Action action = () => DomainException.ThrowErrorWhen(() => false, "Erro de domínio");
@@ -24,6 +25,7 @@ public class DomainExceptionTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void ThrowWhenInvalidComErroUnicoDeveLancarExcecaoComMensagemDoErro()
     {
         var result = ValidationResult.Failure("Erro único");
@@ -34,6 +36,7 @@ public class DomainExceptionTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void ThrowWhenInvalidDeveLancarExcecaoQuandoHaErros()
     {
         var result1 = ValidationResult.Failure("Erro 1");
@@ -45,6 +48,7 @@ public class DomainExceptionTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void ThrowWhenInvalidNaoDeveLancarExcecaoQuandoNaoHaErros()
     {
         var result1 = ValidationResult.Success();
@@ -56,6 +60,7 @@ public class DomainExceptionTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void ValidateDeveRetornarFalhaQuandoCondicaoForVerdadeira()
     {
         var message = "Erro de domínio";
@@ -66,6 +71,7 @@ public class DomainExceptionTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void ValidateDeveRetornarSucessoQuandoCondicaoForFalsa()
     {
         var message = "Erro de domínio";

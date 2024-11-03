@@ -3,6 +3,7 @@ namespace OnForkHub.Core.Test.Entities;
 public class UsuarioTest
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveCriarUsuarioComSucesso()
     {
         var usuario = Usuario.Create("Jo�o Silva", "joao@email.com");
@@ -18,6 +19,7 @@ public class UsuarioTest
     [InlineData("")]
     [InlineData(" ")]
     [InlineData("Jo")]
+    [Trait("Category", "Unit")]
     public void DeveLancarExcecaoQuandoNomeInvalido(string nomeInvalido)
     {
         Action act = () => Usuario.Create(nomeInvalido, "email@test.com");

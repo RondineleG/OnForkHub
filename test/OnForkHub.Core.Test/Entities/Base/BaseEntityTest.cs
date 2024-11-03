@@ -3,6 +3,7 @@ namespace OnForkHub.Core.Test.Entities.Base;
 public class BaseEntityTests
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public void CreatedAtNaoDeveSerDefaultAoInstanciarEntidade()
     {
         var entidade = new EntidadeValidaTestFixture();
@@ -10,6 +11,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAtualizarDataAtualizacaoQuandoExecutarUpdate()
     {
         var entidade = new EntidadeValidaTestFixture();
@@ -22,6 +24,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveAtualizarUpdatedAtParaHorarioRecenteAposExecutarUpdateVariasVezes()
     {
         var entidade = new EntidadeValidaTestFixture();
@@ -54,6 +57,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveDefinirTodasPropriedadesQuandoInformarDataAtualizacao()
     {
         var id = 1L;
@@ -68,6 +72,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveInicializarPropriedadesQuandoUsarConstrutorPadrao()
     {
         var entidade = new EntidadeValidaTestFixture();
@@ -92,6 +97,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveLancarExcecaoParaIdComValorMaximoNegativo()
     {
         var dataCriacao = DateTime.UtcNow;
@@ -102,6 +108,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveLancarExcecaoQuandoEntidadeNaoForValidaAoExecutarUpdate()
     {
         var entidade = new EntidadeInvalidaTestFixture();
@@ -125,6 +132,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void DeveManterCreatedAtNoFusoHorarioUtc()
     {
         var dataCriacao = new DateTime(2022, 1, 1, 12, 0, 0, DateTimeKind.Utc);
@@ -135,6 +143,7 @@ public class BaseEntityTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public void NaoDeveAlterarUpdatedAtSemChamarMetodoUpdate()
     {
         var entidade = new EntidadeValidaTestFixture();
