@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Abstractions.Base;
+using OnForkHub.Core.Abstractions.Base;
 using OnForkHub.Core.Enums;
 using OnForkHub.Core.Validations;
 
@@ -8,8 +8,8 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 {
     public RequestResult()
     {
-        Status = ECustomResultStatus.Success;
-        ValidationResult = new ValidationResult();
+        this.Status = ECustomResultStatus.Success;
+        this.ValidationResult = new ValidationResult();
     }
 
     protected Dictionary<string, List<string>>? _entityErrors;
@@ -18,14 +18,13 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public DateTime Date { get; set; } = DateTime.Now;
 
-    public Dictionary<string, List<string>> EntityErrors =>
-        _entityErrors ??= new Dictionary<string, List<string>>();
+    public Dictionary<string, List<string>> EntityErrors => this._entityErrors ??= [];
 
     public EntityWarning? EntityWarning { get; protected init; }
 
     public Error? Error { get; protected init; }
 
-    public List<string> GeneralErrors => _generalErrors ??= new List<string>();
+    public List<string> GeneralErrors => this._generalErrors ??= [];
 
     public string Id { get; set; } = string.Empty;
 
@@ -35,8 +34,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public ValidationResult ValidationResult { get; protected set; }
 
-    public IEnumerable<Validation> Validations { get; protected init; } =
-        Enumerable.Empty<Validation>();
+    public IEnumerable<Validation> Validations { get; protected init; } = Enumerable.Empty<Validation>();
 
     public static RequestResult EntityAlreadyExists(string entity, object id, string description)
     {
@@ -60,11 +58,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public static RequestResult WithError(string message)
     {
-        return new RequestResult
-        {
-            Status = ECustomResultStatus.HasError,
-            Error = new Error(message),
-        };
+        return new RequestResult { Status = ECustomResultStatus.HasError, Error = new Error(message) };
     }
 
     public static RequestResult WithError(Exception exception)
@@ -74,20 +68,12 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public static RequestResult WithError(List<string> generalErrors)
     {
-        return new RequestResult
-        {
-            Status = ECustomResultStatus.HasError,
-            _generalErrors = generalErrors,
-        };
+        return new RequestResult { Status = ECustomResultStatus.HasError, _generalErrors = generalErrors };
     }
 
     public static RequestResult WithError(Dictionary<string, List<string>> entityErrors)
     {
-        return new RequestResult
-        {
-            Status = ECustomResultStatus.EntityHasError,
-            _entityErrors = entityErrors,
-        };
+        return new RequestResult { Status = ECustomResultStatus.EntityHasError, _entityErrors = entityErrors };
     }
 
     public static RequestResult WithError(Error error)
@@ -138,31 +124,31 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public void AddEntityError(string entity, string message)
     {
-        Status = ECustomResultStatus.EntityHasError;
-        if (!EntityErrors.TryGetValue(entity, out var value))
+        this.Status = ECustomResultStatus.EntityHasError;
+        if (!this.EntityErrors.TryGetValue(entity, out var value))
         {
-            value = new List<string>();
-            EntityErrors[entity] = value;
+            value = [];
+            this.EntityErrors[entity] = value;
         }
         value.Add(message);
     }
 
     public void AddError(string message)
     {
-        Status = ECustomResultStatus.HasError;
-        GeneralErrors.Add(message);
+        this.Status = ECustomResultStatus.HasError;
+        this.GeneralErrors.Add(message);
     }
 
     public override string ToString()
     {
         var messages = new List<string>();
 
-        if (GeneralErrors.Count != 0)
+        if (this.GeneralErrors.Count != 0)
         {
-            messages.AddRange(GeneralErrors);
+            messages.AddRange(this.GeneralErrors);
         }
 
-        foreach (var entityError in EntityErrors)
+        foreach (var entityError in this.EntityErrors)
         {
             foreach (var error in entityError.Value)
             {
@@ -170,9 +156,9 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
             }
         }
 
-        if (ValidationResult?.Errors != null && ValidationResult.Errors.Any())
+        if (this.ValidationResult?.Errors != null && this.ValidationResult.Errors.Count != 0)
         {
-            foreach (var validationError in ValidationResult.Errors)
+            foreach (var validationError in this.ValidationResult.Errors)
             {
                 messages.Add($"{validationError.Field}: {validationError.Message}");
             }
@@ -188,11 +174,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         ECustomResultStatus status
     )
     {
-        return new RequestResult
-        {
-            Status = status,
-            EntityWarning = new EntityWarning(entity, id, description),
-        };
+        return new RequestResult { Status = status, EntityWarning = new EntityWarning(entity, id, description) };
     }
 }
 
@@ -200,26 +182,19 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 {
     public T? Data { get; private init; }
 
-    public static new RequestResult<T> EntityAlreadyExists(
-        string entity,
-        object id,
-        string description
-    )
+    public static new RequestResult<T> EntityAlreadyExists(string entity, object id, string description)
     {
-        return (RequestResult<T>)
-            CreateEntityError(entity, id, description, ECustomResultStatus.EntityAlreadyExists);
+        return (RequestResult<T>)CreateEntityError(entity, id, description, ECustomResultStatus.EntityAlreadyExists);
     }
 
     public static new RequestResult<T> EntityHasError(string entity, object id, string description)
     {
-        return (RequestResult<T>)
-            CreateEntityError(entity, id, description, ECustomResultStatus.EntityHasError);
+        return (RequestResult<T>)CreateEntityError(entity, id, description, ECustomResultStatus.EntityHasError);
     }
 
     public static new RequestResult<T> EntityNotFound(string entity, object id, string description)
     {
-        return (RequestResult<T>)
-            CreateEntityError(entity, id, description, ECustomResultStatus.EntityNotFound);
+        return (RequestResult<T>)CreateEntityError(entity, id, description, ECustomResultStatus.EntityNotFound);
     }
 
     public static implicit operator RequestResult<T>(T data)
@@ -249,11 +224,7 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> WithError(string message)
     {
-        return new RequestResult<T>
-        {
-            Status = ECustomResultStatus.HasError,
-            Error = new Error(message),
-        };
+        return new RequestResult<T> { Status = ECustomResultStatus.HasError, Error = new Error(message) };
     }
 
     public static new RequestResult<T> WithError(Exception exception)
@@ -263,20 +234,12 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> WithError(List<string> generalErrors)
     {
-        return new RequestResult<T>
-        {
-            Status = ECustomResultStatus.HasError,
-            _generalErrors = generalErrors,
-        };
+        return new RequestResult<T> { Status = ECustomResultStatus.HasError, _generalErrors = generalErrors };
     }
 
     public static new RequestResult<T> WithError(Dictionary<string, List<string>> entityErrors)
     {
-        return new RequestResult<T>
-        {
-            Status = ECustomResultStatus.EntityHasError,
-            _entityErrors = entityErrors,
-        };
+        return new RequestResult<T> { Status = ECustomResultStatus.EntityHasError, _entityErrors = entityErrors };
     }
 
     public static new RequestResult<T> WithError(Error error)
@@ -289,10 +252,7 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
         return new RequestResult<T> { Status = ECustomResultStatus.NoContent };
     }
 
-    public static new RequestResult<T> WithValidationError(
-        string errorMessage,
-        string fieldName = ""
-    )
+    public static new RequestResult<T> WithValidationError(string errorMessage, string fieldName = "")
     {
         var result = new RequestResult<T> { Status = ECustomResultStatus.HasValidation };
         result.ValidationResult.AddError(errorMessage, fieldName);
@@ -301,11 +261,7 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> WithValidations(params Validation[] validations)
     {
-        return new RequestResult<T>
-        {
-            Status = ECustomResultStatus.HasValidation,
-            Validations = validations,
-        };
+        return new RequestResult<T> { Status = ECustomResultStatus.HasValidation, Validations = validations };
     }
 
     public static new RequestResult<T> WithValidations(string propertyName, string description)

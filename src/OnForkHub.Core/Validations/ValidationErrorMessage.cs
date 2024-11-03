@@ -1,29 +1,24 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace OnForkHub.Core.Validations;
 
-public sealed class ValidationErrorMessage
+public sealed class ValidationErrorMessage(string message, string field = "")
 {
-    public ValidationErrorMessage(string message, string field = "")
+    public string Field { get; } = field ?? string.Empty;
+
+    public string Message { get; } = message ?? throw new ArgumentNullException(nameof(message));
+
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
+
+    public override string ToString()
     {
-        Message = message ?? throw new ArgumentNullException(nameof(message));
-        Field = field ?? string.Empty;
-        Timestamp = DateTime.UtcNow;
-    }
-
-    public string Field { get; }
-
-    public string Message { get; }
-
-    public DateTime Timestamp { get; }
-
-    public override string ToString() =>
-        JsonSerializer.Serialize(
+        return JsonSerializer.Serialize(
             new
             {
-                Field,
-                Message,
-                Timestamp,
+                this.Field,
+                this.Message,
+                this.Timestamp,
             }
         );
+    }
 }

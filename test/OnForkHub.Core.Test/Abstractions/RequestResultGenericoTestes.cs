@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Abstractions;
+using OnForkHub.Core.Abstractions;
 using OnForkHub.Core.Enums;
 
 namespace OnForkHub.Core.Test.Abstractions;
@@ -23,7 +23,7 @@ public class RequestResultGenericoTestes
     public void DeveConverterDadosParaResultadoSucesso()
     {
         // Arrange
-        string dados = "Dados de teste";
+        var dados = "Dados de teste";
 
         // Act
         RequestResult<string> resultado = dados;
@@ -172,10 +172,7 @@ public class RequestResultGenericoTestes
     [Fact]
     public void DeveAdicionarValidacaoComNomeCampoEDescricaoEmRequestResultGenerico()
     {
-        var resultado = RequestResult<string>.WithValidations(
-            "CampoTeste",
-            "Erro de validação teste"
-        );
+        var resultado = RequestResult<string>.WithValidations("CampoTeste", "Erro de validação teste");
 
         resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
         resultado.Validations.Should().ContainSingle();

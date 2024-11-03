@@ -88,9 +88,7 @@ public class BaseEntityTests
 
         Action acao = () => new EntidadeValidaTestFixture(id, dataCriacao);
 
-        acao.Should()
-           .Throw<DomainException>()
-           .WithMessage("Id deve ser maior que zero");
+        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
     }
 
     [Fact]
@@ -100,9 +98,7 @@ public class BaseEntityTests
 
         Action acao = () => new EntidadeValidaTestFixture(-long.MaxValue, dataCriacao);
 
-        acao.Should()
-           .Throw<DomainException>()
-           .WithMessage("Id deve ser maior que zero");
+        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
     }
 
     [Fact]
@@ -110,10 +106,9 @@ public class BaseEntityTests
     {
         var entidade = new EntidadeInvalidaTestFixture();
 
-        Action acao = () => entidade.ExecutarUpdate();
+        Action acao = entidade.ExecutarUpdate;
 
-        acao.Should().Throw<DomainException>()
-            .WithMessage("Id deve ser maior que zero");
+        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
     }
 
     [Theory]
@@ -126,9 +121,7 @@ public class BaseEntityTests
 
         Action acao = () => new EntidadeValidaTestFixture(id, dataCriacao);
 
-        acao.Should()
-           .Throw<DomainException>()
-           .WithMessage("Id deve ser maior que zero");
+        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
     }
 
     [Fact]

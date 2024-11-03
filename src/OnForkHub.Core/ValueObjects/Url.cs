@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.ValueObjects;
+namespace OnForkHub.Core.ValueObjects;
 
 public class Url : ValueObject
 {
@@ -8,10 +8,7 @@ public class Url : ValueObject
 
     public static Url Create(string url)
     {
-        DomainException.ThrowErrorWhen(
-            () => string.IsNullOrWhiteSpace(url),
-            "URL não pode ser vazia"
-        );
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url), "URL não pode ser vazia");
 
         var urlObj = new Url { Valor = url };
         urlObj.Validate();
@@ -20,14 +17,11 @@ public class Url : ValueObject
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Valor.ToLower();
+        yield return this.Valor.ToLower(System.Globalization.CultureInfo.CurrentCulture);
     }
 
     private void Validate()
     {
-        DomainException.ThrowErrorWhen(
-            () => !Uri.IsWellFormedUriString(Valor, UriKind.Absolute),
-            "URL inválida"
-        );
+        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(this.Valor, UriKind.Absolute), "URL inválida");
     }
 }

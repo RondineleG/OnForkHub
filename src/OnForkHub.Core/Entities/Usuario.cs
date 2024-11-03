@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Entities.Base;
+using OnForkHub.Core.Entities.Base;
 using OnForkHub.Core.Validations;
 using OnForkHub.Core.ValueObjects;
 
@@ -8,7 +8,7 @@ public class Usuario : BaseEntity
 {
     private Usuario()
     {
-        _videos = new List<Video>();
+        this._videos = [];
     }
 
     private readonly List<Video> _videos;
@@ -17,7 +17,7 @@ public class Usuario : BaseEntity
 
     public string Nome { get; private set; } = null!;
 
-    public IReadOnlyCollection<Video> Videos => _videos.AsReadOnly();
+    public IReadOnlyCollection<Video> Videos => this._videos.AsReadOnly();
 
     public static Usuario Create(string nome, string email)
     {
@@ -27,13 +27,7 @@ public class Usuario : BaseEntity
         return usuario;
     }
 
-    public static Usuario Load(
-        long id,
-        string nome,
-        string email,
-        DateTime createdAt,
-        DateTime? updatedAt = null
-    )
+    public static Usuario Load(long id, string nome, string email, DateTime createdAt, DateTime? updatedAt = null)
     {
         var usuario = new Usuario { Nome = nome, Email = Email.Create(email) };
 
@@ -45,40 +39,32 @@ public class Usuario : BaseEntity
     public void AdicionarVideo(Video video)
     {
         DomainException.ThrowErrorWhen(() => video == null, "Video não pode ser nulo");
-        _videos.Add(video);
-        Update();
+        this._videos.Add(video);
+        this.Update();
     }
 
     public void AtualizarDados(string nome, string email)
     {
-        Nome = nome;
-        Email = Email.Create(email);
-        Validate();
-        Update();
+        this.Nome = nome;
+        this.Email = Email.Create(email);
+        this.Validate();
+        this.Update();
     }
 
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Nome, "Nome é obrigatório", "Nome");
-        validationResult.AddErrorIf(
-            Nome.Length < 3,
-            "Nome deve ter pelo menos 3 caracteres",
-            "Nome"
-        );
-        validationResult.AddErrorIf(
-            Nome.Length > 50,
-            "Nome deve ter no máximo 50 caracteres",
-            "Nome"
-        );
+        validationResult.AddErrorIfNullOrWhiteSpace(this.Nome, "Nome é obrigatório", "Nome");
+        validationResult.AddErrorIf(this.Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
+        validationResult.AddErrorIf(this.Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
         validationResult.ThrowIfInvalid();
         return validationResult;
     }
 
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
     {
-        Id = id;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
+        this.Id = id;
+        this.CreatedAt = createdAt;
+        this.UpdatedAt = updatedAt;
     }
 }

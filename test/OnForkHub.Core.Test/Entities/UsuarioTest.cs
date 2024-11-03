@@ -5,10 +5,10 @@ public class UsuarioTest
     [Fact]
     public void DeveCriarUsuarioComSucesso()
     {
-        var usuario = Usuario.Create("João Silva", "joao@email.com");
+        var usuario = Usuario.Create("Joï¿½o Silva", "joao@email.com");
 
         usuario.Should().NotBeNull();
-        usuario.Nome.Should().Be("João Silva");
+        usuario.Nome.Should().Be("Joï¿½o Silva");
         usuario.Email.Value.Should().Be("joao@email.com");
         usuario.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         usuario.UpdatedAt.Should().BeNull();

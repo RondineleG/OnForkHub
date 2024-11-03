@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Entities.Base;
+using OnForkHub.Core.Entities.Base;
 using OnForkHub.Core.Validations;
 using OnForkHub.Core.ValueObjects;
 
@@ -8,12 +8,12 @@ public class Video : BaseEntity
 {
     private Video()
     {
-        _categorias = new List<Categoria>();
+        this._categorias = [];
     }
 
     private readonly List<Categoria> _categorias;
 
-    public IReadOnlyCollection<Categoria> Categorias => _categorias.AsReadOnly();
+    public IReadOnlyCollection<Categoria> Categorias => this._categorias.AsReadOnly();
 
     public string Descricao { get; private set; } = string.Empty;
 
@@ -64,63 +64,63 @@ public class Video : BaseEntity
     {
         DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
-        if (!_categorias.Contains(categoria))
+        if (!this._categorias.Contains(categoria))
         {
-            _categorias.Add(categoria);
-            Update();
+            this._categorias.Add(categoria);
+            this.Update();
         }
     }
 
     public void AtualizarDados(string titulo, string descricao, string url)
     {
-        Titulo = titulo;
-        Descricao = descricao;
-        Url = Url.Create(url);
-        Validate();
-        Update();
+        this.Titulo = titulo;
+        this.Descricao = descricao;
+        this.Url = Url.Create(url);
+        this.Validate();
+        this.Update();
     }
 
     public void RemoverCategoria(Categoria categoria)
     {
         DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
-        if (_categorias.Contains(categoria))
+        if (this._categorias.Contains(categoria))
         {
-            _categorias.Remove(categoria);
-            Update();
+            this._categorias.Remove(categoria);
+            this.Update();
         }
     }
 
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult()
-            .AddErrorIfNullOrWhiteSpace(Titulo, $"{nameof(Titulo)} é obrigatório", nameof(Titulo))
+            .AddErrorIfNullOrWhiteSpace(this.Titulo, $"{nameof(this.Titulo)} é obrigatório", nameof(this.Titulo))
             .AddErrorIf(
-                Titulo.Length < 3,
-                $"{nameof(Titulo)} deve ter pelo menos 3 caracteres",
-                nameof(Titulo)
+                this.Titulo.Length < 3,
+                $"{nameof(this.Titulo)} deve ter pelo menos 3 caracteres",
+                nameof(this.Titulo)
             )
             .AddErrorIf(
-                Titulo.Length > 50,
-                $"{nameof(Titulo)} deve ter no máximo 50 caracteres",
-                nameof(Titulo)
+                this.Titulo.Length > 50,
+                $"{nameof(this.Titulo)} deve ter no máximo 50 caracteres",
+                nameof(this.Titulo)
             )
             .AddErrorIfNullOrWhiteSpace(
-                Descricao,
-                $"{nameof(Descricao)} é obrigatório",
-                nameof(Descricao)
+                this.Descricao,
+                $"{nameof(this.Descricao)} é obrigatório",
+                nameof(this.Descricao)
             )
             .AddErrorIf(
-                Descricao.Length < 5,
-                $"{nameof(Descricao)} deve ter pelo menos 5 caracteres",
-                nameof(Descricao)
+                this.Descricao.Length < 5,
+                $"{nameof(this.Descricao)} deve ter pelo menos 5 caracteres",
+                nameof(this.Descricao)
             )
             .AddErrorIf(
-                Descricao.Length > 200,
-                $"{nameof(Descricao)} deve ter no máximo 200 caracteres",
-                nameof(Descricao)
+                this.Descricao.Length > 200,
+                $"{nameof(this.Descricao)} deve ter no máximo 200 caracteres",
+                nameof(this.Descricao)
             )
-            .AddErrorIf(UsuarioId <= 0, $"{nameof(Descricao)} é obrigatório", nameof(Descricao));
+            .AddErrorIf(this.UsuarioId <= 0, $"{nameof(this.Descricao)} é obrigatório", nameof(this.Descricao));
 
         validationResult.ThrowIfInvalid();
 
@@ -129,8 +129,8 @@ public class Video : BaseEntity
 
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
     {
-        Id = id;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
+        this.Id = id;
+        this.CreatedAt = createdAt;
+        this.UpdatedAt = updatedAt;
     }
 }

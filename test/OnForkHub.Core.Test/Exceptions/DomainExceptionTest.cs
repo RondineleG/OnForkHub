@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Validations;
+using OnForkHub.Core.Validations;
 
 namespace OnForkHub.Core.Test.Exceptions;
 
@@ -12,8 +12,7 @@ public class DomainExceptionTests
 
         Action action = () => DomainException.ThrowErrorWhen(() => true, message);
 
-        action.Should().Throw<DomainException>()
-            .WithMessage(message);
+        action.Should().Throw<DomainException>().WithMessage(message);
     }
 
     [Fact]
@@ -31,8 +30,7 @@ public class DomainExceptionTests
 
         Action action = () => DomainException.ThrowWhenInvalid(result);
 
-        action.Should().Throw<DomainException>()
-            .WithMessage("Erro único");
+        action.Should().Throw<DomainException>().WithMessage("Erro único");
     }
 
     [Fact]
@@ -43,8 +41,7 @@ public class DomainExceptionTests
 
         Action action = () => DomainException.ThrowWhenInvalid(result1, result2);
 
-        action.Should().Throw<DomainException>()
-            .WithMessage("Erro 1; Erro 2");
+        action.Should().Throw<DomainException>().WithMessage("Erro 1; Erro 2");
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Validations;
+using OnForkHub.Core.Validations;
 
 namespace OnForkHub.Core.Test.Validations;
 
@@ -33,11 +33,7 @@ public class ValidationResultTests
     public void DeveAdicionarErroQuandoStringEstiverVazia()
     {
         var valor = string.Empty;
-        var result = new ValidationResult().AddErrorIfNullOrEmpty(
-            valor,
-            "O valor não pode estar vazio",
-            "Campo"
-        );
+        var result = new ValidationResult().AddErrorIfNullOrEmpty(valor, "O valor não pode estar vazio", "Campo");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("O valor não pode estar vazio");
@@ -47,11 +43,7 @@ public class ValidationResultTests
     public void DeveAdicionarErroQuandoValorForNulo()
     {
         string? valorNulo = null;
-        var result = new ValidationResult().AddErrorIfNull(
-            valorNulo,
-            "O valor não pode ser nulo",
-            "Campo"
-        );
+        var result = new ValidationResult().AddErrorIfNull(valorNulo, "O valor não pode ser nulo", "Campo");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("O valor não pode ser nulo");
@@ -75,7 +67,7 @@ public class ValidationResultTests
         var mensagemErro = "Erro de validação";
         var result = ValidationResult.Failure(mensagemErro);
 
-        Action action = () => result.ThrowIfInvalid();
+        Action action = result.ThrowIfInvalid;
 
         action.Should().Throw<DomainException>().WithMessage(mensagemErro);
     }
@@ -138,11 +130,7 @@ public class ValidationResultTests
 
         result.IsValid.Should().BeFalse();
         result.Errors.Count.Should().Be(2);
-        result
-            .Errors.Select(e => e.Message)
-            .Should()
-            .Contain("Erro no campo 1")
-            .And.Contain("Erro no campo 2");
+        result.Errors.Select(e => e.Message).Should().Contain("Erro no campo 1").And.Contain("Erro no campo 2");
     }
 
     [Fact]
@@ -208,7 +196,9 @@ public class ValidationResultTests
 
         result.IsValid.Should().Be(esperadoValido);
         if (!esperadoValido)
+        {
             result.ErrorMessage.Should().Be(mensagem);
+        }
     }
 
     [Fact]
@@ -224,11 +214,7 @@ public class ValidationResultTests
     public void NaoDeveAdicionarErroQuandoValorNaoForNulo()
     {
         var valor = "texto";
-        var result = new ValidationResult().AddErrorIfNull(
-            valor,
-            "O valor não pode ser nulo",
-            "Campo"
-        );
+        var result = new ValidationResult().AddErrorIfNull(valor, "O valor não pode ser nulo", "Campo");
 
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
@@ -239,7 +225,7 @@ public class ValidationResultTests
     {
         var result = ValidationResult.Success();
 
-        Action action = () => result.ThrowIfInvalid();
+        Action action = result.ThrowIfInvalid;
 
         action.Should().NotThrow<DomainException>();
     }

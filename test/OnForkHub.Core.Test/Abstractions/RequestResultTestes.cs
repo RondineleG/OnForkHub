@@ -1,6 +1,5 @@
-﻿using OnForkHub.Core.Abstractions;
+using OnForkHub.Core.Abstractions;
 using OnForkHub.Core.Enums;
-using OnForkHub.Core.Validations;
 
 namespace OnForkHub.Core.Test.Abstractions;
 
@@ -96,6 +95,8 @@ public class RequestResultTestes
         resultado.ValidationResult.Errors.First().Field.Should().Be(nomeCampo);
     }
 
+    private static readonly string[] expected = ["Erro geral 1", "Erro geral 2"];
+
     [Fact]
     public void DeveAdicionarMultiplosErrosGerais()
     {
@@ -105,7 +106,7 @@ public class RequestResultTestes
 
         resultado.Status.Should().Be(ECustomResultStatus.HasError);
         resultado.GeneralErrors.Should().HaveCount(2);
-        resultado.GeneralErrors.Should().Contain(new[] { "Erro geral 1", "Erro geral 2" });
+        resultado.GeneralErrors.Should().Contain(expected);
     }
 
     [Fact]
@@ -113,8 +114,8 @@ public class RequestResultTestes
     {
         var validacoes = new List<Validation>
         {
-            new Validation("Campo1", "Erro de validação 1"),
-            new Validation("Campo2", "Erro de validação 2"),
+            new("Campo1", "Erro de validação 1"),
+            new("Campo2", "Erro de validação 2"),
         };
 
         var resultado = RequestResult.WithValidations(validacoes);
@@ -191,10 +192,7 @@ public class RequestResultTestes
 
         resultado.Status.Should().Be(ECustomResultStatus.EntityHasError);
         resultado.EntityErrors.Should().ContainKey(entidade);
-        resultado
-            .EntityErrors[entidade]
-            .Should()
-            .Contain(new[] { "Erro de entidade 1", "Erro de entidade 2" });
+        resultado.EntityErrors[entidade].Should().Contain(expected);
     }
 
     [Fact]
@@ -210,10 +208,7 @@ public class RequestResultTestes
     [Fact]
     public void DeveAdicionarValidacaoComPropriedadeEDescricao()
     {
-        var resultado = RequestResult.WithValidations(
-            "PropriedadeTeste",
-            "Erro de validação de teste"
-        );
+        var resultado = RequestResult.WithValidations("PropriedadeTeste", "Erro de validação de teste");
 
         resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
         resultado.Validations.Should().ContainSingle();
