@@ -1,4 +1,3 @@
-﻿namespace OnForkHub.Core;
+namespace OnForkHub.Core.Entities.Base;
 
 public interface IAggregateRoot { }
-

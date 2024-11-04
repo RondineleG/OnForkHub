@@ -1,33 +1,33 @@
-﻿using OnForkHub.Core.Exceptions;
-using OnForkHub.Core.ValueObjects.Base;
-
 namespace OnForkHub.Core.ValueObjects;
 
 public class Url : ValueObject
 {
-    public string Valor { get; private set; }
-
     private Url() { }
+
+    public string Value { get; private set; }
 
     public static Url Create(string url)
     {
-        DomainException.When(string.IsNullOrWhiteSpace(url),
-            "URL não pode ser vazia");
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url.Trim()), "URL não pode ser vazia");
 
-        var urlObj = new Url { Valor = url };
+        var urlObj = new Url { Value = url };
         urlObj.Validate();
         return urlObj;
     }
 
-    private void Validate()
-    {
-        DomainException.When(!Uri.IsWellFormedUriString(Valor, UriKind.Absolute),
-            "URL inválida");
-    }
-
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Valor.ToLower();
+        yield return Value.ToLower(System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    private void Validate()
+    {
+        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), "URL inválida");
+
+        var uri = new Uri(Value, UriKind.Absolute);
+        DomainException.ThrowErrorWhen(
+            () => uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps,
+            "URL inválida"
+        );
     }
 }
-

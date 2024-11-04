@@ -1,0 +1,27 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🎨 Formatando arquivos C# com CSharpier..."
+dotnet csharpier . --check || (
+    echo "❌ Alguns arquivos precisam de formatação. Executando o formatador..."
+    dotnet csharpier .
+    echo "✅ Arquivos formatados com sucesso!"
+    git add .
+)
+
+echo "🔍 Verificando estilo de código com dotnet format..."
+dotnet format style . --verify-no-changes --verbosity detailed || (
+    echo "❌ Problemas de estilo de código encontrados. Executando o formatador..."
+    dotnet format style .
+    echo "✅ Estilo de código corrigido com sucesso!"
+    git add .
+)
+
+echo "🚀 Pronto para fazer commit das mudanças!"
+
+echo "🛠️ Formatando arquivos em estágio..."
+dotnet husky run --name dotnet-format-csharpier
+dotnet husky run --name dotnet-format-staged-files
+
+echo "✅ Concluídas as alterações de pré-commit"
+dotnet husky run
