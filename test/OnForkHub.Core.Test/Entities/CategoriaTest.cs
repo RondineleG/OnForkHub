@@ -1,5 +1,3 @@
-using OnForkHub.Core.Enums;
-
 namespace OnForkHub.Core.Test.Entities;
 
 public class CategoriaTests
@@ -14,7 +12,7 @@ public class CategoriaTests
 
         var result = Categoria.Create(nome, descricao);
 
-        result.Status.Should().Be(ECustomResultStatus.Success);
+        result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
         result.Data!.Nome.Should().Be(nome);
         result.Data.Descricao.Should().Be(descricao);
@@ -30,7 +28,7 @@ public class CategoriaTests
 
         var result = Categoria.Create(nome, descricao);
 
-        result.Status.Should().Be(ECustomResultStatus.HasError);
+        result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError.Should().NotBeNull();
         result.RequestError!.Description.Should().Contain("Nome é obrigatório");
     }
@@ -47,7 +45,7 @@ public class CategoriaTests
 
         var result = Categoria.Load(id, nome, descricao, createdAt);
 
-        result.Status.Should().Be(ECustomResultStatus.Success);
+        result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
         result.Data!.Id.Should().Be(id);
         result.Data.Nome.Should().Be(nome);
@@ -80,7 +78,7 @@ public class CategoriaTests
 
         var result = categoria.AtualizarDados(novoNome, novaDescricao);
 
-        result.Status.Should().Be(ECustomResultStatus.Success);
+        result.Status.Should().Be(EResultStatus.Success);
         categoria.Nome.Should().Be(novoNome);
         categoria.Descricao.Should().Be(novaDescricao);
     }
@@ -95,7 +93,7 @@ public class CategoriaTests
 
         var result = Categoria.Create(nome, descricao);
 
-        result.Status.Should().Be(ECustomResultStatus.HasError);
+        result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError!.Description.Should().Contain("Nome deve ter no máximo 50 caracteres");
     }
 

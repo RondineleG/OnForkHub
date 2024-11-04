@@ -14,7 +14,7 @@ public class RequestResultGenericoTest
 
         var resultado = RequestResult<string>.Success(dados);
 
-        resultado.Status.Should().Be(ECustomResultStatus.Success);
+        resultado.Status.Should().Be(EResultStatus.Success);
         resultado.Data.Should().Be(dados);
     }
 
@@ -27,7 +27,7 @@ public class RequestResultGenericoTest
 
         RequestResult<string> resultado = dados;
 
-        resultado.Status.Should().Be(ECustomResultStatus.Success);
+        resultado.Status.Should().Be(EResultStatus.Success);
         resultado.Data.Should().Be(dados);
     }
 
@@ -40,7 +40,7 @@ public class RequestResultGenericoTest
 
         RequestResult<string> resultado = excecao;
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.RequestError.Should().NotBeNull();
         resultado.RequestError!.Description.Should().Be(excecao.Message);
     }
@@ -54,7 +54,7 @@ public class RequestResultGenericoTest
 
         var resultado = RequestResult<string>.WithValidations(validacao);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
+        resultado.Status.Should().Be(EResultStatus.HasValidation);
         resultado.Validations.Should().ContainSingle();
         resultado.Validations.First().Should().Be(validacao);
     }
@@ -66,7 +66,7 @@ public class RequestResultGenericoTest
     {
         var resultado = RequestResult<string>.WithNoContent();
 
-        resultado.Status.Should().Be(ECustomResultStatus.NoContent);
+        resultado.Status.Should().Be(EResultStatus.NoContent);
         resultado.Data.Should().BeNull();
     }
 
@@ -77,7 +77,7 @@ public class RequestResultGenericoTest
     {
         var resultado = new RequestResult<string>();
 
-        resultado.Status.Should().Be(ECustomResultStatus.Success);
+        resultado.Status.Should().Be(EResultStatus.Success);
         resultado.Data.Should().BeNull();
         resultado.EntityErrors.Should().NotBeNull().And.BeEmpty();
         resultado.GeneralErrors.Should().NotBeNull().And.BeEmpty();
@@ -98,7 +98,7 @@ public class RequestResultGenericoTest
 
         var resultado = RequestResult<string>.WithError(errosDeEntidade);
 
-        resultado.Status.Should().Be(ECustomResultStatus.EntityHasError);
+        resultado.Status.Should().Be(EResultStatus.EntityHasError);
         resultado.EntityErrors.Should().ContainKey("EntidadeTeste");
         resultado
             .EntityErrors["EntidadeTeste"]
@@ -115,7 +115,7 @@ public class RequestResultGenericoTest
 
         var resultado = RequestResult<string>.WithError(error);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.RequestError.Should().Be(error);
     }
 
@@ -126,7 +126,7 @@ public class RequestResultGenericoTest
     {
         var resultado = RequestResult<string>.WithNoContent();
 
-        resultado.Status.Should().Be(ECustomResultStatus.NoContent);
+        resultado.Status.Should().Be(EResultStatus.NoContent);
         resultado.Data.Should().BeNull();
     }
 
@@ -139,7 +139,7 @@ public class RequestResultGenericoTest
 
         var resultado = RequestResult.WithValidationError(mensagemErro);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
+        resultado.Status.Should().Be(EResultStatus.HasValidation);
         resultado.ValidationResult.Errors.Should().ContainSingle();
         resultado.ValidationResult.Errors.First().Message.Should().Be(mensagemErro);
         resultado.ValidationResult.Errors.First().Field.Should().BeEmpty();
@@ -158,7 +158,7 @@ public class RequestResultGenericoTest
 
         RequestResult<string> resultado = validacoes;
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
+        resultado.Status.Should().Be(EResultStatus.HasValidation);
         resultado.Validations.Should().BeEquivalentTo(validacoes);
     }
 
@@ -184,7 +184,7 @@ public class RequestResultGenericoTest
     {
         var resultado = RequestResult<string>.WithValidations("CampoTeste", "Erro de validação teste");
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
+        resultado.Status.Should().Be(EResultStatus.HasValidation);
         resultado.Validations.Should().ContainSingle();
         resultado.Validations.First().PropertyName.Should().Be("CampoTeste");
         resultado.Validations.First().Description.Should().Be("Erro de validação teste");
@@ -199,7 +199,7 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.WithError(generalErrors);
 
-        result.Status.Should().Be(ECustomResultStatus.HasError);
+        result.Status.Should().Be(EResultStatus.HasError);
         result.GeneralErrors.Should().BeEquivalentTo(generalErrors);
     }
 
@@ -212,7 +212,7 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.WithError(generalErrors);
 
-        result.Status.Should().Be(ECustomResultStatus.HasError);
+        result.Status.Should().Be(EResultStatus.HasError);
         result.GeneralErrors.Should().BeEmpty();
     }
 
@@ -225,7 +225,7 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.WithError(generalErrors);
 
-        result.Status.Should().Be(ECustomResultStatus.HasError);
+        result.Status.Should().Be(EResultStatus.HasError);
         result.GeneralErrors.Should().ContainSingle().Which.Should().Be("Erro único");
     }
 
@@ -237,7 +237,7 @@ public class RequestResultGenericoTest
         var generalErrors = (List<string>)null;
         var result = RequestResult<string>.WithError(generalErrors);
 
-        result.Status.Should().Be(ECustomResultStatus.HasError);
+        result.Status.Should().Be(EResultStatus.HasError);
         result.GeneralErrors.Should().BeEmpty();
     }
 
@@ -250,7 +250,7 @@ public class RequestResultGenericoTest
 
         RequestResult<string> result = validation;
 
-        result.Status.Should().Be(ECustomResultStatus.HasValidation);
+        result.Status.Should().Be(EResultStatus.HasValidation);
         result.Validations.Should().ContainSingle().Which.Should().Be(validation);
     }
 
@@ -286,7 +286,7 @@ public class RequestResultGenericoTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityAlreadyExists e EntityWarning configurado")]
+    [DisplayName("Deve retornar RequestResult com status EntityAlreadyExists e RequestEntityWarning configurado")]
     public void DeveRetornarRequestResultComStatusEntityAlreadyExistsEEntityWarningConfigurado()
     {
         var entity = "Produto";
@@ -295,16 +295,16 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityAlreadyExists(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityAlreadyExists);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().Be(id);
-        result.EntityWarning.Message.Should().Be(description);
+        result.Status.Should().Be(EResultStatus.EntityAlreadyExists);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().Be(description);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityHasError e EntityWarning configurado")]
+    [DisplayName("Deve retornar RequestResult com status EntityHasError e RequestEntityWarning configurado")]
     public void DeveRetornarRequestResultComStatusEntityHasErrorEEntityWarningConfigurado()
     {
         var entity = "Produto";
@@ -313,16 +313,16 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityHasError(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityHasError);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().Be(id);
-        result.EntityWarning.Message.Should().Be(description);
+        result.Status.Should().Be(EResultStatus.EntityHasError);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().Be(description);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityNotFound e EntityWarning configurado")]
+    [DisplayName("Deve retornar RequestResult com status EntityNotFound e RequestEntityWarning configurado")]
     public void DeveRetornarRequestResultComStatusEntityNotFoundEEntityWarningConfigurado()
     {
         var entity = "Produto";
@@ -331,16 +331,16 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityNotFound(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityNotFound);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().Be(id);
-        result.EntityWarning.Message.Should().Be(description);
+        result.Status.Should().Be(EResultStatus.EntityNotFound);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().Be(description);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityAlreadyExists e EntityWarning com entidade vazia")]
+    [DisplayName("Deve retornar RequestResult com status EntityAlreadyExists e RequestEntityWarning com entidade vazia")]
     public void DeveRetornarRequestResultComEntityAlreadyExistsEEntityWarningComEntidadeVazia()
     {
         var entity = "";
@@ -349,16 +349,16 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityAlreadyExists(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityAlreadyExists);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().Be(id);
-        result.EntityWarning.Message.Should().Be(description);
+        result.Status.Should().Be(EResultStatus.EntityAlreadyExists);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().Be(description);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityHasError e EntityWarning com descrição nula")]
+    [DisplayName("Deve retornar RequestResult com status EntityHasError e RequestEntityWarning com descrição nula")]
     public void DeveRetornarRequestResultComEntityHasErrorEEntityWarningComDescricaoNula()
     {
         var entity = "Produto";
@@ -367,16 +367,16 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityHasError(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityHasError);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().Be(id);
-        result.EntityWarning.Message.Should().BeNull();
+        result.Status.Should().Be(EResultStatus.EntityHasError);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().BeNull();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityNotFound e EntityWarning com ID de tipo string")]
+    [DisplayName("Deve retornar RequestResult com status EntityNotFound e RequestEntityWarning com ID de tipo string")]
     public void DeveRetornarRequestResultComEntityNotFoundEEntityWarningComIdTipoString()
     {
         var entity = "Produto";
@@ -385,16 +385,16 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityNotFound(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityNotFound);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().Be(id);
-        result.EntityWarning.Message.Should().Be(description);
+        result.Status.Should().Be(EResultStatus.EntityNotFound);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().Be(description);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityAlreadyExists e EntityWarning com descrição vazia")]
+    [DisplayName("Deve retornar RequestResult com status EntityAlreadyExists e RequestEntityWarning com descrição vazia")]
     public void DeveRetornarRequestResultComEntityAlreadyExistsEEntityWarningComDescricaoVazia()
     {
         var entity = "Produto";
@@ -403,16 +403,16 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityAlreadyExists(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityAlreadyExists);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().Be(id);
-        result.EntityWarning.Message.Should().Be(description);
+        result.Status.Should().Be(EResultStatus.EntityAlreadyExists);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().Be(description);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar RequestResult com status EntityNotFound e EntityWarning com ID nulo")]
+    [DisplayName("Deve retornar RequestResult com status EntityNotFound e RequestEntityWarning com ID nulo")]
     public void DeveRetornarRequestResultComEntityNotFoundEEntityWarningComIdNulo()
     {
         var entity = "Produto";
@@ -421,10 +421,10 @@ public class RequestResultGenericoTest
 
         var result = RequestResult<string>.EntityNotFound(entity, id, description);
 
-        result.Status.Should().Be(ECustomResultStatus.EntityNotFound);
-        result.EntityWarning.Should().NotBeNull();
-        result.EntityWarning!.Name.Should().Be(entity);
-        result.EntityWarning.Id.Should().BeNull();
-        result.EntityWarning.Message.Should().Be(description);
+        result.Status.Should().Be(EResultStatus.EntityNotFound);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().BeNull();
+        result.RequestEntityWarning.Message.Should().Be(description);
     }
 }

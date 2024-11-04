@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Enums;
 
-public enum ECustomResultStatus
+public enum EResultStatus
 {
     Success,
 

@@ -12,7 +12,7 @@ public class RequestResultTest
     {
         var resultado = new RequestResult();
 
-        resultado.Status.Should().Be(ECustomResultStatus.Success);
+        resultado.Status.Should().Be(EResultStatus.Success);
         resultado.ValidationResult.Should().NotBeNull();
         resultado.EntityErrors.Should().NotBeNull().And.BeEmpty();
         resultado.GeneralErrors.Should().NotBeNull().And.BeEmpty();
@@ -27,7 +27,7 @@ public class RequestResultTest
 
         var resultado = RequestResult.WithError(mensagemErro);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.RequestError.Should().NotBeNull();
         resultado.RequestError!.Description.Should().Be(mensagemErro);
     }
@@ -41,7 +41,7 @@ public class RequestResultTest
 
         var resultado = RequestResult.WithError(excecao);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.RequestError.Should().NotBeNull();
         resultado.RequestError!.Description.Should().Be(excecao.Message);
     }
@@ -55,7 +55,7 @@ public class RequestResultTest
 
         var resultado = RequestResult.WithError(erros);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.GeneralErrors.Should().BeEquivalentTo(erros);
     }
 
@@ -70,7 +70,7 @@ public class RequestResultTest
 
         resultado.AddEntityError(entidade, mensagem);
 
-        resultado.Status.Should().Be(ECustomResultStatus.EntityHasError);
+        resultado.Status.Should().Be(EResultStatus.EntityHasError);
         resultado.EntityErrors.Should().ContainKey(entidade);
         resultado.EntityErrors[entidade].Should().Contain(mensagem);
     }
@@ -86,11 +86,11 @@ public class RequestResultTest
 
         var resultado = RequestResult.EntityNotFound(entidade, id, message);
 
-        resultado.Status.Should().Be(ECustomResultStatus.EntityNotFound);
-        resultado.EntityWarning.Should().NotBeNull();
-        resultado.EntityWarning!.Name.Should().Be(entidade);
-        resultado.EntityWarning.Id.Should().Be(id);
-        resultado.EntityWarning.Message.Should().Be(message);
+        resultado.Status.Should().Be(EResultStatus.EntityNotFound);
+        resultado.RequestEntityWarning.Should().NotBeNull();
+        resultado.RequestEntityWarning!.Name.Should().Be(entidade);
+        resultado.RequestEntityWarning.Id.Should().Be(id);
+        resultado.RequestEntityWarning.Message.Should().Be(message);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class RequestResultTest
 
         var resultado = RequestResult.WithValidationError(mensagemErro, nomeCampo);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
+        resultado.Status.Should().Be(EResultStatus.HasValidation);
         resultado.ValidationResult.Errors.Should().ContainSingle();
         resultado.ValidationResult.Errors.First().Message.Should().Be(mensagemErro);
         resultado.ValidationResult.Errors.First().Field.Should().Be(nomeCampo);
@@ -120,7 +120,7 @@ public class RequestResultTest
         resultado.AddError("Erro geral 1");
         resultado.AddError("Erro geral 2");
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.GeneralErrors.Should().HaveCount(2);
         resultado.GeneralErrors.Should().Contain(expected);
     }
@@ -138,7 +138,7 @@ public class RequestResultTest
 
         var resultado = RequestResult.WithValidations(validacoes.ToArray());
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
+        resultado.Status.Should().Be(EResultStatus.HasValidation);
         resultado.ValidationResult.Errors.Should().HaveCount(2);
         resultado
             .ValidationResult.Errors.Should()
@@ -178,7 +178,7 @@ public class RequestResultTest
         var resultado = RequestResult.WithError(erros);
         resultado.AddError(excecao.Message);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.GeneralErrors.Should().Contain(new[] { "Erro 1", "Erro 2", excecao.Message });
     }
 
@@ -224,7 +224,7 @@ public class RequestResultTest
         resultado.AddEntityError(entidade, "Erro de entidade 1");
         resultado.AddEntityError(entidade, "Erro de entidade 2");
 
-        resultado.Status.Should().Be(ECustomResultStatus.EntityHasError);
+        resultado.Status.Should().Be(EResultStatus.EntityHasError);
         resultado.EntityErrors.Should().ContainKey(entidade);
         resultado.EntityErrors[entidade].Should().Contain(expected);
     }
@@ -236,7 +236,7 @@ public class RequestResultTest
     {
         var resultado = RequestResult.WithNoContent();
 
-        resultado.Status.Should().Be(ECustomResultStatus.NoContent);
+        resultado.Status.Should().Be(EResultStatus.NoContent);
         resultado.EntityErrors.Should().BeEmpty();
         resultado.GeneralErrors.Should().BeEmpty();
     }
@@ -250,7 +250,7 @@ public class RequestResultTest
             new RequestValidation("PropriedadeTeste", "Erro de validação de teste")
         );
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasValidation);
+        resultado.Status.Should().Be(EResultStatus.HasValidation);
 
         resultado.ValidationResult.Errors.Should().ContainSingle();
 
@@ -268,7 +268,7 @@ public class RequestResultTest
 
         var resultado = RequestResult.WithError(erroPersonalizado);
 
-        resultado.Status.Should().Be(ECustomResultStatus.HasError);
+        resultado.Status.Should().Be(EResultStatus.HasError);
         resultado.RequestError.Should().Be(erroPersonalizado);
     }
 }

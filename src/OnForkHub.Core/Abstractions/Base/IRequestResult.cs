@@ -4,5 +4,5 @@ namespace OnForkHub.Core.Abstractions.Base;
 
 public interface IRequestResult
 {
-    ECustomResultStatus Status { get; }
+    EResultStatus Status { get; }
 }
