@@ -1,0 +1,7 @@
+*.Designer.cs
+*.g.cs
+*.Generated.cs
+
+**/bin/**
+**/obj/**
+**/wwwroot/lib/**
