@@ -1,21 +1,27 @@
-﻿using OnForkHub.Core.ValueObjects;
+using OnForkHub.Core.Entities.Base;
+using OnForkHub.Core.Validations;
+using OnForkHub.Core.ValueObjects;
 
 namespace OnForkHub.Core.Entities;
 
 public class Video : BaseEntity
 {
-    public string Titulo { get; private set; } = null!;
-    public string Descricao { get; private set; } = string.Empty;
-    public Url Url { get; private set; }
-    public long UsuarioId { get; private set; }
-
-    private readonly List<Categoria> _categorias;
-    public IReadOnlyCollection<Categoria> Categorias => _categorias.AsReadOnly();
-
     private Video()
     {
-        _categorias = new List<Categoria>();
+        _categorias = [];
     }
+
+    private readonly List<Categoria> _categorias;
+
+    public IReadOnlyCollection<Categoria> Categorias => _categorias.AsReadOnly();
+
+    public string Descricao { get; private set; } = string.Empty;
+
+    public string Titulo { get; private set; } = null!;
+
+    public Url Url { get; private set; }
+
+    public long UsuarioId { get; private set; }
 
     public static Video Create(string titulo, string descricao, string url, long usuarioId)
     {
@@ -24,22 +30,29 @@ public class Video : BaseEntity
             Titulo = titulo,
             Descricao = descricao,
             Url = Url.Create(url),
-            UsuarioId = usuarioId
+            UsuarioId = usuarioId,
         };
 
         video.Validate();
         return video;
     }
 
-    public static Video Load(long id, string titulo, string descricao,
-        string url, long usuarioId, DateTime createdAt, DateTime? updatedAt = null)
+    public static Video Load(
+        long id,
+        string titulo,
+        string descricao,
+        string url,
+        long usuarioId,
+        DateTime createdAt,
+        DateTime? updatedAt = null
+    )
     {
         var video = new Video
         {
             Titulo = titulo,
             Descricao = descricao,
             Url = Url.Create(url),
-            UsuarioId = usuarioId
+            UsuarioId = usuarioId,
         };
 
         video.SetId(id, createdAt, updatedAt);
@@ -47,29 +60,9 @@ public class Video : BaseEntity
         return video;
     }
 
-    private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
-    {
-        Id = id;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
-    }
-
-    public override void Validate()
-    {
-        DomainException.When(string.IsNullOrWhiteSpace(Titulo),
-            "Título é obrigatório");
-        DomainException.When(Titulo.Length < 3,
-            "Título deve ter pelo menos 3 caracteres");
-        DomainException.When(Titulo.Length > 200,
-            "Título deve ter no máximo 200 caracteres");
-        DomainException.When(UsuarioId <= 0,
-            "UserId é obrigatório");
-    }
-
     public void AdicionarCategoria(Categoria categoria)
     {
-        DomainException.When(categoria == null,
-            "Categoria não pode ser nula");
+        DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
         if (!_categorias.Contains(categoria))
         {
@@ -78,10 +71,23 @@ public class Video : BaseEntity
         }
     }
 
+    public ValidationResult AtualizarDados(string titulo, string descricao, string url)
+    {
+        Titulo = titulo;
+        Descricao = descricao;
+        Url = Url.Create(url);
+
+        var validationResult = Validate();
+        if (validationResult.Errors.Count == 0)
+        {
+            Update();
+        }
+        return validationResult;
+    }
+
     public void RemoverCategoria(Categoria categoria)
     {
-        DomainException.When(categoria == null,
-            "Categoria não pode ser nula");
+        DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
 
         if (_categorias.Contains(categoria))
         {
@@ -90,13 +96,24 @@ public class Video : BaseEntity
         }
     }
 
-    public void AtualizarDados(string titulo, string descricao, string url)
+    public override ValidationResult Validate()
     {
-        Titulo = titulo;
-        Descricao = descricao;
-        Url = Url.Create(url);
-        Validate();
-        Update();
+        var validationResult = new ValidationResult();
+        validationResult.AddErrorIfNullOrWhiteSpace(Titulo, "Titulo é obrigatório", "Titulo");
+        validationResult.AddErrorIf(Titulo.Length < 3, "Titulo deve ter pelo menos 3 caracteres", "Titulo");
+        validationResult.AddErrorIf(Titulo.Length > 50, "Titulo deve ter no máximo 50 caracteres", "Titulo");
+        validationResult.AddErrorIfNullOrWhiteSpace(Descricao, "Descricao é obrigatória", "Descricao");
+        validationResult.AddErrorIf(Descricao.Length < 5, "Descricao deve ter pelo menos 5 caracteres", "Descricao");
+        validationResult.AddErrorIf(Descricao.Length > 200, "Descricao deve ter no máximo 200 caracteres", "Descricao");
+        validationResult.AddErrorIf(UsuarioId <= 0, "UsuarioId é obrigatório", "UsuarioId");
+
+        return validationResult;
+    }
+
+    private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
+    {
+        Id = id;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
     }
 }
-
