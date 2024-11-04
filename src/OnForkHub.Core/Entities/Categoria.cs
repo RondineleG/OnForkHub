@@ -63,7 +63,6 @@ public class Categoria : BaseEntity
         validationResult.AddErrorIfNullOrWhiteSpace(Nome, "Nome é obrigatório", "Nome");
         validationResult.AddErrorIf(Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
         validationResult.AddErrorIf(Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
-        validationResult.ThrowIfInvalid();
         return validationResult;
     }
 

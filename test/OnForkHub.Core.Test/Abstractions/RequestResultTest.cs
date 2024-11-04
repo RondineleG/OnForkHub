@@ -3,7 +3,7 @@ using OnForkHub.Core.Enums;
 
 namespace OnForkHub.Core.Test.Abstractions;
 
-public class RequestResultTestes
+public class RequestResultTest
 {
     [Fact]
     [Trait("Category", "Unit")]

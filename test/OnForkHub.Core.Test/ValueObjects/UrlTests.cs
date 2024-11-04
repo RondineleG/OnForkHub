@@ -8,7 +8,7 @@ public class UrlTests
     public void DeveCriarUrlValida()
     {
         var url = Url.Create("https://www.exemplo.com");
-        url.Valor.Should().Be("https://www.exemplo.com");
+        url.Value.Should().Be("https://www.exemplo.com");
     }
 
     [Theory]

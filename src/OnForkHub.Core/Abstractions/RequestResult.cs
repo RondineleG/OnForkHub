@@ -176,6 +176,20 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
     {
         return new RequestResult { Status = status, EntityWarning = new RequestEntityWarning(entity, id, description) };
     }
+
+    protected static RequestResult<T> CreateEntityError<T>(
+        string entity,
+        object id,
+        string description,
+        ECustomResultStatus status
+    )
+    {
+        return new RequestResult<T>
+        {
+            Status = status,
+            EntityWarning = new RequestEntityWarning(entity, id, description),
+        };
+    }
 }
 
 public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
@@ -184,17 +198,17 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> EntityAlreadyExists(string entity, object id, string description)
     {
-        return (RequestResult<T>)CreateEntityError(entity, id, description, ECustomResultStatus.EntityAlreadyExists);
+        return CreateEntityError<T>(entity, id, description, ECustomResultStatus.EntityAlreadyExists);
     }
 
     public static new RequestResult<T> EntityHasError(string entity, object id, string description)
     {
-        return (RequestResult<T>)CreateEntityError(entity, id, description, ECustomResultStatus.EntityHasError);
+        return CreateEntityError<T>(entity, id, description, ECustomResultStatus.EntityHasError);
     }
 
     public static new RequestResult<T> EntityNotFound(string entity, object id, string description)
     {
-        return (RequestResult<T>)CreateEntityError(entity, id, description, ECustomResultStatus.EntityNotFound);
+        return CreateEntityError<T>(entity, id, description, ECustomResultStatus.EntityNotFound);
     }
 
     public static implicit operator RequestResult<T>(T data)

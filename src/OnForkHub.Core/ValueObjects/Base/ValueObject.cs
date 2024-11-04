@@ -18,7 +18,7 @@ public abstract class ValueObject
         return GetEqualityComponents().Select(x => (x != null) ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
     }
 
-    protected static bool EqualOperator(ValueObject left, ValueObject right)
+    public static bool EqualOperator(ValueObject left, ValueObject right)
     {
         return !(left is null ^ right is null) && (left is null || left.Equals(right));
     }
