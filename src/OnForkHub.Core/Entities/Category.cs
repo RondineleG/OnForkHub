@@ -2,7 +2,8 @@ namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity
 {
-    private Category() { }
+    private Category()
+    { }
 
     public string Description { get; private set; } = string.Empty;
 
@@ -56,18 +57,17 @@ public class Category : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Name, "Name is required", nameof(Name));
-        validationResult.AddErrorIf(Name.Length < 3, "Name must be at least 3 characters", nameof(Name));
-        validationResult.AddErrorIf(Name.Length > 50, "Name must be no more than 50 characters", nameof(Name));
+        validationResult.AddErrorIfNullOrWhiteSpace(Name, $"{nameof(Name)} is required", nameof(Name));
+        validationResult.AddErrorIf(Name.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Name));
+        validationResult.AddErrorIf(Name.Length > 50, $"{nameof(Name)} must be no more than 50 characters", nameof(Name));
         return validationResult;
     }
 
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
     {
-        DomainException.ThrowErrorWhen(() => id <= 0, "Id must be greater than zero");
+        DomainException.ThrowErrorWhen(() => id <= 0, $"{nameof(Id)} must be greater than zero");
         Id = id;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
     }
-
 }

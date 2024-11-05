@@ -3,24 +3,23 @@ using OnForkHub.Core.Validations;
 
 namespace OnForkHub.Core.Test.Entities.Base;
 
-public class EntidadeInvalidaTestFixture : BaseEntity
+public class ValidEntityTestFixture : BaseEntity
 {
-    public EntidadeInvalidaTestFixture()
+    public ValidEntityTestFixture()
         : base() { }
 
-    public EntidadeInvalidaTestFixture(long id, DateTime createdAt, DateTime? updatedAt = null)
+    public ValidEntityTestFixture(long id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
-    public void ExecutarUpdate()
+    public void ExecuteUpdate()
     {
-        Validate();
         Update();
     }
 
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        ValidationResult.ThrowErrorIf(() => Id <= 0, "Id deve ser maior que zero");
+        ValidationResult.ThrowErrorIf(() => Id <= 0, "Id must be greater than zero");
         return validationResult;
     }
 }

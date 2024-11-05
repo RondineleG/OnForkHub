@@ -1,274 +1,270 @@
 using OnForkHub.Core.Abstractions;
-using OnForkHub.Core.Enums;
 
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestResultTest
 {
+    private static readonly string[] expected = { "General error 1", "General error 2" };
+
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve inicializar com status de sucesso")]
-    public void DeveInicializarComStatusSucesso()
+    [DisplayName("Should add entity error")]
+    public void ShouldAddEntityError()
     {
-        var resultado = new RequestResult();
+        var result = new RequestResult();
+        var entity = "TestEntity";
+        var message = "Test entity error message";
 
-        resultado.Status.Should().Be(EResultStatus.Success);
-        resultado.ValidationResult.Should().NotBeNull();
-        resultado.EntityErrors.Should().NotBeNull().And.BeEmpty();
-        resultado.GeneralErrors.Should().NotBeNull().And.BeEmpty();
+        result.AddEntityError(entity, message);
+
+        result.Status.Should().Be(EResultStatus.EntityHasError);
+        result.EntityErrors.Should().ContainKey(entity);
+        result.EntityErrors[entity].Should().Contain(message);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar resultado de erro ao informar mensagem")]
-    public void DeveRetornarResultadoErroQuandoInformadoMensagem()
+    [DisplayName("Should add error with list of errors and exception")]
+    public void ShouldAddErrorWithListAndException()
     {
-        var mensagemErro = "Mensagem de erro de teste";
+        var errors = new List<string> { "Error 1", "Error 2" };
+        var exception = new Exception("Exception error");
 
-        var resultado = RequestResult.WithError(mensagemErro);
+        var result = RequestResult.WithError(errors);
+        result.AddError(exception.Message);
 
-        resultado.Status.Should().Be(EResultStatus.HasError);
-        resultado.RequestError.Should().NotBeNull();
-        resultado.RequestError!.Description.Should().Be(mensagemErro);
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.GeneralErrors.Should().Contain(new[] { "Error 1", "Error 2", exception.Message });
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar resultado de erro ao informar exceção")]
-    public void DeveRetornarResultadoErroQuandoInformadoExcecao()
+    [DisplayName("Should add multiple errors for the same entity")]
+    public void ShouldAddMultipleErrorsForSameEntity()
     {
-        var excecao = new Exception("Exceção de teste");
+        string[] expected = { "Entity error 1", "Entity error 2" };
+        var result = new RequestResult();
+        var entity = "TestEntity";
 
-        var resultado = RequestResult.WithError(excecao);
+        result.AddEntityError(entity, "Entity error 1");
+        result.AddEntityError(entity, "Entity error 2");
 
-        resultado.Status.Should().Be(EResultStatus.HasError);
-        resultado.RequestError.Should().NotBeNull();
-        resultado.RequestError!.Description.Should().Be(excecao.Message);
+        result.Status.Should().Be(EResultStatus.EntityHasError);
+        result.EntityErrors.Should().ContainKey(entity);
+        result.EntityErrors[entity].Should().Contain(expected);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar resultado de erro ao informar lista de erros")]
-    public void DeveRetornarResultadoErroQuandoInformadoListaErros()
+    [DisplayName("Should add multiple general errors")]
+    public void ShouldAddMultipleGeneralErrors()
     {
-        var erros = new List<string> { "Erro 1", "Erro 2" };
+        var result = new RequestResult();
+        result.AddError("General error 1");
+        result.AddError("General error 2");
 
-        var resultado = RequestResult.WithError(erros);
-
-        resultado.Status.Should().Be(EResultStatus.HasError);
-        resultado.GeneralErrors.Should().BeEquivalentTo(erros);
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.GeneralErrors.Should().HaveCount(2);
+        result.GeneralErrors.Should().Contain(expected);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve adicionar erro de entidade")]
-    public void DeveAdicionarErroDeEntidade()
+    [DisplayName("Should add validations as a collection")]
+    public void ShouldAddValidationsAsCollection()
     {
-        var resultado = new RequestResult();
-        var entidade = "EntidadeTeste";
-        var mensagem = "Mensagem de erro de teste";
-
-        resultado.AddEntityError(entidade, mensagem);
-
-        resultado.Status.Should().Be(EResultStatus.EntityHasError);
-        resultado.EntityErrors.Should().ContainKey(entidade);
-        resultado.EntityErrors[entidade].Should().Contain(mensagem);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar resultado de entidade não encontrada")]
-    public void DeveRetornarResultadoEntidadeNaoEncontrada()
-    {
-        var entidade = "EntidadeTeste";
-        var id = 1;
-        var message = "Entidade não encontrada";
-
-        var resultado = RequestResult.EntityNotFound(entidade, id, message);
-
-        resultado.Status.Should().Be(EResultStatus.EntityNotFound);
-        resultado.RequestEntityWarning.Should().NotBeNull();
-        resultado.RequestEntityWarning!.Name.Should().Be(entidade);
-        resultado.RequestEntityWarning.Id.Should().Be(id);
-        resultado.RequestEntityWarning.Message.Should().Be(message);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar resultado de erro de validação")]
-    public void DeveRetornarResultadoErroValidacao()
-    {
-        var mensagemErro = "Erro de validação";
-        var nomeCampo = "CampoTeste";
-
-        var resultado = RequestResult.WithValidationError(mensagemErro, nomeCampo);
-
-        resultado.Status.Should().Be(EResultStatus.HasValidation);
-        resultado.ValidationResult.Errors.Should().ContainSingle();
-        resultado.ValidationResult.Errors.First().Message.Should().Be(mensagemErro);
-        resultado.ValidationResult.Errors.First().Field.Should().Be(nomeCampo);
-    }
-
-    private static readonly string[] expected = ["Erro geral 1", "Erro geral 2"];
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve adicionar múltiplos erros gerais")]
-    public void DeveAdicionarMultiplosErrosGerais()
-    {
-        var resultado = new RequestResult();
-        resultado.AddError("Erro geral 1");
-        resultado.AddError("Erro geral 2");
-
-        resultado.Status.Should().Be(EResultStatus.HasError);
-        resultado.GeneralErrors.Should().HaveCount(2);
-        resultado.GeneralErrors.Should().Contain(expected);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve adicionar validações como coleção")]
-    public void DeveAdicionarValidacoesComoColecao()
-    {
-        var validacoes = new List<RequestValidation>
+        var validations = new List<RequestValidation>
         {
-            new("Campo1", "Erro de validação 1"),
-            new("Campo2", "Erro de validação 2"),
+            new("Field1", "Validation error 1"),
+            new("Field2", "Validation error 2"),
         };
 
-        var resultado = RequestResult.WithValidations(validacoes.ToArray());
+        var result = RequestResult.WithValidations(validations.ToArray());
 
-        resultado.Status.Should().Be(EResultStatus.HasValidation);
-        resultado.ValidationResult.Errors.Should().HaveCount(2);
-        resultado
-            .ValidationResult.Errors.Should()
-            .Contain(error => error.Message == "Erro de validação 1" && error.Field == "Campo1");
-        resultado
-            .ValidationResult.Errors.Should()
-            .Contain(error => error.Message == "Erro de validação 2" && error.Field == "Campo2");
+        result.Status.Should().Be(EResultStatus.HasValidation);
+        result.ValidationResult.Errors.Should().HaveCount(2);
+        result.ValidationResult.Errors.Should()
+            .Contain(error => error.Message == "Validation error 1" && error.Field == "Field1")
+            .And.Contain(error => error.Message == "Validation error 2" && error.Field == "Field2");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve formatar mensagens de erro corretamente")]
-    public void DeveFormatarMensagensDeErroCorretamente()
+    [DisplayName("Should add validation with property and description")]
+    public void ShouldAddValidationWithPropertyAndDescription()
     {
-        var resultado = new RequestResult();
-        resultado.AddError("Erro geral 1");
-        resultado.AddError("Erro geral 2");
-        resultado.AddEntityError("Entidade1", "Erro de entidade 1");
-        resultado.AddEntityError("Entidade1", "Erro de entidade 2");
-
-        var textoFormatado = resultado.ToString();
-
-        textoFormatado.Should().Contain("Erro geral 1");
-        textoFormatado.Should().Contain("Erro geral 2");
-        textoFormatado.Should().Contain("Entidade1: Erro de entidade 1");
-        textoFormatado.Should().Contain("Entidade1: Erro de entidade 2");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve adicionar erro com lista de erros e exceção")]
-    public void DeveAdicionarErroComListaEExcecao()
-    {
-        var erros = new List<string> { "Erro 1", "Erro 2" };
-        var excecao = new Exception("Erro de exceção");
-
-        var resultado = RequestResult.WithError(erros);
-        resultado.AddError(excecao.Message);
-
-        resultado.Status.Should().Be(EResultStatus.HasError);
-        resultado.GeneralErrors.Should().Contain(new[] { "Erro 1", "Erro 2", excecao.Message });
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve inicializar campos de erro apenas quando acessados")]
-    public void DeveInicializarCamposDeErroSomenteQuandoAcessados()
-    {
-        var resultado = new RequestResult();
-
-        resultado.EntityErrors.Should().BeEmpty();
-        resultado.GeneralErrors.Should().BeEmpty();
-
-        resultado.EntityErrors.Should().NotBeNull();
-        resultado.GeneralErrors.Should().NotBeNull();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve formatar mensagens de validação no método ToString")]
-    public void DeveFormatarMensagensDeValidacaoNoToString()
-    {
-        var resultado = RequestResult.WithValidations(
-            new RequestValidation("CampoTeste", "Erro de validação 1"),
-            new RequestValidation("CampoTeste", "Erro de validação 2")
+        var result = RequestResult.WithValidations(
+            new RequestValidation("TestProperty", "Test validation error")
         );
 
-        var textoFormatado = resultado.ToString();
+        result.Status.Should().Be(EResultStatus.HasValidation);
 
-        textoFormatado.Should().Contain("CampoTeste: Erro de validação 1");
-        textoFormatado.Should().Contain("CampoTeste: Erro de validação 2");
+        result.ValidationResult.Errors.Should().ContainSingle();
+
+        var error = result.ValidationResult.Errors.First();
+        error.Field.Should().Be("TestProperty");
+        error.Message.Should().Be("Test validation error");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve adicionar múltiplos erros para a mesma entidade")]
-    public void DeveAdicionarMultiplosErrosParaMesmaEntidade()
+    [DisplayName("Should format error messages correctly")]
+    public void ShouldFormatErrorMessagesCorrectly()
     {
-        string[] expected = ["Erro de entidade 1", "Erro de entidade 2"];
-        var resultado = new RequestResult();
-        var entidade = "EntidadeTeste";
+        var result = new RequestResult();
+        result.AddError("General error 1");
+        result.AddError("General error 2");
+        result.AddEntityError("Entity1", "Entity error 1");
+        result.AddEntityError("Entity1", "Entity error 2");
 
-        resultado.AddEntityError(entidade, "Erro de entidade 1");
-        resultado.AddEntityError(entidade, "Erro de entidade 2");
+        var formattedText = result.ToString();
 
-        resultado.Status.Should().Be(EResultStatus.EntityHasError);
-        resultado.EntityErrors.Should().ContainKey(entidade);
-        resultado.EntityErrors[entidade].Should().Contain(expected);
+        formattedText.Should().Contain("General error 1");
+        formattedText.Should().Contain("General error 2");
+        formattedText.Should().Contain("Entity1: Entity error 1");
+        formattedText.Should().Contain("Entity1: Entity error 2");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar resultado sem conteúdo")]
-    public void DeveRetornarResultadoSemConteudo()
+    [DisplayName("Should format validation messages in ToString method")]
+    public void ShouldFormatValidationMessagesInToStringMethod()
     {
-        var resultado = RequestResult.WithNoContent();
-
-        resultado.Status.Should().Be(EResultStatus.NoContent);
-        resultado.EntityErrors.Should().BeEmpty();
-        resultado.GeneralErrors.Should().BeEmpty();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve adicionar validação com propriedade e descrição")]
-    public void DeveAdicionarValidacaoComPropriedadeEDescricao()
-    {
-        var resultado = RequestResult.WithValidations(
-            new RequestValidation("PropriedadeTeste", "Erro de validação de teste")
+        var result = RequestResult.WithValidations(
+            new RequestValidation("TestField", "Validation error 1"),
+            new RequestValidation("TestField", "Validation error 2")
         );
 
-        resultado.Status.Should().Be(EResultStatus.HasValidation);
+        var formattedText = result.ToString();
 
-        resultado.ValidationResult.Errors.Should().ContainSingle();
-
-        var erro = resultado.ValidationResult.Errors.First();
-        erro.Field.Should().Be("PropriedadeTeste");
-        erro.Message.Should().Be("Erro de validação de teste");
+        formattedText.Should().Contain("TestField: Validation error 1");
+        formattedText.Should().Contain("TestField: Validation error 2");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar erro com objeto de erro personalizado")]
-    public void DeveRetornarErroComObjetoErroPersonalizado()
+    [DisplayName("Should initialize error fields only when accessed")]
+    public void ShouldInitializeErrorFieldsOnlyWhenAccessed()
     {
-        var erroPersonalizado = new RequestError("Erro personalizado");
+        var result = new RequestResult();
 
-        var resultado = RequestResult.WithError(erroPersonalizado);
+        result.EntityErrors.Should().BeEmpty();
+        result.GeneralErrors.Should().BeEmpty();
 
-        resultado.Status.Should().Be(EResultStatus.HasError);
-        resultado.RequestError.Should().Be(erroPersonalizado);
+        result.EntityErrors.Should().NotBeNull();
+        result.GeneralErrors.Should().NotBeNull();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should initialize with success status")]
+    public void ShouldInitializeWithSuccessStatus()
+    {
+        var result = new RequestResult();
+
+        result.Status.Should().Be(EResultStatus.Success);
+        result.ValidationResult.Should().NotBeNull();
+        result.EntityErrors.Should().NotBeNull().And.BeEmpty();
+        result.GeneralErrors.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return entity not found result")]
+    public void ShouldReturnEntityNotFoundResult()
+    {
+        var entity = "TestEntity";
+        var id = 1;
+        var message = "Entity not found";
+
+        var result = RequestResult.EntityNotFound(entity, id, message);
+
+        result.Status.Should().Be(EResultStatus.EntityNotFound);
+        result.RequestEntityWarning.Should().NotBeNull();
+        result.RequestEntityWarning!.Name.Should().Be(entity);
+        result.RequestEntityWarning.Id.Should().Be(id);
+        result.RequestEntityWarning.Message.Should().Be(message);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error result when list of errors is provided")]
+    public void ShouldReturnErrorResultWhenErrorListProvided()
+    {
+        var errors = new List<string> { "Error 1", "Error 2" };
+
+        var result = RequestResult.WithError(errors);
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.GeneralErrors.Should().BeEquivalentTo(errors);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error result when exception is provided")]
+    public void ShouldReturnErrorResultWhenExceptionProvided()
+    {
+        var exception = new Exception("Test exception");
+
+        var result = RequestResult.WithError(exception);
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.RequestError.Should().NotBeNull();
+        result.RequestError!.Description.Should().Be(exception.Message);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error result when message is provided")]
+    public void ShouldReturnErrorResultWhenMessageProvided()
+    {
+        var errorMessage = "Test error message";
+
+        var result = RequestResult.WithError(errorMessage);
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.RequestError.Should().NotBeNull();
+        result.RequestError!.Description.Should().Be(errorMessage);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error with custom error object")]
+    public void ShouldReturnErrorWithCustomErrorObject()
+    {
+        var customError = new RequestError("Custom error");
+
+        var result = RequestResult.WithError(customError);
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.RequestError.Should().Be(customError);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return result without content")]
+    public void ShouldReturnResultWithoutContent()
+    {
+        var result = RequestResult.WithNoContent();
+
+        result.Status.Should().Be(EResultStatus.NoContent);
+        result.EntityErrors.Should().BeEmpty();
+        result.GeneralErrors.Should().BeEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return validation error result")]
+    public void ShouldReturnValidationErrorResult()
+    {
+        var errorMessage = "Validation error";
+        var fieldName = "TestField";
+
+        var result = RequestResult.WithValidationError(errorMessage, fieldName);
+
+        result.Status.Should().Be(EResultStatus.HasValidation);
+        result.ValidationResult.Errors.Should().ContainSingle();
+        result.ValidationResult.Errors.First().Message.Should().Be(errorMessage);
+        result.ValidationResult.Errors.First().Field.Should().Be(fieldName);
     }
 }

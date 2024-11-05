@@ -2,15 +2,17 @@ namespace OnForkHub.Core.ValueObjects;
 
 public class Url : ValueObject
 {
-    private Url() { }
+    private Url()
+    { }
 
     public string Value { get; private set; }
 
     public static Url Create(string url)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url.Trim()), "URL não pode ser vazia");
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url.Trim()), $"{nameof(Url)} cannot be empty");
 
-        var urlObj = new Url { Value = url };
+        var normalizedUrl = url.EndsWith("/") && url.Length > 1 ? url.TrimEnd('/') : url;
+        var urlObj = new Url { Value = normalizedUrl };
         urlObj.Validate();
         return urlObj;
     }
@@ -22,12 +24,12 @@ public class Url : ValueObject
 
     private void Validate()
     {
-        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), "URL inválida");
+        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), "Invalid URL");
 
         var uri = new Uri(Value, UriKind.Absolute);
         DomainException.ThrowErrorWhen(
             () => uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps,
-            "URL inválida"
+            "Invalid URL"
         );
     }
 }

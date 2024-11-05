@@ -12,7 +12,7 @@ public partial class Email : ValueObject
 
     public static Email Create(string value)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), "Email não pode ser vazio");
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), $"{nameof(Email)} cannot be empty");
         var email = new Email(value);
         email.Validate();
         return email;
@@ -23,12 +23,12 @@ public partial class Email : ValueObject
         yield return Value.ToLower(System.Globalization.CultureInfo.CurrentCulture);
     }
 
+    [GeneratedRegex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")]
+    private static partial Regex MyRegex();
+
     private void Validate()
     {
         var regex = MyRegex();
-        DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), "Email inválido");
+        DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), "Invalid email");
     }
-
-    [GeneratedRegex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")]
-    private static partial Regex MyRegex();
 }
