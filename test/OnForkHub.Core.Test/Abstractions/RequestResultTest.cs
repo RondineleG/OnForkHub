@@ -4,7 +4,7 @@ namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestResultTest
 {
-    private static readonly string[] expected = { "General error 1", "General error 2" };
+    private static readonly string[] expected = ["General error 1", "General error 2"];
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -42,7 +42,7 @@ public class RequestResultTest
     [DisplayName("Should add multiple errors for the same entity")]
     public void ShouldAddMultipleErrorsForSameEntity()
     {
-        string[] expected = { "Entity error 1", "Entity error 2" };
+        string[] expected = ["Entity error 1", "Entity error 2"];
         var result = new RequestResult();
         var entity = "TestEntity";
 
@@ -83,7 +83,8 @@ public class RequestResultTest
 
         result.Status.Should().Be(EResultStatus.HasValidation);
         result.ValidationResult.Errors.Should().HaveCount(2);
-        result.ValidationResult.Errors.Should()
+        result
+            .ValidationResult.Errors.Should()
             .Contain(error => error.Message == "Validation error 1" && error.Field == "Field1")
             .And.Contain(error => error.Message == "Validation error 2" && error.Field == "Field2");
     }
@@ -93,9 +94,7 @@ public class RequestResultTest
     [DisplayName("Should add validation with property and description")]
     public void ShouldAddValidationWithPropertyAndDescription()
     {
-        var result = RequestResult.WithValidations(
-            new RequestValidation("TestProperty", "Test validation error")
-        );
+        var result = RequestResult.WithValidations(new RequestValidation("TestProperty", "Test validation error"));
 
         result.Status.Should().Be(EResultStatus.HasValidation);
 

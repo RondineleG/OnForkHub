@@ -1,6 +1,5 @@
-using OnForkHub.Core.Abstractions;
-
 using System.Text.Json;
+using OnForkHub.Core.Abstractions;
 
 namespace OnForkHub.Core.Test.Abstractions;
 

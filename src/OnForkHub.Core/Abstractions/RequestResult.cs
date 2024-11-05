@@ -166,14 +166,13 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         return string.Join("; ", messages);
     }
 
-    protected static RequestResult CreateEntityError(
-        string entity,
-        object id,
-        string description,
-        EResultStatus status
-    )
+    protected static RequestResult CreateEntityError(string entity, object id, string description, EResultStatus status)
     {
-        return new RequestResult { Status = status, RequestEntityWarning = new RequestEntityWarning(entity, id, description) };
+        return new RequestResult
+        {
+            Status = status,
+            RequestEntityWarning = new RequestEntityWarning(entity, id, description),
+        };
     }
 
     protected static RequestResult<T> CreateEntityError<T>(
@@ -195,17 +194,17 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 {
     public T? Data { get; private init; }
 
-    public new static RequestResult<T> EntityAlreadyExists(string entity, object id, string description)
+    public static new RequestResult<T> EntityAlreadyExists(string entity, object id, string description)
     {
         return CreateEntityError<T>(entity, id, description, EResultStatus.EntityAlreadyExists);
     }
 
-    public new static RequestResult<T> EntityHasError(string entity, object id, string description)
+    public static new RequestResult<T> EntityHasError(string entity, object id, string description)
     {
         return CreateEntityError<T>(entity, id, description, EResultStatus.EntityHasError);
     }
 
-    public new static RequestResult<T> EntityNotFound(string entity, object id, string description)
+    public static new RequestResult<T> EntityNotFound(string entity, object id, string description)
     {
         return CreateEntityError<T>(entity, id, description, EResultStatus.EntityNotFound);
     }
@@ -235,54 +234,54 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
         return new RequestResult<T> { Data = data, Status = EResultStatus.Success };
     }
 
-    public new static RequestResult<T> WithError(string message)
+    public static new RequestResult<T> WithError(string message)
     {
         return new RequestResult<T> { Status = EResultStatus.HasError, RequestError = new RequestError(message) };
     }
 
-    public new static RequestResult<T> WithError(Exception exception)
+    public static new RequestResult<T> WithError(Exception exception)
     {
         return WithError(exception.Message);
     }
 
-    public new static RequestResult<T> WithError(List<string> generalErrors)
+    public static new RequestResult<T> WithError(List<string> generalErrors)
     {
         return new RequestResult<T> { Status = EResultStatus.HasError, _generalErrors = generalErrors };
     }
 
-    public new static RequestResult<T> WithError(Dictionary<string, List<string>> entityErrors)
+    public static new RequestResult<T> WithError(Dictionary<string, List<string>> entityErrors)
     {
         return new RequestResult<T> { Status = EResultStatus.EntityHasError, _entityErrors = entityErrors };
     }
 
-    public new static RequestResult<T> WithError(RequestError error)
+    public static new RequestResult<T> WithError(RequestError error)
     {
         return new RequestResult<T> { Status = EResultStatus.HasError, RequestError = error };
     }
 
-    public new static RequestResult<T> WithNoContent()
+    public static new RequestResult<T> WithNoContent()
     {
         return new RequestResult<T> { Status = EResultStatus.NoContent };
     }
 
-    public new static RequestResult<T> WithValidationError(string errorMessage, string fieldName = "")
+    public static new RequestResult<T> WithValidationError(string errorMessage, string fieldName = "")
     {
         var result = new RequestResult<T> { Status = EResultStatus.HasValidation };
         result.ValidationResult.AddError(errorMessage, fieldName);
         return result;
     }
 
-    public new static RequestResult<T> WithValidations(params RequestValidation[] validations)
+    public static new RequestResult<T> WithValidations(params RequestValidation[] validations)
     {
         return new RequestResult<T> { Status = EResultStatus.HasValidation, Validations = validations };
     }
 
-    public new static RequestResult<T> WithValidations(string propertyName, string description)
+    public static new RequestResult<T> WithValidations(string propertyName, string description)
     {
         return WithValidations(new RequestValidation(propertyName, description));
     }
 
-    public new static RequestResult<T> WithValidations(params ValidationErrorMessage[] validations)
+    public static new RequestResult<T> WithValidations(params ValidationErrorMessage[] validations)
     {
         var result = new RequestResult<T> { Status = EResultStatus.HasValidation };
         result.ValidationResult.AddErrors(validations.Select(v => (v.Message, v.Field)));

@@ -68,7 +68,11 @@ public class User : BaseEntity
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Name, $"{nameof(Name)} is required", nameof(Name));
         validationResult.AddErrorIf(Name.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Category));
-        validationResult.AddErrorIf(Name.Length > 50, $"{nameof(Name)} must be no more than 50 characters", nameof(Category));
+        validationResult.AddErrorIf(
+            Name.Length > 50,
+            $"{nameof(Name)} must be no more than 50 characters",
+            nameof(Category)
+        );
         validationResult.ThrowIfInvalid("User name is invalid");
         return validationResult;
     }

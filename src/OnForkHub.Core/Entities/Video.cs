@@ -101,11 +101,31 @@ public class Video : BaseEntity
     {
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Title, $"{nameof(Title)} is required", nameof(Title));
-        validationResult.AddErrorIf(Title.Length < 3, $"{nameof(Title)} must be at least 3 characters long", nameof(Title));
-        validationResult.AddErrorIf(Title.Length > 50, $"{nameof(Title)} must be no more than 50 characters", nameof(Title));
-        validationResult.AddErrorIfNullOrWhiteSpace(Description, $"{nameof(Description)} is required", nameof(Description));
-        validationResult.AddErrorIf(Description.Length < 5, $"{nameof(Description)} must be at least 5 characters", nameof(Description));
-        validationResult.AddErrorIf(Description.Length > 200, $"{nameof(Description)} must be no more than 200 characters", nameof(Description));
+        validationResult.AddErrorIf(
+            Title.Length < 3,
+            $"{nameof(Title)} must be at least 3 characters long",
+            nameof(Title)
+        );
+        validationResult.AddErrorIf(
+            Title.Length > 50,
+            $"{nameof(Title)} must be no more than 50 characters",
+            nameof(Title)
+        );
+        validationResult.AddErrorIfNullOrWhiteSpace(
+            Description,
+            $"{nameof(Description)} is required",
+            nameof(Description)
+        );
+        validationResult.AddErrorIf(
+            Description.Length < 5,
+            $"{nameof(Description)} must be at least 5 characters",
+            nameof(Description)
+        );
+        validationResult.AddErrorIf(
+            Description.Length > 200,
+            $"{nameof(Description)} must be no more than 200 characters",
+            nameof(Description)
+        );
         validationResult.AddErrorIf(UserId <= 0, $"{nameof(UserId)} is required", nameof(UserId));
 
         return validationResult;

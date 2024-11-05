@@ -35,11 +35,7 @@ public class ValidationResultTests
     public void ShouldAddErrorWhenStringIsOnlySpaces()
     {
         var value = "   ";
-        var result = new ValidationResult().AddErrorIfNullOrWhiteSpace(
-            value,
-            "The value cannot be blank",
-            "Field"
-        );
+        var result = new ValidationResult().AddErrorIfNullOrWhiteSpace(value, "The value cannot be blank", "Field");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("The value cannot be blank");

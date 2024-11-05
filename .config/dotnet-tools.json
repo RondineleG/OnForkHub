@@ -28,6 +28,8 @@
       "commands": [
         "dotnet-csharpier"
       ],
+      "args": [ "csharpier", "${staged}" ],
+      "include": [ "**/*.cs" ],
       "rollForward": false
     }
   }

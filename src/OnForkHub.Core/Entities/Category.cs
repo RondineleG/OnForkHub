@@ -2,8 +2,7 @@ namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity
 {
-    private Category()
-    { }
+    private Category() { }
 
     public string Description { get; private set; } = string.Empty;
 
@@ -59,7 +58,11 @@ public class Category : BaseEntity
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Name, $"{nameof(Name)} is required", nameof(Name));
         validationResult.AddErrorIf(Name.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Name));
-        validationResult.AddErrorIf(Name.Length > 50, $"{nameof(Name)} must be no more than 50 characters", nameof(Name));
+        validationResult.AddErrorIf(
+            Name.Length > 50,
+            $"{nameof(Name)} must be no more than 50 characters",
+            nameof(Name)
+        );
         return validationResult;
     }
 

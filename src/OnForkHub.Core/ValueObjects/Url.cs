@@ -2,8 +2,7 @@ namespace OnForkHub.Core.ValueObjects;
 
 public class Url : ValueObject
 {
-    private Url()
-    { }
+    private Url() { }
 
     public string Value { get; private set; }
 
