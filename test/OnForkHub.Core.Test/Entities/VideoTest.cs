@@ -7,8 +7,9 @@ public class VideoTests
     [DisplayName("Should add category to video")]
     public void ShouldAddCategoryToVideo()
     {
+        var name = Name.Create("Category");
         var video = Video.Create("Title", "Description", "https://example.com/video", 1L);
-        var category = Category.Create("Category", "Category description").Data!;
+        var category = Category.Create(name, "Category description").Data!;
 
         video.AddCategory(category);
 
@@ -20,8 +21,10 @@ public class VideoTests
     [DisplayName("Should remove category from video")]
     public void ShouldRemoveCategoryFromVideo()
     {
+        var name = Name.Create("Category");
+
         var video = Video.Create("Title", "Description", "https://example.com/video", 1L);
-        var category = Category.Create("Category", "Category description").Data!;
+        var category = Category.Create(name, "Category description").Data!;
         video.AddCategory(category);
 
         video.RemoveCategory(category);

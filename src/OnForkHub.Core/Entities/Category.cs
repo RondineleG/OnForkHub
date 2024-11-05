@@ -6,9 +6,9 @@ public class Category : BaseEntity
 
     public string Description { get; private set; } = string.Empty;
 
-    public string Name { get; private set; } = null!;
+    public Name Name { get; private set; } = null!;
 
-    public static RequestResult<Category> Create(string name, string description)
+    public static RequestResult<Category> Create(Name name, string description)
     {
         var category = new Category { Name = name, Description = description };
 
@@ -20,7 +20,7 @@ public class Category : BaseEntity
 
     public static RequestResult<Category> Load(
         long id,
-        string name,
+        Name name,
         string description,
         DateTime createdAt,
         DateTime? updatedAt = null
@@ -38,7 +38,7 @@ public class Category : BaseEntity
         return RequestResult<Category>.Success(category);
     }
 
-    public RequestResult UpdateCategory(string name, string description)
+    public RequestResult UpdateCategory(Name name, string description)
     {
         Name = name;
         Description = description;
@@ -56,10 +56,10 @@ public class Category : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Name, $"{nameof(Name)} is required", nameof(Name));
-        validationResult.AddErrorIf(Name.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Name));
+        validationResult.AddErrorIfNullOrWhiteSpace(Name.Value, $"{nameof(Name)} is required", nameof(Name));
+        validationResult.AddErrorIf(Name.Value.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Name));
         validationResult.AddErrorIf(
-            Name.Length > 50,
+            Name.Value.Length > 50,
             $"{nameof(Name)} must be no more than 50 characters",
             nameof(Name)
         );
