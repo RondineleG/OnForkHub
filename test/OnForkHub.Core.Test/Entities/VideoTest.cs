@@ -66,9 +66,11 @@ public class VideoTests
         var newDescription = "New description";
         var newUrl = "https://new.com/video";
 
-        Action act = () => video.UpdateCategory(newTitle, newDescription, newUrl);
+        var validationResult = video.UpdateCategory(newTitle, newDescription, newUrl);
 
-        act.Should().Throw<DomainException>();
+        validationResult
+            .Errors.Should()
+            .ContainSingle(error => error.Message == "Title must be at least 3 characters long" && error.Field == nameof(Video.Title));
     }
 
     [Fact]
@@ -122,7 +124,7 @@ public class VideoTests
         var video = Video.Create(title, description, url, userId);
 
         video.Should().NotBeNull();
-        video.Title.Should().Be(title);
+        video.Title.Value.Should().Be(title);
         video.Description.Should().Be(description);
         video.Url.Value.Should().Be(url);
         video.UserId.Should().Be(userId);
@@ -144,7 +146,7 @@ public class VideoTests
 
         video.Should().NotBeNull();
         video.Id.Should().Be(id);
-        video.Title.Should().Be(title);
+        video.Title.Value.Should().Be(title);
         video.Description.Should().Be(description);
         video.Url.Value.Should().Be(url);
         video.UserId.Should().Be(userId);
@@ -163,7 +165,7 @@ public class VideoTests
 
         video.UpdateCategory(newTitle, newDescription, newUrl);
 
-        video.Title.Should().Be(newTitle);
+        video.Title.Value.Should().Be(newTitle);
         video.Description.Should().Be(newDescription);
         video.Url.Value.Should().Be(newUrl);
     }
@@ -174,7 +176,6 @@ public class VideoTests
     public void ShouldValidateVideoCorrectly()
     {
         var video = Video.Create("Valid Title", "Valid Description", "https://example.com/video", 1L);
-
 
         var validationResult = video.Validate();
 

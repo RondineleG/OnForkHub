@@ -18,13 +18,20 @@ public class Title : ValueObject
         return title;
     }
 
-    public ValidationResult Validate()
+    public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Value, "Titulo é obrigatório", "Titulo");
-        validationResult.AddErrorIf(Value.Length < 3, "Titulo deve ter pelo menos 3 caracteres", "Titulo");
-        validationResult.AddErrorIf(Value.Length > 50, "Titulo deve ter no máximo 50 caracteres", "Titulo");
-        validationResult.ThrowIfInvalid();
+        validationResult.AddErrorIfNullOrWhiteSpace(Value, $"{nameof(Title)} is required", nameof(Title));
+        validationResult.AddErrorIf(
+            Value.Length < 3,
+            $"{nameof(Title)} must be at least 3 characters long",
+            nameof(Title)
+        );
+        validationResult.AddErrorIf(
+            Value.Length > 50,
+            $"{nameof(Title)} must be no more than 50 characters",
+            nameof(Title)
+        );
         return validationResult;
     }
 

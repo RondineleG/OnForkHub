@@ -25,7 +25,7 @@ public class Video : BaseEntity
     {
         var video = new Video
         {
-            Title = Title.Create(title),  
+            Title = Title.Create(title),
             Description = description,
             Url = Url.Create(url),
             UserId = userId,
@@ -101,17 +101,6 @@ public class Video : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Title, $"{nameof(Title)} is required", nameof(Title));
-        validationResult.AddErrorIf(
-            Title.Length < 3,
-            $"{nameof(Title)} must be at least 3 characters long",
-            nameof(Title)
-        );
-        validationResult.AddErrorIf(
-            Title.Length > 50,
-            $"{nameof(Title)} must be no more than 50 characters",
-            nameof(Title)
-        );
         validationResult.AddErrorIfNullOrWhiteSpace(
             Description,
             $"{nameof(Description)} is required",
@@ -128,6 +117,7 @@ public class Video : BaseEntity
             nameof(Description)
         );
         validationResult.AddErrorIf(UserId <= 0, $"{nameof(UserId)} is required", nameof(UserId));
+        validationResult = Title.Validate().Merge(validationResult); //Merge Video validation errors with Title validation errors
 
         return validationResult;
     }
