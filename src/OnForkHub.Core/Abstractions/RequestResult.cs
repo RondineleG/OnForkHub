@@ -1,6 +1,5 @@
 using OnForkHub.Core.Abstractions.Base;
 using OnForkHub.Core.Enums;
-using OnForkHub.Core.Validations;
 
 namespace OnForkHub.Core.Abstractions;
 
@@ -20,21 +19,21 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= [];
 
-    public RequestEntityWarning? RequestEntityWarning { get; protected init; }
-
-    public RequestError? RequestError { get; protected init; }
-
     public List<string> GeneralErrors => _generalErrors ??= [];
 
     public string Id { get; set; } = string.Empty;
 
     public string Message { get; set; } = string.Empty;
 
+    public RequestEntityWarning? RequestEntityWarning { get; protected init; }
+
+    public RequestError? RequestError { get; protected init; }
+
     public EResultStatus Status { get; set; }
 
     public ValidationResult ValidationResult { get; protected set; }
 
-    public IEnumerable<RequestValidation> Validations { get; protected init; } = Enumerable.Empty<RequestValidation>();
+    public IEnumerable<RequestValidation> Validations { get; protected init; } = [];
 
     public static RequestResult EntityAlreadyExists(string entity, object id, string description)
     {
@@ -167,14 +166,13 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         return string.Join("; ", messages);
     }
 
-    protected static RequestResult CreateEntityError(
-        string entity,
-        object id,
-        string description,
-        EResultStatus status
-    )
+    protected static RequestResult CreateEntityError(string entity, object id, string description, EResultStatus status)
     {
-        return new RequestResult { Status = status, RequestEntityWarning = new RequestEntityWarning(entity, id, description) };
+        return new RequestResult
+        {
+            Status = status,
+            RequestEntityWarning = new RequestEntityWarning(entity, id, description),
+        };
     }
 
     protected static RequestResult<T> CreateEntityError<T>(

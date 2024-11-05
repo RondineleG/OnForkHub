@@ -1,36 +1,47 @@
+using OnForkHub.Core.Entities;
 using OnForkHub.Core.Validations;
+using OnForkHub.Core.ValueObjects.Base;
 
-namespace OnForkHub.Core.ValueObjects;
+using System.Globalization;
 
-public class Name : ValueObject
+namespace OnForkHub.Core.ValueObjects
 {
-    public string Value { get; set; }
-
-    private Name(string value)
+    public class Name : ValueObject
     {
-        Value = value;
-        Validate();
-    }
+        private const int MinNameLength = 3;
+        private const int MaxNameLength = 50;
 
-    public static Name Create(string value)
-    {
-        var name = new Name(value);
-        name.Validate();
-        return name;
-    }
+        public string Value { get; }
 
-    private ValidationResult Validate()
-    {
-        var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Value, "Nome é obrigatório", "Nome");
-        validationResult.AddErrorIf(Value.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
-        validationResult.AddErrorIf(Value.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
-        validationResult.ThrowIfInvalid();
-        return validationResult;
-    }
+        private Name(string value)
+        {
+            Value = value;
+            Validate();
+        }
 
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Value.ToLower();
+        public static Name Create(string value)
+        {
+            DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value),
+                $"{nameof(Name)} cannot be empty or null");
+
+            return new Name(value);
+        }
+
+        public override ValidationResult Validate()
+        {
+            var validationResult = new ValidationResult();
+
+            validationResult
+                .AddErrorIfNullOrWhiteSpace(Value, $"{nameof(Name)} is required", nameof(Name))
+                .AddErrorIf(Value.Length < MinNameLength, $"{nameof(Name)} must be at least {MinNameLength} characters long", nameof(Name))
+                .AddErrorIf(Value.Length > MaxNameLength, $"{nameof(Name)} must be no more than {MaxNameLength} characters", nameof(Name));
+
+            return validationResult;
+        }
+
+        protected override IEnumerable<object> GetEqualityComponents()
+        {
+            yield return Value.ToLower(CultureInfo.CurrentCulture);
+        }
     }
 }

@@ -1,9 +1,15 @@
-using OnForkHub.Core.Validations;
-
 namespace OnForkHub.Core.Exceptions;
 
 public class DomainException(string message) : Exception(message)
 {
+    public static void ThrowErrorWhen(Func<bool> hasError, string message)
+    {
+        if (hasError())
+        {
+            throw new DomainException(message);
+        }
+    }
+
     public static void ThrowWhenInvalid(params ValidationResult[] validations)
     {
         var combinedResult = ValidationResult.Combine(validations);
@@ -16,13 +22,5 @@ public class DomainException(string message) : Exception(message)
     public static ValidationResult Validate(Func<bool> hasError, string message)
     {
         return ValidationResult.Validate(hasError, message);
-    }
-
-    public static void ThrowErrorWhen(Func<bool> hasError, string message)
-    {
-        if (hasError())
-        {
-            throw new DomainException(message);
-        }
     }
 }

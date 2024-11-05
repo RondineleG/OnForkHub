@@ -9,25 +9,13 @@
       ],
       "rollForward": false
     },
-    "dotnet-format": {
-      "version": "5.1.250801",
-      "commands": [
-        "dotnet-format"
-      ],
-      "rollForward": false
-    },
-    "dotnet-ef": {
-      "version": "8.0.10",
-      "commands": [
-        "dotnet-ef"
-      ],
-      "rollForward": false
-    },
     "csharpier": {
       "version": "0.29.2",
       "commands": [
         "dotnet-csharpier"
       ],
+      "args": [ "csharpier", "${staged}" ],
+      "include": [ "**/*.cs" ],
       "rollForward": false
     }
   }
