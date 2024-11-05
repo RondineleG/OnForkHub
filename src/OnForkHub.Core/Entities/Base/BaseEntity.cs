@@ -1,5 +1,3 @@
-using OnForkHub.Core.Validations;
-
 namespace OnForkHub.Core.Entities.Base;
 
 public abstract class BaseEntity : IAggregateRoot
@@ -11,7 +9,7 @@ public abstract class BaseEntity : IAggregateRoot
 
     protected BaseEntity(long id, DateTime createdAt, DateTime? updatedAt = null)
     {
-        DomainException.ThrowErrorWhen(() => id <= 0, "Id deve ser maior que zero");
+        DomainException.ThrowErrorWhen(() => id <= 0, $"{nameof(Id)} must be greater than zero");
         Id = id;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;

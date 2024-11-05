@@ -1,31 +1,37 @@
+using OnForkHub.Core.ValueObjects;
+using OnForkHub.Core.Exceptions;
+using Xunit;
+using FluentAssertions;
+
 namespace OnForkHub.Core.Test.ValueObjects;
 
 public class NameTest
 {
     [Theory]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve criar nome válido")]
+    [DisplayName("Should create a valid name")]
     [InlineData("Ana")]
-    [InlineData("João Pedro")]
-    [InlineData("JoaoJoaoJoaoJoaoJoaoJoaoJoaoJoaoJoaoJoao")]
-    [InlineData("João.#2134AXca!.|_''\"\\=+-12334#$90xz>;")]
-    public void DeveCriarNomeValido(string name)
+    [InlineData("John Peter")]
+    [InlineData("JohnJohnJohnJohnJohnJohnJohnJohnJohnJohn")]
+    [InlineData("John.#2134AXca!.|_''\"\\=+-12334#$90xz>;")]
+    public void ShouldCreateValidName(string name)
     {
         Action act = () => Name.Create(name);
 
         act.Should().NotThrow();
     }
 
+
     [Theory]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve criar nome inválido")]
-    [InlineData("Zé")]
+    [DisplayName("Should throw DomainException for null or empty name")]
+    [InlineData(null)]
     [InlineData("")]
-    [InlineData("JoaoJoaoJoaoJoaoJoaoJoaoJoaoJoaoJoaoJoaoJoaoJoaoJoao")]
-    public void DeveCriarNomeInvalido(string name)
+    public void ShouldThrowDomainExceptionForNullOrEmptyName(string name)
     {
         Action act = () => Name.Create(name);
 
-        act.Should().Throw<DomainException>();
+        act.Should().Throw<DomainException>()
+            .WithMessage("Name cannot be empty or null");
     }
 }

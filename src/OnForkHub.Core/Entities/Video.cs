@@ -1,5 +1,3 @@
-using OnForkHub.Core.Entities.Base;
-using OnForkHub.Core.Validations;
 using OnForkHub.Core.ValueObjects;
 
 namespace OnForkHub.Core.Entities;
@@ -8,29 +6,29 @@ public class Video : BaseEntity
 {
     private Video()
     {
-        _categorias = [];
+        _categories = [];
     }
 
-    private readonly List<Categoria> _categorias;
+    private readonly List<Category> _categories;
 
-    public IReadOnlyCollection<Categoria> Categorias => _categorias.AsReadOnly();
+    public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
 
-    public string Descricao { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
 
     public Title Title { get; private set; } = null!;
 
     public Url Url { get; private set; }
 
-    public long UsuarioId { get; private set; }
+    public long UserId { get; private set; }
 
-    public static Video Create(string title, string descricao, string url, long usuarioId)
+    public static Video Create(string title, string description, string url, long userId)
     {
         var video = new Video
         {
-            Title = Title.Create(title),
-            Descricao = descricao,
+            Title = Title.Create(title),  
+            Description = description,
             Url = Url.Create(url),
-            UsuarioId = usuarioId,
+            UserId = userId,
         };
 
         video.Validate();
@@ -40,9 +38,9 @@ public class Video : BaseEntity
     public static Video Load(
         long id,
         string title,
-        string descricao,
+        string description,
         string url,
-        long usuarioId,
+        long userId,
         DateTime createdAt,
         DateTime? updatedAt = null
     )
@@ -50,9 +48,9 @@ public class Video : BaseEntity
         var video = new Video
         {
             Title = Title.Create(title),
-            Descricao = descricao,
+            Description = description,
             Url = Url.Create(url),
-            UsuarioId = usuarioId,
+            UserId = userId,
         };
 
         video.SetId(id, createdAt, updatedAt);
@@ -60,49 +58,77 @@ public class Video : BaseEntity
         return video;
     }
 
-    public void AdicionarCategoria(Categoria categoria)
+    public void AddCategory(Category category)
     {
-        DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
+        DomainException.ThrowErrorWhen(() => category == null, $"{nameof(Category)} cannot be null");
 
-        if (!_categorias.Contains(categoria))
+        if (!_categories.Contains(category))
         {
-            _categorias.Add(categoria);
+            _categories.Add(category);
             Update();
         }
     }
 
-    public ValidationResult AtualizarDados(string title, string descricao, string url)
+
+    public void RemoveCategory(Category category)
+    {
+        DomainException.ThrowErrorWhen(() => category == null, $"{nameof(Category)} cannot be null");
+
+        if (_categories.Contains(category))
+        {
+            _categories.Remove(category);
+            Update();
+        }
+    }
+
+    public ValidationResult UpdateCategory(string title, string description, string url)
     {
         Title = Title.Create(title);
-        Descricao = descricao;
+        Description = description;
         Url = Url.Create(url);
 
         var validationResult = Validate();
-        if (validationResult.Errors.Count == 0)
+
+        if (!validationResult.IsValid)
         {
-            Update();
+            return validationResult;
         }
+
+        Update();
         return validationResult;
-    }
-
-    public void RemoverCategoria(Categoria categoria)
-    {
-        DomainException.ThrowErrorWhen(() => categoria == null, "Categoria não pode ser nula");
-
-        if (_categorias.Contains(categoria))
-        {
-            _categorias.Remove(categoria);
-            Update();
-        }
     }
 
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Descricao, "Descricao é obrigatória", "Descricao");
-        validationResult.AddErrorIf(Descricao.Length < 5, "Descricao deve ter pelo menos 5 caracteres", "Descricao");
-        validationResult.AddErrorIf(Descricao.Length > 200, "Descricao deve ter no máximo 200 caracteres", "Descricao");
-        validationResult.AddErrorIf(UsuarioId <= 0, "UsuarioId é obrigatório", "UsuarioId");
+        validationResult.AddErrorIfNullOrWhiteSpace(Title, $"{nameof(Title)} is required", nameof(Title));
+        validationResult.AddErrorIf(
+            Title.Length < 3,
+            $"{nameof(Title)} must be at least 3 characters long",
+            nameof(Title)
+        );
+        validationResult.AddErrorIf(
+            Title.Length > 50,
+            $"{nameof(Title)} must be no more than 50 characters",
+            nameof(Title)
+        );
+        validationResult.AddErrorIfNullOrWhiteSpace(
+            Description,
+            $"{nameof(Description)} is required",
+            nameof(Description)
+        );
+        validationResult.AddErrorIf(
+            Description.Length < 5,
+            $"{nameof(Description)} must be at least 5 characters",
+            nameof(Description)
+        );
+        validationResult.AddErrorIf(
+            Description.Length > 200,
+            $"{nameof(Description)} must be no more than 200 characters",
+            nameof(Description)
+        );
+        validationResult.AddErrorIf(UserId <= 0, $"{nameof(UserId)} is required", nameof(UserId));
+
         return validationResult;
     }
 

@@ -1,27 +1,28 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🎨 Formatando arquivos C# com CSharpier..."
-dotnet csharpier . --check || (
-    echo "❌ Alguns arquivos precisam de formatação. Executando o formatador..."
+echo "🚀 Preparing to push changes..."
+
+echo "🧪 Running unit tests..."
+if dotnet test --filter "Category=Unit" --logger "console;verbosity=detailed"; then
+    echo "✅ All unit tests passed successfully!"
+else
+    echo "❌ Some tests failed. Please fix them before pushing."
+    exit 1
+fi
+
+echo "🎨 Checking C# file formatting with CSharpier..."
+if dotnet csharpier . --check; then
+    echo "✅ All files are properly formatted."
+else
+    echo "❌ Some files need formatting. Formatting now..."
     dotnet csharpier .
-    echo "✅ Arquivos formatados com sucesso!"
+    echo "✅ Files formatted successfully. Adding to commit..."
     git add .
-)
+fi
 
-echo "🔍 Verificando estilo de código com dotnet format..."
-dotnet format style . --verify-no-changes --verbosity detailed || (
-    echo "❌ Problemas de estilo de código encontrados. Executando o formatador..."
-    dotnet format style .
-    echo "✅ Estilo de código corrigido com sucesso!"
-    git add .
-)
-
-echo "🚀 Pronto para fazer commit das mudanças!"
-
-echo "🛠️ Formatando arquivos em estágio..."
+echo "🛠️ Running format check on staged files..."
 dotnet husky run --name dotnet-format-csharpier
-dotnet husky run --name dotnet-format-staged-files
 
-echo "✅ Concluídas as alterações de pré-commit"
-dotnet husky run
+echo "🚀 Ready to commit changes!"
+echo "✅ Pre-commit checks completed successfully."
