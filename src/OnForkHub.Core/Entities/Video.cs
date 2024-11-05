@@ -17,17 +17,17 @@ public class Video : BaseEntity
 
     public string Descricao { get; private set; } = string.Empty;
 
-    public string Titulo { get; private set; } = null!;
+    public Title Title { get; private set; } = null!;
 
     public Url Url { get; private set; }
 
     public long UsuarioId { get; private set; }
 
-    public static Video Create(string titulo, string descricao, string url, long usuarioId)
+    public static Video Create(string title, string descricao, string url, long usuarioId)
     {
         var video = new Video
         {
-            Titulo = titulo,
+            Title = Title.Create(title),
             Descricao = descricao,
             Url = Url.Create(url),
             UsuarioId = usuarioId,
@@ -39,7 +39,7 @@ public class Video : BaseEntity
 
     public static Video Load(
         long id,
-        string titulo,
+        string title,
         string descricao,
         string url,
         long usuarioId,
@@ -49,7 +49,7 @@ public class Video : BaseEntity
     {
         var video = new Video
         {
-            Titulo = titulo,
+            Title = Title.Create(title),
             Descricao = descricao,
             Url = Url.Create(url),
             UsuarioId = usuarioId,
@@ -71,9 +71,9 @@ public class Video : BaseEntity
         }
     }
 
-    public ValidationResult AtualizarDados(string titulo, string descricao, string url)
+    public ValidationResult AtualizarDados(string title, string descricao, string url)
     {
-        Titulo = titulo;
+        Title = Title.Create(title);
         Descricao = descricao;
         Url = Url.Create(url);
 
@@ -99,14 +99,10 @@ public class Video : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Titulo, "Titulo é obrigatório", "Titulo");
-        validationResult.AddErrorIf(Titulo.Length < 3, "Titulo deve ter pelo menos 3 caracteres", "Titulo");
-        validationResult.AddErrorIf(Titulo.Length > 50, "Titulo deve ter no máximo 50 caracteres", "Titulo");
         validationResult.AddErrorIfNullOrWhiteSpace(Descricao, "Descricao é obrigatória", "Descricao");
         validationResult.AddErrorIf(Descricao.Length < 5, "Descricao deve ter pelo menos 5 caracteres", "Descricao");
         validationResult.AddErrorIf(Descricao.Length > 200, "Descricao deve ter no máximo 200 caracteres", "Descricao");
         validationResult.AddErrorIf(UsuarioId <= 0, "UsuarioId é obrigatório", "UsuarioId");
-
         return validationResult;
     }
 

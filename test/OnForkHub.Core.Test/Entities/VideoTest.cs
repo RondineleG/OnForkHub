@@ -15,7 +15,7 @@ public class VideoTests
         var video = Video.Create(titulo, descricao, url, usuarioId);
 
         video.Should().NotBeNull();
-        video.Titulo.Should().Be(titulo);
+        video.Title.Value.Should().Be(titulo);
         video.Descricao.Should().Be(descricao);
         video.Url.Value.Should().Be(url);
         video.UsuarioId.Should().Be(usuarioId);
@@ -31,12 +31,9 @@ public class VideoTests
         var url = "https://example.com/video";
         var usuarioId = 1L;
 
-        var video = Video.Create(titulo, descricao, url, usuarioId);
-        var validationResult = video.Validate();
+        Action act = () => Video.Create(titulo, descricao, url, usuarioId);
 
-        validationResult
-            .Errors.Should()
-            .ContainSingle(error => error.Message == "Titulo é obrigatório" && error.Field == "Titulo");
+        act.Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -55,7 +52,7 @@ public class VideoTests
 
         video.Should().NotBeNull();
         video.Id.Should().Be(id);
-        video.Titulo.Should().Be(titulo);
+        video.Title.Value.Should().Be(titulo);
         video.Descricao.Should().Be(descricao);
         video.Url.Value.Should().Be(url);
         video.UsuarioId.Should().Be(usuarioId);
@@ -74,7 +71,7 @@ public class VideoTests
 
         video.AtualizarDados(novoTitulo, novaDescricao, novaUrl);
 
-        video.Titulo.Should().Be(novoTitulo);
+        video.Title.Value.Should().Be(novoTitulo);
         video.Descricao.Should().Be(novaDescricao);
         video.Url.Value.Should().Be(novaUrl);
     }
@@ -89,13 +86,9 @@ public class VideoTests
         var novaDescricao = "Nova descrição";
         var novaUrl = "https://new.com/video";
 
-        var validationResult = video.AtualizarDados(novoTitulo, novaDescricao, novaUrl);
+        Action act = () => video.AtualizarDados(novoTitulo, novaDescricao, novaUrl);
 
-        validationResult
-            .Errors.Should()
-            .ContainSingle(error =>
-                error.Message == "Titulo deve ter pelo menos 3 caracteres" && error.Field == "Titulo"
-            );
+        act.Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -171,13 +164,8 @@ public class VideoTests
         var url = "https://example.com/video";
         var usuarioId = 1L;
 
-        var video = Video.Create(titulo, descricao, url, usuarioId);
-        var validationResult = video.Validate();
+        Action act = () => Video.Create(titulo, descricao, url, usuarioId);
 
-        validationResult
-            .Errors.Should()
-            .ContainSingle(error =>
-                error.Message == "Titulo deve ter no máximo 50 caracteres" && error.Field == "Titulo"
-            );
+        act.Should().Throw<DomainException>();
     }
 }
