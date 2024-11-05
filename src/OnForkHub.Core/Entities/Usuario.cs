@@ -15,21 +15,20 @@ public class Usuario : BaseEntity
 
     public Email Email { get; private set; }
 
-    public string Nome { get; private set; } = null!;
+    public Name Name { get; private set; } = null!;
 
     public IReadOnlyCollection<Video> Videos => _videos.AsReadOnly();
 
-    public static Usuario Create(string nome, string email)
+    public static Usuario Create(string name, string email)
     {
-        var usuario = new Usuario { Nome = nome, Email = Email.Create(email) };
-
+        var usuario = new Usuario { Name = Name.Create(name), Email = Email.Create(email) };
         usuario.Validate();
         return usuario;
     }
 
-    public static Usuario Load(long id, string nome, string email, DateTime createdAt, DateTime? updatedAt = null)
+    public static Usuario Load(long id, string name, string email, DateTime createdAt, DateTime? updatedAt = null)
     {
-        var usuario = new Usuario { Nome = nome, Email = Email.Create(email) };
+        var usuario = new Usuario { Name = Name.Create(name), Email = Email.Create(email) };
 
         usuario.SetId(id, createdAt, updatedAt);
         usuario.Validate();
@@ -43,17 +42,17 @@ public class Usuario : BaseEntity
         Update();
     }
 
-    public void AtualizarDados(string nome, string email)
+    public void AtualizarDados(string name, string email)
     {
-        Nome = nome;
+        Name = Name.Create(name);
         Email = Email.Create(email);
         Validate();
         Update();
     }
 
-    public void AtualizarNome(string nome)
+    public void AtualizarNome(string name)
     {
-        Nome = nome;
+        Name = Name.Create(name);
         Validate();
         Update();
     }
@@ -65,14 +64,10 @@ public class Usuario : BaseEntity
         Update();
     }
 
+    //Validação está sendo feita dentro de ValueObjects
     public override ValidationResult Validate()
     {
-        var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Nome, "Nome é obrigatório", "Nome");
-        validationResult.AddErrorIf(Nome.Length < 3, "Nome deve ter pelo menos 3 caracteres", "Nome");
-        validationResult.AddErrorIf(Nome.Length > 50, "Nome deve ter no máximo 50 caracteres", "Nome");
-        validationResult.ThrowIfInvalid("Nome do usuário é inválido");
-        return validationResult;
+        return new ValidationResult();
     }
 
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)

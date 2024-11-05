@@ -10,7 +10,7 @@ public class UsuarioTest
         var usuario = Usuario.Create("João Silva", "joao@email.com");
 
         usuario.Should().NotBeNull();
-        usuario.Nome.Should().Be("João Silva");
+        usuario.Name.Value.Should().Be("João Silva");
         usuario.Email.Value.Should().Be("joao@email.com");
         usuario.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         usuario.UpdatedAt.Should().BeNull();
@@ -26,7 +26,7 @@ public class UsuarioTest
     {
         Action act = () => Usuario.Create(nomeInvalido, "email@test.com");
 
-        act.Should().Throw<DomainException>().WithMessage("Nome do usuário é inválido");
+        act.Should().Throw<DomainException>();
     }
 
     [Theory]
@@ -51,7 +51,7 @@ public class UsuarioTest
         usuario.AtualizarNome("João Pereira");
         usuario.AtualizarEmail("joao.pereira@email.com");
 
-        usuario.Nome.Should().Be("João Pereira");
+        usuario.Name.Value.Should().Be("João Pereira");
         usuario.Email.Value.Should().Be("joao.pereira@email.com");
         usuario.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
@@ -65,7 +65,7 @@ public class UsuarioTest
 
         Action act = () => usuario.AtualizarNome("Jo");
 
-        act.Should().Throw<DomainException>().WithMessage("Nome do usuário é inválido");
+        act.Should().Throw<DomainException>();
     }
 
     [Fact]
