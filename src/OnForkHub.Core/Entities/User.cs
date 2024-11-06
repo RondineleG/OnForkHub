@@ -13,11 +13,11 @@ public class User : BaseEntity
 
     public Email Email { get; private set; }
 
-    public string Name { get; private set; } = null!;
+    public Name Name { get; private set; } = null!;
 
     public IReadOnlyCollection<Video> Videos => _videos.AsReadOnly();
 
-    public static User Create(string name, string email)
+    public static User Create(Name name, string email)
     {
         var user = new User { Name = name, Email = Email.Create(email) };
 
@@ -25,7 +25,7 @@ public class User : BaseEntity
         return user;
     }
 
-    public static User Load(long id, string name, string email, DateTime createdAt, DateTime? updatedAt = null)
+    public static User Load(long id, Name name, string email, DateTime createdAt, DateTime? updatedAt = null)
     {
         var user = new User { Name = name, Email = Email.Create(email) };
 
@@ -41,7 +41,7 @@ public class User : BaseEntity
         Update();
     }
 
-    public void UpdateData(string name, string email)
+    public void UpdateData(Name name, string email)
     {
         Name = name;
         Email = Email.Create(email);
@@ -56,7 +56,7 @@ public class User : BaseEntity
         Update();
     }
 
-    public void UpdateName(string name)
+    public void UpdateName(Name name)
     {
         Name = name;
         Validate();
@@ -65,15 +65,7 @@ public class User : BaseEntity
 
     public override ValidationResult Validate()
     {
-        var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Name, $"{nameof(Name)} is required", nameof(Name));
-        validationResult.AddErrorIf(Name.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Category));
-        validationResult.AddErrorIf(
-            Name.Length > 50,
-            $"{nameof(Name)} must be no more than 50 characters",
-            nameof(Category)
-        );
-        validationResult.ThrowIfInvalid("User name is invalid");
+        var validationResult = Name.Validate();
         return validationResult;
     }
 

@@ -7,7 +7,7 @@ public class CategoryTests
     [DisplayName("Should create category successfully when data is valid")]
     public void ShouldCreateCategorySuccessfullyWhenDataIsValid()
     {
-        var name = "Category Test";
+        var name = Name.Create("Category Test");
         var description = "Category description";
 
         var result = Category.Create(name, description);
@@ -24,7 +24,7 @@ public class CategoryTests
     public void ShouldLoadCategorySuccessfullyWhenDataIsValid()
     {
         var id = 1L;
-        var name = "Category Test";
+        var name = Name.Create("Category Test"); ;
         var description = "Category description";
         var createdAt = DateTime.Now;
 
@@ -38,20 +38,22 @@ public class CategoryTests
         result.Data.CreatedAt.Should().Be(createdAt);
     }
 
+
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return error when creating category with empty name")]
-    public void ShouldReturnErrorWhenCreatingCategoryWithEmptyName()
+    [DisplayName("Should throw DomainException when creating category with empty name")]
+    public void ShouldThrowDomainExceptionWhenCreatingCategoryWithEmptyName()
     {
-        var name = "";
+        var name = "";   
         var description = "Category description";
 
-        var result = Category.Create(name, description);
+        Action action = () => Category.Create(Name.Create(name), description);
 
-        result.Status.Should().Be(EResultStatus.HasError);
-        result.RequestError.Should().NotBeNull();
-        result.RequestError!.Description.Should().Contain("Name is required");
+        action.Should()
+            .Throw<DomainException>()
+            .WithMessage("Name cannot be empty or null");
     }
+
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -59,7 +61,7 @@ public class CategoryTests
     public void ShouldReturnErrorWhenLoadingCategoryWithInvalidId()
     {
         var id = 0L;
-        var name = "Category Test";
+        var name = Name.Create("Category Test");
         var description = "Category description";
         var createdAt = DateTime.Now;
 
@@ -72,7 +74,7 @@ public class CategoryTests
     [DisplayName("Should return error when validating name with more than 50 characters")]
     public void ShouldReturnErrorWhenValidatingNameWithMoreThan50Characters()
     {
-        var name = new string('A', 51);
+        var name = Name.Create(new string('A', 51));
         var description = "Valid description";
 
         var result = Category.Create(name, description);
@@ -81,26 +83,15 @@ public class CategoryTests
         result.RequestError!.Description.Should().Contain("Name must be no more than 50 characters");
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return validation error for null or empty name")]
-    public void ShouldReturnValidationErrorForNullOrEmptyName()
-    {
-        var category = Category.Create("Initial Category", "Initial description").Data!;
-
-        category.UpdateCategory("", "New description");
-
-        var validationResult = category.Validate();
-        validationResult.Errors.Should().ContainSingle(error => error.Message == "Name is required");
-    }
 
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should update category data successfully when data is valid")]
     public void ShouldUpdateCategoryDataSuccessfullyWhenDataIsValid()
     {
-        var category = Category.Create("Original Category", "Original description").Data!;
-        var newName = "Updated Category";
+        var name = Name.Create("Original Category");
+        var category = Category.Create(name, "Original description").Data!;
+        var newName = Name.Create("Updated Category");
         var newDescription = "Updated description";
 
         var result = category.UpdateCategory(newName, newDescription);
@@ -115,7 +106,9 @@ public class CategoryTests
     [DisplayName("Should validate category correctly")]
     public void ShouldValidateCategoryCorrectly()
     {
-        var category = Category.Create("Valid Category", "Valid description").Data!;
+        var name = Name.Create("Valid Category");
+
+        var category = Category.Create(name, "Valid description").Data!;
 
         var validationResult = category.Validate();
 

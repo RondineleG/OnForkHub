@@ -97,6 +97,12 @@ public sealed class ValidationResult
         return this;
     }
 
+    public ValidationResult AddErrorI<T>(T value, string errorMessage, string fieldName = "")
+    where T : class
+    {
+        return AddErrorIf(value == null, errorMessage, fieldName);
+    }
+
     public ValidationResult AddErrorIfNull<T>(T value, string errorMessage, string fieldName = "")
         where T : class
     {

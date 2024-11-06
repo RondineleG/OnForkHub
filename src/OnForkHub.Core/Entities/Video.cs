@@ -15,7 +15,7 @@ public class Video : BaseEntity
 
     public string Description { get; private set; } = string.Empty;
 
-    public string Title { get; private set; } = null!;
+    public Title Title { get; private set; } = null!;
 
     public Url Url { get; private set; }
 
@@ -25,7 +25,7 @@ public class Video : BaseEntity
     {
         var video = new Video
         {
-            Title = title,
+            Title = Title.Create(title),
             Description = description,
             Url = Url.Create(url),
             UserId = userId,
@@ -47,7 +47,7 @@ public class Video : BaseEntity
     {
         var video = new Video
         {
-            Title = title,
+            Title = Title.Create(title),
             Description = description,
             Url = Url.Create(url),
             UserId = userId,
@@ -69,6 +69,7 @@ public class Video : BaseEntity
         }
     }
 
+
     public void RemoveCategory(Category category)
     {
         DomainException.ThrowErrorWhen(() => category == null, $"{nameof(Category)} cannot be null");
@@ -82,7 +83,7 @@ public class Video : BaseEntity
 
     public ValidationResult UpdateCategory(string title, string description, string url)
     {
-        Title = title;
+        Title = Title.Create(title);
         Description = description;
         Url = Url.Create(url);
 
@@ -100,17 +101,6 @@ public class Video : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Title, $"{nameof(Title)} is required", nameof(Title));
-        validationResult.AddErrorIf(
-            Title.Length < 3,
-            $"{nameof(Title)} must be at least 3 characters long",
-            nameof(Title)
-        );
-        validationResult.AddErrorIf(
-            Title.Length > 50,
-            $"{nameof(Title)} must be no more than 50 characters",
-            nameof(Title)
-        );
         validationResult.AddErrorIfNullOrWhiteSpace(
             Description,
             $"{nameof(Description)} is required",
@@ -127,6 +117,7 @@ public class Video : BaseEntity
             nameof(Description)
         );
         validationResult.AddErrorIf(UserId <= 0, $"{nameof(UserId)} is required", nameof(UserId));
+        validationResult = Title.Validate().Merge(validationResult); //Merge Video validation errors with Title validation errors
 
         return validationResult;
     }

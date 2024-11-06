@@ -33,7 +33,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public ValidationResult ValidationResult { get; protected set; }
 
-    public IEnumerable<RequestValidation> Validations { get; protected init; } = Enumerable.Empty<RequestValidation>();
+    public IEnumerable<RequestValidation> Validations { get; protected init; } = [];
 
     public static RequestResult EntityAlreadyExists(string entity, object id, string description)
     {
