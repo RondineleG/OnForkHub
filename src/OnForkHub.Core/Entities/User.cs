@@ -65,15 +65,7 @@ public class User : BaseEntity
 
     public override ValidationResult Validate()
     {
-        var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Name.Value, $"{nameof(Name)} is required", nameof(Name));
-        validationResult.AddErrorIf(Name.Value.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Category));
-        validationResult.AddErrorIf(
-            Name.Value.Length > 50,
-            $"{nameof(Name)} must be no more than 50 characters",
-            nameof(Category)
-        );
-        validationResult.ThrowIfInvalid("User name is invalid");
+        var validationResult = Name.Validate();
         return validationResult;
     }
 

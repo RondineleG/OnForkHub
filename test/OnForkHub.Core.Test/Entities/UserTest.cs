@@ -11,11 +11,11 @@ public class UserTests
     [DisplayName("Should create user successfully")]
     public void ShouldCreateUserSuccessfully()
     {
-        var name = Name.Create("John Silva");    
+        var name = Name.Create("John Silva");
         var user = User.Create(name, "john@email.com");
 
         user.Should().NotBeNull();
-        user.Name.Should().Be(name);     
+        user.Name.Should().Be(name);
         user.Email.Value.Should().Be("john@email.com");
         user.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         user.UpdatedAt.Should().BeNull();
@@ -93,14 +93,15 @@ public class UserTests
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should throw exception when updating user with invalid name")]
-    public void ShouldThrowExceptionWhenUpdatingWithInvalidName()
+    public void ShouldReturnValidationErrorWhenUpdatingWithInvalidName()
     {
         var name = Name.Create("John Silva");
         var user = User.Create(name, "john@email.com");
 
-        Action act = () => user.UpdateName(Name.Create("Jo"));
+        user.UpdateName(Name.Create("Jo"));
+        var validationResult = user.Validate();
 
-        act.Should().Throw<DomainException>().WithMessage("User name is invalid");
+        validationResult.Errors.Should().ContainSingle(error => error.Message == $"Name must be at least 3 characters long" && error.Field == "Name");
     }
 
     [Fact]

@@ -70,9 +70,7 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error =>
-                error.Message == "Title must be at least 3 characters long" && error.Field == nameof(Video.Title)
-            );
+            .ContainSingle(error => error.Message == "Title must be at least 3 characters long" && error.Field == nameof(Video.Title));
     }
 
     [Fact]
@@ -126,7 +124,7 @@ public class VideoTests
         var video = Video.Create(title, description, url, userId);
 
         video.Should().NotBeNull();
-        video.Title.Should().Be(title);
+        video.Title.Value.Should().Be(title);
         video.Description.Should().Be(description);
         video.Url.Value.Should().Be(url);
         video.UserId.Should().Be(userId);
@@ -148,7 +146,7 @@ public class VideoTests
 
         video.Should().NotBeNull();
         video.Id.Should().Be(id);
-        video.Title.Should().Be(title);
+        video.Title.Value.Should().Be(title);
         video.Description.Should().Be(description);
         video.Url.Value.Should().Be(url);
         video.UserId.Should().Be(userId);
@@ -167,7 +165,7 @@ public class VideoTests
 
         video.UpdateCategory(newTitle, newDescription, newUrl);
 
-        video.Title.Should().Be(newTitle);
+        video.Title.Value.Should().Be(newTitle);
         video.Description.Should().Be(newDescription);
         video.Url.Value.Should().Be(newUrl);
     }
