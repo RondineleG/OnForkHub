@@ -1,12 +1,12 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🚀 Pronto para enviar as mudanças!"
+echo "🚀 Preparing to push changes..."
 
-echo "🧪 Executando testes unitários..."
-dotnet test --filter "Category=Unit" --logger "console;verbosity=detailed" || (
-    echo "❌ Alguns testes falharam. Corrija os testes antes de fazer push."
+echo "🧪 Running unit tests..."
+if dotnet test --filter "Category=Unit" --logger "console;verbosity=detailed"; then
+    echo "✅ All unit tests passed successfully!"
+else
+    echo "❌ Some tests failed. Please fix them before pushing."
     exit 1
-)
-
-echo "✅ Todos os testes passaram!"
+fi

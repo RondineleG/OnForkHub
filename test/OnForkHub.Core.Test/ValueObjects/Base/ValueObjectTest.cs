@@ -2,39 +2,26 @@ using OnForkHub.Core.ValueObjects.Base;
 
 namespace OnForkHub.Core.Test.ValueObjects.Base;
 
-public class SampleValueObject(int property1, string property2) : ValueObject
-{
-    public int Property1 { get; } = property1;
-    public string Property2 { get; } = property2;
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Property1;
-        yield return Property2;
-    }
-}
-
 public class ValueObjectTests
 {
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve considerar objetos como iguais quando propriedades são iguais")]
-    public void DeveConsiderarObjetosComoIguaisQuandoPropriedadesSaoIguais()
+    [DisplayName("Should consider both objects equal when both are null")]
+    public void ShouldConsiderBothObjectsEqualWhenBothAreNull()
     {
-        var obj1 = new SampleValueObject(1, "Test");
-        var obj2 = new SampleValueObject(1, "Test");
+        SampleValueObjectTestFixture obj1 = null;
+        SampleValueObjectTestFixture obj2 = null;
 
-        obj1.Equals(obj2).Should().BeTrue();
-        obj1.Should().Be(obj2);
+        ValueObject.EqualOperator(obj1, obj2).Should().BeTrue();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve considerar objetos como diferentes quando propriedades são diferentes")]
-    public void DeveConsiderarObjetosComoDiferentesQuandoPropriedadesSaoDiferentes()
+    [DisplayName("Should consider objects different when properties are different")]
+    public void ShouldConsiderObjectsDifferentWhenPropertiesAreDifferent()
     {
-        var obj1 = new SampleValueObject(1, "Test");
-        var obj2 = new SampleValueObject(2, "Different");
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        var obj2 = new SampleValueObjectTestFixture(2, "Different");
 
         obj1.Equals(obj2).Should().BeFalse();
         obj1.Should().NotBe(obj2);
@@ -42,42 +29,80 @@ public class ValueObjectTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar falso ao comparar com null")]
-    public void DeveRetornarFalsoAoCompararComNull()
+    [DisplayName("Should consider objects equal when properties are equal")]
+    public void ShouldConsiderObjectsEqualWhenPropertiesAreEqual()
     {
-        var obj1 = new SampleValueObject(1, "Test");
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        var obj2 = new SampleValueObjectTestFixture(1, "Test");
 
-        obj1.Equals(null).Should().BeFalse();
+        obj1.Equals(obj2).Should().BeTrue();
+        obj1.Should().Be(obj2);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar hash code igual para objetos com propriedades iguais")]
-    public void DeveRetornarHashCodeIgualParaObjetosComPropriedadesIguais()
+    [DisplayName("Should consider objects with different property values not equal using implicit equality")]
+    public void ShouldConsiderObjectsWithDifferentPropertyValuesNotEqualUsingImplicitEquality()
     {
-        var obj1 = new SampleValueObject(1, "Test");
-        var obj2 = new SampleValueObject(1, "Test");
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        var obj2 = new SampleValueObjectTestFixture(2, "Another");
 
-        obj1.GetHashCode().Should().Be(obj2.GetHashCode());
+        (obj1 != obj2).Should().BeTrue();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar hash code diferente para objetos com propriedades diferentes")]
-    public void DeveRetornarHashCodeDiferenteParaObjetosComPropriedadesDiferentes()
+    [DisplayName("Should consider objects with identical property values equal using implicit equality")]
+    public void ShouldConsiderObjectsWithIdenticalPropertyValuesEqualUsingImplicitEquality()
     {
-        var obj1 = new SampleValueObject(1, "Test");
-        var obj2 = new SampleValueObject(2, "Different");
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        var obj2 = new SampleValueObjectTestFixture(1, "Test");
+
+        (obj1 == obj2).Should().BeTrue();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return consistent hash codes on consecutive calls")]
+    public void ShouldReturnConsistentHashCodesOnConsecutiveCalls()
+    {
+        var obj = new SampleValueObjectTestFixture(1, "Consistent");
+
+        var hash1 = obj.GetHashCode();
+        var hash2 = obj.GetHashCode();
+
+        hash1.Should().Be(hash2);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return different hash code for objects with different properties")]
+    public void ShouldReturnDifferentHashCodeForObjectsWithDifferentProperties()
+    {
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        var obj2 = new SampleValueObjectTestFixture(2, "Different");
 
         obj1.GetHashCode().Should().NotBe(obj2.GetHashCode());
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar falso ao comparar tipos diferentes")]
-    public void DeveRetornarFalsoAoCompararTiposDiferentes()
+    [DisplayName("Should return false when comparing a null object with a non-null object")]
+    public void ShouldReturnFalseWhenComparingNullWithNonNull()
     {
-        var obj1 = new SampleValueObject(1, "Test");
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        SampleValueObjectTestFixture obj2 = null;
+
+        ValueObject.EqualOperator(obj1, obj2).Should().BeFalse();
+        ValueObject.EqualOperator(obj2, obj1).Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return false when comparing with different types")]
+    public void ShouldReturnFalseWhenComparingWithDifferentTypes()
+    {
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
         var differentTypeObj = "I am not a ValueObject";
 
         obj1.Equals(differentTypeObj).Should().BeFalse();
@@ -85,24 +110,37 @@ public class ValueObjectTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve considerar objetos como iguais quando ambos são null")]
-    public void DeveConsiderarObjetosComoIguaisQuandoAmbosSaoNull()
+    [DisplayName("Should return false when comparing with null")]
+    public void ShouldReturnFalseWhenComparingWithNull()
     {
-        SampleValueObject obj1 = null;
-        SampleValueObject obj2 = null;
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
 
-        ValueObject.EqualOperator(obj1, obj2).Should().BeTrue();
+        obj1.Equals(null).Should().BeFalse();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve retornar falso ao comparar um objeto null com um não-null")]
-    public void DeveRetornarFalsoAoCompararUmObjetoNullComUmNaoNull()
+    [DisplayName("Should return same hash code for objects with equal properties")]
+    public void ShouldReturnSameHashCodeForObjectsWithEqualProperties()
     {
-        var obj1 = new SampleValueObject(1, "Test");
-        SampleValueObject obj2 = null;
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        var obj2 = new SampleValueObjectTestFixture(1, "Test");
 
-        ValueObject.EqualOperator(obj1, obj2).Should().BeFalse();
-        ValueObject.EqualOperator(obj2, obj1).Should().BeFalse();
+        obj1.GetHashCode().Should().Be(obj2.GetHashCode());
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should support using equality comparison in collections")]
+    public void ShouldSupportUsingEqualityComparisonInCollections()
+    {
+        var obj1 = new SampleValueObjectTestFixture(1, "Test");
+        var obj2 = new SampleValueObjectTestFixture(1, "Test");
+        var obj3 = new SampleValueObjectTestFixture(2, "Different");
+
+        var set = new HashSet<SampleValueObjectTestFixture> { obj1, obj3 };
+
+        set.Contains(obj2).Should().BeTrue();
+        set.Contains(new SampleValueObjectTestFixture(2, "Different")).Should().BeTrue();
     }
 }
