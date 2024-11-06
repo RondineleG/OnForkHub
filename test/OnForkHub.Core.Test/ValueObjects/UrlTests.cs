@@ -4,45 +4,96 @@ public class UrlTests
 {
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve criar uma URL válida quando o formato é correto")]
-    public void DeveCriarUrlValida()
+    [DisplayName("Should allow URLs with query parameters")]
+    public void ShouldAllowUrlsWithQueryParameters()
     {
-        var url = Url.Create("https://www.exemplo.com");
-        url.Value.Should().Be("https://www.exemplo.com");
+        var url = Url.Create("https://www.example.com?query=test");
+        url.Value.Should().Be("https://www.example.com?query=test");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should consider URLs equal ignoring case")]
+    public void ShouldConsiderUrlsEqualIgnoringCase()
+    {
+        var url1 = Url.Create("https://www.EXAMPLE.com");
+        var url2 = Url.Create("https://www.example.com");
+
+        url1.Should().Be(url2);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should create a valid URL when the format is correct")]
+    public void ShouldCreateValidUrl()
+    {
+        var url = Url.Create("https://www.example.com");
+        url.Value.Should().Be("https://www.example.com");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should handle URLs with trailing slashes as equal")]
+    public void ShouldHandleUrlsWithTrailingSlashesAsEqual()
+    {
+        var url1 = Url.Create("https://www.example.com/");
+        var url2 = Url.Create("https://www.example.com");
+
+        url1.Should().Be(url2);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return consistent hash code for identical URLs")]
+    public void ShouldReturnConsistentHashCodeForIdenticalUrls()
+    {
+        var url1 = Url.Create("https://www.example.com");
+        var url2 = Url.Create("https://www.example.com");
+
+        url1.GetHashCode().Should().Be(url2.GetHashCode());
     }
 
     [Theory]
     [Trait("Category", "Unit")]
     [InlineData("")]
     [InlineData("   ")]
-    [DisplayName("Deve lançar exceção para URL vazia ou apenas com espaços em branco")]
-    public void DeveLancarExcecaoParaUrlVazia(string urlValor)
+    [DisplayName("Should throw exception for empty or whitespace-only URL")]
+    public void ShouldThrowExceptionForEmptyUrl(string urlValue)
     {
-        Action action = () => Url.Create(urlValor);
-        action.Should().Throw<DomainException>().WithMessage("URL não pode ser vazia");
+        Action action = () => Url.Create(urlValue);
+        action.Should().Throw<DomainException>().WithMessage("URL cannot be empty");
     }
 
     [Theory]
     [Trait("Category", "Unit")]
-    [InlineData("htp://endereco_invalido")]
-    [InlineData("www.exemplo.com")]
+    [InlineData("htp://invalid_address")]
+    [InlineData("www.example.com")]
     [InlineData("https://")]
-    [InlineData("exemplo")]
-    [DisplayName("Deve lançar exceção para formatos inválidos de URL")]
-    public void DeveLancarExcecaoParaFormatoInvalido(string urlInvalida)
+    [InlineData("example")]
+    [DisplayName("Should throw exception for invalid URL formats")]
+    public void ShouldThrowExceptionForInvalidFormat(string invalidUrl)
     {
-        Action action = () => Url.Create(urlInvalida);
-        action.Should().Throw<DomainException>().WithMessage("URL inválida");
+        Action action = () => Url.Create(invalidUrl);
+        action.Should().Throw<DomainException>().WithMessage("Invalid URL");
+    }
+
+    // Additional Scenarios
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw exception when URL scheme is not HTTP or HTTPS")]
+    public void ShouldThrowExceptionForInvalidUrlScheme()
+    {
+        Action action = () => Url.Create("ftp://www.example.com");
+        action.Should().Throw<DomainException>().WithMessage("Invalid URL");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve considerar URLs iguais ignorando maiúsculas e minúsculas")]
-    public void DeveConsiderarUrlsIguaisIgnorandoMaiusculasEMinusculas()
+    [DisplayName("Should throw exception for URL with unsupported characters")]
+    public void ShouldThrowExceptionForUrlWithUnsupportedCharacters()
     {
-        var url1 = Url.Create("https://www.EXEMPLO.com");
-        var url2 = Url.Create("https://www.exemplo.com");
-
-        url1.Should().Be(url2);
+        Action action = () => Url.Create("https://exa<>mple.com");
+        action.Should().Throw<DomainException>().WithMessage("Invalid URL");
     }
 }

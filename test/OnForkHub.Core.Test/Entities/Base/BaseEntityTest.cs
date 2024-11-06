@@ -4,44 +4,11 @@ public class BaseEntityTests
 {
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve definir CreatedAt corretamente ao instanciar a entidade")]
-    public void CreatedAtNaoDeveSerDefaultAoInstanciarEntidade()
+    [DisplayName("Should set CreatedAt correctly when instantiating entity")]
+    public void CreatedAtShouldNotBeDefaultWhenInstantiatingEntity()
     {
-        var entidade = new EntidadeValidaTestFixture();
-        entidade.CreatedAt.Should().NotBe(default);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve atualizar UpdatedAt quando executar método Update")]
-    public void DeveAtualizarDataAtualizacaoQuandoExecutarUpdate()
-    {
-        var entidade = new EntidadeValidaTestFixture();
-        var antesDoUpdate = DateTime.UtcNow;
-
-        entidade.ExecutarUpdate();
-
-        entidade.UpdatedAt.Should().NotBeNull();
-        entidade.UpdatedAt.Should().BeCloseTo(antesDoUpdate, TimeSpan.FromSeconds(1));
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve atualizar UpdatedAt para horário recente ao chamar Update várias vezes")]
-    public void DeveAtualizarUpdatedAtParaHorarioRecenteAposExecutarUpdateVariasVezes()
-    {
-        var entidade = new EntidadeValidaTestFixture();
-
-        entidade.ExecutarUpdate();
-        var primeiraAtualizacao = entidade.UpdatedAt;
-
-        Thread.Sleep(100);
-
-        entidade.ExecutarUpdate();
-        var segundaAtualizacao = entidade.UpdatedAt;
-
-        primeiraAtualizacao.Should().NotBe(segundaAtualizacao);
-        segundaAtualizacao.Should().BeAfter(primeiraAtualizacao.Value);
+        var entity = new ValidEntityTestFixture();
+        entity.CreatedAt.Should().NotBe(default);
     }
 
     [Theory]
@@ -49,45 +16,90 @@ public class BaseEntityTests
     [InlineData(100)]
     [InlineData(long.MaxValue)]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve criar entidade com ID válido")]
-    public void DeveCriarEntidadeQuandoIdForValido(long id)
+    [DisplayName("Should create entity with valid ID")]
+    public void ShouldCreateEntityWhenIdIsValid(long id)
     {
-        var dataCriacao = DateTime.UtcNow;
+        var creationDate = DateTime.UtcNow;
 
-        var entidade = new EntidadeValidaTestFixture(id, dataCriacao);
+        var entity = new ValidEntityTestFixture(id, creationDate);
 
-        entidade.Id.Should().Be(id);
-        entidade.CreatedAt.Should().Be(dataCriacao);
-        entidade.UpdatedAt.Should().BeNull();
+        entity.Id.Should().Be(id);
+        entity.CreatedAt.Should().Be(creationDate);
+        entity.UpdatedAt.Should().BeNull();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve definir todas as propriedades ao fornecer uma data de atualização")]
-    public void DeveDefinirTodasPropriedadesQuandoInformarDataAtualizacao()
+    [DisplayName("Should initialize properties when using default constructor")]
+    public void ShouldInitializePropertiesWhenUsingDefaultConstructor()
+    {
+        var entity = new ValidEntityTestFixture();
+        var currentDate = DateTime.UtcNow;
+
+        entity.CreatedAt.Should().BeCloseTo(currentDate, TimeSpan.FromSeconds(1));
+        entity.UpdatedAt.Should().BeNull();
+        entity.Id.Should().Be(0);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should maintain CreatedAt in UTC time zone")]
+    public void ShouldMaintainCreatedAtInUtcTimeZone()
+    {
+        var creationDate = new DateTime(2022, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var entity = new ValidEntityTestFixture(1, creationDate);
+
+        entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
+        entity.CreatedAt.Should().Be(creationDate);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should not change UpdatedAt without calling UpdateCategory method")]
+    public void ShouldNotChangeUpdatedAtWithoutCallingUpdateMethod()
+    {
+        var entity = new ValidEntityTestFixture();
+        entity.UpdatedAt.Should().BeNull();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should set all properties when providing an update date")]
+    public void ShouldSetAllPropertiesWhenProvidingUpdateDate()
     {
         var id = 1L;
-        var dataCriacao = DateTime.UtcNow.AddDays(-1);
-        var dataAtualizacao = DateTime.UtcNow;
+        var creationDate = DateTime.UtcNow.AddDays(-1);
+        var updateDate = DateTime.UtcNow;
 
-        var entidade = new EntidadeValidaTestFixture(id, dataCriacao, dataAtualizacao);
+        var entity = new ValidEntityTestFixture(id, creationDate, updateDate);
 
-        entidade.Id.Should().Be(id);
-        entidade.CreatedAt.Should().Be(dataCriacao);
-        entidade.UpdatedAt.Should().Be(dataAtualizacao);
+        entity.Id.Should().Be(id);
+        entity.CreatedAt.Should().Be(creationDate);
+        entity.UpdatedAt.Should().Be(updateDate);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve inicializar propriedades ao usar o construtor padrão")]
-    public void DeveInicializarPropriedadesQuandoUsarConstrutorPadrao()
+    [DisplayName("Should throw exception for ID with maximum negative value")]
+    public void ShouldThrowExceptionForIdWithMaxNegativeValue()
     {
-        var entidade = new EntidadeValidaTestFixture();
-        var dataAtual = DateTime.UtcNow;
+        var creationDate = DateTime.UtcNow;
 
-        entidade.CreatedAt.Should().BeCloseTo(dataAtual, TimeSpan.FromSeconds(1));
-        entidade.UpdatedAt.Should().BeNull();
-        entidade.Id.Should().Be(0);
+        Action action = () => new ValidEntityTestFixture(-long.MaxValue, creationDate);
+
+        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw exception when entity is invalid on executing UpdateCategory")]
+    public void ShouldThrowExceptionWhenEntityIsInvalidOnExecutingUpdate()
+    {
+        var entity = new InvalidEntityTestFixture();
+
+        Action action = entity.ExecuteUpdate;
+
+        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
     }
 
     [Theory]
@@ -95,38 +107,14 @@ public class BaseEntityTests
     [InlineData(-1)]
     [InlineData(long.MinValue)]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve lançar exceção com mensagem específica para ID inválido")]
-    public void DeveLancarExcecaoComMensagemEspecificaQuandoIdForInvalido(long id)
+    [DisplayName("Should throw exception for invalid ID")]
+    public void ShouldThrowExceptionWhenIdIsInvalid(long id)
     {
-        var dataCriacao = DateTime.UtcNow;
+        var creationDate = DateTime.UtcNow;
 
-        Action acao = () => new EntidadeValidaTestFixture(id, dataCriacao);
+        Action action = () => new ValidEntityTestFixture(id, creationDate);
 
-        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve lançar exceção para ID com valor negativo máximo")]
-    public void DeveLancarExcecaoParaIdComValorMaximoNegativo()
-    {
-        var dataCriacao = DateTime.UtcNow;
-
-        Action acao = () => new EntidadeValidaTestFixture(-long.MaxValue, dataCriacao);
-
-        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Deve lançar exceção quando entidade não for válida ao executar método Update")]
-    public void DeveLancarExcecaoQuandoEntidadeNaoForValidaAoExecutarUpdate()
-    {
-        var entidade = new EntidadeInvalidaTestFixture();
-
-        Action acao = entidade.ExecutarUpdate;
-
-        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
+        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
     }
 
     [Theory]
@@ -134,34 +122,46 @@ public class BaseEntityTests
     [InlineData(-1)]
     [InlineData(long.MinValue)]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve lançar exceção para ID inválido")]
-    public void DeveLancarExcecaoQuandoIdForInvalido(long id)
+    [DisplayName("Should throw exception with specific message for invalid ID")]
+    public void ShouldThrowExceptionWithSpecificMessageWhenIdIsInvalid(long id)
     {
-        var dataCriacao = DateTime.UtcNow;
+        var creationDate = DateTime.UtcNow;
 
-        Action acao = () => new EntidadeValidaTestFixture(id, dataCriacao);
+        Action action = () => new ValidEntityTestFixture(id, creationDate);
 
-        acao.Should().Throw<DomainException>().WithMessage("Id deve ser maior que zero");
+        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Deve manter CreatedAt no fuso horário UTC")]
-    public void DeveManterCreatedAtNoFusoHorarioUtc()
+    [DisplayName("Should update UpdatedAt to recent time when calling UpdateCategory multiple times")]
+    public void ShouldUpdateUpdatedAtToRecentTimeAfterExecutingUpdateMultipleTimes()
     {
-        var dataCriacao = new DateTime(2022, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-        var entidade = new EntidadeValidaTestFixture(1, dataCriacao);
+        var entity = new ValidEntityTestFixture();
 
-        entidade.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
-        entidade.CreatedAt.Should().Be(dataCriacao);
+        entity.ExecuteUpdate();
+        var firstUpdate = entity.UpdatedAt;
+
+        Thread.Sleep(100);
+
+        entity.ExecuteUpdate();
+        var secondUpdate = entity.UpdatedAt;
+
+        firstUpdate.Should().NotBe(secondUpdate);
+        secondUpdate.Should().BeAfter(firstUpdate.Value);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Não deve alterar UpdatedAt sem chamar método Update")]
-    public void NaoDeveAlterarUpdatedAtSemChamarMetodoUpdate()
+    [DisplayName("Should update UpdatedAt when executing UpdateCategory method")]
+    public void ShouldUpdateUpdatedAtWhenExecutingUpdate()
     {
-        var entidade = new EntidadeValidaTestFixture();
-        entidade.UpdatedAt.Should().BeNull();
+        var entity = new ValidEntityTestFixture();
+        var beforeUpdate = DateTime.UtcNow;
+
+        entity.ExecuteUpdate();
+
+        entity.UpdatedAt.Should().NotBeNull();
+        entity.UpdatedAt.Should().BeCloseTo(beforeUpdate, TimeSpan.FromSeconds(1));
     }
 }
