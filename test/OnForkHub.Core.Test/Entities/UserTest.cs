@@ -1,5 +1,4 @@
 using Newtonsoft.Json.Linq;
-
 using OnForkHub.Core.Validations;
 
 namespace OnForkHub.Core.Test.Entities;
@@ -69,7 +68,11 @@ public class UserTests
     public void ShouldThrowDomainExceptionWhenNameIsTooShort()
     {
         var name = "Al";
-        var result = new ValidationResult().AddErrorIf(name.Length < 3, "Name must be at least 3 characters long", "Name");
+        var result = new ValidationResult().AddErrorIf(
+            name.Length < 3,
+            "Name must be at least 3 characters long",
+            "Name"
+        );
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();
@@ -101,7 +104,11 @@ public class UserTests
         user.UpdateName(Name.Create("Jo"));
         var validationResult = user.Validate();
 
-        validationResult.Errors.Should().ContainSingle(error => error.Message == $"Name must be at least 3 characters long" && error.Field == "Name");
+        validationResult
+            .Errors.Should()
+            .ContainSingle(error =>
+                error.Message == $"Name must be at least 3 characters long" && error.Field == "Name"
+            );
     }
 
     [Fact]

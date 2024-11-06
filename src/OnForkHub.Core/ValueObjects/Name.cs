@@ -1,8 +1,7 @@
+using System.Globalization;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Validations;
 using OnForkHub.Core.ValueObjects.Base;
-
-using System.Globalization;
 
 namespace OnForkHub.Core.ValueObjects;
 
@@ -21,8 +20,10 @@ public class Name : ValueObject
 
     public static Name Create(string value)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value),
-            $"{nameof(Name)} cannot be empty or null");
+        DomainException.ThrowErrorWhen(
+            () => string.IsNullOrWhiteSpace(value),
+            $"{nameof(Name)} cannot be empty or null"
+        );
 
         return new Name(value);
     }
@@ -33,8 +34,16 @@ public class Name : ValueObject
 
         validationResult
             .AddErrorIfNullOrWhiteSpace(Value, $"{nameof(Name)} is required", nameof(Name))
-            .AddErrorIf(Value.Length < MinNameLength, $"{nameof(Name)} must be at least {MinNameLength} characters long", nameof(Name))
-            .AddErrorIf(Value.Length > MaxNameLength, $"{nameof(Name)} must be no more than {MaxNameLength} characters", nameof(Name));
+            .AddErrorIf(
+                Value.Length < MinNameLength,
+                $"{nameof(Name)} must be at least {MinNameLength} characters long",
+                nameof(Name)
+            )
+            .AddErrorIf(
+                Value.Length > MaxNameLength,
+                $"{nameof(Name)} must be no more than {MaxNameLength} characters",
+                nameof(Name)
+            );
 
         return validationResult;
     }
@@ -44,4 +53,3 @@ public class Name : ValueObject
         yield return Value.ToLower(CultureInfo.CurrentCulture);
     }
 }
-

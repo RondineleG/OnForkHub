@@ -34,7 +34,6 @@ public partial class Email : ValueObject
         var regex = MyRegex();
         DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), "Invalid email");
 
-
         return _validationResult;
     }
 }

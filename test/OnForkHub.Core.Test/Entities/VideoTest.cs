@@ -70,7 +70,9 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == "Title must be at least 3 characters long" && error.Field == nameof(Video.Title));
+            .ContainSingle(error =>
+                error.Message == "Title must be at least 3 characters long" && error.Field == nameof(Video.Title)
+            );
     }
 
     [Fact]
