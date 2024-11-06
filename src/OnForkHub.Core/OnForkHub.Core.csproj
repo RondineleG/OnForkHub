@@ -1,11 +1,30 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
-    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
-    <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="..\.." />
-  </Target>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <ProjectRootDir>$(MSBuildProjectDirectory)</ProjectRootDir>
+        <HuskyDir>$(ProjectRootDir)\..\..\.husky</HuskyDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\.husky\**\*" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    </ItemGroup>
+ 
+    <Target Name="CheckHusky" BeforeTargets="HuskySetup">
+        <Error Text="The .husky folder does not exist. Please run 'dotnet husky install' to initialize Husky."
+               Condition="!Exists('$(HuskyDir)')" />
+    </Target>
+
+    <Target Name="HuskySetup" BeforeTargets="Build" Condition="!Exists('$(HuskyDir)\_')">
+        <Exec Command="dotnet tool restore"
+              WorkingDirectory="$(ProjectRootDir)"
+              ContinueOnError="false" />
+        <Exec Command="dotnet husky install"
+              WorkingDirectory="$(ProjectRootDir)"
+              ContinueOnError="false" />
+    </Target>
 </Project>

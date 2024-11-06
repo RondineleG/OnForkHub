@@ -1,12 +1,24 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+export LC_ALL=en_US.UTF-8
+export LANG=pt_BR.UTF-8
+
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+RESET=$(tput sgr0)
+
 echo "🚀 Preparing to push changes..."
+echo "----------------------------------"
 
 echo "🧪 Running unit tests..."
-if dotnet test --filter "Category=Unit" --logger "console;verbosity=detailed"; then
-    echo "✅ All unit tests passed successfully!"
+if dotnet husky run -n dotnet-test; then
+    echo "${GREEN}✅ All tests passed!${RESET}"
 else
-    echo "❌ Some tests failed. Please fix them before pushing."
+    echo "${RED}❌ Some tests failed.${RESET}"
     exit 1
 fi
+
+echo "----------------------------------"
+echo "🚀 Ready to push changes!"
+echo "✅ Pre-push checks completed successfully."
