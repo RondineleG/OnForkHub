@@ -5,34 +5,15 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
-    </ItemGroup>
-
     <PropertyGroup>
         <EnableDefaultHusky>true</EnableDefaultHusky>
         <HuskyRoot>$(MSBuildProjectDirectory)\..\..</HuskyRoot>
         <HuskyDir>$(HuskyRoot)\.husky</HuskyDir>
     </PropertyGroup>
-
     <Target Name="RestoreTools" BeforeTargets="HuskyInit">
         <Message Text="Restoring .NET tools..." Importance="high" />
         <Exec Command="dotnet tool restore" WorkingDirectory="$(HuskyRoot)" StandardOutputImportance="High" StandardErrorImportance="High" />
     </Target>
-
-    <Target Name="RunSharedScripts" AfterTargets="RestoreTools">
-        <Message Text="Running shared scripts..." Importance="high" />
-        <Exec
-            Command="dotnet run --project src/OnForkHub.Shared.Scripts/OnForkHub.Shared.Scripts.csproj"
-            WorkingDirectory="$(MSBuildProjectDirectory)\..\.."
-            StandardOutputImportance="High"
-            StandardErrorImportance="High">
-            <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
-        </Exec>
-        <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode)" />
-    </Target>
-
-
     <Target Name="HuskyInit" BeforeTargets="Build">
         <Message Text="Initializing Husky..." Importance="high" />
         <Exec Command="dotnet husky install" WorkingDirectory="$(HuskyRoot)" StandardOutputImportance="High" StandardErrorImportance="High" />

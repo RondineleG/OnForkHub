@@ -1,6 +1,3 @@
-[core]
-    hooksPath = .husky
-
 [gitflow "branch"]
     master = main
     develop = dev
