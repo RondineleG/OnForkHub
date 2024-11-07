@@ -1,3 +1,5 @@
+using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
+
 namespace OnForkHub.Core.ValueObjects;
 
 public partial class Email : ValueObject
@@ -15,7 +17,7 @@ public partial class Email : ValueObject
 
     public static Email Create(string value)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), $"{nameof(Email)} cannot be empty");
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), EmailResources.EmailCannotBeEmpty);
         var email = new Email(value, new ValidationResult());
         email.Validate();
         return email;
@@ -32,7 +34,7 @@ public partial class Email : ValueObject
     public override ValidationResult Validate()
     {
         var regex = MyRegex();
-        DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), "Invalid email");
+        DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), EmailResources.InvalidEmail);
 
         return _validationResult;
     }

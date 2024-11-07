@@ -21,6 +21,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Console", "Console", "{0BBA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.App", "src\OnForkHub.App\OnForkHub.App.csproj", "{F4F28DA2-289B-4BAD-8927-84EBE1B29716}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{F2A05D2B-3CBB-467D-B7EB-EDB7F7D2E104}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.Shared.Abstractions", "src\OnForkHub.Shared.Abstractions\OnForkHub.Shared.Abstractions.csproj", "{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,10 @@ Global
 		{F4F28DA2-289B-4BAD-8927-84EBE1B29716}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4F28DA2-289B-4BAD-8927-84EBE1B29716}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4F28DA2-289B-4BAD-8927-84EBE1B29716}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +59,8 @@ Global
 		{075B8D4B-517B-4C7D-91E2-6549162E5D79} = {E58FF6FD-F36B-4CB2-A65F-2068CD27C8E5}
 		{0BBA28FF-58F0-48BA-A185-4EB7267C6F55} = {075B8D4B-517B-4C7D-91E2-6549162E5D79}
 		{F4F28DA2-289B-4BAD-8927-84EBE1B29716} = {0BBA28FF-58F0-48BA-A185-4EB7267C6F55}
+		{F2A05D2B-3CBB-467D-B7EB-EDB7F7D2E104} = {E58FF6FD-F36B-4CB2-A65F-2068CD27C8E5}
+		{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D} = {F2A05D2B-3CBB-467D-B7EB-EDB7F7D2E104}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {12C1AB3A-8897-4AAD-8681-A37B26ADF8B5}
