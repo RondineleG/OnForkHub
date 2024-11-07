@@ -13,20 +13,27 @@ echo "🚀 Preparing to push changes..."
 echo "----------------------------------"
 
 echo "🧪 Running unit tests..."
-dotnet test --no-restore --logger "console;verbosity=normal"
-TEST_RESULT=$?
+dotnet test --no-restore --logger "trx;LogFileName=TestResults.trx" --results-directory TestResults
 
-echo "----------------------------------"
-if [ $TEST_RESULT -eq 0 ]; then
+if [ $? -eq 0 ]; then
+    SUMMARY=$(dotnet test --no-build --no-restore)
     echo "${GREEN}✅ Tests Completed Successfully!${RESET}"
-    echo "${YELLOW}📊 Test Summary from last run:${RESET}"
-    dotnet test --no-build --no-restore --logger "console;verbosity=minimal"
+    echo "${YELLOW}📊 Test Summary:${RESET}"
+    echo "$SUMMARY" | findstr "Total"
+    echo "$SUMMARY" | findstr "Passed"
+    echo "$SUMMARY" | findstr "Failed"
+    echo "$SUMMARY" | findstr "Skipped"
     echo "----------------------------------"
     echo "🚀 Ready to push!"
+    exit 0
 else
+    SUMMARY=$(dotnet test --no-build --no-restore)
     echo "${RED}❌ Some tests failed!${RESET}"
-    echo "${YELLOW}📊 Test Summary from last run:${RESET}"
-    dotnet test --no-build --no-restore --logger "console;verbosity=detailed"
+    echo "${YELLOW}📊 Test Summary:${RESET}"
+    echo "$SUMMARY" | findstr "Total"
+    echo "$SUMMARY" | findstr "Passed"
+    echo "$SUMMARY" | findstr "Failed"
+    echo "$SUMMARY" | findstr "Skipped"
     echo "----------------------------------"
     echo "${RED}❌ Push blocked due to test failures${RESET}"
     exit 1
