@@ -2,6 +2,7 @@ using OnForkHub.Core.ValueObjects;
 using OnForkHub.Core.Exceptions;
 using Xunit;
 using FluentAssertions;
+using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
 
 namespace OnForkHub.Core.Test.ValueObjects;
 
@@ -32,6 +33,6 @@ public class NameTest
         Action act = () => Name.Create(name);
 
         act.Should().Throw<DomainException>()
-            .WithMessage("Name cannot be empty or null");
+            .WithMessage(NameResources.NameEmpty);
     }
 }

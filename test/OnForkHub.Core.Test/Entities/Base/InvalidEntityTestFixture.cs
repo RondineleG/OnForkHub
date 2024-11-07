@@ -1,5 +1,6 @@
 using OnForkHub.Core.Entities.Base;
 using OnForkHub.Core.Validations;
+using OnForkHub.Shared.Abstractions.Resources.Core.Entities.Base;
 
 namespace OnForkHub.Core.Test.Entities.Base;
 
@@ -20,7 +21,7 @@ public class InvalidEntityTestFixture : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        ValidationResult.ThrowErrorIf(() => Id <= 0, "Id must be greater than zero");
+        ValidationResult.ThrowErrorIf(() => Id <= 0, BaseEntityResources.IdGreaterThanZero);
         return validationResult;
     }
 }

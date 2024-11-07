@@ -1,3 +1,6 @@
+using OnForkHub.Shared.Abstractions.Resources.Core.Entities;
+using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
+
 namespace OnForkHub.Core.Test.Entities;
 
 public class VideoTests
@@ -41,7 +44,7 @@ public class VideoTests
 
         Action act = () => video.AddCategory(null);
 
-        act.Should().Throw<DomainException>().WithMessage("Category cannot be null");
+        act.Should().Throw<DomainException>().WithMessage(VideoResources.CategoryCannotBeNull);
     }
 
     [Fact]
@@ -53,7 +56,7 @@ public class VideoTests
 
         Action act = () => video.RemoveCategory(null);
 
-        act.Should().Throw<DomainException>().WithMessage("Category cannot be null");
+        act.Should().Throw<DomainException>().WithMessage(VideoResources.CategoryCannotBeNull);
     }
 
     [Fact]
@@ -70,7 +73,7 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == "Title must be at least 3 characters long" && error.Field == nameof(Video.Title));
+            .ContainSingle(error => error.Message == TitleResources.TitleMinLength && error.Field == nameof(Video.Title));
     }
 
     [Fact]
@@ -88,7 +91,7 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == "Title is required" && error.Field == nameof(Video.Title));
+            .ContainSingle(error => error.Message == TitleResources.TitleRequired && error.Field == nameof(Video.Title));
     }
 
     [Fact]
@@ -107,7 +110,7 @@ public class VideoTests
         validationResult
             .Errors.Should()
             .ContainSingle(error =>
-                error.Message == "Title must be no more than 50 characters" && error.Field == nameof(Video.Title)
+                error.Message == TitleResources.TitleMaxLength && error.Field == nameof(Video.Title)
             );
     }
 

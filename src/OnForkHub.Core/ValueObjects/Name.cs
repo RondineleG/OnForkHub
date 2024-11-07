@@ -3,6 +3,7 @@ using OnForkHub.Core.Validations;
 using OnForkHub.Core.ValueObjects.Base;
 
 using System.Globalization;
+using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
 
 namespace OnForkHub.Core.ValueObjects;
 
@@ -22,7 +23,7 @@ public class Name : ValueObject
     public static Name Create(string value)
     {
         DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value),
-            $"{nameof(Name)} cannot be empty or null");
+            NameResources.NameEmpty);
 
         return new Name(value);
     }
@@ -32,9 +33,9 @@ public class Name : ValueObject
         var validationResult = new ValidationResult();
 
         validationResult
-            .AddErrorIfNullOrWhiteSpace(Value, $"{nameof(Name)} is required", nameof(Name))
-            .AddErrorIf(Value.Length < MinNameLength, $"{nameof(Name)} must be at least {MinNameLength} characters long", nameof(Name))
-            .AddErrorIf(Value.Length > MaxNameLength, $"{nameof(Name)} must be no more than {MaxNameLength} characters", nameof(Name));
+            .AddErrorIfNullOrWhiteSpace(Value, NameResources.NameIsRequired, nameof(Name))
+            .AddErrorIf(Value.Length < MinNameLength, NameResources.NameMinLength, nameof(Name))
+            .AddErrorIf(Value.Length > MaxNameLength, NameResources.NameMaxLength, nameof(Name));
 
         return validationResult;
     }

@@ -1,3 +1,7 @@
+using OnForkHub.Shared.Abstractions.Resources.Core.Entities;
+using OnForkHub.Shared.Abstractions.Resources.Core.Entities.Base;
+using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
+
 namespace OnForkHub.Core.Test.Entities;
 
 public class CategoryTests
@@ -44,14 +48,14 @@ public class CategoryTests
     [DisplayName("Should throw DomainException when creating category with empty name")]
     public void ShouldThrowDomainExceptionWhenCreatingCategoryWithEmptyName()
     {
-        var name = "";   
+        var name = "";
         var description = "Category description";
 
         Action action = () => Category.Create(Name.Create(name), description);
 
         action.Should()
             .Throw<DomainException>()
-            .WithMessage("Name cannot be empty or null");
+            .WithMessage(NameResources.NameEmpty);
     }
 
 
@@ -66,7 +70,7 @@ public class CategoryTests
         var createdAt = DateTime.Now;
 
         Action act = () => Category.Load(id, name, description, createdAt);
-        act.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
+        act.Should().Throw<DomainException>().WithMessage(BaseEntityResources.IdGreaterThanZero);
     }
 
     [Fact]
@@ -80,7 +84,7 @@ public class CategoryTests
         var result = Category.Create(name, description);
 
         result.Status.Should().Be(EResultStatus.HasError);
-        result.RequestError!.Description.Should().Contain("Name must be no more than 50 characters");
+        result.RequestError!.Description.Should().Contain(NameResources.NameMaxLength);
     }
 
 

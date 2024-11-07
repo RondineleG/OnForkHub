@@ -1,3 +1,5 @@
+using OnForkHub.Shared.Abstractions.Resources.Core.Entities.Base;
+
 namespace OnForkHub.Core.Test.Entities.Base;
 
 public class BaseEntityTests
@@ -87,7 +89,7 @@ public class BaseEntityTests
 
         Action action = () => new ValidEntityTestFixture(-long.MaxValue, creationDate);
 
-        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
+        action.Should().Throw<DomainException>().WithMessage(BaseEntityResources.IdGreaterThanZero);
     }
 
     [Fact]
@@ -99,7 +101,7 @@ public class BaseEntityTests
 
         Action action = entity.ExecuteUpdate;
 
-        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
+        action.Should().Throw<DomainException>().WithMessage(BaseEntityResources.IdGreaterThanZero);
     }
 
     [Theory]
@@ -114,7 +116,7 @@ public class BaseEntityTests
 
         Action action = () => new ValidEntityTestFixture(id, creationDate);
 
-        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
+        action.Should().Throw<DomainException>().WithMessage(BaseEntityResources.IdGreaterThanZero);
     }
 
     [Theory]
@@ -129,7 +131,7 @@ public class BaseEntityTests
 
         Action action = () => new ValidEntityTestFixture(id, creationDate);
 
-        action.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
+        action.Should().Throw<DomainException>().WithMessage(BaseEntityResources.IdGreaterThanZero);
     }
 
     [Fact]
