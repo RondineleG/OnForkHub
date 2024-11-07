@@ -1,11 +1,38 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
-    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
-    <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="..\.." />
-  </Target>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <EnableDefaultHusky>true</EnableDefaultHusky>
+        <HuskyRoot>$(MSBuildProjectDirectory)\..\..</HuskyRoot>
+        <HuskyDir>$(HuskyRoot)\.husky</HuskyDir>
+    </PropertyGroup>
+
+    <!-- Adicionando Target específico para tool restore -->
+    <Target Name="RestoreTools" BeforeTargets="HuskyInit">
+        <Message Text="Restoring .NET tools..." Importance="high" />
+        <Exec
+            Command="dotnet tool restore"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
+    </Target>
+
+    <Target Name="HuskyInit" BeforeTargets="Build">
+        <Message Text="Initializing Husky..." Importance="high" />
+        <Exec
+            Command="dotnet husky install"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
+        <!-- Adicionando configuração explícita do Git -->
+        <Exec
+            Command="git config core.hooksPath .husky"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
+    </Target>
 </Project>

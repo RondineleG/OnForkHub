@@ -1,12 +1,33 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
+RESET=$(tput sgr0)
+
 echo "🚀 Preparing to push changes..."
+echo "----------------------------------"
 
 echo "🧪 Running unit tests..."
-if dotnet test --filter "Category=Unit" --logger "console;verbosity=detailed"; then
-    echo "✅ All unit tests passed successfully!"
+dotnet test --no-restore --logger "console;verbosity=normal"
+TEST_RESULT=$?
+
+echo "----------------------------------"
+if [ $TEST_RESULT -eq 0 ]; then
+    echo "${GREEN}✅ Tests Completed Successfully!${RESET}"
+    echo "${YELLOW}📊 Test Summary from last run:${RESET}"
+    dotnet test --no-build --no-restore --logger "console;verbosity=minimal"
+    echo "----------------------------------"
+    echo "🚀 Ready to push!"
 else
-    echo "❌ Some tests failed. Please fix them before pushing."
+    echo "${RED}❌ Some tests failed!${RESET}"
+    echo "${YELLOW}📊 Test Summary from last run:${RESET}"
+    dotnet test --no-build --no-restore --logger "console;verbosity=detailed"
+    echo "----------------------------------"
+    echo "${RED}❌ Push blocked due to test failures${RESET}"
     exit 1
 fi
