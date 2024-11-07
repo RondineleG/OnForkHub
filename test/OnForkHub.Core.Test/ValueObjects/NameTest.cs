@@ -1,5 +1,6 @@
-using OnForkHub.Core.ValueObjects;
+using FluentAssertions;
 using OnForkHub.Core.Exceptions;
+using OnForkHub.Core.ValueObjects;
 using Xunit;
 using FluentAssertions;
 using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
@@ -22,7 +23,6 @@ public class NameTest
         act.Should().NotThrow();
     }
 
-
     [Theory]
     [Trait("Category", "Unit")]
     [DisplayName("Should throw DomainException for null or empty name")]
@@ -32,7 +32,6 @@ public class NameTest
     {
         Action act = () => Name.Create(name);
 
-        act.Should().Throw<DomainException>()
-            .WithMessage(NameResources.NameEmpty);
+        act.Should().Throw<DomainException>().WithMessage(NameResources.NameEmpty);
     }
 }

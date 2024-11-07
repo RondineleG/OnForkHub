@@ -98,7 +98,7 @@ public sealed class ValidationResult
     }
 
     public ValidationResult AddErrorI<T>(T value, string errorMessage, string fieldName = "")
-    where T : class
+        where T : class
     {
         return AddErrorIf(value == null, errorMessage, fieldName);
     }

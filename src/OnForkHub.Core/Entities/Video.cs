@@ -70,7 +70,6 @@ public class Video : BaseEntity
         }
     }
 
-
     public void RemoveCategory(Category category)
     {
         DomainException.ThrowErrorWhen(() => category == null,  VideoResources.CategoryCannotBeNull);

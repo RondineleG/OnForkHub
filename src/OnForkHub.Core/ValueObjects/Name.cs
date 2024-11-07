@@ -1,3 +1,4 @@
+using System.Globalization;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Validations;
 using OnForkHub.Core.ValueObjects.Base;
@@ -45,4 +46,3 @@ public class Name : ValueObject
         yield return Value.ToLower(CultureInfo.CurrentCulture);
     }
 }
-

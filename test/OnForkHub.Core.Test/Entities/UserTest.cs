@@ -1,5 +1,4 @@
 using Newtonsoft.Json.Linq;
-
 using OnForkHub.Core.Validations;
 using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
 

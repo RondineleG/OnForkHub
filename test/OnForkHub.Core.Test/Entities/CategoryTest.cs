@@ -28,7 +28,8 @@ public class CategoryTests
     public void ShouldLoadCategorySuccessfullyWhenDataIsValid()
     {
         var id = 1L;
-        var name = Name.Create("Category Test"); ;
+        var name = Name.Create("Category Test");
+        
         var description = "Category description";
         var createdAt = DateTime.Now;
 
@@ -42,7 +43,6 @@ public class CategoryTests
         result.Data.CreatedAt.Should().Be(createdAt);
     }
 
-
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should throw DomainException when creating category with empty name")]
@@ -53,11 +53,8 @@ public class CategoryTests
 
         Action action = () => Category.Create(Name.Create(name), description);
 
-        action.Should()
-            .Throw<DomainException>()
-            .WithMessage(NameResources.NameEmpty);
+        action.Should().Throw<DomainException>().WithMessage(NameResources.NameEmpty);
     }
-
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -86,7 +83,6 @@ public class CategoryTests
         result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError!.Description.Should().Contain(NameResources.NameMaxLength);
     }
-
 
     [Fact]
     [Trait("Category", "Unit")]
