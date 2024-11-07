@@ -2,23 +2,46 @@
 . "$(dirname "$0")/_/husky.sh"
 
 export LC_ALL=en_US.UTF-8
-export LANG=pt_BR.UTF-8
+export LANG=en_US.UTF-8
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
 RESET=$(tput sgr0)
 
 echo "🚀 Preparing to push changes..."
 echo "----------------------------------"
 
 echo "🧪 Running unit tests..."
-if dotnet husky run -n dotnet-test; then
-    echo "${GREEN}✅ All tests passed!${RESET}"
-else
-    echo "${RED}❌ Some tests failed.${RESET}"
-    exit 1
-fi
+TEST_OUTPUT=$(dotnet test --no-restore --verbosity normal)
+TEST_RESULT=$?
+
+# Extract relevant information
+TOTAL_TESTS=$(echo "$TEST_OUTPUT" | grep "Total tests:" | sed 's/Total tests: //')
+PASSED_TESTS=$(echo "$TEST_OUTPUT" | grep "Passed:" | sed 's/Passed: //')
+FAILED_TESTS=$(echo "$TEST_OUTPUT" | grep "Failed:" | sed 's/Failed: //')
+SKIPPED_TESTS=$(echo "$TEST_OUTPUT" | grep "Skipped:" | sed 's/Skipped: //')
 
 echo "----------------------------------"
-echo "🚀 Ready to push changes!"
-echo "✅ Pre-push checks completed successfully."
+if [ $TEST_RESULT -eq 0 ]; then
+    echo "${GREEN}✅ Tests Completed Successfully!${RESET}"
+    echo "${YELLOW}📊 Test Summary:${RESET}"
+    echo "   📈 Total Tests: $TOTAL_TESTS"
+    echo "   ${GREEN}✅ Passed: $PASSED_TESTS${RESET}"
+    [ ! -z "$SKIPPED_TESTS" ] && echo "   ${YELLOW}⏭️  Skipped: $SKIPPED_TESTS${RESET}"
+    echo "----------------------------------"
+    echo "🚀 Ready to push!"
+else
+    echo "${RED}❌ Some tests failed!${RESET}"
+    echo "${YELLOW}📊 Test Summary:${RESET}"
+    echo "   📈 Total Tests: $TOTAL_TESTS"
+    echo "   ${GREEN}✅ Passed: $PASSED_TESTS${RESET}"
+    echo "   ${RED}❌ Failed: $FAILED_TESTS${RESET}"
+    [ ! -z "$SKIPPED_TESTS" ] && echo "   ${YELLOW}⏭️  Skipped: $SKIPPED_TESTS${RESET}"
+    echo "----------------------------------"
+    echo "${RED}❌ Push blocked due to test failures${RESET}"
+    # Show failure details
+    echo "\n${YELLOW}Failure Details:${RESET}"
+    echo "$TEST_OUTPUT" | grep -A 5 "Failed"
+    exit 1
+fi
