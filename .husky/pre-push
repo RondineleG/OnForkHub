@@ -13,35 +13,21 @@ echo "🚀 Preparing to push changes..."
 echo "----------------------------------"
 
 echo "🧪 Running unit tests..."
-TEST_OUTPUT=$(dotnet test --no-restore --verbosity normal)
+dotnet test --no-restore --logger "console;verbosity=normal"
 TEST_RESULT=$?
-
-# Extract relevant information
-TOTAL_TESTS=$(echo "$TEST_OUTPUT" | grep "Total tests:" | sed 's/Total tests: //')
-PASSED_TESTS=$(echo "$TEST_OUTPUT" | grep "Passed:" | sed 's/Passed: //')
-FAILED_TESTS=$(echo "$TEST_OUTPUT" | grep "Failed:" | sed 's/Failed: //')
-SKIPPED_TESTS=$(echo "$TEST_OUTPUT" | grep "Skipped:" | sed 's/Skipped: //')
 
 echo "----------------------------------"
 if [ $TEST_RESULT -eq 0 ]; then
     echo "${GREEN}✅ Tests Completed Successfully!${RESET}"
-    echo "${YELLOW}📊 Test Summary:${RESET}"
-    echo "   📈 Total Tests: $TOTAL_TESTS"
-    echo "   ${GREEN}✅ Passed: $PASSED_TESTS${RESET}"
-    [ ! -z "$SKIPPED_TESTS" ] && echo "   ${YELLOW}⏭️  Skipped: $SKIPPED_TESTS${RESET}"
+    echo "${YELLOW}📊 Test Summary from last run:${RESET}"
+    dotnet test --no-build --no-restore --logger "console;verbosity=minimal"
     echo "----------------------------------"
     echo "🚀 Ready to push!"
 else
     echo "${RED}❌ Some tests failed!${RESET}"
-    echo "${YELLOW}📊 Test Summary:${RESET}"
-    echo "   📈 Total Tests: $TOTAL_TESTS"
-    echo "   ${GREEN}✅ Passed: $PASSED_TESTS${RESET}"
-    echo "   ${RED}❌ Failed: $FAILED_TESTS${RESET}"
-    [ ! -z "$SKIPPED_TESTS" ] && echo "   ${YELLOW}⏭️  Skipped: $SKIPPED_TESTS${RESET}"
+    echo "${YELLOW}📊 Test Summary from last run:${RESET}"
+    dotnet test --no-build --no-restore --logger "console;verbosity=detailed"
     echo "----------------------------------"
     echo "${RED}❌ Push blocked due to test failures${RESET}"
-    # Show failure details
-    echo "\n${YELLOW}Failure Details:${RESET}"
-    echo "$TEST_OUTPUT" | grep -A 5 "Failed"
     exit 1
 fi
