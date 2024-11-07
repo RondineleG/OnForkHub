@@ -1,7 +1,3 @@
-using Newtonsoft.Json.Linq;
-using OnForkHub.Core.Validations;
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.Test.Entities;
 
 public class UserTests
@@ -43,7 +39,7 @@ public class UserTests
     {
         var name = Name.Create("John Silva");
 
-        Action act = () => User.Create(name, "");
+        Action act = () => User.Create(name, string.Empty);
 
         act.Should().Throw<DomainException>().WithMessage(EmailResources.EmailCannotBeEmpty);
     }
@@ -101,7 +97,9 @@ public class UserTests
         user.UpdateName(Name.Create("Jo"));
         var validationResult = user.Validate();
 
-        validationResult.Errors.Should().ContainSingle(error => error.Message == NameResources.NameMinLength && error.Field == "Name");
+        validationResult
+            .Errors.Should()
+            .ContainSingle(error => (error.Message == NameResources.NameMinLength) && (error.Field == "Name"));
     }
 
     [Fact]

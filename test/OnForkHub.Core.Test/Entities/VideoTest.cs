@@ -1,6 +1,3 @@
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities;
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.Test.Entities;
 
 public class VideoTests
@@ -73,7 +70,9 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == TitleResources.TitleMinLength && error.Field == nameof(Video.Title));
+            .ContainSingle(error =>
+                (error.Message == TitleResources.TitleMinLength) && (error.Field == nameof(Video.Title))
+            );
     }
 
     [Fact]
@@ -81,7 +80,7 @@ public class VideoTests
     [DisplayName("Should return error when validating video with empty title")]
     public void ShouldReturnErrorWhenValidatingVideoWithEmptyTitle()
     {
-        var title = "";
+        var title = string.Empty;
         var description = "Video description";
         var url = "https://example.com/video";
         var userId = 1L;
@@ -91,7 +90,9 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == TitleResources.TitleRequired && error.Field == nameof(Video.Title));
+            .ContainSingle(error =>
+                (error.Message == TitleResources.TitleRequired) && (error.Field == nameof(Video.Title))
+            );
     }
 
     [Fact]
@@ -99,7 +100,7 @@ public class VideoTests
     [DisplayName("Should return validation error for title longer than 50 characters")]
     public void ShouldReturnValidationErrorForTitleLongerThan50Characters()
     {
-        var title = new string('A', 51); // Título com 51 caracteres
+        var title = new string('A', 51);
         var description = "Valid Description";
         var url = "https://example.com/video";
         var userId = 1L;
@@ -110,7 +111,7 @@ public class VideoTests
         validationResult
             .Errors.Should()
             .ContainSingle(error =>
-                error.Message == TitleResources.TitleMaxLength && error.Field == nameof(Video.Title)
+                (error.Message == TitleResources.TitleMaxLength) && (error.Field == nameof(Video.Title))
             );
     }
 

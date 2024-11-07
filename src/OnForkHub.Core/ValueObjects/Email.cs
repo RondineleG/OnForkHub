@@ -1,5 +1,3 @@
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.ValueObjects;
 
 public partial class Email : ValueObject

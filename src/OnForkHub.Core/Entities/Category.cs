@@ -1,7 +1,3 @@
-
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities;
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities.Base;
-
 namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity

@@ -1,6 +1,3 @@
-using OnForkHub.Core.ValueObjects;
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities;
-
 namespace OnForkHub.Core.Entities;
 
 public class Video : BaseEntity
@@ -72,7 +69,7 @@ public class Video : BaseEntity
 
     public void RemoveCategory(Category category)
     {
-        DomainException.ThrowErrorWhen(() => category == null,  VideoResources.CategoryCannotBeNull);
+        DomainException.ThrowErrorWhen(() => category == null, VideoResources.CategoryCannotBeNull);
 
         if (_categories.Contains(category))
         {
@@ -106,16 +103,8 @@ public class Video : BaseEntity
             VideoResources.DescriptionRequired,
             nameof(Description)
         );
-        validationResult.AddErrorIf(
-            Description.Length < 5,
-            VideoResources.DescriptionMinLength,
-            nameof(Description)
-        );
-        validationResult.AddErrorIf(
-            Description.Length > 200,
-            VideoResources.DescriptionMaxLength,
-            nameof(Description)
-        );
+        validationResult.AddErrorIf(Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description));
+        validationResult.AddErrorIf(Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description));
         validationResult.AddErrorIf(UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
         validationResult = Title.Validate().Merge(validationResult); //Merge Video validation errors with Title validation errors
 

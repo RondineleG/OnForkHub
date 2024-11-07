@@ -1,6 +1,3 @@
-using OnForkHub.Core.ValueObjects;
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities;
-
 namespace OnForkHub.Core.Entities;
 
 public class User : BaseEntity

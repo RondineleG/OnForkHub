@@ -1,6 +1,3 @@
-using OnForkHub.Core.Validations;
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.ValueObjects;
 
 public class Title : ValueObject
@@ -23,16 +20,8 @@ public class Title : ValueObject
     {
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Value, TitleResources.TitleRequired, nameof(Title));
-        validationResult.AddErrorIf(
-            Value.Length < 3,
-            TitleResources.TitleMinLength,
-            nameof(Title)
-        );
-        validationResult.AddErrorIf(
-            Value.Length > 50,
-            TitleResources.TitleMaxLength,
-            nameof(Title)
-        );
+        validationResult.AddErrorIf(Value.Length < 3, TitleResources.TitleMinLength, nameof(Title));
+        validationResult.AddErrorIf(Value.Length > 50, TitleResources.TitleMaxLength, nameof(Title));
         return validationResult;
     }
 

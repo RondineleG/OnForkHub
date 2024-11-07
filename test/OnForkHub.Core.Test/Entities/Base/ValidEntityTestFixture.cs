@@ -1,7 +1,3 @@
-using OnForkHub.Core.Entities.Base;
-using OnForkHub.Core.Validations;
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities.Base;
-
 namespace OnForkHub.Core.Test.Entities.Base;
 
 public class ValidEntityTestFixture : BaseEntity

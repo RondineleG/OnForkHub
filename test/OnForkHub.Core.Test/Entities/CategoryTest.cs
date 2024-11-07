@@ -1,7 +1,3 @@
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities;
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities.Base;
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.Test.Entities;
 
 public class CategoryTests
@@ -29,7 +25,7 @@ public class CategoryTests
     {
         var id = 1L;
         var name = Name.Create("Category Test");
-        
+
         var description = "Category description";
         var createdAt = DateTime.Now;
 
@@ -48,7 +44,7 @@ public class CategoryTests
     [DisplayName("Should throw DomainException when creating category with empty name")]
     public void ShouldThrowDomainExceptionWhenCreatingCategoryWithEmptyName()
     {
-        var name = "";
+        var name = string.Empty;
         var description = "Category description";
 
         Action action = () => Category.Create(Name.Create(name), description);

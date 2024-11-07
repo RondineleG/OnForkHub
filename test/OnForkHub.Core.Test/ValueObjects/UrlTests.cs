@@ -1,5 +1,3 @@
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.Test.ValueObjects;
 
 public class UrlTests
@@ -78,8 +76,6 @@ public class UrlTests
         Action action = () => Url.Create(invalidUrl);
         action.Should().Throw<DomainException>().WithMessage(UrlResources.UrlInvalid);
     }
-
-    // Additional Scenarios
 
     [Fact]
     [Trait("Category", "Unit")]

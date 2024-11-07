@@ -1,11 +1,3 @@
-using System.Globalization;
-using OnForkHub.Core.Entities;
-using OnForkHub.Core.Validations;
-using OnForkHub.Core.ValueObjects.Base;
-
-using System.Globalization;
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.ValueObjects;
 
 public class Name : ValueObject
@@ -23,8 +15,7 @@ public class Name : ValueObject
 
     public static Name Create(string value)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value),
-            NameResources.NameEmpty);
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), NameResources.NameEmpty);
 
         return new Name(value);
     }

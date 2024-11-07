@@ -1,5 +1,3 @@
-using OnForkHub.Core.Abstractions;
-
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestResultTest
@@ -85,8 +83,8 @@ public class RequestResultTest
         result.ValidationResult.Errors.Should().HaveCount(2);
         result
             .ValidationResult.Errors.Should()
-            .Contain(error => error.Message == "Validation error 1" && error.Field == "Field1")
-            .And.Contain(error => error.Message == "Validation error 2" && error.Field == "Field2");
+            .Contain(error => (error.Message == "Validation error 1") && (error.Field == "Field1"))
+            .And.Contain(error => (error.Message == "Validation error 2") && (error.Field == "Field2"));
     }
 
     [Fact]

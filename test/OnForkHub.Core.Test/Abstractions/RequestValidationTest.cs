@@ -1,6 +1,3 @@
-using System.Text.Json;
-using OnForkHub.Core.Abstractions;
-
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestValidationTests
@@ -84,8 +81,7 @@ public class RequestValidationTests
     [DisplayName("Should deserialize from JSON correctly")]
     public void ShouldDeserializeFromJsonCorrectly()
     {
-        var json = /*lang=json,strict*/
-            "{\"PropertyName\":\"TestField\",\"Description\":\"Error description\"}";
+        var json = "{\"PropertyName\":\"TestField\",\"Description\":\"Error description\"}";
         var validation = JsonSerializer.Deserialize<RequestValidation>(json);
 
         validation.Should().NotBeNull();

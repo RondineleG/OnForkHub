@@ -1,5 +1,3 @@
-using OnForkHub.Shared.Abstractions.Resources.Core.ValueObjects;
-
 namespace OnForkHub.Core.Test.ValueObjects;
 
 public class TitleTest
@@ -21,12 +19,12 @@ public class TitleTest
     [DisplayName("Should return validation error for required title")]
     public void ShouldReturnValidationErrorForNullTitle()
     {
-        var title = Title.Create("");
+        var title = Title.Create(string.Empty);
         var validationResult = title.Validate();
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == TitleResources.TitleRequired && error.Field == "Title");
+            .ContainSingle(error => (error.Message == TitleResources.TitleRequired) && (error.Field == "Title"));
     }
 
     [Fact]
@@ -38,18 +36,18 @@ public class TitleTest
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == TitleResources.TitleMinLength && error.Field == "Title");
+            .ContainSingle(error => (error.Message == TitleResources.TitleMinLength) && (error.Field == "Title"));
     }
 
     [Fact]
     [DisplayName("Should return validation error for long title")]
     public void ShouldReturnValidationErrorForLongTitle()
     {
-        var title = Title.Create(new string('a',51));
+        var title = Title.Create(new string('a', 51));
         var validationResult = title.Validate();
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == TitleResources.TitleMaxLength && error.Field == "Title");
+            .ContainSingle(error => (error.Message == TitleResources.TitleMaxLength) && (error.Field == "Title"));
     }
 }

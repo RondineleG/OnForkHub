@@ -1,5 +1,3 @@
-using OnForkHub.Shared.Abstractions.Resources.Core.Entities.Base;
-
 namespace OnForkHub.Core.Entities.Base;
 
 public abstract class BaseEntity : IAggregateRoot
