@@ -1,0 +1,14 @@
+[core]
+    hooksPath = .husky
+
+[gitflow "branch"]
+    master = main
+    develop = dev
+
+[gitflow "prefix"]
+    feature = feature/
+    bugfix = bugfix/
+    release = release/
+    hotfix = hotfix/
+    support = support/
+    versiontag = v
