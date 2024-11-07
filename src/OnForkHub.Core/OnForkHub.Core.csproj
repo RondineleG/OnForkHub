@@ -4,27 +4,35 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    
+
     <PropertyGroup>
-        <ProjectRootDir>$(MSBuildProjectDirectory)</ProjectRootDir>
-        <HuskyDir>$(ProjectRootDir)\..\..\.husky</HuskyDir>
+        <EnableDefaultHusky>true</EnableDefaultHusky>
+        <HuskyRoot>$(MSBuildProjectDirectory)\..\..</HuskyRoot>
+        <HuskyDir>$(HuskyRoot)\.husky</HuskyDir>
     </PropertyGroup>
 
-    <ItemGroup>
-        <None Include="..\..\.husky\**\*" CopyToOutputDirectory="PreserveNewest" Visible="false" />
-    </ItemGroup>
- 
-    <Target Name="CheckHusky" BeforeTargets="HuskySetup">
-        <Error Text="The .husky folder does not exist. Please run 'dotnet husky install' to initialize Husky."
-               Condition="!Exists('$(HuskyDir)')" />
+    <!-- Adicionando Target específico para tool restore -->
+    <Target Name="RestoreTools" BeforeTargets="HuskyInit">
+        <Message Text="Restoring .NET tools..." Importance="high" />
+        <Exec
+            Command="dotnet tool restore"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
     </Target>
 
-    <Target Name="HuskySetup" BeforeTargets="Build" Condition="!Exists('$(HuskyDir)\_')">
-        <Exec Command="dotnet tool restore"
-              WorkingDirectory="$(ProjectRootDir)"
-              ContinueOnError="false" />
-        <Exec Command="dotnet husky install"
-              WorkingDirectory="$(ProjectRootDir)"
-              ContinueOnError="false" />
+    <Target Name="HuskyInit" BeforeTargets="Build">
+        <Message Text="Initializing Husky..." Importance="high" />
+        <Exec
+            Command="dotnet husky install"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
+        <!-- Adicionando configuração explícita do Git -->
+        <Exec
+            Command="git config core.hooksPath .husky"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
     </Target>
 </Project>

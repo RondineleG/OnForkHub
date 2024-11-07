@@ -119,3 +119,4 @@ This project aims to create a scalable and distributed platform for video sharin
    ```bash
    git clone https://github.com/RondineleG/OnForkHub.git
    cd OnForkHub
+    dotnet build && dotnet husky run
