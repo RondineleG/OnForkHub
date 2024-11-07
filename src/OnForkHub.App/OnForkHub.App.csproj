@@ -8,4 +8,43 @@
   <ItemGroup>
     <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
   </ItemGroup>
+
+    <PropertyGroup>
+        <EnableDefaultHusky>true</EnableDefaultHusky>
+        <HuskyRoot>$(MSBuildProjectDirectory)\..\..</HuskyRoot>
+        <HuskyDir>$(HuskyRoot)\.husky</HuskyDir>
+    </PropertyGroup>
+
+    <!-- Adicionando Target específico para tool restore -->
+    <Target Name="RestoreTools" BeforeTargets="HuskyInit">
+        <Message Text="Restoring .NET tools..." Importance="high" />
+        <Exec
+            Command="dotnet tool restore"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
+
+        <Exec
+    Command="dotnet run --project scripts/GitConfig/GitConfig.csproj"
+    WorkingDirectory="$(MSBuildProjectDirectory)\..\.."
+    StandardOutputImportance="High"
+    StandardErrorImportance="High" />
+
+
+    </Target>
+
+    <Target Name="HuskyInit" BeforeTargets="Build">
+        <Message Text="Initializing Husky..." Importance="high" />
+        <Exec
+            Command="dotnet husky install"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
+        <!-- Adicionando configuração explícita do Git -->
+        <Exec
+            Command="git config core.hooksPath .husky"
+            WorkingDirectory="$(HuskyRoot)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High" />
+    </Target>
 </Project>
