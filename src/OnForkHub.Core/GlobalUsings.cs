@@ -1,9 +1,11 @@
 global using System.Collections.ObjectModel;
 global using System.Globalization;
 global using System.Text.Json;
+global using System.Text.Json.Serialization;
 global using System.Text.RegularExpressions;
 global using OnForkHub.Core.Abstractions;
 global using OnForkHub.Core.Abstractions.Base;
+global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Entities.Base;
 global using OnForkHub.Core.Enums;
 global using OnForkHub.Core.Exceptions;
