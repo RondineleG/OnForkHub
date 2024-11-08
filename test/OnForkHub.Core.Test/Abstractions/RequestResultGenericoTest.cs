@@ -1,3 +1,5 @@
+using OnForkHub.Core.Requests;
+
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class GenericRequestResultTests
@@ -19,10 +21,7 @@ public class GenericRequestResultTests
 
         result.Status.Should().Be(EResultStatus.EntityHasError);
         result.EntityErrors.Should().ContainKey("TestEntity");
-        result
-            .EntityErrors["TestEntity"]
-            .Should()
-            .BeEquivalentTo(new List<string> { "Entity error 1", "Entity error 2" });
+        result.EntityErrors["TestEntity"].Should().BeEquivalentTo(new List<string> { "Entity error 1", "Entity error 2" });
     }
 
     [Fact]
@@ -34,11 +33,7 @@ public class GenericRequestResultTests
 
         RequestResult<string> result = validation;
 
-        result
-            .Validations.Should()
-            .ContainSingle(v =>
-                (v.PropertyName == "TestField") && (v.Description == "Validation error for test field")
-            );
+        result.Validations.Should().ContainSingle(v => (v.PropertyName == "TestField") && (v.Description == "Validation error for test field"));
     }
 
     [Fact]

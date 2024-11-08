@@ -1,12 +1,12 @@
 namespace OnForkHub.Core.Exceptions;
 
-public class DomainException(string message) : Exception(message)
+public class DomainException(string message, string errorCode = "DOMAIN_ERROR") : CustomException(message, errorCode)
 {
-    public static void ThrowErrorWhen(Func<bool> hasError, string message)
+    public static void ThrowErrorWhen(Func<bool> hasError, string message, string errorCode = "DOMAIN_VALIDATION_ERROR")
     {
         if (hasError())
         {
-            throw new DomainException(message);
+            throw new DomainException(message, errorCode);
         }
     }
 
@@ -15,7 +15,7 @@ public class DomainException(string message) : Exception(message)
         var combinedResult = ValidationResult.Combine(validations);
         if (combinedResult.Errors.Count > 0)
         {
-            throw new DomainException(combinedResult.ErrorMessage);
+            throw new DomainException(combinedResult.ErrorMessage, "DOMAIN_VALIDATION_ERROR");
         }
     }
 

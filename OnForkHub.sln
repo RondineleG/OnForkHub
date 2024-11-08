@@ -23,9 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.App", "src\OnFork
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E51B0901-74D1-419E-91A7-FAC35F0C152E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Shared.Scripts", "src\OnForkHub.Shared.Scripts\OnForkHub.Shared.Scripts.csproj", "{95608F47-EABA-41D7-95E7-02753E8D9F8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Scripts", "src\OnForkHub.Scripts\OnForkHub.Scripts.csproj", "{95608F47-EABA-41D7-95E7-02753E8D9F8F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Shared.Abstractions", "src\OnForkHub.Shared.Abstractions\OnForkHub.Shared.Abstractions.csproj", "{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Abstractions", "src\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj", "{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,23 +7,17 @@ public abstract class ValueObject
         return !(left is null ^ right is null) && (left is null || left.Equals(right));
     }
 
-    public static bool operator !=(ValueObject left, ValueObject right)
+    public static bool NotEqualOperator(ValueObject left, ValueObject right)
     {
         return !EqualOperator(left, right);
     }
 
-    public static bool operator ==(ValueObject left, ValueObject right)
+    public override bool Equals(object? obj)
     {
-        return EqualOperator(left, right);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj == null || obj.GetType() != GetType())
+        if (obj is null || obj.GetType() != GetType())
         {
             return false;
         }
-
         var other = (ValueObject)obj;
         return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
     }
@@ -34,6 +28,5 @@ public abstract class ValueObject
     }
 
     public abstract ValidationResult Validate();
-
     protected abstract IEnumerable<object> GetEqualityComponents();
 }
