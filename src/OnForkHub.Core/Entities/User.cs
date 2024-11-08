@@ -9,7 +9,7 @@ public class User : BaseEntity
 
     private readonly List<Video> _videos;
 
-    public Email Email { get; private set; }
+    public Email Email { get; private set; } = null!;
 
     public Name Name { get; private set; } = null!;
 
@@ -18,7 +18,6 @@ public class User : BaseEntity
     public static User Create(Name name, string email)
     {
         var user = new User { Name = name, Email = Email.Create(email) };
-
         user.Validate();
         return user;
     }

@@ -1,3 +1,5 @@
+using OnForkHub.Core.Requests;
+
 namespace OnForkHub.Core.Interfaces.Repositories;
 
 public interface ICategoryRepository

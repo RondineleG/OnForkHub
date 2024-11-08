@@ -1,3 +1,5 @@
+using OnForkHub.Core.Requests;
+
 namespace OnForkHub.Core.Exceptions;
 
 public class CustomResultException(RequestResult customResult) : Exception(customResult?.Message ?? "An error occurred")

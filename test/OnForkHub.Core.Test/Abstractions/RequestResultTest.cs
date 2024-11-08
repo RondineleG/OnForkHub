@@ -1,3 +1,5 @@
+using OnForkHub.Core.Requests;
+
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestResultTest

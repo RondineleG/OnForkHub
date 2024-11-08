@@ -1,8 +1,8 @@
-namespace OnForkHub.Shared.Scripts.Git;
+namespace OnForkHub.Scripts;
 
-public sealed class GitConfiguration
+public static class GitFlowConfiguration
 {
-    public async Task<bool> VerifyGitInstallationAsync()
+    public static async Task<bool> VerifyGitInstallationAsync()
     {
         try
         {
@@ -18,7 +18,7 @@ public sealed class GitConfiguration
         }
     }
 
-    public async Task ApplySharedConfigurationsAsync()
+    public static async Task ApplySharedConfigurationsAsync()
     {
         Console.WriteLine("Applying shared Git configurations...");
 
@@ -69,7 +69,7 @@ public sealed class GitConfiguration
         }
     }
 
-    private async Task<string> RunGitCommandAsync(string command)
+    private static async Task<string> RunGitCommandAsync(string command)
     {
         var processInfo = new ProcessStartInfo("git", command)
         {
@@ -79,22 +79,12 @@ public sealed class GitConfiguration
             CreateNoWindow = true,
         };
 
-        using var process = Process.Start(processInfo);
-        if (process == null)
-        {
-            throw new InvalidOperationException("Failed to start Git process.");
-        }
-
+        using var process = Process.Start(processInfo) ?? throw new InvalidOperationException("Failed to start Git process.");
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
 
         await process.WaitForExitAsync();
 
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"Git command failed with exit code {process.ExitCode}. {error}");
-        }
-
-        return output;
+        return process.ExitCode != 0 ? throw new InvalidOperationException($"Git command failed with exit code {process.ExitCode}. {error}") : output;
     }
 }

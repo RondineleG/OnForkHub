@@ -1,3 +1,5 @@
+using OnForkHub.Core.Requests;
+
 namespace OnForkHub.Core.Interfaces.Services;
 
 public interface ICategoryService

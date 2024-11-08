@@ -15,7 +15,7 @@ public class Video : BaseEntity
 
     public Title Title { get; private set; } = null!;
 
-    public Url Url { get; private set; }
+    public Url Url { get; private set; } = null!;
 
     public long UserId { get; private set; }
 
@@ -63,9 +63,8 @@ public class Video : BaseEntity
     {
         DomainException.ThrowErrorWhen(() => category == null, VideoResources.CategoryCannotBeNull);
 
-        if (_categories.Contains(category))
+        if (_categories.Remove(category))
         {
-            _categories.Remove(category);
             Update();
         }
     }
@@ -94,7 +93,7 @@ public class Video : BaseEntity
         validationResult.AddErrorIf(Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description));
         validationResult.AddErrorIf(Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description));
         validationResult.AddErrorIf(UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
-        validationResult = Title.Validate().Merge(validationResult); //Merge Video validation errors with Title validation errors
+        validationResult = Title.Validate().Merge(validationResult);
 
         return validationResult;
     }

@@ -1,4 +1,6 @@
-namespace OnForkHub.Core.Abstractions;
+using OnForkHub.Core.Interfaces.Requests;
+
+namespace OnForkHub.Core.Requests;
 
 public class RequestResult : IRequestValidations, IRequestError, IRequestEntityWarning
 {
