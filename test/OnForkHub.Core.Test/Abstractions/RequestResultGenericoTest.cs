@@ -1,5 +1,3 @@
-using OnForkHub.Core.Abstractions;
-
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class GenericRequestResultTests
@@ -38,7 +36,9 @@ public class GenericRequestResultTests
 
         result
             .Validations.Should()
-            .ContainSingle(v => v.PropertyName == "TestField" && v.Description == "Validation error for test field");
+            .ContainSingle(v =>
+                (v.PropertyName == "TestField") && (v.Description == "Validation error for test field")
+            );
     }
 
     [Fact]

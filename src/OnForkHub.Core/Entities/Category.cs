@@ -55,20 +55,13 @@ public class Category : BaseEntity
 
     public override ValidationResult Validate()
     {
-        var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Name.Value, $"{nameof(Name)} is required", nameof(Name));
-        validationResult.AddErrorIf(Name.Value.Length < 3, $"{nameof(Name)} must be at least 3 characters", nameof(Name));
-        validationResult.AddErrorIf(
-            Name.Value.Length > 50,
-            $"{nameof(Name)} must be no more than 50 characters",
-            nameof(Name)
-        );
+        var validationResult = Name.Validate();
         return validationResult;
     }
 
     private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
     {
-        DomainException.ThrowErrorWhen(() => id <= 0, $"{nameof(Id)} must be greater than zero");
+        DomainException.ThrowErrorWhen(() => id <= 0, BaseEntityResources.IdGreaterThanZero);
         Id = id;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;

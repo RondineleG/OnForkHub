@@ -1,15 +1,14 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"''''
+. "$(dirname "$0")/_/husky.sh"
 
-echo "🚀 Preparing to push changes..."
+export LC_ALL=en_US.UTF-8
+export LANG=pt_BR.UTF-8
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+RESET=$(tput sgr0)
 
-echo "🧪 Running unit tests..."
-if dotnet test --filter "Category=Unit" --logger "console;verbosity=detailed"; then
-    echo "✅ All unit tests passed successfully!"
-else
-    echo "❌ Some tests failed. Please fix them before pushing."
-    exit 1
-fi
+echo "🚀 Preparing to commit changes..."
+echo "----------------------------------"
 
 echo "🎨 Checking C# file formatting with CSharpier..."
 if dotnet csharpier . --check; then
@@ -22,7 +21,10 @@ else
 fi
 
 echo "🛠️ Running format check on staged files..."
-dotnet husky run --name dotnet-format-csharpier
+dotnet husky run --name dotnet-format-csharpier || {
+    echo "❌ Format checks failed. Please fix the issues and try again."
+    exit 1
+}
 
-echo "🚀 Ready to commit changes!"
+echo "----------------------------------"
 echo "✅ Pre-commit checks completed successfully."

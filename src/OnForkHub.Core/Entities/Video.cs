@@ -1,5 +1,3 @@
-using OnForkHub.Core.ValueObjects;
-
 namespace OnForkHub.Core.Entities;
 
 public class Video : BaseEntity
@@ -60,7 +58,7 @@ public class Video : BaseEntity
 
     public void AddCategory(Category category)
     {
-        DomainException.ThrowErrorWhen(() => category == null, $"{nameof(Category)} cannot be null");
+        DomainException.ThrowErrorWhen(() => category == null, VideoResources.CategoryCannotBeNull);
 
         if (!_categories.Contains(category))
         {
@@ -69,10 +67,9 @@ public class Video : BaseEntity
         }
     }
 
-
     public void RemoveCategory(Category category)
     {
-        DomainException.ThrowErrorWhen(() => category == null, $"{nameof(Category)} cannot be null");
+        DomainException.ThrowErrorWhen(() => category == null, VideoResources.CategoryCannotBeNull);
 
         if (_categories.Contains(category))
         {
@@ -103,20 +100,12 @@ public class Video : BaseEntity
         var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(
             Description,
-            $"{nameof(Description)} is required",
+            VideoResources.DescriptionRequired,
             nameof(Description)
         );
-        validationResult.AddErrorIf(
-            Description.Length < 5,
-            $"{nameof(Description)} must be at least 5 characters",
-            nameof(Description)
-        );
-        validationResult.AddErrorIf(
-            Description.Length > 200,
-            $"{nameof(Description)} must be no more than 200 characters",
-            nameof(Description)
-        );
-        validationResult.AddErrorIf(UserId <= 0, $"{nameof(UserId)} is required", nameof(UserId));
+        validationResult.AddErrorIf(Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description));
+        validationResult.AddErrorIf(Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description));
+        validationResult.AddErrorIf(UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
         validationResult = Title.Validate().Merge(validationResult); //Merge Video validation errors with Title validation errors
 
         return validationResult;

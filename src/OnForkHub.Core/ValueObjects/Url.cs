@@ -14,7 +14,7 @@ public class Url : ValueObject
 
     public static Url Create(string url)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url.Trim()), $"{nameof(Url)} cannot be empty");
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url.Trim()), UrlResources.UrlRequired);
 
         var normalizedUrl = url.EndsWith("/") && url.Length > 1 ? url.TrimEnd('/') : url;
         var urlObj = new Url(normalizedUrl);
@@ -29,12 +29,15 @@ public class Url : ValueObject
 
     public override ValidationResult Validate()
     {
-        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), "Invalid URL");
+        DomainException.ThrowErrorWhen(
+            () => !Uri.IsWellFormedUriString(Value, UriKind.Absolute),
+            UrlResources.UrlInvalid
+        );
 
         var uri = new Uri(Value, UriKind.Absolute);
         DomainException.ThrowErrorWhen(
             () => uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps,
-            "Invalid URL"
+            UrlResources.UrlInvalid
         );
 
         return _validationResult;

@@ -9,7 +9,7 @@ public abstract class BaseEntity : IAggregateRoot
 
     protected BaseEntity(long id, DateTime createdAt, DateTime? updatedAt = null)
     {
-        DomainException.ThrowErrorWhen(() => id <= 0, $"{nameof(Id)} must be greater than zero");
+        DomainException.ThrowErrorWhen(() => id <= 0, BaseEntityResources.IdGreaterThanZero);
         Id = id;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;

@@ -42,7 +42,7 @@ public class EmailTests
     public void ShouldThrowExceptionForEmptyEmail(string emailValue)
     {
         Action action = () => Email.Create(emailValue);
-        action.Should().Throw<DomainException>().WithMessage("Email cannot be empty");
+        action.Should().Throw<DomainException>().WithMessage(EmailResources.EmailCannotBeEmpty);
     }
 
     [Theory]
@@ -56,6 +56,6 @@ public class EmailTests
     public void ShouldThrowExceptionForInvalidFormat(string invalidEmail)
     {
         Action action = () => Email.Create(invalidEmail);
-        action.Should().Throw<DomainException>().WithMessage("Invalid email");
+        action.Should().Throw<DomainException>().WithMessage(EmailResources.InvalidEmail);
     }
 }

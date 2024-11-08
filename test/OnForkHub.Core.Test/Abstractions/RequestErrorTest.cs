@@ -1,6 +1,3 @@
-using System.Text.Json;
-using OnForkHub.Core.Abstractions;
-
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestErrorTests
@@ -32,8 +29,7 @@ public class RequestErrorTests
     [DisplayName("Should deserialize from JSON correctly")]
     public void ShouldDeserializeFromJsonCorrectly()
     {
-        var json = /*lang=json,strict*/
-            "{\"Description\":\"Validation error\"}";
+        var json = "{\"Description\":\"Validation error\"}";
 
         var error = JsonSerializer.Deserialize<RequestError>(json);
 

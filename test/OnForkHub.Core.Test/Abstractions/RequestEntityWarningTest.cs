@@ -1,6 +1,3 @@
-using System.Text.Json;
-using OnForkHub.Core.Abstractions;
-
 namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestEntityWarningTests
@@ -58,7 +55,6 @@ public class RequestEntityWarningTests
     [DisplayName("Should deserialize from JSON correctly")]
     public void ShouldDeserializeFromJsonCorrectly()
     {
-        /*lang=json,strict*/
         var json = "{\"Name\":\"TestEntity\",\"Id\":123,\"Message\":\"Warning about the entity\"}";
 
         var warning = JsonSerializer.Deserialize<RequestEntityWarning>(json);
@@ -66,7 +62,7 @@ public class RequestEntityWarningTests
         warning.Should().NotBeNull();
         warning!.Name.Should().Be("TestEntity");
 
-        if (warning.Id is JsonElement idElement && idElement.ValueKind == JsonValueKind.Number)
+        if ((warning.Id is JsonElement idElement) && (idElement.ValueKind == JsonValueKind.Number))
         {
             warning = warning with { Id = idElement.GetInt64() };
         }

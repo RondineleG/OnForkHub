@@ -15,18 +15,39 @@ public class TitleTest
         validationResult.IsValid.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("", "Title is required")]
-    [InlineData("aa", "Title must be at least 3 characters long")]
-    [InlineData("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "Title must be no more than 50 characters")]
-    [DisplayName("Should return validation error for invalid title")]
-    public void ShouldReturnValidationErrorForInvalidTitle(string titleStr, string errorMessage)
+    [Fact]
+    [DisplayName("Should return validation error for required title")]
+    public void ShouldReturnValidationErrorForNullTitle()
     {
-        var title = Title.Create(titleStr);
+        var title = Title.Create(string.Empty);
         var validationResult = title.Validate();
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error => error.Message == errorMessage && error.Field == "Title");
+            .ContainSingle(error => (error.Message == TitleResources.TitleRequired) && (error.Field == "Title"));
+    }
+
+    [Fact]
+    [DisplayName("Should return validation error for short title")]
+    public void ShouldReturnValidationErrorForShortTitle()
+    {
+        var title = Title.Create("hi");
+        var validationResult = title.Validate();
+
+        validationResult
+            .Errors.Should()
+            .ContainSingle(error => (error.Message == TitleResources.TitleMinLength) && (error.Field == "Title"));
+    }
+
+    [Fact]
+    [DisplayName("Should return validation error for long title")]
+    public void ShouldReturnValidationErrorForLongTitle()
+    {
+        var title = Title.Create(new string('a', 51));
+        var validationResult = title.Validate();
+
+        validationResult
+            .Errors.Should()
+            .ContainSingle(error => (error.Message == TitleResources.TitleMaxLength) && (error.Field == "Title"));
     }
 }

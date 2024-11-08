@@ -1,11 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
-  </ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
+    </ItemGroup>
+
+    <Target Name="RunSharedScripts" AfterTargets="Build">
+        <Message Text="Running shared scripts..." Importance="high" />
+        <Exec
+            Command="dotnet run --project src/OnForkHub.Shared.Scripts/OnForkHub.Shared.Scripts.csproj"
+            WorkingDirectory="$(MSBuildProjectDirectory)\..\.."
+            StandardOutputImportance="High"
+            StandardErrorImportance="High">
+            <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
+        </Exec>
+        <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode)" />
+    </Target>
 </Project>

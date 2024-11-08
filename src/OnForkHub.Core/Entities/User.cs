@@ -1,5 +1,3 @@
-using OnForkHub.Core.ValueObjects;
-
 namespace OnForkHub.Core.Entities;
 
 public class User : BaseEntity
@@ -36,7 +34,7 @@ public class User : BaseEntity
 
     public void AddVideo(Video video)
     {
-        DomainException.ThrowErrorWhen(() => video == null, $"{nameof(Video)} cannot be null");
+        DomainException.ThrowErrorWhen(() => video == null, UserResources.AddVideo);
         _videos.Add(video);
         Update();
     }

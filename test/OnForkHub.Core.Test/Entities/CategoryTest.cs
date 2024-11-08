@@ -24,7 +24,8 @@ public class CategoryTests
     public void ShouldLoadCategorySuccessfullyWhenDataIsValid()
     {
         var id = 1L;
-        var name = Name.Create("Category Test"); ;
+        var name = Name.Create("Category Test");
+
         var description = "Category description";
         var createdAt = DateTime.Now;
 
@@ -38,22 +39,18 @@ public class CategoryTests
         result.Data.CreatedAt.Should().Be(createdAt);
     }
 
-
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should throw DomainException when creating category with empty name")]
     public void ShouldThrowDomainExceptionWhenCreatingCategoryWithEmptyName()
     {
-        var name = "";   
+        var name = string.Empty;
         var description = "Category description";
 
         Action action = () => Category.Create(Name.Create(name), description);
 
-        action.Should()
-            .Throw<DomainException>()
-            .WithMessage("Name cannot be empty or null");
+        action.Should().Throw<DomainException>().WithMessage(NameResources.NameEmpty);
     }
-
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -66,7 +63,7 @@ public class CategoryTests
         var createdAt = DateTime.Now;
 
         Action act = () => Category.Load(id, name, description, createdAt);
-        act.Should().Throw<DomainException>().WithMessage("Id must be greater than zero");
+        act.Should().Throw<DomainException>().WithMessage(BaseEntityResources.IdGreaterThanZero);
     }
 
     [Fact]
@@ -80,9 +77,8 @@ public class CategoryTests
         var result = Category.Create(name, description);
 
         result.Status.Should().Be(EResultStatus.HasError);
-        result.RequestError!.Description.Should().Contain("Name must be no more than 50 characters");
+        result.RequestError!.Description.Should().Contain(NameResources.NameMaxLength);
     }
-
 
     [Fact]
     [Trait("Category", "Unit")]

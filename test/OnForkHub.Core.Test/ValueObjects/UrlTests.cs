@@ -61,7 +61,7 @@ public class UrlTests
     public void ShouldThrowExceptionForEmptyUrl(string urlValue)
     {
         Action action = () => Url.Create(urlValue);
-        action.Should().Throw<DomainException>().WithMessage("URL cannot be empty");
+        action.Should().Throw<DomainException>().WithMessage(UrlResources.UrlRequired);
     }
 
     [Theory]
@@ -74,10 +74,8 @@ public class UrlTests
     public void ShouldThrowExceptionForInvalidFormat(string invalidUrl)
     {
         Action action = () => Url.Create(invalidUrl);
-        action.Should().Throw<DomainException>().WithMessage("Invalid URL");
+        action.Should().Throw<DomainException>().WithMessage(UrlResources.UrlInvalid);
     }
-
-    // Additional Scenarios
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -85,7 +83,7 @@ public class UrlTests
     public void ShouldThrowExceptionForInvalidUrlScheme()
     {
         Action action = () => Url.Create("ftp://www.example.com");
-        action.Should().Throw<DomainException>().WithMessage("Invalid URL");
+        action.Should().Throw<DomainException>().WithMessage(UrlResources.UrlInvalid);
     }
 
     [Fact]
@@ -94,6 +92,6 @@ public class UrlTests
     public void ShouldThrowExceptionForUrlWithUnsupportedCharacters()
     {
         Action action = () => Url.Create("https://exa<>mple.com");
-        action.Should().Throw<DomainException>().WithMessage("Invalid URL");
+        action.Should().Throw<DomainException>().WithMessage(UrlResources.UrlInvalid);
     }
 }

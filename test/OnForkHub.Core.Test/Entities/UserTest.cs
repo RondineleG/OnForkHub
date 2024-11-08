@@ -1,7 +1,3 @@
-using Newtonsoft.Json.Linq;
-
-using OnForkHub.Core.Validations;
-
 namespace OnForkHub.Core.Test.Entities;
 
 public class UserTests
@@ -43,9 +39,9 @@ public class UserTests
     {
         var name = Name.Create("John Silva");
 
-        Action act = () => User.Create(name, "");
+        Action act = () => User.Create(name, string.Empty);
 
-        act.Should().Throw<DomainException>().WithMessage("Email cannot be empty");
+        act.Should().Throw<DomainException>().WithMessage(EmailResources.EmailCannotBeEmpty);
     }
 
     [Theory]
@@ -60,7 +56,7 @@ public class UserTests
 
         Action act = () => User.Create(name, invalidEmail);
 
-        act.Should().Throw<DomainException>().WithMessage("Invalid email");
+        act.Should().Throw<DomainException>().WithMessage(EmailResources.InvalidEmail);
     }
 
     [Fact]
@@ -69,11 +65,11 @@ public class UserTests
     public void ShouldThrowDomainExceptionWhenNameIsTooShort()
     {
         var name = "Al";
-        var result = new ValidationResult().AddErrorIf(name.Length < 3, "Name must be at least 3 characters long", "Name");
+        var result = new ValidationResult().AddErrorIf(name.Length < 3, NameResources.NameMinLength, "Name");
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();
-        result.Errors.First().Message.Should().Be("Name must be at least 3 characters long");
+        result.Errors.First().Message.Should().Be(NameResources.NameMinLength);
         result.Errors.First().Field.Should().Be("Name");
     }
 
@@ -87,7 +83,7 @@ public class UserTests
 
         Action act = () => user.UpdateEmail("email@");
 
-        act.Should().Throw<DomainException>().WithMessage("Invalid email");
+        act.Should().Throw<DomainException>().WithMessage(EmailResources.InvalidEmail);
     }
 
     [Fact]
@@ -101,7 +97,9 @@ public class UserTests
         user.UpdateName(Name.Create("Jo"));
         var validationResult = user.Validate();
 
-        validationResult.Errors.Should().ContainSingle(error => error.Message == $"Name must be at least 3 characters long" && error.Field == "Name");
+        validationResult
+            .Errors.Should()
+            .ContainSingle(error => (error.Message == NameResources.NameMinLength) && (error.Field == "Name"));
     }
 
     [Fact]

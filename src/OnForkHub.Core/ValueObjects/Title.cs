@@ -1,5 +1,3 @@
-using OnForkHub.Core.Validations;
-
 namespace OnForkHub.Core.ValueObjects;
 
 public class Title : ValueObject
@@ -21,17 +19,9 @@ public class Title : ValueObject
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Value, $"{nameof(Title)} is required", nameof(Title));
-        validationResult.AddErrorIf(
-            Value.Length < 3,
-            $"{nameof(Title)} must be at least 3 characters long",
-            nameof(Title)
-        );
-        validationResult.AddErrorIf(
-            Value.Length > 50,
-            $"{nameof(Title)} must be no more than 50 characters",
-            nameof(Title)
-        );
+        validationResult.AddErrorIfNullOrWhiteSpace(Value, TitleResources.TitleRequired, nameof(Title));
+        validationResult.AddErrorIf(Value.Length < 3, TitleResources.TitleMinLength, nameof(Title));
+        validationResult.AddErrorIf(Value.Length > 50, TitleResources.TitleMaxLength, nameof(Title));
         return validationResult;
     }
 
