@@ -1,0 +1,43 @@
+@if (Video is not null)
+{
+    <div class="hc-wrapper">
+        <div class="hc-card @(NowPlayingVideo == Video.Title ? "selected" : "")"
+             @onclick="playVideo">
+            <div class="hc-content">
+                <picture>
+                    <img src="/Images/@Video.Thumbnail" alt="@Video.Title" />
+                </picture>
+                <p class="text-center">
+                    @Video.Title
+                </p>
+                <button type="button" class="btn btn-glass">
+                    @if (NowPlayingVideo == Video.Title)
+                    {
+                        <span>Playing</span>
+                    }
+                    else
+                    {
+                        <span>Play</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Video? Video { get; set; }
+
+    [Parameter]
+    public string? NowPlayingVideo { get; set; }
+
+    [Parameter]
+    public EventCallback OnPlayCallBack { get; set; }
+
+    private async Task playVideo()
+    {
+        await OnPlayCallBack.InvokeAsync();
+    }
+}

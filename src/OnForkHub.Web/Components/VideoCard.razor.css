@@ -1,0 +1,91 @@
+.hc-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.hc-card {
+    width: 150px;
+    height: 150px;
+    border-radius: 15px;
+    padding: 1.5rem;
+    background: white;
+    position: relative;
+    box-shadow: 0px 7px 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: flex-end;
+    transition: 0.4s ease-out;
+}
+
+.selected {
+    border: 3px solid var(--cf-theme-core);
+}
+
+.hc-card .hc-content {
+    color: white;
+    z-index: 3;
+    position: relative;
+    transform: translateY(30px);
+    opacity: 0;
+    transition: 0.5s;
+}
+
+.hc-card:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2;
+    transition: 0.5s;
+}
+
+.hc-card img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 15px;
+}
+
+.hc-card .hc-content {
+    color: white;
+    z-index: 3;
+    position: relative;
+    transform: translateY(30px);
+    opacity: 0;
+    transition: 0.5s;
+}
+
+    .hc-card .hc-content p {
+        font-size: .9rem;
+        font-family: var(--cf-title-font);
+        letter-spacing: 1px;
+        margin-top: .5em;
+    }
+
+.hc-card:hover {
+    transform: translateY(20px);
+}
+
+    .hc-card:hover:before {
+        opacity: 1;
+    }
+
+    .hc-card:hover .hc-content {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+
+@media (min-width: 768px) {
+    .hc-card {
+        width: 175px;
+        height: 175px;
+    }
+}
