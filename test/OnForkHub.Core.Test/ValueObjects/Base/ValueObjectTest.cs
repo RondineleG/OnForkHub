@@ -56,7 +56,8 @@ public class ValueObjectTests
         var obj1 = new SampleValueObjectTestFixture(1, "Test");
         var obj2 = new SampleValueObjectTestFixture(1, "Test");
 
-        (obj1 == obj2).Should().BeTrue();
+        var areEqual = ValueObject.EqualOperator(obj1, obj2);
+        areEqual.Should().BeTrue();
     }
 
     [Fact]

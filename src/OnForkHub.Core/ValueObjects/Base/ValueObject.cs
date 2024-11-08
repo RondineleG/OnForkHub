@@ -7,6 +7,11 @@ public abstract class ValueObject
         return !(left is null ^ right is null) && (left is null || left.Equals(right));
     }
 
+    public static bool NotEqualOperator(ValueObject left, ValueObject right)
+    {
+        return !EqualOperator(left, right);
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj is null || obj.GetType() != GetType())
