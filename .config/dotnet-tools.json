@@ -15,7 +15,7 @@
         "dotnet-csharpier"
       ],
       "args": [ "csharpier", "${staged}" ],
-      "include": [ "**/*.cs" ],
+      "include": [ "**/*.cs","**/*.css","**/*.js","**/*.razor","**/*.sql" ],
       "rollForward": false
     }
   }

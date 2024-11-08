@@ -134,11 +134,7 @@ public class ValidationResultTests
     [DisplayName("Should return error with multiple fields when adding errors")]
     public void ShouldReturnErrorWithMultipleFieldsWhenAddingErrors()
     {
-        var errors = new List<(string Message, string Field)>
-        {
-            ("Error in field 1", "Field1"),
-            ("Error in field 2", "Field2"),
-        };
+        var errors = new List<(string Message, string Field)> { ("Error in field 1", "Field1"), ("Error in field 2", "Field2") };
         var result = new ValidationResult().AddErrors(errors);
 
         result.IsValid.Should().BeFalse();

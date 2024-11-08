@@ -27,6 +27,6 @@ public class Title : ValueObject
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Value.ToLower();
+        yield return Value.ToLower(CultureInfo.CurrentCulture);
     }
 }

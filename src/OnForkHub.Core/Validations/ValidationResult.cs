@@ -2,6 +2,8 @@ namespace OnForkHub.Core.Validations;
 
 public sealed class ValidationResult
 {
+    private readonly List<ValidationErrorMessage> _errors;
+
     public ValidationResult()
     {
         _errors = [];
@@ -13,12 +15,9 @@ public sealed class ValidationResult
         AddError(errorMessage, fieldName);
     }
 
-    private readonly List<ValidationErrorMessage> _errors;
-
     public string ErrorMessage => string.Join("; ", _errors.Select(e => e.Message));
 
-    public IReadOnlyCollection<ValidationErrorMessage> Errors =>
-        new ReadOnlyCollection<ValidationErrorMessage>(_errors);
+    public IReadOnlyCollection<ValidationErrorMessage> Errors => new ReadOnlyCollection<ValidationErrorMessage>(_errors);
 
     public bool HasError => !IsValid;
 
@@ -41,7 +40,7 @@ public sealed class ValidationResult
 
     public static ValidationResult Failure(string errorMessage, string fieldName = "")
     {
-        return new(errorMessage, fieldName);
+        return new ValidationResult(errorMessage, fieldName);
     }
 
     public static implicit operator bool(ValidationResult validation)
@@ -49,17 +48,9 @@ public sealed class ValidationResult
         return validation?.IsValid ?? false;
     }
 
-    public static ValidationResult operator &(ValidationResult left, ValidationResult right)
-    {
-        return left == null ? right ?? Success()
-            : right == null ? left
-            : !left.IsValid ? left
-            : left.Merge(right);
-    }
-
     public static ValidationResult Success()
     {
-        return new();
+        return new ValidationResult();
     }
 
     public static void ThrowErrorIf(Func<bool> hasError, string message)
@@ -156,11 +147,29 @@ public sealed class ValidationResult
         return this;
     }
 
+    public static ValidationResult operator &(ValidationResult left, ValidationResult right)
+    {
+        return GetAndOperatorResult(left, right);
+    }
+
     public static ValidationResult operator |(ValidationResult left, ValidationResult right)
     {
-        return left == null ? right ?? Success()
-            : right == null ? left
-            : left.IsValid ? left
-            : right;
+        return left.IsValid ? left : right;
+    }
+
+    private static ValidationResult GetAndOperatorResult(ValidationResult left, ValidationResult right)
+    {
+        var result = left ?? right ?? Success();
+
+        if (left != null && !left.IsValid)
+        {
+            result = left;
+        }
+        else if (left != null && right != null)
+        {
+            result = left.Merge(right);
+        }
+
+        return result;
     }
 }

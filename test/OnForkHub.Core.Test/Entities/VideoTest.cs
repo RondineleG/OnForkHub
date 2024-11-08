@@ -70,9 +70,7 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error =>
-                (error.Message == TitleResources.TitleMinLength) && (error.Field == nameof(Video.Title))
-            );
+            .ContainSingle(error => (error.Message == TitleResources.TitleMinLength) && (error.Field == nameof(Video.Title)));
     }
 
     [Fact]
@@ -90,9 +88,7 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error =>
-                (error.Message == TitleResources.TitleRequired) && (error.Field == nameof(Video.Title))
-            );
+            .ContainSingle(error => (error.Message == TitleResources.TitleRequired) && (error.Field == nameof(Video.Title)));
     }
 
     [Fact]
@@ -110,9 +106,7 @@ public class VideoTests
 
         validationResult
             .Errors.Should()
-            .ContainSingle(error =>
-                (error.Message == TitleResources.TitleMaxLength) && (error.Field == nameof(Video.Title))
-            );
+            .ContainSingle(error => (error.Message == TitleResources.TitleMaxLength) && (error.Field == nameof(Video.Title)));
     }
 
     [Fact]

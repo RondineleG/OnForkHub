@@ -22,9 +22,7 @@ public class TitleTest
         var title = Title.Create(string.Empty);
         var validationResult = title.Validate();
 
-        validationResult
-            .Errors.Should()
-            .ContainSingle(error => (error.Message == TitleResources.TitleRequired) && (error.Field == "Title"));
+        validationResult.Errors.Should().ContainSingle(error => (error.Message == TitleResources.TitleRequired) && (error.Field == "Title"));
     }
 
     [Fact]
@@ -34,9 +32,7 @@ public class TitleTest
         var title = Title.Create("hi");
         var validationResult = title.Validate();
 
-        validationResult
-            .Errors.Should()
-            .ContainSingle(error => (error.Message == TitleResources.TitleMinLength) && (error.Field == "Title"));
+        validationResult.Errors.Should().ContainSingle(error => (error.Message == TitleResources.TitleMinLength) && (error.Field == "Title"));
     }
 
     [Fact]
@@ -46,8 +42,6 @@ public class TitleTest
         var title = Title.Create(new string('a', 51));
         var validationResult = title.Validate();
 
-        validationResult
-            .Errors.Should()
-            .ContainSingle(error => (error.Message == TitleResources.TitleMaxLength) && (error.Field == "Title"));
+        validationResult.Errors.Should().ContainSingle(error => (error.Message == TitleResources.TitleMaxLength) && (error.Field == "Title"));
     }
 }

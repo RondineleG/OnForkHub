@@ -4,6 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
@@ -12,7 +14,7 @@
     <Target Name="RunSharedScripts" AfterTargets="Build">
         <Message Text="Running shared scripts..." Importance="high" />
         <Exec
-            Command="dotnet run --project src/OnForkHub.Shared.Scripts/OnForkHub.Shared.Scripts.csproj"
+            Command="dotnet run --project src/OnForkHub.Scripts/OnForkHub.Scripts.csproj"
             WorkingDirectory="$(MSBuildProjectDirectory)\..\.."
             StandardOutputImportance="High"
             StandardErrorImportance="High">
