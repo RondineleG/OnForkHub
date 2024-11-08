@@ -1,15 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
-  </ItemGroup>
-  <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
-    <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
-    <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="..\.." />
-  </Target>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
+    </ItemGroup>
+
+    <Target Name="RunSharedScripts" AfterTargets="Build">
+        <Message Text="Running shared scripts..." Importance="high" />
+        <Exec
+            Command="dotnet run --project src/OnForkHub.Shared.Scripts/OnForkHub.Shared.Scripts.csproj"
+            WorkingDirectory="$(MSBuildProjectDirectory)\..\.."
+            StandardOutputImportance="High"
+            StandardErrorImportance="High">
+            <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
+        </Exec>
+        <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode)" />
+    </Target>
 </Project>
