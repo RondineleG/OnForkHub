@@ -18,13 +18,7 @@ public class Category : BaseEntity
             : RequestResult<Category>.Success(category);
     }
 
-    public static RequestResult<Category> Load(
-        long id,
-        Name name,
-        string description,
-        DateTime createdAt,
-        DateTime? updatedAt = null
-    )
+    public static RequestResult<Category> Load(long id, Name name, string description, DateTime createdAt, DateTime? updatedAt = null)
     {
         var category = new Category { Name = name, Description = description };
 

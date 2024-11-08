@@ -71,11 +71,7 @@ public class RequestResultTest
     [DisplayName("Should add validations as a collection")]
     public void ShouldAddValidationsAsCollection()
     {
-        var validations = new List<RequestValidation>
-        {
-            new("Field1", "Validation error 1"),
-            new("Field2", "Validation error 2"),
-        };
+        var validations = new List<RequestValidation> { new("Field1", "Validation error 1"), new("Field2", "Validation error 2") };
 
         var result = RequestResult.WithValidations(validations.ToArray());
 

@@ -165,25 +165,12 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     protected static RequestResult CreateEntityError(string entity, object id, string description, EResultStatus status)
     {
-        return new RequestResult
-        {
-            Status = status,
-            RequestEntityWarning = new RequestEntityWarning(entity, id, description),
-        };
+        return new RequestResult { Status = status, RequestEntityWarning = new RequestEntityWarning(entity, id, description) };
     }
 
-    protected static RequestResult<T> CreateEntityError<T>(
-        string entity,
-        object id,
-        string description,
-        EResultStatus status
-    )
+    protected static RequestResult<T> CreateEntityError<T>(string entity, object id, string description, EResultStatus status)
     {
-        return new RequestResult<T>
-        {
-            Status = status,
-            RequestEntityWarning = new RequestEntityWarning(entity, id, description),
-        };
+        return new RequestResult<T> { Status = status, RequestEntityWarning = new RequestEntityWarning(entity, id, description) };
     }
 }
 

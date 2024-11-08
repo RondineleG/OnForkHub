@@ -97,9 +97,7 @@ public class UserTests
         user.UpdateName(Name.Create("Jo"));
         var validationResult = user.Validate();
 
-        validationResult
-            .Errors.Should()
-            .ContainSingle(error => (error.Message == NameResources.NameMinLength) && (error.Field == "Name"));
+        validationResult.Errors.Should().ContainSingle(error => (error.Message == NameResources.NameMinLength) && (error.Field == "Name"));
     }
 
     [Fact]

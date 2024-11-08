@@ -33,15 +33,7 @@ public class Video : BaseEntity
         return video;
     }
 
-    public static Video Load(
-        long id,
-        string title,
-        string description,
-        string url,
-        long userId,
-        DateTime createdAt,
-        DateTime? updatedAt = null
-    )
+    public static Video Load(long id, string title, string description, string url, long userId, DateTime createdAt, DateTime? updatedAt = null)
     {
         var video = new Video
         {
@@ -98,11 +90,7 @@ public class Video : BaseEntity
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(
-            Description,
-            VideoResources.DescriptionRequired,
-            nameof(Description)
-        );
+        validationResult.AddErrorIfNullOrWhiteSpace(Description, VideoResources.DescriptionRequired, nameof(Description));
         validationResult.AddErrorIf(Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description));
         validationResult.AddErrorIf(Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description));
         validationResult.AddErrorIf(UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));

@@ -29,16 +29,10 @@ public class Url : ValueObject
 
     public override ValidationResult Validate()
     {
-        DomainException.ThrowErrorWhen(
-            () => !Uri.IsWellFormedUriString(Value, UriKind.Absolute),
-            UrlResources.UrlInvalid
-        );
+        DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), UrlResources.UrlInvalid);
 
         var uri = new Uri(Value, UriKind.Absolute);
-        DomainException.ThrowErrorWhen(
-            () => uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps,
-            UrlResources.UrlInvalid
-        );
+        DomainException.ThrowErrorWhen(() => uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps, UrlResources.UrlInvalid);
 
         return _validationResult;
     }

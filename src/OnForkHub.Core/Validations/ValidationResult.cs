@@ -17,8 +17,7 @@ public sealed class ValidationResult
 
     public string ErrorMessage => string.Join("; ", _errors.Select(e => e.Message));
 
-    public IReadOnlyCollection<ValidationErrorMessage> Errors =>
-        new ReadOnlyCollection<ValidationErrorMessage>(_errors);
+    public IReadOnlyCollection<ValidationErrorMessage> Errors => new ReadOnlyCollection<ValidationErrorMessage>(_errors);
 
     public bool HasError => !IsValid;
 
