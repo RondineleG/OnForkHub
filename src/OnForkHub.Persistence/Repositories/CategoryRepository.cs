@@ -40,27 +40,28 @@ public class CategoryRepository(EntityFrameworkDataContext context) : ICategoryR
         }
     }
 
-    public async Task<RequestResult> DeleteAsync(long id)
+    public async Task<RequestResult<Category>> DeleteAsync(long id)
     {
         try
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
-                return RequestResult.WithError(CustomMessageHandler.EntityNotFound("Category", id));
+                return RequestResult<Category>.WithError(CustomMessageHandler.EntityNotFound("Category", id));
             }
 
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
-            return RequestResult.Success();
+
+            return RequestResult<Category>.Success(category);
         }
         catch (DbUpdateException exception)
         {
-            return RequestResult.WithError(CustomMessageHandler.DbUpdateError(exception));
+            return RequestResult<Category>.WithError(CustomMessageHandler.DbUpdateError(exception));
         }
         catch (Exception exception)
         {
-            return RequestResult.WithError(CustomMessageHandler.UnexpectedError("delete category", exception.Message));
+            return RequestResult<Category>.WithError(CustomMessageHandler.UnexpectedError("delete category", exception.Message));
         }
     }
 

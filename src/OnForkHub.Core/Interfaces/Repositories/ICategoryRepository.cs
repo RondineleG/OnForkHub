@@ -6,7 +6,7 @@ public interface ICategoryRepository
 
     Task<RequestResult<Category>> UpdateAsync(Category category);
 
-    Task<RequestResult> DeleteAsync(long id);
+    Task<RequestResult<Category>> DeleteAsync(long id);
 
     Task<RequestResult<Category>> GetByIdAsync(long id);
 

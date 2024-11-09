@@ -1,29 +1,52 @@
 namespace OnForkHub.Application.Services;
 
-public class CategoryService : ICategoryService
+public class CategoryService(ICategoryRepository categoryRepository, IValidationService validationService)
+    : ServiceBase(validationService),
+        ICategoryService
 {
-    public Task<RequestResult<Category>> CreateAsync(Category category)
+    private readonly ICategoryRepository _categoryRepository = categoryRepository;
+
+    public async Task<RequestResult<Category>> CreateAsync(Category category)
     {
-        throw new NotImplementedException();
+        return await ExecuteAsync(category, _categoryRepository.CreateAsync, ValidateCategory);
     }
 
-    public Task<RequestResult> DeleteAsync(long id)
+    public async Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        throw new NotImplementedException();
+        return await ExecuteAsync(category, _categoryRepository.UpdateAsync, ValidateCategory);
     }
 
-    public Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size)
+    public async Task<RequestResult<Category>> DeleteAsync(long id)
     {
-        throw new NotImplementedException();
+        var categoryResult = await GetByIdAsync(id);
+        if (!categoryResult.Status.Equals(EResultStatus.Success))
+        {
+            return categoryResult;
+        }
+
+        return await ExecuteAsync(() => _categoryRepository.DeleteAsync(id));
     }
 
-    public Task<RequestResult<Category>> GetByIdAsync(long id)
+    public async Task<RequestResult<Category>> GetByIdAsync(long id)
     {
-        throw new NotImplementedException();
+        return await ExecuteAsync(() => _categoryRepository.GetByIdAsync(id));
     }
 
-    public Task<RequestResult<Category>> UpdateAsync(Category category)
+    public async Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size)
     {
-        throw new NotImplementedException();
+        return await ExecuteAsync(() => _categoryRepository.GetAsync(page, size));
+    }
+
+    private static CustomValidationResult ValidateCategory(Category category)
+    {
+        var validationResult = new CustomValidationResult();
+
+        validationResult
+            .AddErrorIfNullOrWhiteSpace(category.Name.Value, "Category name is required", nameof(category.Name))
+            .AddErrorIf(category.Description?.Length > 200, "Description cannot exceed 200 characters", nameof(category.Description));
+
+        validationResult.Merge(category.Validate());
+
+        return validationResult;
     }
 }
