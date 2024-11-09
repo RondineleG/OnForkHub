@@ -10,7 +10,7 @@ public static class DbUpdateExceptionHandler
             innerException = innerException.InnerException;
         }
 
-        var errorMessage = innerException?.Message ?? exception.Message;
+        var errorMessage = (innerException?.Message) ?? exception.Message;
 
         if (errorMessage.Contains("duplicate key"))
         {

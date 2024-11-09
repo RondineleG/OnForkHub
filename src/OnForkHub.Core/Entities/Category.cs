@@ -13,7 +13,7 @@ public class Category : BaseEntity
         var category = new Category { Name = name, Description = description };
 
         var validationResult = category.Validate();
-        return validationResult.Errors.Count > 0
+        return (validationResult.Errors.Count > 0)
             ? RequestResult<Category>.WithError(validationResult.ErrorMessage)
             : RequestResult<Category>.Success(category);
     }

@@ -23,7 +23,7 @@ public static class EnumExtensions
         foreach (var field in typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static))
         {
             if (
-                Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) is DescriptionAttribute attribute
+                (Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) is DescriptionAttribute attribute)
                 && attribute.Description.Equals(description, StringComparison.OrdinalIgnoreCase)
                 && Enum.TryParse<TEnum>(field.Name, out var value)
             )

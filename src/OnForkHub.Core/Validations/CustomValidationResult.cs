@@ -25,7 +25,7 @@ public sealed class CustomValidationResult
 
     public static CustomValidationResult Combine(params CustomValidationResult[] validations)
     {
-        if (validations == null || validations.Length == 0)
+        if ((validations == null) || (validations.Length == 0))
         {
             return Success();
         }
@@ -45,7 +45,7 @@ public sealed class CustomValidationResult
 
     public static implicit operator bool(CustomValidationResult validation)
     {
-        return validation?.IsValid ?? false;
+        return (validation?.IsValid) ?? false;
     }
 
     public static CustomValidationResult Success()
@@ -161,11 +161,11 @@ public sealed class CustomValidationResult
     {
         var result = left ?? right ?? Success();
 
-        if (left != null && !left.IsValid)
+        if ((left != null) && !left.IsValid)
         {
             result = left;
         }
-        else if (left != null && right != null)
+        else if ((left != null) && (right != null))
         {
             result = left.Merge(right);
         }

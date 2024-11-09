@@ -2,7 +2,7 @@ namespace OnForkHub.Persistence.Exceptions;
 
 public static class CustomMessageHandler
 {
-    public static string EntityNotFound(string entityName, int id)
+    public static string EntityNotFound(string entityName, long id)
     {
         return $"{entityName} not found with ID: {id}.";
     }

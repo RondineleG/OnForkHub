@@ -69,7 +69,7 @@ public class CategoryRepository(EntityFrameworkDataContext context) : ICategoryR
         try
         {
             var category = await _context.Categories.FindAsync(id);
-            return category != null
+            return (category != null)
                 ? RequestResult<Category>.Success(category)
                 : RequestResult<Category>.WithError(CustomMessageHandler.EntityNotFound("Category", id));
         }

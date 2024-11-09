@@ -154,7 +154,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
             }
         }
 
-        if (ValidationResult?.Errors != null && ValidationResult.Errors.Count != 0)
+        if ((ValidationResult?.Errors != null) && (ValidationResult.Errors.Count != 0))
         {
             foreach (var validationError in ValidationResult.Errors)
             {

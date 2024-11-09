@@ -19,7 +19,7 @@ public class CategoryRequestDto
         var name = Core.ValueObjects.Name.Create(request.Name);
         category.UpdateCategory(name, request.Description);
 
-        return category == null
+        return (category == null)
             ? RequestResult<Core.Entities.Category>.WithError("Category not found")
             : RequestResult<Core.Entities.Category>.Success(category);
     }

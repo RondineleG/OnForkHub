@@ -99,7 +99,7 @@ public sealed class ValidationService : IValidationService
             validationResult.AddError($"The end date for {fieldName} cannot be empty", fieldName);
         }
 
-        if (dateTimeStart != default && dateTimeFinish != default)
+        if ((dateTimeStart != default) && (dateTimeFinish != default))
         {
             if (dateTimeStart > dateTimeFinish)
             {
