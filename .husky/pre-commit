@@ -17,6 +17,7 @@ else
     echo "❌ Some files need formatting. Formatting now..."
     dotnet csharpier .
     echo "✅ Files formatted successfully. Adding to commit..."
+    git add .
 fi
 
 echo "🛠️ Running format check on staged files..."
