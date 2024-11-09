@@ -24,9 +24,9 @@ public class Url : ValueObject
         yield return Value.ToLower(CultureInfo.CurrentCulture);
     }
 
-    public override ValidationResult Validate()
+    public override CustomValidationResult Validate()
     {
-        var _validationResult = new ValidationResult();
+        var _validationResult = new CustomValidationResult();
         DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), UrlResources.UrlInvalid);
 
         var uri = new Uri(Value, UriKind.Absolute);

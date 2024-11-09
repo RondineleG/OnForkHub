@@ -1,15 +1,15 @@
 namespace OnForkHub.Core.Validations;
 
-public sealed class ValidationResult
+public sealed class CustomValidationResult
 {
     private readonly List<ValidationErrorMessage> _errors;
 
-    public ValidationResult()
+    public CustomValidationResult()
     {
         _errors = [];
     }
 
-    private ValidationResult(string errorMessage, string fieldName = "")
+    private CustomValidationResult(string errorMessage, string fieldName = "")
         : this()
     {
         AddError(errorMessage, fieldName);
@@ -23,14 +23,14 @@ public sealed class ValidationResult
 
     public bool IsValid => _errors.Count == 0;
 
-    public static ValidationResult Combine(params ValidationResult[] validations)
+    public static CustomValidationResult Combine(params CustomValidationResult[] validations)
     {
         if (validations == null || validations.Length == 0)
         {
             return Success();
         }
 
-        var result = new ValidationResult();
+        var result = new CustomValidationResult();
         foreach (var validation in validations.Where(v => v != null))
         {
             result.Merge(validation);
@@ -38,19 +38,19 @@ public sealed class ValidationResult
         return result;
     }
 
-    public static ValidationResult Failure(string errorMessage, string fieldName = "")
+    public static CustomValidationResult Failure(string errorMessage, string fieldName = "")
     {
-        return new ValidationResult(errorMessage, fieldName);
+        return new CustomValidationResult(errorMessage, fieldName);
     }
 
-    public static implicit operator bool(ValidationResult validation)
+    public static implicit operator bool(CustomValidationResult validation)
     {
         return validation?.IsValid ?? false;
     }
 
-    public static ValidationResult Success()
+    public static CustomValidationResult Success()
     {
-        return new ValidationResult();
+        return new CustomValidationResult();
     }
 
     public static void ThrowErrorIf(Func<bool> hasError, string message)
@@ -61,12 +61,12 @@ public sealed class ValidationResult
         }
     }
 
-    public static ValidationResult Validate(Func<bool> predicate, string errorMessage, string fieldName = "")
+    public static CustomValidationResult Validate(Func<bool> predicate, string errorMessage, string fieldName = "")
     {
         return predicate() ? Failure(errorMessage, fieldName) : Success();
     }
 
-    public ValidationResult AddError(string errorMessage, string fieldName = "")
+    public CustomValidationResult AddError(string errorMessage, string fieldName = "")
     {
         if (string.IsNullOrWhiteSpace(errorMessage))
         {
@@ -77,7 +77,7 @@ public sealed class ValidationResult
         return this;
     }
 
-    public ValidationResult AddErrorIf(bool condition, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIf(bool condition, string errorMessage, string fieldName = "")
     {
         if (condition)
         {
@@ -86,29 +86,29 @@ public sealed class ValidationResult
         return this;
     }
 
-    public ValidationResult AddErrorI<T>(T value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorI<T>(T value, string errorMessage, string fieldName = "")
         where T : class
     {
         return AddErrorIf(value == null, errorMessage, fieldName);
     }
 
-    public ValidationResult AddErrorIfNull<T>(T value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIfNull<T>(T value, string errorMessage, string fieldName = "")
         where T : class
     {
         return AddErrorIf(value == null, errorMessage, fieldName);
     }
 
-    public ValidationResult AddErrorIfNullOrEmpty(string value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIfNullOrEmpty(string value, string errorMessage, string fieldName = "")
     {
         return AddErrorIf(string.IsNullOrEmpty(value), errorMessage, fieldName);
     }
 
-    public ValidationResult AddErrorIfNullOrWhiteSpace(string value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIfNullOrWhiteSpace(string value, string errorMessage, string fieldName = "")
     {
         return AddErrorIf(string.IsNullOrWhiteSpace(value), errorMessage, fieldName);
     }
 
-    public ValidationResult AddErrors(IEnumerable<(string Message, string Field)> errors)
+    public CustomValidationResult AddErrors(IEnumerable<(string Message, string Field)> errors)
     {
         foreach (var (message, field) in errors)
         {
@@ -117,7 +117,7 @@ public sealed class ValidationResult
         return this;
     }
 
-    public ValidationResult Merge(ValidationResult other)
+    public CustomValidationResult Merge(CustomValidationResult other)
     {
         ArgumentNullException.ThrowIfNull(other);
 
@@ -141,23 +141,23 @@ public sealed class ValidationResult
         }
     }
 
-    public ValidationResult ThrowIfInvalidAndReturn()
+    public CustomValidationResult ThrowIfInvalidAndReturn()
     {
         ThrowIfInvalid();
         return this;
     }
 
-    public static ValidationResult operator &(ValidationResult left, ValidationResult right)
+    public static CustomValidationResult operator &(CustomValidationResult left, CustomValidationResult right)
     {
         return GetAndOperatorResult(left, right);
     }
 
-    public static ValidationResult operator |(ValidationResult left, ValidationResult right)
+    public static CustomValidationResult operator |(CustomValidationResult left, CustomValidationResult right)
     {
         return left.IsValid ? left : right;
     }
 
-    private static ValidationResult GetAndOperatorResult(ValidationResult left, ValidationResult right)
+    private static CustomValidationResult GetAndOperatorResult(CustomValidationResult left, CustomValidationResult right)
     {
         var result = left ?? right ?? Success();
 

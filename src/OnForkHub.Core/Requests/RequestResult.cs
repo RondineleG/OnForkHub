@@ -7,7 +7,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
     public RequestResult()
     {
         Status = EResultStatus.Success;
-        ValidationResult = new ValidationResult();
+        ValidationResult = new CustomValidationResult();
     }
 
     internal Dictionary<string, List<string>>? _entityErrors;
@@ -30,7 +30,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public EResultStatus Status { get; set; }
 
-    public ValidationResult ValidationResult { get; protected set; }
+    public CustomValidationResult ValidationResult { get; protected set; }
 
     public IEnumerable<RequestValidation> Validations { get; protected init; } = [];
 
