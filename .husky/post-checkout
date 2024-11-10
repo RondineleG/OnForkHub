@@ -1,4 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-dotnet run --project src/OnForkHub.Shared.Scripts/OnForkHub.Shared.Scripts.csproj
+dotnet run --project src/OnForkHub.Scripts/OnForkHub.Scripts.csproj

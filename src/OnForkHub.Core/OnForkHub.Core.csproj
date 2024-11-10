@@ -3,10 +3,12 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OnForkHub.Shared.Abstractions\OnForkHub.Shared.Abstractions.csproj" />
+    <ProjectReference Include="..\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
   </ItemGroup>
 
 

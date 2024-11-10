@@ -13,18 +13,12 @@ public class Category : BaseEntity
         var category = new Category { Name = name, Description = description };
 
         var validationResult = category.Validate();
-        return validationResult.Errors.Count > 0
+        return (validationResult.Errors.Count > 0)
             ? RequestResult<Category>.WithError(validationResult.ErrorMessage)
             : RequestResult<Category>.Success(category);
     }
 
-    public static RequestResult<Category> Load(
-        long id,
-        Name name,
-        string description,
-        DateTime createdAt,
-        DateTime? updatedAt = null
-    )
+    public static RequestResult<Category> Load(long id, Name name, string description, DateTime createdAt, DateTime? updatedAt = null)
     {
         var category = new Category { Name = name, Description = description };
 
@@ -53,7 +47,7 @@ public class Category : BaseEntity
         return RequestResult.Success();
     }
 
-    public override ValidationResult Validate()
+    public override CustomValidationResult Validate()
     {
         var validationResult = Name.Validate();
         return validationResult;

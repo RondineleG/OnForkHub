@@ -16,9 +16,9 @@ public class Title : ValueObject
         return title;
     }
 
-    public override ValidationResult Validate()
+    public override CustomValidationResult Validate()
     {
-        var validationResult = new ValidationResult();
+        var validationResult = new CustomValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Value, TitleResources.TitleRequired, nameof(Title));
         validationResult.AddErrorIf(Value.Length < 3, TitleResources.TitleMinLength, nameof(Title));
         validationResult.AddErrorIf(Value.Length > 50, TitleResources.TitleMaxLength, nameof(Title));
@@ -27,6 +27,6 @@ public class Title : ValueObject
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Value.ToLower();
+        yield return Value.ToLower(CultureInfo.CurrentCulture);
     }
 }
