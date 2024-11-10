@@ -1,0 +1,126 @@
+.shorts-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    gap: 20px;
+    background-color: var(--cf-theme-background, #121212);
+}
+
+.main-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.video-container {
+    flex: 1;
+    background: var(--cf-theme-surface, #1a1a1a);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hc-wrapper {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.hc-card {
+    width: 100%;
+    height: 200px;
+    border-radius: 15px;
+    padding: 1.5rem;
+    background: var(--cf-theme-surface, #1a1a1a);
+    position: relative;
+    box-shadow: 0px 7px 10px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.4s ease-out;
+}
+
+    .hc-card.selected {
+        border: 3px solid var(--cf-theme-core, #007bff);
+    }
+
+    .hc-card:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        opacity: 0;
+        transition: 0.5s;
+    }
+
+    .hc-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 15px;
+    }
+
+.hc-content {
+    color: white;
+    z-index: 3;
+    position: relative;
+    transform: translateY(70%);
+    opacity: 0;
+    transition: 0.5s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.hc-card:hover {
+    transform: translateY(-5px);
+}
+
+    .hc-card:hover:before {
+        opacity: 1;
+    }
+
+    .hc-card:hover .hc-content {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(5px);
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .nav-button {
+        display: none;
+    }
+
+    .hc-card {
+        height: 150px;
+    }
+
+    .video-list {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}

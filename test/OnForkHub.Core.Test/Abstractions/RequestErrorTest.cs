@@ -31,7 +31,8 @@ public class RequestErrorTests
     [DisplayName("Should deserialize from JSON correctly")]
     public void ShouldDeserializeFromJsonCorrectly()
     {
-        var json = "{\"Description\":\"Validation error\"}";
+        var json = //
+            "{\"Description\":\"Validation error\"}";
 
         var error = JsonSerializer.Deserialize<RequestError>(json);
 
