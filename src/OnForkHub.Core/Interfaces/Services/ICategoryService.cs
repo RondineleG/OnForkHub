@@ -1,5 +1,3 @@
-using OnForkHub.Core.Requests;
-
 namespace OnForkHub.Core.Interfaces.Services;
 
 public interface ICategoryService
@@ -8,7 +6,7 @@ public interface ICategoryService
 
     Task<RequestResult<Category>> UpdateAsync(Category category);
 
-    Task<RequestResult> DeleteAsync(long id);
+    Task<RequestResult<Category>> DeleteAsync(long id);
 
     Task<RequestResult<Category>> GetByIdAsync(long id);
 

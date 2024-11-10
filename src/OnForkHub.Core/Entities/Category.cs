@@ -1,5 +1,3 @@
-using OnForkHub.Core.Requests;
-
 namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity
@@ -15,7 +13,7 @@ public class Category : BaseEntity
         var category = new Category { Name = name, Description = description };
 
         var validationResult = category.Validate();
-        return validationResult.Errors.Count > 0
+        return (validationResult.Errors.Count > 0)
             ? RequestResult<Category>.WithError(validationResult.ErrorMessage)
             : RequestResult<Category>.Success(category);
     }
@@ -49,7 +47,7 @@ public class Category : BaseEntity
         return RequestResult.Success();
     }
 
-    public override ValidationResult Validate()
+    public override CustomValidationResult Validate()
     {
         var validationResult = Name.Validate();
         return validationResult;

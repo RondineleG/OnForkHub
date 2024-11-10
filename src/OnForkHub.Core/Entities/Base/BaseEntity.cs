@@ -21,7 +21,7 @@ public abstract class BaseEntity : IAggregateRoot
 
     public DateTime? UpdatedAt { get; protected set; }
 
-    public abstract ValidationResult Validate();
+    public abstract CustomValidationResult Validate();
 
     protected void Update()
     {

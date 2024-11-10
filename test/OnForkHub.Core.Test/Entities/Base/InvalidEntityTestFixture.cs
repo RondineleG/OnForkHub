@@ -14,10 +14,10 @@ public class InvalidEntityTestFixture : BaseEntity
         Update();
     }
 
-    public override ValidationResult Validate()
+    public override CustomValidationResult Validate()
     {
-        var validationResult = new ValidationResult();
-        ValidationResult.ThrowErrorIf(() => Id <= 0, BaseEntityResources.IdGreaterThanZero);
+        var validationResult = new CustomValidationResult();
+        CustomValidationResult.ThrowErrorIf(() => Id <= 0, BaseEntityResources.IdGreaterThanZero);
         return validationResult;
     }
 }

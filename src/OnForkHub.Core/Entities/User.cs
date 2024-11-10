@@ -60,7 +60,7 @@ public class User : BaseEntity
         Update();
     }
 
-    public override ValidationResult Validate()
+    public override CustomValidationResult Validate()
     {
         var validationResult = Name.Validate();
         return validationResult;

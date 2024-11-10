@@ -4,7 +4,7 @@ public abstract class ValueObject
 {
     public static bool EqualOperator(ValueObject left, ValueObject right)
     {
-        return !(left is null ^ right is null) && (left is null || left.Equals(right));
+        return !((left is null) ^ (right is null)) && ((left is null) || left.Equals(right));
     }
 
     public static bool NotEqualOperator(ValueObject left, ValueObject right)
@@ -14,7 +14,7 @@ public abstract class ValueObject
 
     public override bool Equals(object? obj)
     {
-        if (obj is null || obj.GetType() != GetType())
+        if ((obj is null) || (obj.GetType() != GetType()))
         {
             return false;
         }
@@ -24,9 +24,9 @@ public abstract class ValueObject
 
     public override int GetHashCode()
     {
-        return GetEqualityComponents().Select(x => x != null ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
+        return GetEqualityComponents().Select(x => (x != null) ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
     }
 
-    public abstract ValidationResult Validate();
+    public abstract CustomValidationResult Validate();
     protected abstract IEnumerable<object> GetEqualityComponents();
 }

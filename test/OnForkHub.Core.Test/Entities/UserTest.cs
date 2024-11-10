@@ -65,7 +65,7 @@ public class UserTests
     public void ShouldThrowDomainExceptionWhenNameIsTooShort()
     {
         var name = "Al";
-        var result = new ValidationResult().AddErrorIf(name.Length < 3, NameResources.NameMinLength, "Name");
+        var result = new CustomValidationResult().AddErrorIf(name.Length < 3, NameResources.NameMinLength, "Name");
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();

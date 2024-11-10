@@ -69,7 +69,7 @@ public class Video : BaseEntity
         }
     }
 
-    public ValidationResult UpdateCategory(string title, string description, string url)
+    public CustomValidationResult UpdateCategory(string title, string description, string url)
     {
         Title = Title.Create(title);
         Description = description;
@@ -86,9 +86,9 @@ public class Video : BaseEntity
         return validationResult;
     }
 
-    public override ValidationResult Validate()
+    public override CustomValidationResult Validate()
     {
-        var validationResult = new ValidationResult();
+        var validationResult = new CustomValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Description, VideoResources.DescriptionRequired, nameof(Description));
         validationResult.AddErrorIf(Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description));
         validationResult.AddErrorIf(Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description));
