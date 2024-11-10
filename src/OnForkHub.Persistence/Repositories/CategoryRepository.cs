@@ -1,82 +1,93 @@
+using OnForkHub.Persistence.Contexts.Base;
+
 namespace OnForkHub.Persistence.Repositories;
 
-public class CategoryRepository(EntityFrameworkDataContext context) : ICategoryRepository
+public class CategoryRepository(IEntityFrameworkDataContext context) : ICategoryRepository
 {
-    private readonly EntityFrameworkDataContext _context = context;
+    private readonly IEntityFrameworkDataContext _context = context;
+    private const string EntityName = nameof(Category);
 
     public async Task<RequestResult<Category>> CreateAsync(Category category)
     {
+        ArgumentNullException.ThrowIfNull(category);
         try
         {
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
             return RequestResult<Category>.Success(category);
         }
-        catch (DbUpdateException exception)
+        catch (DbUpdateException ex)
         {
-            return RequestResult<Category>.WithError(CustomMessageHandler.DbUpdateError(exception));
+            var persistenceException = PersistenceExceptionHandler.HandleDbException(ex, "create", EntityName);
+            throw persistenceException;
         }
-        catch (Exception exception)
+        catch (Exception ex) when (ex is not PersistenceException)
         {
-            return RequestResult<Category>.WithError(CustomMessageHandler.UnexpectedError("create category", exception.Message));
+            throw new DatabaseOperationException("create", ex.Message);
         }
     }
 
     public async Task<RequestResult<Category>> UpdateAsync(Category category)
     {
+        ArgumentNullException.ThrowIfNull(category);
         try
         {
             _context.Entry(category).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return RequestResult<Category>.Success(category);
         }
-        catch (DbUpdateException exception)
+        catch (DbUpdateException ex)
         {
-            return RequestResult<Category>.WithError(CustomMessageHandler.DbUpdateError(exception));
+            var persistenceException = PersistenceExceptionHandler.HandleDbException(ex, "update", EntityName);
+            throw persistenceException;
         }
-        catch (Exception exception)
+        catch (Exception ex) when (ex is not PersistenceException)
         {
-            return RequestResult<Category>.WithError(CustomMessageHandler.UnexpectedError("update category", exception.Message));
+            throw new DatabaseOperationException("update", ex.Message);
         }
     }
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)
     {
+        ArgumentNullException.ThrowIfNull(id);
+
         try
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null)
             {
-                return RequestResult<Category>.WithError(CustomMessageHandler.EntityNotFound("Category", id));
+                return RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");
             }
 
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
-
             return RequestResult<Category>.Success(category);
         }
-        catch (DbUpdateException exception)
+        catch (DbUpdateException ex)
         {
-            return RequestResult<Category>.WithError(CustomMessageHandler.DbUpdateError(exception));
+            var persistenceException = PersistenceExceptionHandler.HandleDbException(ex, "delete", EntityName);
+            throw persistenceException;
         }
-        catch (Exception exception)
+        catch (Exception ex) when (ex is not PersistenceException)
         {
-            return RequestResult<Category>.WithError(CustomMessageHandler.UnexpectedError("delete category", exception.Message));
+            throw new DatabaseOperationException("delete", ex.Message);
         }
     }
 
     public async Task<RequestResult<Category>> GetByIdAsync(long id)
     {
+        ArgumentNullException.ThrowIfNull(id);
+
         try
         {
             var category = await _context.Categories.FindAsync(id);
-            return (category != null)
+            return category != null
                 ? RequestResult<Category>.Success(category)
-                : RequestResult<Category>.WithError(CustomMessageHandler.EntityNotFound("Category", id));
+                : RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            return RequestResult<Category>.WithError(CustomMessageHandler.UnexpectedError("get category", exception.Message));
+            return RequestResult<Category>.WithError($"Error retrieving {EntityName}: {ex.Message}");
         }
     }
 
@@ -88,9 +99,9 @@ public class CategoryRepository(EntityFrameworkDataContext context) : ICategoryR
 
             return RequestResult<IEnumerable<Category>>.Success(categories);
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            return RequestResult<IEnumerable<Category>>.WithError(CustomMessageHandler.UnexpectedError("get categories", exception.Message));
+            return RequestResult<IEnumerable<Category>>.WithError($"Error retrieving {EntityName} list: {ex.Message}");
         }
     }
 }

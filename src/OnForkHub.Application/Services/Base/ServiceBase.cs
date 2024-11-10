@@ -55,4 +55,9 @@ public abstract class ServiceBase(IValidationService validationService)
 
         return validationFunc(entity);
     }
+
+    public static object ValidateEntity<T>(object value, Func<T, CustomValidationResult> validateTestEntity)
+    {
+        throw new NotImplementedException();
+    }
 }
