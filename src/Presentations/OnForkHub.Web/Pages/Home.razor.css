@@ -1,91 +1,70 @@
-.shorts-container {
-    display: flex;
-    flex-direction: column;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-    gap: 1.25rem;
-    height: calc(100vh - 64px);
+﻿video {
+    max-width: 750px;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 25px;
+    padding: 5px;
+    border: 1px solid #000000;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
 }
 
-.main-content {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    height: 70%;
-}
-
-.video-container {
-    flex: 1;
-    background: var(--cf-theme-900);
-    border-radius: 0.75rem;
-    padding: 1.25rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
+.outer-container {
+    width: 100%;
     height: 100%;
+    text-align: center;
 }
 
-.video-wrapper {
+.inner-container {
+    display: inline-block;
     position: relative;
-    width: 100%;
-    flex: 1;
-    border-radius: 0.5rem;
-    overflow: hidden;
 }
 
-.video-info {
+.video-overlay {
     position: absolute;
-    top: 1.25rem;
-    left: 1.25rem;
-    z-index: 2;
-    color: white;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 0.75rem;
-    border-radius: 0.5rem;
+    left: 0px;
+    top: 0px;
+    border-radius: 25px;
+    margin: 10px 0px 0px 15px;
+    padding: 5px 5px;
+    font-size: 1rem;
+    font-family: var(--cf-title-font);
+    color: #FFF;
+    background-color: rgba(50, 50, 50, 0.3);
 }
 
-.video-title {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+.title {
+    font-family: var(--cf-title-font);
+    font-size: 1rem;
 }
 
-.shorts-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.cardList {
+    overflow: auto;
+    padding: 25px;
 }
 
-.nav-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
+#scrollbar::-webkit-scrollbar {
+    width: 12px;
 }
 
-    .nav-button:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
+#scrollbar::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: #95a5a6;
+    border: 1px solid #cacaca;
+}
+
+#scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background-color: #ff993b;
+}
+
+@media (min-width: 768px) {
+    .title {
+        font-family: var(--cf-title-font);
+        font-size: 1.5rem;
     }
 
-.interaction-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-    justify-content: center;
+    .cardList {
+        margin-left: 3rem;
+        margin-right: 3rem;
+    }
 }
-
-.action-btn {
-    display: flex;
-    flex-direction: column;

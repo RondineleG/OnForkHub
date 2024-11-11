@@ -2,40 +2,38 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
-<div class="shorts-container">
-    <div class="main-content">
+<div class="container-fluid p-3">
+    <div class="video-section">
         <button class="nav-button prev-button" @onclick="PreviousVideo" aria-label="Previous video">
             <i class="oi oi-chevron-left"></i>
         </button>
 
-        <div class="video-container">
-            <div class="video-wrapper">
-                @if (nowPlayingVideo != null)
-                {
-                    <div class="video-info">
-                        <h2 class="video-title">@nowPlayingVideo.Title</h2>
-                        <div class="video-overlay rounded">Now Playing</div>
-                    </div>
-                }
-                <video @ref="videoPlayer"
-                       controls
-                       id="videoPlayer"
-                       class="shorts-video"
-                       poster="/images/videoPoster.png"
-                       preload="metadata">
-                </video>
-            </div>
-
-            <div class="interaction-buttons">
-                <button class="action-btn star-btn" @onclick="HandleLike" aria-label="Like video">
-                    <i class="@(isLiked ? "oi oi-star" : "oi oi-star-empty")"></i>
-                    <span>@(isLiked ? "Liked" : "Like")</span>
-                    <span>@likeCount</span>
-                </button>
-                <button class="action-btn share-btn" @onclick="HandleShare" aria-label="Share video">
-                    <i class="oi oi-share"></i>
-                    <span>Share</span>
-                </button>
+        <div class="main-video-container">
+            <div class="outer-container">
+                <div class="inner-container">
+                    @if (nowPlayingVideo?.Title != null)
+                    {
+                        <div class="video-info">
+                            <div class="video-overlay rounded">
+                                <i class="oi oi-video me-2"></i>
+                                Now Playing: @nowPlayingVideo.Title
+                            </div>
+                            <div class="video-controls">
+                                <button class="control-btn" title="Like">
+                                    <i class="oi oi-heart"></i>
+                                </button>
+                                <button class="control-btn" title="Share">
+                                    <i class="oi oi-share"></i>
+                                </button>
+                                <button class="control-btn" title="Add to Playlist">
+                                    <i class="oi oi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    <video @ref="videoPlayer" controls id="videoPlayer" poster="/images/videoPoster.png">
+                    </video>
+                </div>
             </div>
         </div>
 
@@ -44,19 +42,19 @@
         </button>
     </div>
 
-    <div class="video-list-container">
-        <h3 class="playlist-title">Next Videos</h3>
-        <div class="video-list" role="list">
-            @foreach (var item in videos)
+    <div class="playlist-section">
+        <div id="scrollbar" class="video-list">
+            @foreach (var video in videos)
             {
-                <VideoCard @key="item.Name"
-                          Video="item"
-                          OnPlayCallBack="async () => await PlayVideo(item)"
-                          NowPlayingVideo="@nowPlayingVideo?.Title" />
+                <VideoCard @key="video.Name"
+                           Video="video"
+                           OnPlayCallBack="async () => await PlayVideo(video)"
+                           NowPlayingVideo="@nowPlayingVideo?.Title" />
             }
         </div>
     </div>
 </div>
+
 
 @code {
     private List<Video> videos = new();
@@ -64,29 +62,22 @@
     private ElementReference videoPlayer;
     private IJSObjectReference? module;
     private int currentIndex = 0;
-    private bool isLiked;
-    private int likeCount = 1280;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/Home.razor.js");
-            await InitializePlayer();
-        }
-    }
-
-    private async Task InitializePlayer()
-    {
-        if (nowPlayingVideo is not null)
-        {
-            await PlayVideo(nowPlayingVideo);
+            if (nowPlayingVideo is not null)
+            {
+                await PlayVideo(nowPlayingVideo);
+            }
         }
     }
 
     protected override void OnInitialized()
     {
-        LoadVideos();
+        GetMovies();
         nowPlayingVideo = videos.FirstOrDefault();
     }
 
@@ -114,20 +105,6 @@
         }
     }
 
-    private void HandleLike()
-    {
-        isLiked = !isLiked;
-        likeCount += isLiked ? 1 : -1;
-    }
-
-    private async Task HandleShare()
-    {
-        if (module is not null)
-        {
-            await module.InvokeVoidAsync("shareVideo", nowPlayingVideo?.Title);
-        }
-    }
-
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         if (module is not null)
@@ -136,7 +113,7 @@
         }
     }
 
-    private void LoadVideos()
+    private void GetMovies()
     {
         videos.Add(new Video() { Title = "Skate Bros", Thumbnail = "SkateBros.png", Name = "SkateBros.mp4" });
         videos.Add(new Video() { Title = "Before the Storm", Thumbnail = "CalmingWaves.png", Name = "CalmingWaves.mp4" });
@@ -146,3 +123,4 @@
         videos.Add(new Video() { Title = "Zero Hour", Thumbnail = "DestinyZeroHour.png", Name = "DestinyZeroHour.mp4" });
     }
 }
+
