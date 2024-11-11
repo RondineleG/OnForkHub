@@ -10,16 +10,15 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
     </ItemGroup>
-
     <Target Name="RunSharedScripts" AfterTargets="Build">
         <Message Text="Running shared scripts..." Importance="high" />
         <Exec
-            Command="dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj"
-            WorkingDirectory="$(MSBuildProjectDirectory)\..\.."
-            StandardOutputImportance="High"
-            StandardErrorImportance="High">
+           Command="echo Current Working Directory: %CD%"
+           WorkingDirectory="$(MSBuildProjectDirectory)\.."
+           StandardOutputImportance="High"
+           StandardErrorImportance="High" >
             <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
         </Exec>
-        <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode)" />
+        <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode). Check the logs for more details." />
     </Target>
 </Project>
