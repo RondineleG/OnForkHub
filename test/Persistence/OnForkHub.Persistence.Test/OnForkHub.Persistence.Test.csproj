@@ -20,9 +20,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
-      <ProjectReference Include="..\..\src\OnForkHub.Core\OnForkHub.Core.csproj" />
-      <ProjectReference Include="..\..\src\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+      <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
+      <ProjectReference Include="..\..\..\src\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+      <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
     </ItemGroup>
 
   <ItemGroup>

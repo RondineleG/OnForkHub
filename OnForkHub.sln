@@ -9,39 +9,41 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D2DC0BF4-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{1C72385E-2236-43B5-81C0-D668CF2004B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Core", "src\OnForkHub.Core\OnForkHub.Core.csproj", "{102F1B45-F2B1-461A-86C2-387893647020}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Core", "src\Core\OnForkHub.Core\OnForkHub.Core.csproj", "{102F1B45-F2B1-461A-86C2-387893647020}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{D2C9F810-CE57-4F3B-8E10-BB433DD5EAE7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Core.Test", "test\OnForkHub.Core.Test\OnForkHub.Core.Test.csproj", "{6160A66B-D092-4A6A-AC3A-2E494131187F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Core.Test", "test\Core\OnForkHub.Core.Test\OnForkHub.Core.Test.csproj", "{6160A66B-D092-4A6A-AC3A-2E494131187F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentations", "Presentations", "{075B8D4B-517B-4C7D-91E2-6549162E5D79}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Console", "Console", "{0BBA28FF-58F0-48BA-A185-4EB7267C6F55}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.App", "src\OnForkHub.App\OnForkHub.App.csproj", "{F4F28DA2-289B-4BAD-8927-84EBE1B29716}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.App", "src\Presentations\OnForkHub.App\OnForkHub.App.csproj", "{F4F28DA2-289B-4BAD-8927-84EBE1B29716}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E51B0901-74D1-419E-91A7-FAC35F0C152E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Scripts", "src\OnForkHub.Scripts\OnForkHub.Scripts.csproj", "{95608F47-EABA-41D7-95E7-02753E8D9F8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Scripts", "src\Shared\OnForkHub.Scripts\OnForkHub.Scripts.csproj", "{95608F47-EABA-41D7-95E7-02753E8D9F8F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Abstractions", "src\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj", "{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Abstractions", "src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj", "{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Application", "src\OnForkHub.Application\OnForkHub.Application.csproj", "{4DCC3D58-3A32-43BA-A8BD-25E93809F79C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Application", "src\Core\OnForkHub.Application\OnForkHub.Application.csproj", "{4DCC3D58-3A32-43BA-A8BD-25E93809F79C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{0DE9703A-81F7-4306-9948-77266987D2E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence", "src\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj", "{1E0F83AD-286C-4D15-BCAD-356650E13ACA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence", "src\OnForkHub.Persistence\OnForkHub.Persistence.csproj", "{1E0F83AD-286C-4D15-BCAD-356650E13ACA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence (2)", "Persistence (2)", "{1A4E7D82-A33D-4AD3-842B-EFB5B2C16C49}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence.Test", "test\OnForkHub.Persistence.Test\OnForkHub.Persistence.Test.csproj", "{F6B680D6-1B24-4459-A86C-7DB6E72A71C1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Shared.Abstractions", "src\OnForkHub.Shared.Abstractions\OnForkHub.Shared.Abstractions.csproj", "{998BE219-7225-4415-A2B0-F45CD64B51FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence.Test", "test\Persistence\OnForkHub.Persistence.Test\OnForkHub.Persistence.Test.csproj", "{F6B680D6-1B24-4459-A86C-7DB6E72A71C1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{46037EF8-AF82-4F01-BB2A-78806DCB81D0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Web", "src\OnForkHub.Web\OnForkHub.Web.csproj", "{E7BCE20B-3566-4AFB-9E66-9996C4DB2EED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Web", "src\Presentations\OnForkHub.Web\OnForkHub.Web.csproj", "{E7BCE20B-3566-4AFB-9E66-9996C4DB2EED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Dependencies", "src\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj", "{84496B38-8B49-4D75-B0CE-DE3F9C4B2A8E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{FBD4C65B-7CF4-4452-970E-D7BE70EF81C5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{5DB6BD6C-9E54-4146-B25F-BD5E1D9BB637}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Application.Test", "test\Core\OnForkHub.Application.Test\OnForkHub.Application.Test.csproj", "{6C626A4A-4D61-413F-9E32-3A029AF5BCA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +87,14 @@ Global
 		{E7BCE20B-3566-4AFB-9E66-9996C4DB2EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7BCE20B-3566-4AFB-9E66-9996C4DB2EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7BCE20B-3566-4AFB-9E66-9996C4DB2EED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84496B38-8B49-4D75-B0CE-DE3F9C4B2A8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84496B38-8B49-4D75-B0CE-DE3F9C4B2A8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84496B38-8B49-4D75-B0CE-DE3F9C4B2A8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84496B38-8B49-4D75-B0CE-DE3F9C4B2A8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C626A4A-4D61-413F-9E32-3A029AF5BCA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C626A4A-4D61-413F-9E32-3A029AF5BCA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C626A4A-4D61-413F-9E32-3A029AF5BCA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C626A4A-4D61-413F-9E32-3A029AF5BCA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -100,8 +110,15 @@ Global
 		{E51B0901-74D1-419E-91A7-FAC35F0C152E} = {E58FF6FD-F36B-4CB2-A65F-2068CD27C8E5}
 		{95608F47-EABA-41D7-95E7-02753E8D9F8F} = {E51B0901-74D1-419E-91A7-FAC35F0C152E}
 		{EEA2B378-6B36-4FE9-A2E3-86D4A654C46D} = {E51B0901-74D1-419E-91A7-FAC35F0C152E}
+		{4DCC3D58-3A32-43BA-A8BD-25E93809F79C} = {1C72385E-2236-43B5-81C0-D668CF2004B8}
+		{1E0F83AD-286C-4D15-BCAD-356650E13ACA} = {FBD4C65B-7CF4-4452-970E-D7BE70EF81C5}
+		{F6B680D6-1B24-4459-A86C-7DB6E72A71C1} = {5DB6BD6C-9E54-4146-B25F-BD5E1D9BB637}
 		{46037EF8-AF82-4F01-BB2A-78806DCB81D0} = {075B8D4B-517B-4C7D-91E2-6549162E5D79}
 		{E7BCE20B-3566-4AFB-9E66-9996C4DB2EED} = {46037EF8-AF82-4F01-BB2A-78806DCB81D0}
+		{84496B38-8B49-4D75-B0CE-DE3F9C4B2A8E} = {E51B0901-74D1-419E-91A7-FAC35F0C152E}
+		{FBD4C65B-7CF4-4452-970E-D7BE70EF81C5} = {E58FF6FD-F36B-4CB2-A65F-2068CD27C8E5}
+		{5DB6BD6C-9E54-4146-B25F-BD5E1D9BB637} = {D2DC0BF4-9E7B-4904-A896-4F6492ED63C9}
+		{6C626A4A-4D61-413F-9E32-3A029AF5BCA6} = {D2C9F810-CE57-4F3B-8E10-BB433DD5EAE7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {12C1AB3A-8897-4AAD-8681-A37B26ADF8B5}

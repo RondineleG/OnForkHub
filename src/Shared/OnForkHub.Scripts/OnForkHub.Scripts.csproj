@@ -12,13 +12,8 @@
         <HuskyRoot>$(MSBuildProjectDirectory)\..\..</HuskyRoot>
         <HuskyDir>$(HuskyRoot)\.husky</HuskyDir>
     </PropertyGroup>
-    <Target Name="RestoreTools" BeforeTargets="HuskyInit">
+    <Target Name="RestoreTools" BeforeTargets="build">
         <Message Text="Restoring .NET tools..." Importance="high" />
         <Exec Command="dotnet tool restore" WorkingDirectory="$(HuskyRoot)" StandardOutputImportance="High" StandardErrorImportance="High" />
-    </Target>
-    <Target Name="HuskyInit" BeforeTargets="Build">
-        <Message Text="Initializing Husky..." Importance="high" />
-        <Exec Command="dotnet husky install" WorkingDirectory="$(HuskyRoot)" StandardOutputImportance="High" StandardErrorImportance="High" />
-        <Exec Command="git config core.hooksPath .husky" WorkingDirectory="$(HuskyRoot)" StandardOutputImportance="High" StandardErrorImportance="High" />
     </Target>
 </Project>

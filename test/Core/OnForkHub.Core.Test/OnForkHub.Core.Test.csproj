@@ -14,9 +14,9 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
   </ItemGroup>
   <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OnForkHub.Core\OnForkHub.Core.csproj" />
+    <Using Include="Xunit" />
   </ItemGroup>
 </Project>

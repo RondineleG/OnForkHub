@@ -8,13 +8,13 @@
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\OnForkHub.Core\OnForkHub.Core.csproj" />
+        <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
     </ItemGroup>
 
     <Target Name="RunSharedScripts" AfterTargets="Build">
         <Message Text="Running shared scripts..." Importance="high" />
         <Exec
-            Command="dotnet run --project src/OnForkHub.Scripts/OnForkHub.Scripts.csproj"
+            Command="dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj"
             WorkingDirectory="$(MSBuildProjectDirectory)\..\.."
             StandardOutputImportance="High"
             StandardErrorImportance="High">
