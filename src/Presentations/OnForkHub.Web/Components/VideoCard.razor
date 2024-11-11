@@ -1,22 +1,29 @@
-﻿@if (Video is not null)
+@if (Video is not null)
 {
     <div class="hc-wrapper">
-        <div class="hc-card @(NowPlayingVideo == Video.Title ? "selected" : "")">
-            <picture>
-                <img src="/Images/@Video.Thumbnail" />
-            </picture>
-            <div class="hc-content vstack justify-content-end">
+        <div class="hc-card @(NowPlayingVideo == Video.Title ? "selected" : "")"
+             @onclick="playVideo">
+            <div class="hc-content">
+                <picture>
+                    <img src="/Images/@Video.Thumbnail" alt="@Video.Title" />
+                </picture>
                 <p class="text-center">
                     @Video.Title
                 </p>
-                <button type="button" class="btn btn-glass" @onclick="PlayVideo">
-                    Play
+                <button type="button" class="btn btn-glass">
+                    @if (NowPlayingVideo == Video.Title)
+                    {
+                        <span>Playing</span>
+                    }
+                    else
+                    {
+                        <span>Play</span>
+                    }
                 </button>
             </div>
         </div>
     </div>
 }
-
 
 @code {
     [Parameter]
@@ -29,7 +36,7 @@
     [Parameter]
     public EventCallback OnPlayCallBack { get; set; }
 
-    private async Task PlayVideo()
+    private async Task playVideo()
     {
         await OnPlayCallBack.InvokeAsync();
     }

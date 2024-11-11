@@ -1,9 +1,13 @@
 export function playVideo(fileName, videoElement) {
-    videoElement.src = `/Videos/${fileName}`;
-    videoElement.volume = 0.1;
-    videoElement.play();
+    if (videoElement) {
+        videoElement.src = `/Videos/${fileName}`;
+        videoElement.volume = 0.1;
+        videoElement.load();
+        return videoElement.play();
+    }
 }
 
+// Gestos de swipe para mobile
 let touchstartX = 0;
 let touchendX = 0;
 let isVideoContainer = false;

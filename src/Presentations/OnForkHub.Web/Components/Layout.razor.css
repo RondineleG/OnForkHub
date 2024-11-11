@@ -1,4 +1,4 @@
-.ctaStyle {
+﻿.ctaStyle {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
     border-top-color: var(--cf-theme-core);
@@ -26,7 +26,6 @@
         color: var(--cf-theme-core);
         font-size: 1.5rem;
     }
-
 
 @media (min-width: 768px) {
     .ctaStyle {

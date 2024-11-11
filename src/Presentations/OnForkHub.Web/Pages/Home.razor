@@ -2,59 +2,59 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
-<div class="container-fluid p-3">
-    <div class="video-section">
-        <button class="nav-button prev-button" @onclick="PreviousVideo" aria-label="Previous video">
+<div class="shorts-container">
+    <div class="main-content">
+        <button class="nav-button prev-button" @onclick="PreviousVideo">
             <i class="oi oi-chevron-left"></i>
         </button>
 
-        <div class="main-video-container">
-            <div class="outer-container">
-                <div class="inner-container">
-                    @if (nowPlayingVideo?.Title != null)
-                    {
-                        <div class="video-info">
-                            <div class="video-overlay rounded">
-                                <i class="oi oi-video me-2"></i>
-                                Now Playing: @nowPlayingVideo.Title
-                            </div>
-                            <div class="video-controls">
-                                <button class="control-btn" title="Like">
-                                    <i class="oi oi-heart"></i>
-                                </button>
-                                <button class="control-btn" title="Share">
-                                    <i class="oi oi-share"></i>
-                                </button>
-                                <button class="control-btn" title="Add to Playlist">
-                                    <i class="oi oi-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    }
-                    <video @ref="videoPlayer" controls id="videoPlayer" poster="/images/videoPoster.png">
-                    </video>
-                </div>
+        <div class="video-container">
+            <div class="video-wrapper">
+                @if (nowPlayingVideo != null)
+                {
+                    <div class="video-info">
+                        <h2 class="video-title">@nowPlayingVideo.Title</h2>
+                        <div class="video-overlay rounded">Now Playing</div>
+                    </div>
+                }
+                <video @ref="videoPlayer"
+                       controls
+                       id="videoPlayer"
+                       class="shorts-video"
+                       poster="/images/videoPoster.png">
+                </video>
+            </div>
+
+            <div class="interaction-buttons">
+                <button class="action-btn star-btn">
+                    <i class="oi oi-star"></i>
+                    <span>Star</span>
+                    <span>1280</span>
+                </button>
+                <button class="action-btn share-btn">
+                    <i class="oi oi-share"></i>
+                    <span>Share</span>
+                </button>
             </div>
         </div>
 
-        <button class="nav-button next-button" @onclick="NextVideo" aria-label="Next video">
+        <button class="nav-button next-button" @onclick="NextVideo">
             <i class="oi oi-chevron-right"></i>
         </button>
     </div>
 
-    <div class="playlist-section">
-        <div id="scrollbar" class="video-list">
-            @foreach (var video in videos)
+    <div class="video-list-container">
+        <h3 class="playlist-title">Next Videos</h3>
+        <div class="video-list">
+            @foreach (var item in videos)
             {
-                <VideoCard @key="video.Name"
-                           Video="video"
-                           OnPlayCallBack="async () => await PlayVideo(video)"
+                <VideoCard Video="item"
+                           OnPlayCallBack="async () => await PlayVideo(item)"
                            NowPlayingVideo="@nowPlayingVideo?.Title" />
             }
         </div>
     </div>
 </div>
-
 
 @code {
     private List<Video> videos = new();
@@ -77,7 +77,7 @@
 
     protected override void OnInitialized()
     {
-        GetMovies();
+        getMovies();
         nowPlayingVideo = videos.FirstOrDefault();
     }
 
@@ -113,7 +113,7 @@
         }
     }
 
-    private void GetMovies()
+    private void getMovies()
     {
         videos.Add(new Video() { Title = "Skate Bros", Thumbnail = "SkateBros.png", Name = "SkateBros.mp4" });
         videos.Add(new Video() { Title = "Before the Storm", Thumbnail = "CalmingWaves.png", Name = "CalmingWaves.mp4" });
@@ -123,4 +123,3 @@
         videos.Add(new Video() { Title = "Zero Hour", Thumbnail = "DestinyZeroHour.png", Name = "DestinyZeroHour.mp4" });
     }
 }
-
