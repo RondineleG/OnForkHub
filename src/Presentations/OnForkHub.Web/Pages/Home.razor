@@ -1,0 +1,125 @@
+@page "/"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<div class="shorts-container">
+    <div class="main-content">
+        <button class="nav-button prev-button" @onclick="PreviousVideo">
+            <i class="oi oi-chevron-left"></i>
+        </button>
+
+        <div class="video-container">
+            <div class="video-wrapper">
+                @if (nowPlayingVideo != null)
+                {
+                    <div class="video-info">
+                        <h2 class="video-title">@nowPlayingVideo.Title</h2>
+                        <div class="video-overlay rounded">Now Playing</div>
+                    </div>
+                }
+                <video @ref="videoPlayer"
+                       controls
+                       id="videoPlayer"
+                       class="shorts-video"
+                       poster="/images/videoPoster.png">
+                </video>
+            </div>
+
+            <div class="interaction-buttons">
+                <button class="action-btn star-btn">
+                    <i class="oi oi-star"></i>
+                    <span>Star</span>
+                    <span>1280</span>
+                </button>
+                <button class="action-btn share-btn">
+                    <i class="oi oi-share"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+        </div>
+
+        <button class="nav-button next-button" @onclick="NextVideo">
+            <i class="oi oi-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="video-list-container">
+        <h3 class="playlist-title">Next Videos</h3>
+        <div class="video-list">
+            @foreach (var item in videos)
+            {
+                <VideoCard Video="item"
+                           OnPlayCallBack="async () => await PlayVideo(item)"
+                           NowPlayingVideo="@nowPlayingVideo?.Title" />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Video> videos = new();
+    private Video? nowPlayingVideo;
+    private ElementReference videoPlayer;
+    private IJSObjectReference? module;
+    private int currentIndex = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/Home.razor.js");
+            if (nowPlayingVideo is not null)
+            {
+                await PlayVideo(nowPlayingVideo);
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        getMovies();
+        nowPlayingVideo = videos.FirstOrDefault();
+    }
+
+    private async Task NextVideo()
+    {
+        currentIndex = (currentIndex + 1) % videos.Count;
+        nowPlayingVideo = videos[currentIndex];
+        await PlayVideo(nowPlayingVideo);
+    }
+
+    private async Task PreviousVideo()
+    {
+        currentIndex = (currentIndex - 1 + videos.Count) % videos.Count;
+        nowPlayingVideo = videos[currentIndex];
+        await PlayVideo(nowPlayingVideo);
+    }
+
+    private async Task PlayVideo(Video video)
+    {
+        if (module is not null)
+        {
+            nowPlayingVideo = video;
+            await module.InvokeVoidAsync("playVideo", video.Name, videoPlayer);
+            StateHasChanged();
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+
+    private void getMovies()
+    {
+        videos.Add(new Video() { Title = "Skate Bros", Thumbnail = "SkateBros.png", Name = "SkateBros.mp4" });
+        videos.Add(new Video() { Title = "Before the Storm", Thumbnail = "CalmingWaves.png", Name = "CalmingWaves.mp4" });
+        videos.Add(new Video() { Title = "Mustang Sally", Thumbnail = "MustangSally.png", Name = "MustangSally.mp4" });
+        videos.Add(new Video() { Title = "The Sixth Element", Thumbnail = "TheSixthElement.png", Name = "TheSixthElement.mp4" });
+        videos.Add(new Video() { Title = "Cyber City 2045", Thumbnail = "Cyber2045.png", Name = "Cyber2045.mp4" });
+        videos.Add(new Video() { Title = "Zero Hour", Thumbnail = "DestinyZeroHour.png", Name = "DestinyZeroHour.mp4" });
+    }
+}
