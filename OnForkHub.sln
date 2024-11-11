@@ -29,15 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Abstractions", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Application", "src\OnForkHub.Application\OnForkHub.Application.csproj", "{4DCC3D58-3A32-43BA-A8BD-25E93809F79C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{0DE9703A-81F7-4306-9948-77266987D2E2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence", "src\OnForkHub.Persistence\OnForkHub.Persistence.csproj", "{1E0F83AD-286C-4D15-BCAD-356650E13ACA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence (2)", "Persistence (2)", "{1A4E7D82-A33D-4AD3-842B-EFB5B2C16C49}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence.Test", "test\OnForkHub.Persistence.Test\OnForkHub.Persistence.Test.csproj", "{F6B680D6-1B24-4459-A86C-7DB6E72A71C1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Shared.Abstractions", "src\OnForkHub.Shared.Abstractions\OnForkHub.Shared.Abstractions.csproj", "{998BE219-7225-4415-A2B0-F45CD64B51FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{46037EF8-AF82-4F01-BB2A-78806DCB81D0}"
 EndProject
