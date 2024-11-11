@@ -8,7 +8,7 @@
     </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
   </ItemGroup>
 
 

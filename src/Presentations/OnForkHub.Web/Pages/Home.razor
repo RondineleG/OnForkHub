@@ -4,7 +4,7 @@
 
 <div class="shorts-container">
     <div class="main-content">
-        <button class="nav-button prev-button" @onclick="PreviousVideo">
+        <button class="nav-button prev-button" @onclick="PreviousVideo" aria-label="Previous video">
             <i class="oi oi-chevron-left"></i>
         </button>
 
@@ -21,36 +21,38 @@
                        controls
                        id="videoPlayer"
                        class="shorts-video"
-                       poster="/images/videoPoster.png">
+                       poster="/images/videoPoster.png"
+                       preload="metadata">
                 </video>
             </div>
 
             <div class="interaction-buttons">
-                <button class="action-btn star-btn">
-                    <i class="oi oi-star"></i>
-                    <span>Star</span>
-                    <span>1280</span>
+                <button class="action-btn star-btn" @onclick="HandleLike" aria-label="Like video">
+                    <i class="@(isLiked ? "oi oi-star" : "oi oi-star-empty")"></i>
+                    <span>@(isLiked ? "Liked" : "Like")</span>
+                    <span>@likeCount</span>
                 </button>
-                <button class="action-btn share-btn">
+                <button class="action-btn share-btn" @onclick="HandleShare" aria-label="Share video">
                     <i class="oi oi-share"></i>
                     <span>Share</span>
                 </button>
             </div>
         </div>
 
-        <button class="nav-button next-button" @onclick="NextVideo">
+        <button class="nav-button next-button" @onclick="NextVideo" aria-label="Next video">
             <i class="oi oi-chevron-right"></i>
         </button>
     </div>
 
     <div class="video-list-container">
         <h3 class="playlist-title">Next Videos</h3>
-        <div class="video-list">
+        <div class="video-list" role="list">
             @foreach (var item in videos)
             {
-                <VideoCard Video="item"
-                           OnPlayCallBack="async () => await PlayVideo(item)"
-                           NowPlayingVideo="@nowPlayingVideo?.Title" />
+                <VideoCard @key="item.Name"
+                          Video="item"
+                          OnPlayCallBack="async () => await PlayVideo(item)"
+                          NowPlayingVideo="@nowPlayingVideo?.Title" />
             }
         </div>
     </div>
@@ -62,22 +64,29 @@
     private ElementReference videoPlayer;
     private IJSObjectReference? module;
     private int currentIndex = 0;
+    private bool isLiked;
+    private int likeCount = 1280;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             module = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/Home.razor.js");
-            if (nowPlayingVideo is not null)
-            {
-                await PlayVideo(nowPlayingVideo);
-            }
+            await InitializePlayer();
+        }
+    }
+
+    private async Task InitializePlayer()
+    {
+        if (nowPlayingVideo is not null)
+        {
+            await PlayVideo(nowPlayingVideo);
         }
     }
 
     protected override void OnInitialized()
     {
-        getMovies();
+        LoadVideos();
         nowPlayingVideo = videos.FirstOrDefault();
     }
 
@@ -105,6 +114,20 @@
         }
     }
 
+    private void HandleLike()
+    {
+        isLiked = !isLiked;
+        likeCount += isLiked ? 1 : -1;
+    }
+
+    private async Task HandleShare()
+    {
+        if (module is not null)
+        {
+            await module.InvokeVoidAsync("shareVideo", nowPlayingVideo?.Title);
+        }
+    }
+
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         if (module is not null)
@@ -113,7 +136,7 @@
         }
     }
 
-    private void getMovies()
+    private void LoadVideos()
     {
         videos.Add(new Video() { Title = "Skate Bros", Thumbnail = "SkateBros.png", Name = "SkateBros.mp4" });
         videos.Add(new Video() { Title = "Before the Storm", Thumbnail = "CalmingWaves.png", Name = "CalmingWaves.mp4" });

@@ -1,0 +1,84 @@
+@inherits LayoutComponentBase
+
+<div class="page-container">
+    <header>
+        <nav class="top-nav">
+            <div class="nav-brand">
+                <button class="menu-button" @onclick="ToggleDrawer">
+                    <i class="oi oi-menu"></i>
+                </button>
+                <a href="/" class="brand-title">VideoHub</a>
+            </div>
+
+            <div class="nav-actions">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="user-menu">
+                            <button class="user-button" @onclick="ToggleUserMenu">
+                                <i class="oi oi-person"></i>
+                                <span>Rondineel</span>
+                            </button>
+                            <div class="user-dropdown @(isUserMenuOpen ? "show" : "")">
+                                <a href="/profile" class="dropdown-item">
+                                    <i class="oi oi-person"></i> Profile
+                                </a>
+                                <button class="dropdown-item" @onclick="LogOut">
+                                    <i class="oi oi-account-logout"></i> Logout
+                                </button>
+                            </div>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="auth-buttons">
+                            <a href="/login" class="btn btn-primary">Login</a>
+                            <a href="/register" class="btn btn-outline-light">Register</a>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </nav>
+    </header>
+
+    <div class="main-content">
+        <div class="side-drawer @(isDrawerOpen ? "open" : "")">
+            <nav class="drawer-nav">
+                <a href="/" class="nav-item">
+                    <i class="oi oi-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/trending" class="nav-item">
+                    <i class="oi oi-fire"></i>
+                    <span>Trending</span>
+                </a>
+                <a href="/subscriptions" class="nav-item">
+                    <i class="oi oi-star"></i>
+                    <span>Subscriptions</span>
+                </a>
+            </nav>
+        </div>
+
+        <main class="content">
+            @Body
+        </main>
+    </div>
+</div>
+
+@code {
+    private bool isDrawerOpen;
+    private bool isUserMenuOpen;
+
+    private void ToggleDrawer()
+    {
+        isDrawerOpen = !isDrawerOpen;
+    }
+
+    private void ToggleUserMenu()
+    {
+        isUserMenuOpen = !isUserMenuOpen;
+    }
+
+    private async Task LogOut()
+    {
+        // Implementar lógica de logout
+    }
+}
