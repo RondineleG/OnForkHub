@@ -1,20 +1,22 @@
-namespace OnForkHub.Application.Validation;
+using OnForkHub.Core.Interfaces.Validations;
 
-public sealed class ValidationService : IValidationService
+namespace OnForkHub.Core.Validations;
+
+public abstract class BaseValidationService : IValidationService
 {
-    public void AddErrorIfInvalid(CustomValidationResult validationResult, string contexto, RequestResult requestResult)
+    public virtual void AddErrorIfInvalid(CustomValidationResult validationResult, string context, RequestResult requestResult)
     {
         if (validationResult.HasError)
         {
             requestResult.Status = EResultStatus.HasValidation;
             foreach (var error in validationResult.Errors)
             {
-                requestResult.AddEntityError(contexto, error.Message);
+                requestResult.AddEntityError(context, error.Message);
             }
         }
     }
 
-    public void Validate<T>(T entity, Func<T, CustomValidationResult> funcValidationResult, string entityName, RequestResult requestResult)
+    public virtual void Validate<T>(T entity, Func<T, CustomValidationResult> funcValidationResult, string entityName, RequestResult requestResult)
     {
         if (entity is null)
         {
@@ -26,7 +28,7 @@ public sealed class ValidationService : IValidationService
         AddErrorIfInvalid(validationResult, entityName, requestResult);
     }
 
-    public void Validate<T>(
+    public virtual void Validate<T>(
         IEnumerable<T> entities,
         Func<T, CustomValidationResult> funcValidationResult,
         string entityName,
@@ -56,11 +58,12 @@ public sealed class ValidationService : IValidationService
                     requestResult.AddEntityError(entityName, $"Error at index {index}: {error.Message}");
                 }
             }
+
             index++;
         }
     }
 
-    public CustomValidationResult Validate(string value, string regexPattern, string fieldName)
+    public virtual CustomValidationResult Validate(string value, string regexPattern, string fieldName)
     {
         var validationResult = new CustomValidationResult();
 
@@ -85,7 +88,7 @@ public sealed class ValidationService : IValidationService
         return validationResult;
     }
 
-    public CustomValidationResult Validate(DateTime dateTimeStart, DateTime dateTimeFinish, string fieldName)
+    public virtual CustomValidationResult Validate(DateTime dateTimeStart, DateTime dateTimeFinish, string fieldName)
     {
         var validationResult = new CustomValidationResult();
 
@@ -99,7 +102,7 @@ public sealed class ValidationService : IValidationService
             validationResult.AddError($"The end date for {fieldName} cannot be empty", fieldName);
         }
 
-        if ((dateTimeStart != default) && (dateTimeFinish != default))
+        if (dateTimeStart != default && dateTimeFinish != default)
         {
             if (dateTimeStart > dateTimeFinish)
             {

@@ -56,7 +56,7 @@ public class ServiceBaseTest
         return validationResult;
     }
 
-    private class TestService(IValidationService validationService) : ServiceBase(validationService)
+    private class TestService(IValidationService validationService) : BaseService
     {
         public async Task<RequestResult<T>> ExecuteOperationAsync<T>(Func<Task<RequestResult<T>>> operation)
         {

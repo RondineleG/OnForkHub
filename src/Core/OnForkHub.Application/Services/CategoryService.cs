@@ -1,18 +1,33 @@
 namespace OnForkHub.Application.Services;
 
-public class CategoryService(ICategoryRepository categoryRepository, IValidationService validationService)
-    : ServiceBase(validationService),
-        ICategoryService
+public class CategoryService(ICategoryRepository categoryRepository, ICategoryValidationService validationService) : BaseService, ICategoryService
 {
     private readonly ICategoryRepository _categoryRepository = categoryRepository;
+    private readonly ICategoryValidationService _validationService = validationService;
 
     public async Task<RequestResult<Category>> CreateAsync(Category category)
     {
+        var validationResult = _validationService.ValidateCategory(category);
+        if (!validationResult.IsValid)
+        {
+            var validations = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
+
+            return RequestResult<Category>.WithValidations(validations);
+        }
+
         return await ExecuteAsync(category, _categoryRepository.CreateAsync, ValidateCategory);
     }
 
     public async Task<RequestResult<Category>> UpdateAsync(Category category)
     {
+        var validationResult = _validationService.ValidateCategory(category);
+        if (!validationResult.IsValid)
+        {
+            var validations = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
+
+            return RequestResult<Category>.WithValidations(validations);
+        }
+
         return await ExecuteAsync(category, _categoryRepository.UpdateAsync, ValidateCategory);
     }
 

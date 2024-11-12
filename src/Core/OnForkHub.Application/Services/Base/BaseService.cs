@@ -1,9 +1,7 @@
 namespace OnForkHub.Application.Services.Base;
 
-public abstract class ServiceBase(IValidationService validationService)
+public abstract class BaseService
 {
-    protected readonly IValidationService _validationService = validationService;
-
     protected async Task<RequestResult<T>> ExecuteAsync<T>(Func<Task<RequestResult<T>>> operacao)
     {
         try

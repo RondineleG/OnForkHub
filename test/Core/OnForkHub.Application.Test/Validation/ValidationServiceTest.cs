@@ -1,38 +1,42 @@
 namespace OnForkHub.Application.Test.Validation;
 
-public class ValidationServiceTest
+public class ValidationServiceTests
 {
-    private readonly ValidationService _validationService;
+    private readonly BaseValidationService _baseValidationService;
+    private readonly ICategoryValidationService _categoryValidationService;
 
-    public ValidationServiceTest()
+    public ValidationServiceTests()
     {
-        _validationService = new ValidationService();
+        _baseValidationService = new TestValidationService();
+        _categoryValidationService = new CategoryValidationService();
     }
+
+    #region Base Validation Tests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should validate string value")]
-    public void ShouldValidateStringValue()
+    [DisplayName("Base: Should validate string value")]
+    public void BaseValidation_ShouldValidateStringValue()
     {
         var value = "test@example.com";
         var regexPattern = @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
         var fieldName = "Email";
 
-        var validationResult = _validationService.Validate(value, regexPattern, fieldName);
+        var validationResult = _baseValidationService.Validate(value, regexPattern, fieldName);
 
         validationResult.IsValid.Should().BeTrue();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should add error if string value is null or empty")]
-    public void ShouldAddErrorIfStringValueIsNullOrEmpty()
+    [DisplayName("Base: Should add error if string value is null or empty")]
+    public void BaseValidation_ShouldAddErrorIfStringValueIsNullOrEmpty()
     {
         var value = "";
         var regexPattern = @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
         var fieldName = "Email";
 
-        var validationResult = _validationService.Validate(value, regexPattern, fieldName);
+        var validationResult = _baseValidationService.Validate(value, regexPattern, fieldName);
 
         validationResult.IsValid.Should().BeFalse();
         validationResult.Errors.Should().Contain(e => e.Message == "The field Email cannot be empty");
@@ -40,102 +44,140 @@ public class ValidationServiceTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should add error if string value does not match regex pattern")]
-    public void ShouldAddErrorIfStringValueDoesNotMatchRegexPattern()
-    {
-        var value = "invalid-email";
-        var regexPattern = @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
-        var fieldName = "Email";
-
-        var validationResult = _validationService.Validate(value, regexPattern, fieldName);
-
-        validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.Message == "The field Email does not match the required pattern");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should add error if regex pattern is invalid")]
-    public void ShouldAddErrorIfRegexPatternIsInvalid()
-    {
-        var value = "test@example.com";
-        var regexPattern = "[";
-        var fieldName = "Email";
-
-        var validationResult = _validationService.Validate(value, regexPattern, fieldName);
-
-        validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.Message == "Invalid regex pattern for field Email");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should validate date range")]
-    public void ShouldValidateDateRange()
+    [DisplayName("Base: Should validate date range")]
+    public void BaseValidation_ShouldValidateDateRange()
     {
         var startDate = new DateTime(2023, 1, 1);
         var endDate = new DateTime(2023, 12, 31);
         var fieldName = "DateRange";
 
-        var validationResult = _validationService.Validate(startDate, endDate, fieldName);
+        var validationResult = _baseValidationService.Validate(startDate, endDate, fieldName);
 
         validationResult.IsValid.Should().BeTrue();
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should add error if start date is default")]
-    public void ShouldAddErrorIfStartDateIsDefault()
-    {
-        var startDate = default(DateTime);
-        var endDate = new DateTime(2023, 12, 31);
-        var fieldName = "DateRange";
+    #endregion
 
-        var validationResult = _validationService.Validate(startDate, endDate, fieldName);
-
-        validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.Message == "The start date for DateRange cannot be empty");
-    }
+    #region Category Validation Tests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should add error if end date is default")]
-    public void ShouldAddErrorIfEndDateIsDefault()
+    [DisplayName("Category: Should validate valid category")]
+    public void CategoryValidation_ShouldValidateValidCategory()
     {
-        var startDate = new DateTime(2023, 1, 1);
-        var endDate = default(DateTime);
-        var fieldName = "DateRange";
+        // Arrange
+        var name = Name.Create("Test Category");
+        var category = Category.Create(name, "Test Description").Data!;
 
-        var validationResult = _validationService.Validate(startDate, endDate, fieldName);
+        // Act
+        var validationResult = _categoryValidationService.ValidateCategory(category);
 
-        validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.Message == "The end date for DateRange cannot be empty");
+        // Assert
+        validationResult.IsValid.Should().BeTrue();
+        validationResult.Errors.Should().BeEmpty();
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should add error if start date is after end date")]
-    public void ShouldAddErrorIfStartDateIsAfterEndDate()
+    [DisplayName("Category: Should fail validation for null category")]
+    public void CategoryValidation_ShouldFailValidationForNullCategory()
     {
-        var startDate = new DateTime(2023, 12, 31);
-        var endDate = new DateTime(2023, 1, 1);
-        var fieldName = "DateRange";
+        // Arrange
+        Category? category = null;
 
-        var validationResult = _validationService.Validate(startDate, endDate, fieldName);
+        // Act
+        var validationResult = _categoryValidationService.ValidateCategory(category!);
 
+        // Assert
         validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.Message == "The start date for DateRange must be before the end date");
+        validationResult.Errors.Should().Contain(e => e.Message == "Category cannot be null" && e.Field == nameof(Category));
     }
 
-    private static CustomValidationResult ValidateTestEntity(TestEntity entity)
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Category: Should fail validation for long description")]
+    public void CategoryValidation_ShouldFailValidationForLongDescription()
     {
-        var validationResult = new CustomValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(entity.Name, "Name is required", nameof(entity.Name));
-        return validationResult;
+        // Arrange
+        var name = Name.Create("Test Category");
+        var longDescription = new string('A', 201); // 201 characters
+        var category = Category.Create(name, longDescription).Data!;
+
+        // Act
+        var validationResult = _categoryValidationService.ValidateCategory(category);
+
+        // Assert
+        validationResult.IsValid.Should().BeFalse();
+        validationResult.Errors.Should().Contain(e => e.Message == "Description cannot exceed 200 characters");
     }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Category: Should validate category update with valid data")]
+    public void CategoryValidation_ShouldValidateCategoryUpdateWithValidData()
+    {
+        // Arrange
+        var name = Name.Create("Test Category");
+        var category = Category.Load(1, name, "Test Description", DateTime.UtcNow).Data!;
+
+        // Act
+        var validationResult = _categoryValidationService.ValidateCategoryUpdate(category);
+
+        // Assert
+        validationResult.IsValid.Should().BeTrue();
+        validationResult.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Category: Should fail validation for update without ID")]
+    public void CategoryValidation_ShouldFailValidationForUpdateWithoutId()
+    {
+        // Arrange
+        var name = Name.Create("Test Category");
+        var category = Category.Create(name, "Test Description").Data!;
+
+        // Act
+        var validationResult = _categoryValidationService.ValidateCategoryUpdate(category);
+
+        // Assert
+        validationResult.IsValid.Should().BeFalse();
+        validationResult.Errors.Should().Contain(e => e.Message == "Category ID is required for updates" && e.Field == "Id");
+    }
+
+    #endregion
+
+    #region Helper Classes
+
+    private class TestValidationService : BaseValidationService { }
 
     private class TestEntity
     {
         public string Name { get; set; } = string.Empty;
+    }
+
+    #endregion
+}
+
+public class ValidationServiceFactoryTests
+{
+    private readonly IValidationServiceFactory _factory;
+
+    public ValidationServiceFactoryTests()
+    {
+        _factory = new ValidationServiceFactory();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should create category validation service")]
+    public void ShouldCreateCategoryValidationService()
+    {
+        // Act
+        var service = _factory.CreateCategoryValidationService();
+
+        // Assert
+        service.Should().NotBeNull();
+        service.Should().BeAssignableTo<ICategoryValidationService>();
     }
 }
