@@ -1,6 +1,6 @@
 using OnForkHub.Core.Interfaces.Validations;
 
-namespace OnForkHub.Core.Validations;
+namespace OnForkHub.Core.Validations.Base;
 
 public abstract class BaseValidationService : IValidationService
 {

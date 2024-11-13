@@ -2,7 +2,7 @@ namespace OnForkHub.Application.Services.Base;
 
 public abstract class BaseService
 {
-    protected async Task<RequestResult<T>> ExecuteAsync<T>(Func<Task<RequestResult<T>>> operacao)
+    public virtual async Task<RequestResult<T>> ExecuteAsync<T>(Func<Task<RequestResult<T>>> operacao)
     {
         try
         {
