@@ -104,10 +104,13 @@ public abstract class BaseValidationService : IValidationService
 
         if (dateTimeStart != default && dateTimeFinish != default)
         {
-            if (dateTimeStart > dateTimeFinish)
+            if (dateTimeStart <= dateTimeFinish)
             {
-                validationResult.AddError($"The start date for {fieldName} must be before the end date", fieldName);
+                return validationResult;
             }
+            validationResult.AddError($"The start date for {fieldName} must be before the end date", fieldName);
+
+            return validationResult;
         }
 
         return validationResult;

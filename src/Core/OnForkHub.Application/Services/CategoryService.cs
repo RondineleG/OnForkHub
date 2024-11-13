@@ -7,7 +7,7 @@ public class CategoryService(ICategoryRepository categoryRepository, ICategoryVa
 
     public async Task<RequestResult<Category>> CreateAsync(Category category)
     {
-        var validationResult = _validationService.ValidateCategory(category);
+        var validationResult = _validationService.Validate(category);
         if (!validationResult.IsValid)
         {
             var validations = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
