@@ -4,11 +4,11 @@
 
 <div class="shorts-container">
     <div class="main-content">
-        <button class="nav-button prev-button" @onclick="PreviousVideo">
-            <i class="oi oi-chevron-left"></i>
-        </button>
-
         <div class="video-container">
+            <button class="nav-button prev-button" @onclick="PreviousVideo">
+                <i class="bi bi-caret-left-fill"></i>
+            </button>
+
             <div class="video-wrapper">
                 @if (nowPlayingVideo != null)
                 {
@@ -25,22 +25,20 @@
                 </video>
             </div>
 
-            <div class="interaction-buttons">
-                <button class="action-btn star-btn">
-                    <i class="oi oi-star"></i>
-                    <span>Star</span>
-                    <span>1280</span>
-                </button>
-                <button class="action-btn share-btn">
-                    <i class="oi oi-share"></i>
-                    <span>Share</span>
-                </button>
-            </div>
+            <button class="nav-button next-button" @onclick="NextVideo">
+                <i class="bi bi-caret-right-fill"></i>
+            </button>
+
         </div>
 
-        <button class="nav-button next-button" @onclick="NextVideo">
-            <i class="oi oi-chevron-right"></i>
-        </button>
+        <div class="interaction-buttons">
+            <button class="action-btn star-btn">
+                <i class="bi bi-star"></i>
+            </button>
+            <button class="action-btn share-btn">
+                <i class="bi bi-share"></i>
+            </button>
+        </div>
     </div>
 
     <div class="video-list-container">
