@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Test.Entities.Base;
 
-public class BaseEntityTests
+public class BaseEntityTest
 {
     [Fact]
     [Trait("Category", "Unit")]
@@ -141,5 +141,108 @@ public class BaseEntityTests
         firstUpdate.Should().NotBe(secondUpdate);
         secondUpdate.Should().BeAfter(firstUpdate.Value);
         secondUpdate.Value.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should validate state when UpdatedAt is set to current time")]
+    public void ShouldValidateStateWhenUpdatedAtIsSetToCurrentTime()
+    {
+        var entity = new ValidEntityTestFixture();
+        var beforeUpdate = DateTime.UtcNow;
+
+        entity.ExecuteUpdate();
+
+        entity.UpdatedAt.Should().NotBeNull();
+        entity.UpdatedAt.Should().BeAfter(entity.CreatedAt);
+        entity.UpdatedAt.Should().BeCloseTo(beforeUpdate, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw when entity has invalid state")]
+    public void ShouldThrowWhenEntityHasInvalidState()
+    {
+        var entity = new InvalidEntityTestFixture();
+
+        Action action = () => entity.ForceValidation();
+
+        action.Should().Throw<DomainException>().WithMessage("Invalid entity state");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should maintain UTC kind after multiple updates")]
+    public void ShouldMaintainUtcKindAfterMultipleUpdates()
+    {
+        var entity = new ValidEntityTestFixture();
+
+        entity.ExecuteUpdate();
+        Thread.Sleep(100);
+        entity.ExecuteUpdate();
+        Thread.Sleep(100);
+        entity.ExecuteUpdate();
+
+        entity.UpdatedAt.Should().NotBeNull();
+        entity.UpdatedAt.Value.Kind.Should().Be(DateTimeKind.Utc);
+        entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(100)]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should create entity with valid non-negative ID")]
+    public void ShouldCreateEntityWithValidNonNegativeId(long id)
+    {
+        var createdAt = DateTime.UtcNow;
+
+        var entity = new ValidEntityTestFixture(id, createdAt);
+
+        entity.Id.Should().Be(id);
+        entity.CreatedAt.Should().Be(createdAt);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw when UpdatedAt equals CreatedAt")]
+    public void ShouldThrowWhenUpdatedAtEqualsCreatedAt()
+    {
+        var createdAt = DateTime.UtcNow;
+
+        Action action = () => new ValidEntityTestFixture(1, createdAt, createdAt);
+
+        action.Should().Throw<DomainException>().WithMessage("UpdatedAt must be greater than CreatedAt");
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(5)]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should validate multiple sequential updates")]
+    public void ShouldValidateMultipleSequentialUpdates(int numberOfUpdates)
+    {
+        var entity = new ValidEntityTestFixture();
+        var updates = new List<DateTime?>();
+
+        for (int i = 0; i < numberOfUpdates; i++)
+        {
+            Thread.Sleep(100);
+            entity.ExecuteUpdate();
+            updates.Add(entity.UpdatedAt);
+        }
+
+        updates.Should().HaveCount(numberOfUpdates);
+        updates.Should().BeInAscendingOrder();
+        updates
+            .Should()
+            .AllSatisfy(date =>
+            {
+                date.Should().NotBeNull();
+                date!.Value.Kind.Should().Be(DateTimeKind.Utc);
+                date.Should().BeAfter(entity.CreatedAt);
+            });
     }
 }
