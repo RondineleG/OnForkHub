@@ -28,7 +28,6 @@ public class Name : ValueObject
             .AddErrorIfNullOrWhiteSpace(Value, NameResources.NameIsRequired, nameof(Name))
             .AddErrorIf(Value.Length < MinNameLength, NameResources.NameMinLength, nameof(Name))
             .AddErrorIf(Value.Length > MaxNameLength, NameResources.NameMaxLength, nameof(Name));
-
         return validationResult;
     }
 

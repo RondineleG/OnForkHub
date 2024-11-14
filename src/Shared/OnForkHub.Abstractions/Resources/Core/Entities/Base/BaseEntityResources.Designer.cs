@@ -63,6 +63,15 @@ namespace OnForkHub.Abstractions.Resources.Core.Entities.Base {
         /// <summary>
         ///   Looks up a localized string similar to en.
         /// </summary>
+        public static string IdCannotBeNegative {
+            get {
+                return ResourceManager.GetString("IdCannotBeNegative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to en.
+        /// </summary>
         public static string IdGreaterThanZero {
             get {
                 return ResourceManager.GetString("IdGreaterThanZero", resourceCulture);

@@ -12,11 +12,4 @@ public class ValidEntityTestFixture : BaseEntity
     {
         Update();
     }
-
-    public override CustomValidationResult Validate()
-    {
-        var validationResult = new CustomValidationResult();
-        CustomValidationResult.ThrowErrorIf(() => Id <= 0, BaseEntityResources.IdGreaterThanZero);
-        return validationResult;
-    }
 }

@@ -67,14 +67,11 @@ public class ValidationServiceTests
     [DisplayName("Category: Should validate valid category")]
     public void CategoryValidation_ShouldValidateValidCategory()
     {
-        // Arrange
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        // Act
         var validationResult = _categoryValidationService.ValidateCategory(category);
 
-        // Assert
         validationResult.IsValid.Should().BeTrue();
         validationResult.Errors.Should().BeEmpty();
     }
@@ -84,13 +81,10 @@ public class ValidationServiceTests
     [DisplayName("Category: Should fail validation for null category")]
     public void CategoryValidation_ShouldFailValidationForNullCategory()
     {
-        // Arrange
         Category? category = null;
 
-        // Act
         var validationResult = _categoryValidationService.ValidateCategory(category!);
 
-        // Assert
         validationResult.IsValid.Should().BeFalse();
         validationResult.Errors.Should().Contain(e => e.Message == "Category cannot be null" && e.Field == nameof(Category));
     }
@@ -102,15 +96,25 @@ public class ValidationServiceTests
     {
         // Arrange
         var name = Name.Create("Test Category");
-        var longDescription = new string('A', 201); // 201 characters
-        var category = Category.Create(name, longDescription).Data!;
+        var longDescription = new string('A', 201);
+
+        // Criar primeiro uma categoria válida
+        var category = new CategoryTestBuilder()
+            .WithName(name)
+            .WithDescription("Valid Description") // Primeiro com descrição válida
+            .Build();
+
+        // Usar reflection para mudar a descrição para inválida
+        typeof(Category).GetProperty(nameof(Category.Description))!.SetValue(category, longDescription);
 
         // Act
         var validationResult = _categoryValidationService.ValidateCategory(category);
 
         // Assert
         validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.Message == "Description cannot exceed 200 characters");
+        validationResult
+            .Errors.Should()
+            .Contain(e => e.Message == "Description cannot exceed 200 characters" && e.Field == nameof(Category.Description));
     }
 
     [Fact]
@@ -118,14 +122,11 @@ public class ValidationServiceTests
     [DisplayName("Category: Should validate category update with valid data")]
     public void CategoryValidation_ShouldValidateCategoryUpdateWithValidData()
     {
-        // Arrange
         var name = Name.Create("Test Category");
         var category = Category.Load(1, name, "Test Description", DateTime.UtcNow).Data!;
 
-        // Act
         var validationResult = _categoryValidationService.ValidateCategoryUpdate(category);
 
-        // Assert
         validationResult.IsValid.Should().BeTrue();
         validationResult.Errors.Should().BeEmpty();
     }
@@ -135,14 +136,11 @@ public class ValidationServiceTests
     [DisplayName("Category: Should fail validation for update without ID")]
     public void CategoryValidation_ShouldFailValidationForUpdateWithoutId()
     {
-        // Arrange
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        // Act
         var validationResult = _categoryValidationService.ValidateCategoryUpdate(category);
 
-        // Assert
         validationResult.IsValid.Should().BeFalse();
         validationResult.Errors.Should().Contain(e => e.Message == "Category ID is required for updates" && e.Field == "Id");
     }
@@ -175,10 +173,8 @@ public class ValidationServiceFactoryTests
     [DisplayName("Should create category validation service")]
     public void ShouldCreateCategoryValidationService()
     {
-        // Act
         var service = _factory.CreateCategoryValidationService();
 
-        // Assert
         service.Should().NotBeNull();
         service.Should().BeAssignableTo<ICategoryValidationService>();
     }

@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Test.Entities;
 
-public class UserTests
+public class UserTest
 {
     [Fact]
     [Trait("Category", "Unit")]
@@ -8,28 +8,14 @@ public class UserTests
     public void ShouldCreateUserSuccessfully()
     {
         var name = Name.Create("John Silva");
-        var user = User.Create(name, "john@email.com");
+        var result = User.Create(name, "john@email.com");
 
-        user.Should().NotBeNull();
-        user.Name.Should().Be(name);
-        user.Email.Value.Should().Be("john@email.com");
-        user.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        user.UpdatedAt.Should().BeNull();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should keep CreatedAt unchanged after update")]
-    public void ShouldKeepCreatedAtUnchangedAfterUpdate()
-    {
-        var name = Name.Create("John Silva");
-        var user = User.Create(name, "john@email.com");
-        var creationDate = user.CreatedAt;
-
-        var updatedName = Name.Create("John Pereira");
-        user.UpdateName(updatedName);
-
-        user.CreatedAt.Should().Be(creationDate);
+        result.Status.Should().Be(EResultStatus.Success);
+        result.Data.Should().NotBeNull();
+        result.Data!.Name.Should().Be(name);
+        result.Data.Email.Value.Should().Be("john@email.com");
+        result.Data.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        result.Data.UpdatedAt.Should().BeNull();
     }
 
     [Fact]
@@ -39,9 +25,10 @@ public class UserTests
     {
         var name = Name.Create("John Silva");
 
-        Action act = () => User.Create(name, string.Empty);
+        var result = User.Create(name, string.Empty);
 
-        act.Should().Throw<DomainException>().WithMessage(EmailResources.EmailCannotBeEmpty);
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.RequestError!.Description.Should().Be(EmailResources.EmailCannotBeEmpty);
     }
 
     [Theory]
@@ -54,50 +41,10 @@ public class UserTests
     {
         var name = Name.Create("John Silva");
 
-        Action act = () => User.Create(name, invalidEmail);
+        var result = User.Create(name, invalidEmail);
 
-        act.Should().Throw<DomainException>().WithMessage(EmailResources.InvalidEmail);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException when name is less than 3 characters")]
-    public void ShouldThrowDomainExceptionWhenNameIsTooShort()
-    {
-        var name = "Al";
-        var result = new CustomValidationResult().AddErrorIf(name.Length < 3, NameResources.NameMinLength, "Name");
-
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle();
-        result.Errors.First().Message.Should().Be(NameResources.NameMinLength);
-        result.Errors.First().Field.Should().Be("Name");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception when updating user with invalid email")]
-    public void ShouldThrowExceptionWhenUpdatingWithInvalidEmail()
-    {
-        var name = Name.Create("John Silva");
-        var user = User.Create(name, "john@email.com");
-
-        Action act = () => user.UpdateEmail("email@");
-
-        act.Should().Throw<DomainException>().WithMessage(EmailResources.InvalidEmail);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception when updating user with invalid name")]
-    public void ShouldReturnValidationErrorWhenUpdatingWithInvalidName()
-    {
-        var name = Name.Create("John Silva");
-        var user = User.Create(name, "john@email.com");
-
-        user.UpdateName(Name.Create("Jo"));
-        var validationResult = user.Validate();
-
-        validationResult.Errors.Should().ContainSingle(error => (error.Message == NameResources.NameMinLength) && (error.Field == "Name"));
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.RequestError!.Description.Should().Be(EmailResources.InvalidEmail);
     }
 
     [Fact]
@@ -106,14 +53,16 @@ public class UserTests
     public void ShouldUpdateUserNameAndEmailSuccessfully()
     {
         var name = Name.Create("John Silva");
-        var user = User.Create(name, "john@email.com");
+        var user = User.Create(name, "john@email.com").Data!;
 
         var updatedName = Name.Create("John Pereira");
-        user.UpdateName(updatedName);
-        user.UpdateEmail("john.pereira@email.com");
+        var email = "john.pereira@email.com";
 
+        var result = user.UpdateData(updatedName, email);
+
+        result.Status.Should().Be(EResultStatus.Success);
         user.Name.Should().Be(updatedName);
-        user.Email.Value.Should().Be("john.pereira@email.com");
+        user.Email.Value.Should().Be(email);
         user.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 }

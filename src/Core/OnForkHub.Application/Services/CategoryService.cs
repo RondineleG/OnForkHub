@@ -7,6 +7,11 @@ public class CategoryService(ICategoryRepository categoryRepository, ICategoryVa
 
     public async Task<RequestResult<Category>> CreateAsync(Category category)
     {
+        if (category is null)
+        {
+            return RequestResult<Category>.WithError("Category cannot be null");
+        }
+
         var validationResult = _validationService.Validate(category);
         if (!validationResult.IsValid)
         {
@@ -20,7 +25,12 @@ public class CategoryService(ICategoryRepository categoryRepository, ICategoryVa
 
     public async Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        var validationResult = _validationService.ValidateCategory(category);
+        if (category is null)
+        {
+            return RequestResult<Category>.WithError("Category cannot be null");
+        }
+
+        var validationResult = _validationService.ValidateCategoryUpdate(category);
         if (!validationResult.IsValid)
         {
             var validations = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
@@ -56,11 +66,9 @@ public class CategoryService(ICategoryRepository categoryRepository, ICategoryVa
     {
         var validationResult = new CustomValidationResult();
 
-        validationResult
-            .AddErrorIfNullOrWhiteSpace(category.Name.Value, "Category name is required", nameof(category.Name))
-            .AddErrorIf(category.Description?.Length > 200, "Description cannot exceed 200 characters", nameof(category.Description));
+        validationResult.AddErrorIf(category.Description?.Length > 200, "Description cannot exceed 200 characters", nameof(category.Description));
 
-        validationResult.Merge(category.Validate());
+        validationResult.Merge(category.Name.Validate());
 
         return validationResult;
     }

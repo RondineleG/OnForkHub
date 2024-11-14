@@ -7,23 +7,23 @@ public class CategoryValidationService : BaseValidationService, ICategoryValidat
 {
     public CustomValidationResult Validate(Category entity)
     {
-        return ValidateCategory(entity);
+        return entity is not null ? ValidateCategory(entity) : new CustomValidationResult().AddError("Category cannot be null", nameof(Category));
     }
 
     public CustomValidationResult ValidateCategory(Category category)
     {
         var validationResult = new CustomValidationResult();
+
         if (category is null)
         {
             validationResult.AddError("Category cannot be null", nameof(Category));
             return validationResult;
         }
 
-        validationResult
-            .AddErrorIfNullOrWhiteSpace(category.Name.Value, "Category name is required", nameof(category.Name))
-            .AddErrorIf(category.Description?.Length > 200, "Description cannot exceed 200 characters", nameof(category.Description));
+        validationResult.AddErrorIf(category.Description?.Length > 200, "Description cannot exceed 200 characters", nameof(category.Description));
 
-        validationResult.Merge(category.Validate());
+        validationResult.Merge(category.Name.Validate());
+
         return validationResult;
     }
 
