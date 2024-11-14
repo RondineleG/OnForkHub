@@ -1,7 +1,4 @@
-global using System.ComponentModel;
 global using System.ComponentModel.DataAnnotations;
-global using System.Reflection;
-global using System.Text.RegularExpressions;
 global using OnForkHub.Application.Services.Base;
 global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Enums;

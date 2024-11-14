@@ -44,8 +44,9 @@ public class ValidationResultTests
     [DisplayName("Should add error when value is null")]
     public void ShouldAddErrorWhenValueIsNull()
     {
+        var result = new CustomValidationResult();
         string? nullValue = null;
-        var result = new CustomValidationResult().AddErrorIfNull(nullValue, "The value cannot be null", "Field");
+        result.AddErrorIfNull(nullValue, "The value cannot be null", "Field");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("The value cannot be null");

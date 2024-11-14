@@ -10,6 +10,15 @@ public class ValidEntityTestFixture : BaseEntity
 
     public void ExecuteUpdate()
     {
+        if (CreatedAt.Kind != DateTimeKind.Utc)
+        {
+            throw new DomainException("CreatedAt must be UTC");
+        }
         Update();
+    }
+
+    public void ExecuteException()
+    {
+        throw new DomainException("Invalid entity state");
     }
 }

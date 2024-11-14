@@ -44,12 +44,7 @@ public class CategoryService(ICategoryRepository categoryRepository, ICategoryVa
     public async Task<RequestResult<Category>> DeleteAsync(long id)
     {
         var categoryResult = await GetByIdAsync(id);
-        if (!categoryResult.Status.Equals(EResultStatus.Success))
-        {
-            return categoryResult;
-        }
-
-        return await ExecuteAsync(() => _categoryRepository.DeleteAsync(id));
+        return !categoryResult.Status.Equals(EResultStatus.Success) ? categoryResult : await ExecuteAsync(() => _categoryRepository.DeleteAsync(id));
     }
 
     public async Task<RequestResult<Category>> GetByIdAsync(long id)

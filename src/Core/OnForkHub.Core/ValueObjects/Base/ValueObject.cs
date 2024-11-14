@@ -2,7 +2,7 @@ namespace OnForkHub.Core.ValueObjects.Base;
 
 public abstract class ValueObject
 {
-    public static bool EqualOperator(ValueObject left, ValueObject right)
+    public static bool EqualOperator(ValueObject? left, ValueObject? right)
     {
         return !((left is null) ^ (right is null)) && ((left is null) || left.Equals(right));
     }

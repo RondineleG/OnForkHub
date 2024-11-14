@@ -57,7 +57,8 @@ public class RequestEntityWarningTests
     [DisplayName("Should deserialize from JSON correctly")]
     public void ShouldDeserializeFromJsonCorrectly()
     {
-        var json = "{\"Name\":\"TestEntity\",\"Id\":123,\"Message\":\"Warning about the entity\"}";
+        var json = /*lang=json,strict*/
+            "{\"Name\":\"TestEntity\",\"Id\":123,\"Message\":\"Warning about the entity\"}";
 
         var warning = JsonSerializer.Deserialize<RequestEntityWarning>(json);
 

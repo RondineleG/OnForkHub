@@ -17,12 +17,11 @@ public class CategoryTestBuilder
         return this;
     }
 
-    public Category Build()
+    public Category? Build()
     {
         var result = Category.Create(_name, _description);
-        if (!result.Status.Equals(EResultStatus.Success))
-            throw new InvalidOperationException($"Failed to build category: {result.Message}");
-
-        return result.Data!;
+        return !result.Status.Equals(EResultStatus.Success)
+            ? throw new InvalidOperationException($"Failed to build category: {result.Message}")
+            : result.Data;
     }
 }

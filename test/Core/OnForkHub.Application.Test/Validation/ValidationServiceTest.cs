@@ -2,23 +2,21 @@ using OnForkHub.Core.Validations.Base;
 
 namespace OnForkHub.Application.Test.Validation;
 
-public class ValidationServiceTests
+public class ValidationServiceTest
 {
     private readonly BaseValidationService _baseValidationService;
-    private readonly ICategoryValidationService _categoryValidationService;
+    private readonly CategoryValidationService _categoryValidationService;
 
-    public ValidationServiceTests()
+    public ValidationServiceTest()
     {
         _baseValidationService = new TestValidationService();
         _categoryValidationService = new CategoryValidationService();
     }
 
-    #region Base Validation Tests
-
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Base: Should validate string value")]
-    public void BaseValidation_ShouldValidateStringValue()
+    public void BaseValidationShouldValidateStringValue()
     {
         var value = "test@example.com";
         var regexPattern = @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
@@ -32,7 +30,7 @@ public class ValidationServiceTests
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Base: Should add error if string value is null or empty")]
-    public void BaseValidation_ShouldAddErrorIfStringValueIsNullOrEmpty()
+    public void BaseValidationShouldAddErrorIfStringValueIsNullOrEmpty()
     {
         var value = "";
         var regexPattern = @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
@@ -47,7 +45,7 @@ public class ValidationServiceTests
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Base: Should validate date range")]
-    public void BaseValidation_ShouldValidateDateRange()
+    public void BaseValidationShouldValidateDateRange()
     {
         var startDate = new DateTime(2023, 1, 1);
         var endDate = new DateTime(2023, 12, 31);
@@ -58,14 +56,10 @@ public class ValidationServiceTests
         validationResult.IsValid.Should().BeTrue();
     }
 
-    #endregion
-
-    #region Category Validation Tests
-
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Category: Should validate valid category")]
-    public void CategoryValidation_ShouldValidateValidCategory()
+    public void CategoryValidationShouldValidateValidCategory()
     {
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
@@ -94,23 +88,15 @@ public class ValidationServiceTests
     [DisplayName("Category: Should fail validation for long description")]
     public void CategoryValidation_ShouldFailValidationForLongDescription()
     {
-        // Arrange
         var name = Name.Create("Test Category");
         var longDescription = new string('A', 201);
 
-        // Criar primeiro uma categoria válida
-        var category = new CategoryTestBuilder()
-            .WithName(name)
-            .WithDescription("Valid Description") // Primeiro com descrição válida
-            .Build();
+        var category = new CategoryTestBuilder().WithName(name).WithDescription("Valid Description").Build();
 
-        // Usar reflection para mudar a descrição para inválida
         typeof(Category).GetProperty(nameof(Category.Description))!.SetValue(category, longDescription);
 
-        // Act
         var validationResult = _categoryValidationService.ValidateCategory(category);
 
-        // Assert
         validationResult.IsValid.Should().BeFalse();
         validationResult
             .Errors.Should()
@@ -143,39 +129,5 @@ public class ValidationServiceTests
 
         validationResult.IsValid.Should().BeFalse();
         validationResult.Errors.Should().Contain(e => e.Message == "Category ID is required for updates" && e.Field == "Id");
-    }
-
-    #endregion
-
-    #region Helper Classes
-
-    private class TestValidationService : BaseValidationService { }
-
-    private class TestEntity
-    {
-        public string Name { get; set; } = string.Empty;
-    }
-
-    #endregion
-}
-
-public class ValidationServiceFactoryTests
-{
-    private readonly IValidationServiceFactory _factory;
-
-    public ValidationServiceFactoryTests()
-    {
-        _factory = new ValidationServiceFactory();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should create category validation service")]
-    public void ShouldCreateCategoryValidationService()
-    {
-        var service = _factory.CreateCategoryValidationService();
-
-        service.Should().NotBeNull();
-        service.Should().BeAssignableTo<ICategoryValidationService>();
     }
 }

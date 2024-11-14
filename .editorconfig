@@ -228,6 +228,6 @@ dotnet_diagnostic.IDE2001.severity = none
 dotnet_diagnostic.IDE2002.severity = none
 dotnet_diagnostic.IDE2003.severity = none
 dotnet_diagnostic.IDE2004.severity = none
-
+dotnet_diagnostic.CA1824.severity = none
 # Custom word list
 csharp_preferred_words = Invalido

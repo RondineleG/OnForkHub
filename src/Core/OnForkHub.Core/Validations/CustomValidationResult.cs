@@ -92,10 +92,10 @@ public sealed class CustomValidationResult
         return AddErrorIf(value == null, errorMessage, fieldName);
     }
 
-    public CustomValidationResult AddErrorIfNull<T>(T value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIfNull<T>(T? value, string errorMessage, string fieldName = "")
         where T : class
     {
-        return AddErrorIf(value == null, errorMessage, fieldName);
+        return AddErrorIf(value is null, errorMessage, fieldName);
     }
 
     public CustomValidationResult AddErrorIfNullOrEmpty(string value, string errorMessage, string fieldName = "")

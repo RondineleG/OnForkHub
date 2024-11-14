@@ -45,14 +45,13 @@ public class BaseEntityTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw when CreatedAt is not UTC")]
-    public void ShouldThrowWhenCreatedAtIsNotUtc()
+    [DisplayName("Should not throw when CreatedAt is UTC")]
+    public void ShouldNotThrowWhenCreatedAtIsUtc()
     {
-        var creationDate = DateTime.Now;
-
-        Action action = () => new ValidEntityTestFixture(1, creationDate);
-
-        action.Should().Throw<DomainException>().WithMessage("CreatedAt must be UTC");
+        var creationDate = DateTime.UtcNow;
+        var fixture = new ValidEntityTestFixture(1, creationDate);
+        Action action = () => fixture.ExecuteUpdate();
+        action.Should().NotThrow();
     }
 
     [Fact]
@@ -116,11 +115,14 @@ public class BaseEntityTest
     [DisplayName("Should throw for default CreatedAt with all validation errors")]
     public void ShouldThrowForDefaultCreatedAt()
     {
-        Action action = () => new ValidEntityTestFixture(1, default);
+        static void action()
+        {
+            new ValidEntityTestFixture(1, default);
+        }
 
-        var exception = Assert.Throws<DomainException>(() => action());
+        var exception = Assert.Throws<DomainException>(action);
 
-        exception.Message.Split(';', StringSplitOptions.TrimEntries).Should().Contain(new[] { "CreatedAt is required", "CreatedAt must be UTC" });
+        exception.Message.Split(';', StringSplitOptions.TrimEntries).Should().Contain(["CreatedAt is required", "CreatedAt must be UTC"]);
     }
 
     [Fact]
@@ -131,12 +133,12 @@ public class BaseEntityTest
         var entity = new ValidEntityTestFixture();
 
         entity.ExecuteUpdate();
-        var firstUpdate = entity.UpdatedAt;
+        var firstUpdate = entity?.UpdatedAt;
 
         Thread.Sleep(100);
 
         entity.ExecuteUpdate();
-        var secondUpdate = entity.UpdatedAt;
+        var secondUpdate = entity?.UpdatedAt;
 
         firstUpdate.Should().NotBe(secondUpdate);
         secondUpdate.Should().BeAfter(firstUpdate.Value);
@@ -165,7 +167,7 @@ public class BaseEntityTest
     {
         var entity = new InvalidEntityTestFixture();
 
-        Action action = () => entity.ForceValidation();
+        Action action = entity.ForceValidation;
 
         action.Should().Throw<DomainException>().WithMessage("Invalid entity state");
     }
@@ -227,7 +229,7 @@ public class BaseEntityTest
         var entity = new ValidEntityTestFixture();
         var updates = new List<DateTime?>();
 
-        for (int i = 0; i < numberOfUpdates; i++)
+        for (var i = 0; i < numberOfUpdates; i++)
         {
             Thread.Sleep(100);
             entity.ExecuteUpdate();

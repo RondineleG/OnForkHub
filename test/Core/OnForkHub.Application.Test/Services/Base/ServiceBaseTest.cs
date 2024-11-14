@@ -2,13 +2,11 @@ namespace OnForkHub.Application.Test.Services.Base;
 
 public class ServiceBaseTest
 {
-    private readonly IValidationService _validationService;
     private readonly TestService _serviceBase;
 
     public ServiceBaseTest()
     {
-        _validationService = Substitute.For<IValidationService>();
-        _serviceBase = new TestService(_validationService);
+        _serviceBase = new TestService();
     }
 
     [Fact]
@@ -56,7 +54,7 @@ public class ServiceBaseTest
         return validationResult;
     }
 
-    private class TestService(IValidationService validationService) : BaseService
+    private class TestService : BaseService
     {
         public async Task<RequestResult<T>> ExecuteOperationAsync<T>(Func<Task<RequestResult<T>>> operation)
         {
