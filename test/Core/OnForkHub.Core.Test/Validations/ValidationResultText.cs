@@ -21,10 +21,11 @@ public class ValidationResultTests
     public void ShouldAddErrorWhenStringIsEmpty()
     {
         var value = string.Empty;
+
         var result = new CustomValidationResult().AddErrorIfNullOrEmpty(value, "The value cannot be empty", "Field");
 
         result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Be("The value cannot be empty");
+        result.ErrorMessage.Should().Be("Field: The value cannot be empty");
     }
 
     [Fact]
@@ -36,7 +37,7 @@ public class ValidationResultTests
         var result = new CustomValidationResult().AddErrorIfNullOrWhiteSpace(value, "The value cannot be blank", "Field");
 
         result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Be("The value cannot be blank");
+        result.ErrorMessage.Should().Be("Field: The value cannot be blank");
     }
 
     [Fact]
@@ -49,7 +50,7 @@ public class ValidationResultTests
         result.AddErrorIfNull(nullValue, "The value cannot be null", "Field");
 
         result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Be("The value cannot be null");
+        result.ErrorMessage.Should().Be("Field: The value cannot be null");
     }
 
     [Fact]
@@ -125,7 +126,7 @@ public class ValidationResultTests
     {
         var result = CustomValidationResult.Success();
 
-        Action action = result.ThrowIfInvalid;
+        Action action = () => result.ThrowIfInvalid();
 
         action.Should().NotThrow<DomainException>();
     }
@@ -153,7 +154,7 @@ public class ValidationResultTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();
         result.Errors.First().Field.Should().Be("SpecificField");
-        result.ErrorMessage.Should().Be("Specific error");
+        result.ErrorMessage.Should().Be("SpecificField: Specific error");
     }
 
     [Fact]
@@ -241,7 +242,7 @@ public class ValidationResultTests
         var errorMessage = "Validation error";
         var result = CustomValidationResult.Failure(errorMessage);
 
-        Action action = result.ThrowIfInvalid;
+        Action action = () => result.ThrowIfInvalid();
 
         action.Should().Throw<DomainException>().WithMessage(errorMessage);
     }

@@ -6,7 +6,16 @@ public class ValidEntityTestFixture : BaseEntity
         : base() { }
 
     public ValidEntityTestFixture(long id, DateTime createdAt, DateTime? updatedAt = null)
-        : base(id, createdAt, updatedAt) { }
+        : base(id, createdAt, updatedAt)
+    {
+        var validationResult = new CustomValidationResult();
+        validationResult.AddErrorIf(id < 0, "Id cannot be negative", nameof(Id));
+
+        if (validationResult.HasError)
+        {
+            throw new DomainException(validationResult.ErrorMessage);
+        }
+    }
 
     public void ExecuteUpdate()
     {

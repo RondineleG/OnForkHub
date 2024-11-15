@@ -64,8 +64,7 @@ public class BaseEntityTest
 
         Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
 
-        var exception = action.Should().Throw<DomainException>().Which;
-        exception.Message.Should().Be("UpdatedAt must be UTC");
+        action.Should().Throw<DomainException>().WithMessage("UpdatedAt: UpdatedAt must be UTC");
     }
 
     [Fact]
@@ -78,7 +77,7 @@ public class BaseEntityTest
 
         Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
 
-        action.Should().Throw<DomainException>().WithMessage("UpdatedAt must be greater than CreatedAt");
+        action.Should().Throw<DomainException>().WithMessage("UpdatedAt: UpdatedAt must be greater than CreatedAt");
     }
 
     [Fact]
@@ -107,7 +106,7 @@ public class BaseEntityTest
 
         Action action = () => new ValidEntityTestFixture(id, creationDate);
 
-        action.Should().Throw<DomainException>().WithMessage("Id cannot be negative");
+        action.Should().Throw<DomainException>().WithMessage("Id: Id cannot be negative");
     }
 
     [Fact]
@@ -115,14 +114,14 @@ public class BaseEntityTest
     [DisplayName("Should throw for default CreatedAt with all validation errors")]
     public void ShouldThrowForDefaultCreatedAt()
     {
-        static void action()
-        {
-            new ValidEntityTestFixture(1, default);
-        }
+        Action action = () => new ValidEntityTestFixture(1, default);
 
         var exception = Assert.Throws<DomainException>(action);
 
-        exception.Message.Split(';', StringSplitOptions.TrimEntries).Should().Contain(["CreatedAt is required", "CreatedAt must be UTC"]);
+        exception
+            .Message.Split(';', StringSplitOptions.TrimEntries)
+            .Should()
+            .Contain(["CreatedAt: CreatedAt is required", "CreatedAt: CreatedAt must be UTC"]);
     }
 
     [Fact]
@@ -215,7 +214,7 @@ public class BaseEntityTest
 
         Action action = () => new ValidEntityTestFixture(1, createdAt, createdAt);
 
-        action.Should().Throw<DomainException>().WithMessage("UpdatedAt must be greater than CreatedAt");
+        action.Should().Throw<DomainException>().WithMessage("UpdatedAt: UpdatedAt must be greater than CreatedAt");
     }
 
     [Theory]

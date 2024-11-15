@@ -1,111 +1,84 @@
+using System.Runtime.CompilerServices;
+using OnForkHub.Core.Interfaces.Validations;
+
 namespace OnForkHub.Core.Validations;
 
-public sealed class CustomValidationResult
+public sealed class CustomValidationResult : IValidationResult
 {
     private readonly List<ValidationErrorMessage> _errors;
+    private readonly Dictionary<string, object> _metadata;
 
     public CustomValidationResult()
     {
         _errors = [];
+        _metadata = [];
     }
-
-    private CustomValidationResult(string errorMessage, string fieldName = "")
-        : this()
-    {
-        AddError(errorMessage, fieldName);
-    }
-
-    public string ErrorMessage => string.Join("; ", _errors.Select(e => e.Message));
-
-    public IReadOnlyCollection<ValidationErrorMessage> Errors => new ReadOnlyCollection<ValidationErrorMessage>(_errors);
-
-    public bool HasError => !IsValid;
 
     public bool IsValid => _errors.Count == 0;
+    public bool HasError => !IsValid;
+    public IReadOnlyCollection<ValidationErrorMessage> Errors => new ReadOnlyCollection<ValidationErrorMessage>(_errors);
+    public IDictionary<string, object> Metadata => _metadata;
 
-    public static CustomValidationResult Combine(params CustomValidationResult[] validations)
+    public string ErrorMessage => string.Join("; ", _errors.Select(e => string.IsNullOrEmpty(e.Field) ? e.Message : $"{e.Field}: {e.Message}"));
+
+    public static ValidationBuilder WithField()
     {
-        if ((validations == null) || (validations.Length == 0))
-        {
-            return Success();
-        }
-
-        var result = new CustomValidationResult();
-        foreach (var validation in validations.Where(v => v != null))
-        {
-            result.Merge(validation);
-        }
-        return result;
+        return new();
     }
 
-    public static CustomValidationResult Failure(string errorMessage, string fieldName = "")
+    public static IValidationBuilder WithField(string fieldName, object? value = null)
     {
-        return new CustomValidationResult(errorMessage, fieldName);
-    }
-
-    public static implicit operator bool(CustomValidationResult validation)
-    {
-        return (validation?.IsValid) ?? false;
+        return new ValidationBuilder().WithField(fieldName, value);
     }
 
     public static CustomValidationResult Success()
     {
-        return new CustomValidationResult();
+        return new();
     }
 
-    public static void ThrowErrorIf(Func<bool> hasError, string message)
+    public static CustomValidationResult Failure(string message, string field = "", [CallerMemberName] string? source = null)
     {
-        if (hasError())
-        {
-            throw new DomainException(message);
-        }
+        var result = new CustomValidationResult();
+        result.AddError(message, field, source);
+        return result;
     }
 
-    public static CustomValidationResult Validate(Func<bool> predicate, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddError(string message, string field = "", string? source = null)
     {
-        return predicate() ? Failure(errorMessage, fieldName) : Success();
-    }
-
-    public CustomValidationResult AddError(string errorMessage, string fieldName = "")
-    {
-        if (string.IsNullOrWhiteSpace(errorMessage))
-        {
-            throw new ArgumentException("The error message cannot be empty", nameof(errorMessage));
-        }
-
-        _errors.Add(new ValidationErrorMessage(errorMessage, fieldName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+        _errors.Add(new ValidationErrorMessage(message, field, source));
         return this;
     }
 
-    public CustomValidationResult AddErrorIf(bool condition, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIf(bool condition, string message, string field = "")
     {
         if (condition)
         {
-            AddError(errorMessage, fieldName);
+            AddError(message, field);
         }
         return this;
     }
 
-    public CustomValidationResult AddErrorI<T>(T value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorI<T>(T value, string message, string field = "")
         where T : class
     {
-        return AddErrorIf(value == null, errorMessage, fieldName);
+        return AddErrorIf(value == null, message, field);
     }
 
-    public CustomValidationResult AddErrorIfNull<T>(T? value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIfNull<T>(T? value, string message, string field = "")
         where T : class
     {
-        return AddErrorIf(value is null, errorMessage, fieldName);
+        return AddErrorIf(value is null, message, field);
     }
 
-    public CustomValidationResult AddErrorIfNullOrEmpty(string value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIfNullOrEmpty(string value, string message, string field = "")
     {
-        return AddErrorIf(string.IsNullOrEmpty(value), errorMessage, fieldName);
+        return AddErrorIf(string.IsNullOrEmpty(value), message, field);
     }
 
-    public CustomValidationResult AddErrorIfNullOrWhiteSpace(string value, string errorMessage, string fieldName = "")
+    public CustomValidationResult AddErrorIfNullOrWhiteSpace(string value, string message, string field = "")
     {
-        return AddErrorIf(string.IsNullOrWhiteSpace(value), errorMessage, fieldName);
+        return AddErrorIf(string.IsNullOrWhiteSpace(value), message, field);
     }
 
     public CustomValidationResult AddErrors(IEnumerable<(string Message, string Field)> errors)
@@ -120,31 +93,63 @@ public sealed class CustomValidationResult
     public CustomValidationResult Merge(CustomValidationResult other)
     {
         ArgumentNullException.ThrowIfNull(other);
-
         _errors.AddRange(other._errors);
+
+        foreach (var item in other._metadata)
+        {
+            _metadata[item.Key] = item.Value;
+        }
+
         return this;
     }
 
-    public void ThrowIfInvalid()
+    public void ThrowIfInvalid(string? customMessage = null)
     {
         if (HasError)
         {
-            throw new DomainException(ErrorMessage);
+            throw new DomainException(customMessage ?? ErrorMessage);
         }
     }
 
-    public void ThrowIfInvalid(string errorMessage)
+    public async Task ThrowIfInvalidAsync(string? customMessage = null)
     {
-        if (HasError)
-        {
-            throw new DomainException(errorMessage);
-        }
+        await Task.Yield();
+        ThrowIfInvalid(customMessage);
+    }
+
+    public T? GetMetadata<T>(string key)
+        where T : class
+    {
+        return _metadata.TryGetValue(key, out var value) ? value as T : null;
     }
 
     public CustomValidationResult ThrowIfInvalidAndReturn()
     {
         ThrowIfInvalid();
         return this;
+    }
+
+    public static CustomValidationResult Combine(params CustomValidationResult[] results)
+    {
+        var combined = new CustomValidationResult();
+        foreach (var result in results.Where(r => r != null))
+        {
+            combined.Merge(result);
+        }
+        return combined;
+    }
+
+    public static void ThrowErrorIf(Func<bool> hasError, string message)
+    {
+        if (hasError())
+        {
+            throw new DomainException(message);
+        }
+    }
+
+    public static CustomValidationResult Validate(Func<bool> predicate, string message, string field = "")
+    {
+        return predicate() ? Failure(message, field) : Success();
     }
 
     public static CustomValidationResult operator &(CustomValidationResult left, CustomValidationResult right)
@@ -171,5 +176,10 @@ public sealed class CustomValidationResult
         }
 
         return result;
+    }
+
+    public static implicit operator bool(CustomValidationResult? validation)
+    {
+        return validation?.IsValid ?? false;
     }
 }
