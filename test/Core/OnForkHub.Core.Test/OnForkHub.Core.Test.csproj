@@ -14,6 +14,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
         <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
+        <ProjectReference Include="..\..\Shared\OnForkHub.TestExtensions\OnForkHub.TestExtensions.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Using Include="Xunit" />

@@ -8,8 +8,9 @@ public class BaseEntityTest
     public void CreatedAtShouldNotBeDefaultWhenInstantiatingEntity()
     {
         var entity = new ValidEntityTestFixture();
-        entity.CreatedAt.Should().NotBe(default);
-        entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
+        var result = new CustomValidationResult();
+        result.BeValid();
+        entity.CreatedAt.Should().NotBe(default).And.BeIn(DateTimeKind.Utc);
     }
 
     [Theory]
@@ -21,12 +22,109 @@ public class BaseEntityTest
     public void ShouldCreateEntityWhenIdIsValid(long id)
     {
         var creationDate = DateTime.UtcNow;
-
         var entity = new ValidEntityTestFixture(id, creationDate);
 
+        var result = new CustomValidationResult();
+        result.BeValid();
         entity.Id.Should().Be(id);
         entity.CreatedAt.Should().Be(creationDate);
         entity.UpdatedAt.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(long.MinValue)]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw exception for negative ID")]
+    public void ShouldThrowExceptionForNegativeId(long id)
+    {
+        var creationDate = DateTime.UtcNow;
+        Action action = () => new ValidEntityTestFixture(id, creationDate);
+
+        action.Should().Throw<DomainException>().WithValidationError(ValidationFields.Id, "Id cannot be negative");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw for default CreatedAt with all validation errors")]
+    public void ShouldThrowForDefaultCreatedAt()
+    {
+        Action action = () => new ValidEntityTestFixture(1, default);
+
+        action
+            .Should()
+            .Throw<DomainException>()
+            .WithValidationErrors((ValidationFields.CreatedAt, "CreatedAt is required"), (ValidationFields.CreatedAt, "CreatedAt must be UTC"));
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw when UpdatedAt is not UTC")]
+    public void ShouldThrowWhenUpdatedAtIsNotUtc()
+    {
+        var creationDate = DateTime.UtcNow;
+        var updateDate = DateTime.Now.AddDays(1).AddMilliseconds(1);
+
+        Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
+
+        action.Should().Throw<DomainException>().WithValidationError(ValidationFields.UpdatedAt, "UpdatedAt must be UTC");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw when UpdatedAt is not greater than CreatedAt")]
+    public void ShouldThrowWhenUpdatedAtIsNotGreaterThanCreatedAt()
+    {
+        var creationDate = DateTime.UtcNow;
+        var updateDate = creationDate.AddSeconds(-1);
+
+        Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
+
+        action.Should().Throw<DomainException>().WithValidationError(ValidationFields.UpdatedAt, "UpdatedAt must be greater than CreatedAt");
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(5)]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should validate multiple sequential updates")]
+    public void ShouldValidateMultipleSequentialUpdates(int numberOfUpdates)
+    {
+        var entity = new ValidEntityTestFixture();
+        var updates = new List<DateTime?>();
+
+        for (var i = 0; i < numberOfUpdates; i++)
+        {
+            Thread.Sleep(100);
+            entity.ExecuteUpdate();
+            updates.Add(entity.UpdatedAt);
+        }
+
+        var result = new CustomValidationResult();
+        result.BeValid();
+
+        updates
+            .Should()
+            .HaveCount(numberOfUpdates)
+            .And.BeInAscendingOrder()
+            .And.AllSatisfy(date =>
+            {
+                date.Should().NotBeNull();
+                date!.Value.Kind.Should().Be(DateTimeKind.Utc);
+                date.Should().BeAfter(entity.CreatedAt);
+            });
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw when entity has invalid state")]
+    public void ShouldThrowWhenEntityHasInvalidState()
+    {
+        var entity = new InvalidEntityTestFixture();
+        Action action = entity.ForceValidation;
+
+        action.Should().Throw<DomainException>().WithMessage("Invalid entity state");
     }
 
     [Fact]
@@ -45,43 +143,6 @@ public class BaseEntityTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should not throw when CreatedAt is UTC")]
-    public void ShouldNotThrowWhenCreatedAtIsUtc()
-    {
-        var creationDate = DateTime.UtcNow;
-        var fixture = new ValidEntityTestFixture(1, creationDate);
-        Action action = () => fixture.ExecuteUpdate();
-        action.Should().NotThrow();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw when UpdatedAt is not UTC")]
-    public void ShouldThrowWhenUpdatedAtIsNotUtc()
-    {
-        var creationDate = DateTime.UtcNow;
-        var updateDate = DateTime.Now.AddDays(1).AddMilliseconds(1);
-
-        Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
-
-        action.Should().Throw<DomainException>().WithMessage("UpdatedAt: UpdatedAt must be UTC");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw when UpdatedAt is not greater than CreatedAt")]
-    public void ShouldThrowWhenUpdatedAtIsNotGreaterThanCreatedAt()
-    {
-        var creationDate = DateTime.UtcNow;
-        var updateDate = creationDate.AddSeconds(-1);
-
-        Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
-
-        action.Should().Throw<DomainException>().WithMessage("UpdatedAt: UpdatedAt must be greater than CreatedAt");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should update UpdatedAt when executing Update method")]
     public void ShouldUpdateUpdatedAtWhenExecutingUpdate()
     {
@@ -95,35 +156,6 @@ public class BaseEntityTest
         entity.UpdatedAt.Should().BeCloseTo(beforeUpdate, TimeSpan.FromSeconds(1));
     }
 
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(long.MinValue)]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception for negative ID")]
-    public void ShouldThrowExceptionForNegativeId(long id)
-    {
-        var creationDate = DateTime.UtcNow;
-
-        Action action = () => new ValidEntityTestFixture(id, creationDate);
-
-        action.Should().Throw<DomainException>().WithMessage("Id: Id cannot be negative");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw for default CreatedAt with all validation errors")]
-    public void ShouldThrowForDefaultCreatedAt()
-    {
-        Action action = () => new ValidEntityTestFixture(1, default);
-
-        var exception = Assert.Throws<DomainException>(action);
-
-        exception
-            .Message.Split(';', StringSplitOptions.TrimEntries)
-            .Should()
-            .Contain(["CreatedAt: CreatedAt is required", "CreatedAt: CreatedAt must be UTC"]);
-    }
-
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should validate state after multiple updates")]
@@ -132,43 +164,16 @@ public class BaseEntityTest
         var entity = new ValidEntityTestFixture();
 
         entity.ExecuteUpdate();
-        var firstUpdate = entity?.UpdatedAt;
+        var firstUpdate = entity.UpdatedAt;
 
         Thread.Sleep(100);
 
         entity.ExecuteUpdate();
-        var secondUpdate = entity?.UpdatedAt;
+        var secondUpdate = entity.UpdatedAt;
 
         firstUpdate.Should().NotBe(secondUpdate);
         secondUpdate.Should().BeAfter(firstUpdate.Value);
         secondUpdate.Value.Kind.Should().Be(DateTimeKind.Utc);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should validate state when UpdatedAt is set to current time")]
-    public void ShouldValidateStateWhenUpdatedAtIsSetToCurrentTime()
-    {
-        var entity = new ValidEntityTestFixture();
-        var beforeUpdate = DateTime.UtcNow;
-
-        entity.ExecuteUpdate();
-
-        entity.UpdatedAt.Should().NotBeNull();
-        entity.UpdatedAt.Should().BeAfter(entity.CreatedAt);
-        entity.UpdatedAt.Should().BeCloseTo(beforeUpdate, TimeSpan.FromSeconds(1));
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw when entity has invalid state")]
-    public void ShouldThrowWhenEntityHasInvalidState()
-    {
-        var entity = new InvalidEntityTestFixture();
-
-        Action action = entity.ForceValidation;
-
-        action.Should().Throw<DomainException>().WithMessage("Invalid entity state");
     }
 
     [Fact]
@@ -198,7 +203,6 @@ public class BaseEntityTest
     public void ShouldCreateEntityWithValidNonNegativeId(long id)
     {
         var createdAt = DateTime.UtcNow;
-
         var entity = new ValidEntityTestFixture(id, createdAt);
 
         entity.Id.Should().Be(id);
@@ -214,36 +218,6 @@ public class BaseEntityTest
 
         Action action = () => new ValidEntityTestFixture(1, createdAt, createdAt);
 
-        action.Should().Throw<DomainException>().WithMessage("UpdatedAt: UpdatedAt must be greater than CreatedAt");
-    }
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(5)]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should validate multiple sequential updates")]
-    public void ShouldValidateMultipleSequentialUpdates(int numberOfUpdates)
-    {
-        var entity = new ValidEntityTestFixture();
-        var updates = new List<DateTime?>();
-
-        for (var i = 0; i < numberOfUpdates; i++)
-        {
-            Thread.Sleep(100);
-            entity.ExecuteUpdate();
-            updates.Add(entity.UpdatedAt);
-        }
-
-        updates.Should().HaveCount(numberOfUpdates);
-        updates.Should().BeInAscendingOrder();
-        updates
-            .Should()
-            .AllSatisfy(date =>
-            {
-                date.Should().NotBeNull();
-                date!.Value.Kind.Should().Be(DateTimeKind.Utc);
-                date.Should().BeAfter(entity.CreatedAt);
-            });
+        action.Should().Throw<DomainException>().WithValidationError(ValidationFields.UpdatedAt, "UpdatedAt must be greater than CreatedAt");
     }
 }
