@@ -7,7 +7,7 @@ public class ValidationResultTests
     [DisplayName("Should add error when condition is true")]
     public void ShouldAddErrorWhenConditionIsTrue()
     {
-        var result = new CustomValidationResult().AddErrorIf(true, "Condition error", "Field");
+        var result = new ValidationResult().AddErrorIf(true, "Condition error", "Field");
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();
@@ -22,7 +22,7 @@ public class ValidationResultTests
     {
         var value = string.Empty;
 
-        var result = new CustomValidationResult().AddErrorIfNullOrEmpty(value, "The value cannot be empty", "Field");
+        var result = new ValidationResult().AddErrorIfNullOrEmpty(value, "The value cannot be empty", "Field");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("Field: The value cannot be empty");
@@ -34,7 +34,7 @@ public class ValidationResultTests
     public void ShouldAddErrorWhenStringIsOnlySpaces()
     {
         var value = "   ";
-        var result = new CustomValidationResult().AddErrorIfNullOrWhiteSpace(value, "The value cannot be blank", "Field");
+        var result = new ValidationResult().AddErrorIfNullOrWhiteSpace(value, "The value cannot be blank", "Field");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("Field: The value cannot be blank");
@@ -45,7 +45,7 @@ public class ValidationResultTests
     [DisplayName("Should add error when value is null")]
     public void ShouldAddErrorWhenValueIsNull()
     {
-        var result = new CustomValidationResult();
+        var result = new ValidationResult();
         string? nullValue = null;
         result.AddErrorIfNull(nullValue, "The value cannot be null", "Field");
 
@@ -58,10 +58,10 @@ public class ValidationResultTests
     [DisplayName("Should combine validations with error")]
     public void ShouldCombineValidationsWithError()
     {
-        var result1 = CustomValidationResult.Failure("Error 1");
-        var result2 = CustomValidationResult.Failure("Error 2");
+        var result1 = ValidationResult.Failure("Error 1");
+        var result2 = ValidationResult.Failure("Error 2");
 
-        var combinedResult = CustomValidationResult.Combine(result1, result2);
+        var combinedResult = ValidationResult.Combine(result1, result2);
 
         combinedResult.IsValid.Should().BeFalse();
         combinedResult.ErrorMessage.Should().Be("Error 1; Error 2");
@@ -72,8 +72,8 @@ public class ValidationResultTests
     [DisplayName("Should keep errors when merging with another error result")]
     public void ShouldKeepErrorsWhenMergingWithAnotherErrorResult()
     {
-        var result1 = CustomValidationResult.Failure("Error 1");
-        var result2 = CustomValidationResult.Failure("Error 2");
+        var result1 = ValidationResult.Failure("Error 1");
+        var result2 = ValidationResult.Failure("Error 2");
 
         result1.Merge(result2);
 
@@ -87,8 +87,8 @@ public class ValidationResultTests
     [DisplayName("Should keep success when merging with another success")]
     public void ShouldKeepSuccessWhenMergingWithAnotherSuccess()
     {
-        var result1 = CustomValidationResult.Success();
-        var result2 = CustomValidationResult.Success();
+        var result1 = ValidationResult.Success();
+        var result2 = ValidationResult.Success();
 
         result1.Merge(result2);
 
@@ -101,7 +101,7 @@ public class ValidationResultTests
     [DisplayName("Should not add error when condition is false")]
     public void ShouldNotAddErrorWhenConditionIsFalse()
     {
-        var result = new CustomValidationResult().AddErrorIf(false, "Condition error", "Field");
+        var result = new ValidationResult().AddErrorIf(false, "Condition error", "Field");
 
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
@@ -113,7 +113,7 @@ public class ValidationResultTests
     public void ShouldNotAddErrorWhenValueIsNotNull()
     {
         var value = "text";
-        var result = new CustomValidationResult().AddErrorIfNull(value, "The value cannot be null", "Field");
+        var result = new ValidationResult().AddErrorIfNull(value, "The value cannot be null", "Field");
 
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
@@ -124,7 +124,7 @@ public class ValidationResultTests
     [DisplayName("Should not throw exception when valid")]
     public void ShouldNotThrowExceptionWhenValid()
     {
-        var result = CustomValidationResult.Success();
+        var result = ValidationResult.Success();
 
         Action action = () => result.ThrowIfInvalid();
 
@@ -137,7 +137,7 @@ public class ValidationResultTests
     public void ShouldReturnErrorWithMultipleFieldsWhenAddingErrors()
     {
         var errors = new List<(string Message, string Field)> { ("Error in field 1", "Field1"), ("Error in field 2", "Field2") };
-        var result = new CustomValidationResult().AddErrors(errors);
+        var result = new ValidationResult().AddErrors(errors);
 
         result.IsValid.Should().BeFalse();
         result.Errors.Count.Should().Be(2);
@@ -149,7 +149,7 @@ public class ValidationResultTests
     [DisplayName("Should return error with specific field when using Failure")]
     public void ShouldReturnErrorWithSpecificFieldWhenUsingFailure()
     {
-        var result = CustomValidationResult.Failure("Specific error", "SpecificField");
+        var result = ValidationResult.Failure("Specific error", "SpecificField");
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();
@@ -163,7 +163,7 @@ public class ValidationResultTests
     public void ShouldReturnFailureWhenCallingFailure()
     {
         var errorMessage = "Validation error";
-        var result = CustomValidationResult.Failure(errorMessage);
+        var result = ValidationResult.Failure(errorMessage);
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be(errorMessage);
@@ -174,8 +174,8 @@ public class ValidationResultTests
     [DisplayName("Should return first failure when using AND operator")]
     public void ShouldReturnFirstFailureWhenUsingAndOperator()
     {
-        var result1 = CustomValidationResult.Failure("Error 1");
-        var result2 = CustomValidationResult.Failure("Error 2");
+        var result1 = ValidationResult.Failure("Error 1");
+        var result2 = ValidationResult.Failure("Error 2");
 
         var finalResult = result1 & result2;
 
@@ -188,10 +188,10 @@ public class ValidationResultTests
     [DisplayName("Should return success when all validations are success")]
     public void ShouldReturnSuccessWhenAllValidationsAreSuccess()
     {
-        var result1 = CustomValidationResult.Success();
-        var result2 = CustomValidationResult.Success();
+        var result1 = ValidationResult.Success();
+        var result2 = ValidationResult.Success();
 
-        var combinedResult = CustomValidationResult.Combine(result1, result2);
+        var combinedResult = ValidationResult.Combine(result1, result2);
 
         combinedResult.IsValid.Should().BeTrue();
         combinedResult.ErrorMessage.Should().BeEmpty();
@@ -202,7 +202,7 @@ public class ValidationResultTests
     [DisplayName("Should return success when calling Success")]
     public void ShouldReturnSuccessWhenCallingSuccess()
     {
-        var result = CustomValidationResult.Success();
+        var result = ValidationResult.Success();
 
         result.IsValid.Should().BeTrue();
         result.ErrorMessage.Should().BeEmpty();
@@ -213,8 +213,8 @@ public class ValidationResultTests
     [DisplayName("Should return success when using AND operator with all valid")]
     public void ShouldReturnSuccessWhenUsingAndOperatorWithAllValid()
     {
-        var result1 = CustomValidationResult.Success();
-        var result2 = CustomValidationResult.Success();
+        var result1 = ValidationResult.Success();
+        var result2 = ValidationResult.Success();
 
         var finalResult = result1 & result2;
 
@@ -226,8 +226,8 @@ public class ValidationResultTests
     [DisplayName("Should throw exception when attempting to merge with null")]
     public void ShouldThrowExceptionWhenAttemptingToMergeWithNull()
     {
-        var result = new CustomValidationResult();
-        CustomValidationResult? validate = null;
+        var result = new ValidationResult();
+        ValidationResult? validate = null;
 
         Action action = () => result.Merge(validate);
 
@@ -240,7 +240,7 @@ public class ValidationResultTests
     public void ShouldThrowExceptionWithMessageWhenInvalid()
     {
         var errorMessage = "Validation error";
-        var result = CustomValidationResult.Failure(errorMessage);
+        var result = ValidationResult.Failure(errorMessage);
 
         Action action = () => result.ThrowIfInvalid();
 
@@ -254,7 +254,7 @@ public class ValidationResultTests
     [DisplayName("Should validate condition correctly")]
     public void ShouldValidateConditionCorrectly(bool condition, string message, bool expectedValid)
     {
-        var result = CustomValidationResult.Validate(() => !condition, message);
+        var result = ValidationResult.Validate(() => !condition, message);
 
         result.IsValid.Should().Be(expectedValid);
         if (!expectedValid)

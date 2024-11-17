@@ -3,11 +3,11 @@ using OnForkHub.Core.Validations.Base;
 
 namespace OnForkHub.Core.Validations;
 
-public class CategoryValidationService(IValidationBuilder builder) : ValidationBase<Category>(builder)
+public class CategoryValidationService(IValidationBuilder builder) : BaseValidation<Category>(builder)
 {
     protected override IValidationResult ValidateEntity(Category entity)
     {
-        var result = new CustomValidationResult();
+        var result = new ValidationResult();
 
         result.Merge(ValidateStringLength(entity.Name.Value, nameof(entity.Name), 100));
 

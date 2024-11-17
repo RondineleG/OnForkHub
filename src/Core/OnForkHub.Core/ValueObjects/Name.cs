@@ -20,9 +20,9 @@ public class Name : ValueObject
         return new Name(value);
     }
 
-    public override CustomValidationResult Validate()
+    public override ValidationResult Validate()
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
 
         validationResult
             .AddErrorIfNullOrWhiteSpace(Value, NameResources.NameIsRequired, nameof(Name))

@@ -16,9 +16,9 @@ public class Title : ValueObject
         return title;
     }
 
-    public override CustomValidationResult Validate()
+    public override ValidationResult Validate()
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(Value, TitleResources.TitleRequired, nameof(Title));
         validationResult.AddErrorIf(Value.Length < 3, TitleResources.TitleMinLength, nameof(Title));
         validationResult.AddErrorIf(Value.Length > 50, TitleResources.TitleMaxLength, nameof(Title));

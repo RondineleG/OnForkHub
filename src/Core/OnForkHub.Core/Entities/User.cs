@@ -88,7 +88,7 @@ public class User : BaseEntity
     {
         base.ValidateEntityState();
 
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
 
         validationResult.AddErrorIfNull(Name, "Name is required", nameof(Name));
         if (Name != null)

@@ -21,7 +21,7 @@ public class CategoryServiceTest
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
         validationResult.AddError("Test error", "TestField");
 
         _validationService.Validate(Arg.Any<Category>()).Returns(validationResult);
@@ -43,7 +43,7 @@ public class CategoryServiceTest
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
         validationResult.AddError("Test error", "TestField");
 
         _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(validationResult);
@@ -65,7 +65,7 @@ public class CategoryServiceTest
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(new CustomValidationResult());
+        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(new ValidationResult());
 
         _categoryRepository.UpdateAsync(category).Returns(RequestResult<Category>.Success(category));
 

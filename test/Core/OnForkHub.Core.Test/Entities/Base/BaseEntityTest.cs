@@ -8,7 +8,7 @@ public class BaseEntityTest
     public void CreatedAtShouldNotBeDefaultWhenInstantiatingEntity()
     {
         var entity = new ValidEntityTestFixture();
-        var result = new CustomValidationResult();
+        var result = new ValidationResult();
         result.BeValid();
         entity.CreatedAt.Should().NotBe(default).And.BeIn(DateTimeKind.Utc);
     }
@@ -24,7 +24,7 @@ public class BaseEntityTest
         var creationDate = DateTime.UtcNow;
         var entity = new ValidEntityTestFixture(id, creationDate);
 
-        var result = new CustomValidationResult();
+        var result = new ValidationResult();
         result.BeValid();
         entity.Id.Should().Be(id);
         entity.CreatedAt.Should().Be(creationDate);
@@ -101,7 +101,7 @@ public class BaseEntityTest
             updates.Add(entity.UpdatedAt);
         }
 
-        var result = new CustomValidationResult();
+        var result = new ValidationResult();
         result.BeValid();
 
         updates

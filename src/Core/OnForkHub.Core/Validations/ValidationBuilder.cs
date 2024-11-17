@@ -4,7 +4,7 @@ namespace OnForkHub.Core.Validations;
 
 public class ValidationBuilder : IValidationBuilder
 {
-    private readonly CustomValidationResult _result = new();
+    private readonly ValidationResult _result = new();
     private string _currentField = string.Empty;
     private object? _currentValue;
 

@@ -29,7 +29,7 @@ public abstract class BaseEntity : IAggregateRoot
 
     private void ValidateInitialState()
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
 
         validationResult.AddErrorIf(
             CreatedAt == default || CreatedAt.Kind != DateTimeKind.Utc,
@@ -45,7 +45,7 @@ public abstract class BaseEntity : IAggregateRoot
 
     private static void ValidateConstructorParameters(long id, DateTime createdAt, DateTime? updatedAt)
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
 
         validationResult.AddErrorIf(id < 0, "Id cannot be negative", nameof(Id));
 
@@ -68,7 +68,7 @@ public abstract class BaseEntity : IAggregateRoot
 
     protected virtual void ValidateEntityState()
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
 
         validationResult.AddErrorIf(
             CreatedAt == default || CreatedAt.Kind != DateTimeKind.Utc,

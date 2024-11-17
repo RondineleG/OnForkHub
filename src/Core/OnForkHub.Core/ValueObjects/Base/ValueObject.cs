@@ -27,6 +27,6 @@ public abstract class ValueObject
         return GetEqualityComponents().Select(x => (x != null) ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
     }
 
-    public abstract CustomValidationResult Validate();
+    public abstract ValidationResult Validate();
     protected abstract IEnumerable<object> GetEqualityComponents();
 }

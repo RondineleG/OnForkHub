@@ -2,14 +2,14 @@ using OnForkHub.Core.Interfaces.Validations;
 
 namespace OnForkHub.Core.Validations.Base;
 
-public abstract class ValidationBase<T>(IValidationBuilder builder) : IEntityValidator<T>
+public abstract class BaseValidation<T>(IValidationBuilder builder) : IEntityValidator<T>
     where T : BaseEntity
 {
     private readonly IValidationBuilder _builder = builder ?? throw new ArgumentNullException(nameof(builder));
 
     public virtual IValidationResult Validate(T entity)
     {
-        return entity == null ? CustomValidationResult.Failure(message: "Category cannot be null", field: nameof(Category)) : ValidateEntity(entity);
+        return entity == null ? ValidationResult.Failure(message: $"{typeof(T).Name} cannot be null", field: nameof(T)) : ValidateEntity(entity);
     }
 
     public virtual IValidationResult ValidateUpdate(T entity)

@@ -31,7 +31,7 @@ public abstract class BaseService
     protected async Task<RequestResult<T>> ExecuteAsync<T>(
         T entity,
         Func<T, Task<RequestResult<T>>> operation,
-        Func<T, CustomValidationResult> validationFunc
+        Func<T, Core.Validations.ValidationResult> validationFunc
     )
         where T : class
     {

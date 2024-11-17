@@ -47,9 +47,9 @@ public class ServiceBaseTest
         result.Data.Should().Be(entity);
     }
 
-    private static CustomValidationResult ValidateTestEntity(TestEntity entity)
+    private static ValidationResult ValidateTestEntity(TestEntity entity)
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
         validationResult.AddErrorIfNullOrWhiteSpace(entity.Name, "Name is required", nameof(entity.Name));
         return validationResult;
     }
@@ -64,7 +64,7 @@ public class ServiceBaseTest
         public Task<RequestResult<T>> ExecuteOperationAsync<T>(
             T entity,
             Func<T, Task<RequestResult<T>>> operation,
-            Func<T, CustomValidationResult> validationFunc
+            Func<T, ValidationResult> validationFunc
         )
             where T : class
         {

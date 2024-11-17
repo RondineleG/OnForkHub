@@ -133,7 +133,7 @@ public class Video : BaseEntity
     {
         base.ValidateEntityState();
 
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
 
         validationResult
             .AddErrorIfNullOrWhiteSpace(Description, VideoResources.DescriptionRequired, nameof(Description))
