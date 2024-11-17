@@ -3,37 +3,19 @@ using OnForkHub.Core.Validations.Base;
 
 namespace OnForkHub.Core.Validations;
 
-public class CategoryValidationService : BaseValidationService, ICategoryValidationService
+public class CategoryValidationService(IValidationBuilder builder) : ValidationBase<Category>(builder)
 {
-    public CustomValidationResult Validate(Category entity)
+    protected override IValidationResult ValidateEntity(Category entity)
     {
-        return entity is not null ? ValidateCategory(entity) : new CustomValidationResult().AddError("Category cannot be null", nameof(Category));
-    }
+        var result = new CustomValidationResult();
 
-    public CustomValidationResult ValidateCategory(Category category)
-    {
-        var validationResult = new CustomValidationResult();
+        result.Merge(ValidateStringLength(entity.Name.Value, nameof(entity.Name), 100));
 
-        if (category is null)
+        if (entity.Description?.Length > 200)
         {
-            validationResult.AddError("Category cannot be null", nameof(Category));
-            return validationResult;
+            result.AddError("Description cannot exceed 200 characters", nameof(entity.Description));
         }
 
-        validationResult.AddErrorIf(category.Description?.Length > 200, "Description cannot exceed 200 characters", nameof(category.Description));
-
-        validationResult.Merge(category.Name.Validate());
-
-        return validationResult;
-    }
-
-    public CustomValidationResult ValidateCategoryUpdate(Category category)
-    {
-        var validationResult = ValidateCategory(category);
-        if (category.Id <= 0)
-        {
-            validationResult.AddError("Category ID is required for updates", nameof(category.Id));
-        }
-        return validationResult;
+        return result;
     }
 }

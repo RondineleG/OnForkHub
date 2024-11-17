@@ -1,70 +1,43 @@
+using OnForkHub.Core.Interfaces.Validations;
+
 namespace OnForkHub.Application.Services;
 
-public class CategoryService(ICategoryRepository categoryRepository, ICategoryValidationService validationService) : BaseService, ICategoryService
+public class CategoryService(ICategoryRepository categoryRepository, IEntityValidator<Category> validator) : BaseService, ICategoryService
 {
     private readonly ICategoryRepository _categoryRepository = categoryRepository;
-    private readonly ICategoryValidationService _validationService = validationService;
+    private readonly IEntityValidator<Category> _validator = validator;
 
-    public async Task<RequestResult<Category>> CreateAsync(Category category)
+    public Task<RequestResult<Category>> CreateAsync(Category category)
     {
-        if (category is null)
-        {
-            return RequestResult<Category>.WithError("Category cannot be null");
-        }
-
-        var validationResult = _validationService.Validate(category);
-        if (!validationResult.IsValid)
-        {
-            var validations = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
-
-            return RequestResult<Category>.WithValidations(validations);
-        }
-
-        return await ExecuteAsync(category, _categoryRepository.CreateAsync, ValidateCategory);
+        return ExecuteWithValidationAsync(category, _categoryRepository.CreateAsync, _validator);
     }
 
-    public async Task<RequestResult<Category>> UpdateAsync(Category category)
+    public Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        if (category is null)
-        {
-            return RequestResult<Category>.WithError("Category cannot be null");
-        }
-
-        var validationResult = _validationService.ValidateCategoryUpdate(category);
-        if (!validationResult.IsValid)
-        {
-            var validations = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
-
-            return RequestResult<Category>.WithValidations(validations);
-        }
-
-        return await ExecuteAsync(category, _categoryRepository.UpdateAsync, ValidateCategory);
+        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validator, isUpdate: true);
     }
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)
     {
-        var categoryResult = await GetByIdAsync(id);
-        return !categoryResult.Status.Equals(EResultStatus.Success) ? categoryResult : await ExecuteAsync(() => _categoryRepository.DeleteAsync(id));
+        return await ExecuteAsync(async () =>
+        {
+            var categoryResult = await _categoryRepository.GetByIdAsync(id);
+
+            return !categoryResult.Status.Equals(EResultStatus.Success) ? categoryResult : await _categoryRepository.DeleteAsync(id);
+        });
     }
 
-    public async Task<RequestResult<Category>> GetByIdAsync(long id)
+    public Task<RequestResult<Category>> GetByIdAsync(long id)
     {
-        return await ExecuteAsync(() => _categoryRepository.GetByIdAsync(id));
+        return ExecuteAsync(async () =>
+        {
+            var result = await _categoryRepository.GetByIdAsync(id);
+            return !result.Status.Equals(EResultStatus.Success) ? RequestResult<Category>.WithError($"Category with id {id} not found") : result;
+        });
     }
 
-    public async Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size)
+    public Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size)
     {
-        return await ExecuteAsync(() => _categoryRepository.GetAsync(page, size));
-    }
-
-    private static CustomValidationResult ValidateCategory(Category category)
-    {
-        var validationResult = new CustomValidationResult();
-
-        validationResult.AddErrorIf(category.Description?.Length > 200, "Description cannot exceed 200 characters", nameof(category.Description));
-
-        validationResult.Merge(category.Name.Validate());
-
-        return validationResult;
+        return ExecuteAsync(async () => await _categoryRepository.GetAsync(page, size));
     }
 }

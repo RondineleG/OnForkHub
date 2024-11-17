@@ -21,6 +21,30 @@ public sealed class CustomValidationResult : IValidationResult
 
     public string ErrorMessage => string.Join("; ", _errors.Select(e => string.IsNullOrEmpty(e.Field) ? e.Message : $"{e.Field}: {e.Message}"));
 
+    public IValidationResult AddError(string message, string field = "")
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+        _errors.Add(new ValidationErrorMessage(message, field));
+        return this;
+    }
+
+    public IValidationResult Merge(IValidationResult other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+
+        foreach (var error in other.Errors)
+        {
+            _errors.Add(error);
+        }
+
+        foreach (var meta in other.Metadata)
+        {
+            _metadata[meta.Key] = meta.Value;
+        }
+
+        return this;
+    }
+
     public static ValidationBuilder WithField()
     {
         return new();
@@ -34,6 +58,13 @@ public sealed class CustomValidationResult : IValidationResult
     public static CustomValidationResult Success()
     {
         return new();
+    }
+
+    public static CustomValidationResult Failure(string message, string field)
+    {
+        var result = new CustomValidationResult();
+        result.AddError(message, field);
+        return result;
     }
 
     public static CustomValidationResult Failure(string message, string field = "", [CallerMemberName] string? source = null)

@@ -54,21 +54,21 @@ public class ServiceBaseTest
         return validationResult;
     }
 
-    private class TestService : BaseService
+    public class TestService : BaseService
     {
-        public async Task<RequestResult<T>> ExecuteOperationAsync<T>(Func<Task<RequestResult<T>>> operation)
+        public Task<RequestResult<T>> ExecuteOperationAsync<T>(Func<Task<RequestResult<T>>> operation)
         {
-            return await ExecuteAsync(operation);
+            return ExecuteAsync(operation);
         }
 
-        public async Task<RequestResult<T>> ExecuteOperationAsync<T>(
+        public Task<RequestResult<T>> ExecuteOperationAsync<T>(
             T entity,
             Func<T, Task<RequestResult<T>>> operation,
             Func<T, CustomValidationResult> validationFunc
         )
             where T : class
         {
-            return await ExecuteAsync(entity, operation, validationFunc);
+            return ExecuteAsync(entity, operation, validationFunc);
         }
     }
 

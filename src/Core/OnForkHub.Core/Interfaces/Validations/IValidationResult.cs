@@ -7,6 +7,10 @@ public interface IValidationResult
     IReadOnlyCollection<ValidationErrorMessage> Errors { get; }
     IDictionary<string, object> Metadata { get; }
     string ErrorMessage { get; }
+
+    IValidationResult AddError(string message, string field = "");
+    IValidationResult Merge(IValidationResult other);
+
     void ThrowIfInvalid(string? customMessage = null);
     Task ThrowIfInvalidAsync(string? customMessage = null);
     T? GetMetadata<T>(string key)

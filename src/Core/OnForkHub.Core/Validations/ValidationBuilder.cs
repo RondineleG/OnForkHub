@@ -19,7 +19,7 @@ public class ValidationBuilder : IValidationBuilder
     {
         if (_currentValue is null)
         {
-            _result.AddError(message ?? $"{_currentField} é obrigatório", _currentField);
+            _result.AddError(message ?? $"{_currentField} is required", _currentField);
         }
         return this;
     }

@@ -3,13 +3,13 @@ namespace OnForkHub.Application.Test.Services;
 public class CategoryServiceTest
 {
     private readonly ICategoryRepository _categoryRepository;
-    private readonly ICategoryValidationService _validationService;
+    private readonly IEntityValidator<Category> _validationService;
     private readonly CategoryService _categoryService;
 
     public CategoryServiceTest()
     {
         _categoryRepository = Substitute.For<ICategoryRepository>();
-        _validationService = Substitute.For<ICategoryValidationService>();
+        _validationService = Substitute.For<IEntityValidator<Category>>();
         _categoryService = new CategoryService(_categoryRepository, _validationService);
     }
 
@@ -46,7 +46,7 @@ public class CategoryServiceTest
         var validationResult = new CustomValidationResult();
         validationResult.AddError("Test error", "TestField");
 
-        _validationService.ValidateCategoryUpdate(Arg.Any<Category>()).Returns(validationResult);
+        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(validationResult);
 
         var result = await _categoryService.UpdateAsync(category);
 
@@ -54,7 +54,7 @@ public class CategoryServiceTest
         result.Validations.Should().Contain(v => v.Description == "Test error" && v.PropertyName == "TestField");
 
         await _categoryRepository.DidNotReceive().UpdateAsync(Arg.Any<Category>());
-        _validationService.Received(1).ValidateCategoryUpdate(Arg.Is<Category>(c => c == category));
+        _validationService.Received(1).ValidateUpdate(Arg.Is<Category>(c => c == category));
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class CategoryServiceTest
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        _validationService.ValidateCategoryUpdate(Arg.Any<Category>()).Returns(new CustomValidationResult());
+        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(new CustomValidationResult());
 
         _categoryRepository.UpdateAsync(category).Returns(RequestResult<Category>.Success(category));
 
@@ -75,7 +75,7 @@ public class CategoryServiceTest
         result.Data.Should().Be(category);
 
         await _categoryRepository.Received(1).UpdateAsync(Arg.Is<Category>(c => c == category));
-        _validationService.Received(1).ValidateCategoryUpdate(Arg.Is<Category>(c => c == category));
+        _validationService.Received(1).ValidateUpdate(Arg.Is<Category>(c => c == category));
     }
 
     [Fact]
@@ -162,11 +162,15 @@ public class CategoryServiceTest
     public async Task ShouldHandleNullCategoryInUpdate()
     {
         Category? category = null;
+
         var result = await _categoryService.UpdateAsync(category!);
-        result.Status.Should().Be(EResultStatus.HasError);
-        result.RequestError.Should().NotBeNull();
-        result.RequestError!.Description.Should().Contain("Category cannot be null");
+
+        result.Status.Should().Be(EResultStatus.HasValidation);
+        result.Validations.Should().NotBeEmpty();
+        result.Validations.Should().Contain(v => v.Description == "Category cannot be null" && v.PropertyName == "Category");
+
         await _categoryRepository.DidNotReceive().UpdateAsync(Arg.Any<Category>());
-        _validationService.DidNotReceive().ValidateCategoryUpdate(Arg.Any<Category>());
+
+        _validationService.DidNotReceive().ValidateUpdate(Arg.Any<Category>());
     }
 }

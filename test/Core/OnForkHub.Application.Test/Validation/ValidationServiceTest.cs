@@ -6,11 +6,12 @@ public class ValidationServiceTest
 {
     private readonly BaseValidationService _baseValidationService;
     private readonly CategoryValidationService _categoryValidationService;
+    private readonly ValidationBuilder builder = new();
 
     public ValidationServiceTest()
     {
         _baseValidationService = new TestValidationService();
-        _categoryValidationService = new CategoryValidationService();
+        _categoryValidationService = new CategoryValidationService(builder);
     }
 
     [Fact]
@@ -64,7 +65,7 @@ public class ValidationServiceTest
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        var validationResult = _categoryValidationService.ValidateCategory(category);
+        var validationResult = _categoryValidationService.Validate(category);
 
         validationResult.IsValid.Should().BeTrue();
         validationResult.Errors.Should().BeEmpty();
@@ -72,21 +73,8 @@ public class ValidationServiceTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Category: Should fail validation for null category")]
-    public void CategoryValidation_ShouldFailValidationForNullCategory()
-    {
-        Category? category = null;
-
-        var validationResult = _categoryValidationService.ValidateCategory(category!);
-
-        validationResult.IsValid.Should().BeFalse();
-        validationResult.Errors.Should().Contain(e => e.Message == "Category cannot be null" && e.Field == nameof(Category));
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Category: Should fail validation for long description")]
-    public void CategoryValidation_ShouldFailValidationForLongDescription()
+    public void CategoryValidationShouldFailValidationForLongDescription()
     {
         var name = Name.Create("Test Category");
         var longDescription = new string('A', 201);
@@ -95,7 +83,7 @@ public class ValidationServiceTest
 
         typeof(Category).GetProperty(nameof(Category.Description))!.SetValue(category, longDescription);
 
-        var validationResult = _categoryValidationService.ValidateCategory(category);
+        var validationResult = _categoryValidationService.Validate(category);
 
         validationResult.IsValid.Should().BeFalse();
         validationResult
@@ -106,12 +94,12 @@ public class ValidationServiceTest
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Category: Should validate category update with valid data")]
-    public void CategoryValidation_ShouldValidateCategoryUpdateWithValidData()
+    public void CategoryValidationShouldValidateCategoryUpdateWithValidData()
     {
         var name = Name.Create("Test Category");
         var category = Category.Load(1, name, "Test Description", DateTime.UtcNow).Data!;
 
-        var validationResult = _categoryValidationService.ValidateCategoryUpdate(category);
+        var validationResult = _categoryValidationService.Validate(category);
 
         validationResult.IsValid.Should().BeTrue();
         validationResult.Errors.Should().BeEmpty();
@@ -120,14 +108,29 @@ public class ValidationServiceTest
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Category: Should fail validation for update without ID")]
-    public void CategoryValidation_ShouldFailValidationForUpdateWithoutId()
+    public void CategoryValidationShouldFailValidationForUpdateWithoutId()
     {
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        var validationResult = _categoryValidationService.ValidateCategoryUpdate(category);
+        var validationResult = _categoryValidationService.ValidateUpdate(category);
 
         validationResult.IsValid.Should().BeFalse();
         validationResult.Errors.Should().Contain(e => e.Message == "Category ID is required for updates" && e.Field == "Id");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Category: Should fail validation for null category")]
+    public void CategoryValidationShouldFailValidationForNullCategory()
+    {
+        Category? category = null;
+
+        var validationResult = _categoryValidationService.Validate(category!);
+
+        validationResult.IsValid.Should().BeFalse();
+        validationResult.Errors.Should().Contain(e => e.Message == "Category cannot be null" && e.Field == nameof(Category));
+
+        validationResult.Errors.Should().HaveCount(1);
     }
 }
