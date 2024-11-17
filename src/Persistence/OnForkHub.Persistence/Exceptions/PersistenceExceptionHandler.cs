@@ -4,12 +4,9 @@ public static class PersistenceExceptionHandler
 {
     public static PersistenceException HandleDbException(Exception exception, string operation, string entityName)
     {
-        if (exception is DbUpdateException dbUpdateException)
-        {
-            return HandleDbUpdateException(dbUpdateException, operation, entityName);
-        }
-
-        return new DatabaseOperationException(operation, exception.Message);
+        return exception is DbUpdateException dbUpdateException
+            ? HandleDbUpdateException(dbUpdateException, operation, entityName)
+            : new DatabaseOperationException(operation, exception.Message);
     }
 
     private static PersistenceException HandleDbUpdateException(DbUpdateException exception, string operation, string entityName)
@@ -58,21 +55,24 @@ public static class PersistenceExceptionHandler
     {
         try
         {
-            if (errorMessage.Contains("column '"))
+            if (errorMessage.Contains('\'', StringComparison.Ordinal))
             {
-                var start = errorMessage.IndexOf("column '") + 8;
-                var end = errorMessage.IndexOf("'", start);
+                var start = errorMessage.IndexOf("column '", StringComparison.Ordinal) + 8;
+                var end = errorMessage.IndexOf('\'', start);
                 return errorMessage[start..end];
             }
         }
-        catch
-        {
-            // Em caso de erro na extração do nome do campo, retorna unknown
-        }
+        catch { }
         return "unknown field";
     }
 
-    public static string EntityNotFound(string entityName, long id) => $"{entityName} not found with ID: {id}.";
+    public static string EntityNotFound(string entityName, long id)
+    {
+        return $"{entityName} not found with ID: {id}.";
+    }
 
-    public static string UnexpectedError(string operation, string message) => $"Unexpected error when {operation}: {message}";
+    public static string UnexpectedError(string operation, string message)
+    {
+        return $"Unexpected error when {operation}: {message}";
+    }
 }

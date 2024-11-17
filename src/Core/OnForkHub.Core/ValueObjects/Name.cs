@@ -20,15 +20,14 @@ public class Name : ValueObject
         return new Name(value);
     }
 
-    public override CustomValidationResult Validate()
+    public override ValidationResult Validate()
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
 
         validationResult
             .AddErrorIfNullOrWhiteSpace(Value, NameResources.NameIsRequired, nameof(Name))
             .AddErrorIf(Value.Length < MinNameLength, NameResources.NameMinLength, nameof(Name))
             .AddErrorIf(Value.Length > MaxNameLength, NameResources.NameMaxLength, nameof(Name));
-
         return validationResult;
     }
 

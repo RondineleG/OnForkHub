@@ -2,62 +2,81 @@ namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity
 {
-    private Category() { }
+    private Category()
+        : base() { }
 
-    public string Description { get; private set; } = string.Empty;
+    protected Category(long id, DateTime createdAt, DateTime? updatedAt = null)
+        : base(id, createdAt, updatedAt) { }
 
     public Name Name { get; private set; } = null!;
+    public string Description { get; private set; } = string.Empty;
 
     public static RequestResult<Category> Create(Name name, string description)
     {
-        var category = new Category { Name = name, Description = description };
+        try
+        {
+            var category = new Category { Name = name, Description = description };
 
-        var validationResult = category.Validate();
-        return (validationResult.Errors.Count > 0)
-            ? RequestResult<Category>.WithError(validationResult.ErrorMessage)
-            : RequestResult<Category>.Success(category);
+            category.ValidateEntityState();
+            return RequestResult<Category>.Success(category);
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult<Category>.WithError(ex.Message);
+        }
     }
 
     public static RequestResult<Category> Load(long id, Name name, string description, DateTime createdAt, DateTime? updatedAt = null)
     {
-        var category = new Category { Name = name, Description = description };
-
-        var validationResult = category.Validate();
-        if (validationResult.Errors.Count > 0)
+        try
         {
-            return RequestResult<Category>.WithError(validationResult.ErrorMessage);
-        }
+            var category = new Category(id, createdAt, updatedAt) { Name = name, Description = description };
 
-        category.SetId(id, createdAt, updatedAt);
-        return RequestResult<Category>.Success(category);
+            category.ValidateEntityState();
+            return RequestResult<Category>.Success(category);
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult<Category>.WithError(ex.Message);
+        }
     }
 
     public RequestResult UpdateCategory(Name name, string description)
     {
-        Name = name;
-        Description = description;
-
-        var validationResult = Validate();
-        if (validationResult.Errors.Count > 0)
+        try
         {
-            return RequestResult.WithError(validationResult.ErrorMessage);
+            Name = name;
+            Description = description;
+
+            ValidateEntityState();
+            Update();
+            return RequestResult.Success();
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult.WithError(ex.Message);
+        }
+    }
+
+    protected override void ValidateEntityState()
+    {
+        base.ValidateEntityState();
+
+        var validationResult = new ValidationResult();
+
+        validationResult.AddErrorIfNull(Name, "Name is required", nameof(Name));
+        if (Name != null)
+        {
+            validationResult.Merge(Name.Validate());
         }
 
-        Update();
-        return RequestResult.Success();
-    }
+        validationResult
+            .AddErrorIfNullOrWhiteSpace(Description, "Description is required", nameof(Description))
+            .AddErrorIf(Description?.Length > 200, "Description cannot exceed 200 characters", nameof(Description));
 
-    public override CustomValidationResult Validate()
-    {
-        var validationResult = Name.Validate();
-        return validationResult;
-    }
-
-    private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
-    {
-        DomainException.ThrowErrorWhen(() => id <= 0, BaseEntityResources.IdGreaterThanZero);
-        Id = id;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
+        if (validationResult.HasError)
+        {
+            throw new DomainException(validationResult.ErrorMessage);
+        }
     }
 }
