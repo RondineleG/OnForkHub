@@ -21,7 +21,7 @@ public class NameTest
     [DisplayName("Should throw DomainException for null or empty name")]
     [InlineData(null)]
     [InlineData("")]
-    public void ShouldThrowDomainExceptionForNullOrEmptyName(string name)
+    public void ShouldThrowDomainExceptionForNullOrEmptyName(string? name)
     {
         Action act = () => Name.Create(name);
 

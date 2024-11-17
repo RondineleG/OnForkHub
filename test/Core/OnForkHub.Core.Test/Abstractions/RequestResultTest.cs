@@ -28,13 +28,12 @@ public class RequestResultTest
     public void ShouldAddErrorWithListAndException()
     {
         var errors = new List<string> { "Error 1", "Error 2" };
-        var exception = new Exception("Exception error");
-
+        var exception = new InvalidOperationException("Exception error");
         var result = RequestResult.WithError(errors);
         result.AddError(exception.Message);
 
         result.Status.Should().Be(EResultStatus.HasError);
-        result.GeneralErrors.Should().Contain(new[] { "Error 1", "Error 2", exception.Message });
+        result.GeneralErrors.Should().Contain(["Error 1", "Error 2", exception.Message]);
     }
 
     [Fact]

@@ -1,10 +1,25 @@
 namespace OnForkHub.Core.Validations;
 
-public sealed class ValidationErrorMessage(string message, string field = "")
+public sealed class ValidationErrorMessage
 {
-    public string Field { get; } = field ?? string.Empty;
+    public ValidationErrorMessage(string message, string field = "")
+    {
+        Message = message;
+        Field = field;
+    }
 
-    public string Message { get; } = message ?? string.Empty;
+    public ValidationErrorMessage(string message, string field, string? source = null)
+    {
+        Message = message;
+        Field = field;
+        Source = source ?? string.Empty;
+        Timestamp = DateTime.UtcNow;
+    }
+
+    public string Source { get; } = string.Empty;
+    public string Field { get; } = string.Empty;
+
+    public string Message { get; } = string.Empty;
 
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 
@@ -16,6 +31,7 @@ public sealed class ValidationErrorMessage(string message, string field = "")
                 Field,
                 Message,
                 Timestamp,
+                Source,
             }
         );
     }

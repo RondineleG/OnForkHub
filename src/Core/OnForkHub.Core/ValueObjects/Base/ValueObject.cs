@@ -2,7 +2,7 @@ namespace OnForkHub.Core.ValueObjects.Base;
 
 public abstract class ValueObject
 {
-    public static bool EqualOperator(ValueObject left, ValueObject right)
+    public static bool EqualOperator(ValueObject? left, ValueObject? right)
     {
         return !((left is null) ^ (right is null)) && ((left is null) || left.Equals(right));
     }
@@ -27,6 +27,6 @@ public abstract class ValueObject
         return GetEqualityComponents().Select(x => (x != null) ? x.GetHashCode() : 0).Aggregate((x, y) => x ^ y);
     }
 
-    public abstract CustomValidationResult Validate();
+    public abstract ValidationResult Validate();
     protected abstract IEnumerable<object> GetEqualityComponents();
 }

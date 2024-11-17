@@ -7,8 +7,8 @@ public class ValueObjectTests
     [DisplayName("Should consider both objects equal when both are null")]
     public void ShouldConsiderBothObjectsEqualWhenBothAreNull()
     {
-        SampleValueObjectTestFixture obj1 = null;
-        SampleValueObjectTestFixture obj2 = null;
+        SampleValueObjectTestFixture? obj1 = null;
+        SampleValueObjectTestFixture? obj2 = null;
 
         ValueObject.EqualOperator(obj1, obj2).Should().BeTrue();
     }

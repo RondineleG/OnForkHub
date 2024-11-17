@@ -10,17 +10,17 @@ public class DomainException(string message, string errorCode = "DOMAIN_ERROR") 
         }
     }
 
-    public static void ThrowWhenInvalid(params CustomValidationResult[] validations)
+    public static void ThrowWhenInvalid(params ValidationResult[] validations)
     {
-        var combinedResult = CustomValidationResult.Combine(validations);
+        var combinedResult = ValidationResult.Combine(validations);
         if (combinedResult.Errors.Count > 0)
         {
             throw new DomainException(combinedResult.ErrorMessage, "DOMAIN_VALIDATION_ERROR");
         }
     }
 
-    public static CustomValidationResult Validate(Func<bool> hasError, string message)
+    public static ValidationResult Validate(Func<bool> hasError, string message)
     {
-        return CustomValidationResult.Validate(hasError, message);
+        return ValidationResult.Validate(hasError, message);
     }
 }

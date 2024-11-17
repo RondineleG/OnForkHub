@@ -6,7 +6,7 @@ public class SampleValueObjectTestFixture(int property1, string property2) : Val
 
     public string Property2 { get; } = property2;
 
-    public override CustomValidationResult Validate()
+    public override ValidationResult Validate()
     {
         throw new NotImplementedException();
     }

@@ -1,32 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
 
     <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="6.*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.10" />
-        <PackageReference Include="NSubstitute" Version="5.*" />
-        <PackageReference Include="xunit" Version="2.*" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     </ItemGroup>
 
+
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-      <ProjectReference Include="..\..\..\src\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
-      <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
+        <ProjectReference Include="..\..\..\src\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+        <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
+        <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
     </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
 
 </Project>
