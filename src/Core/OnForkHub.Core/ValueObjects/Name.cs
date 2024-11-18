@@ -25,9 +25,9 @@ public class Name : ValueObject
         var validationResult = new ValidationResult();
 
         validationResult
-            .AddErrorIfNullOrWhiteSpace(Value, NameResources.NameIsRequired, nameof(Name))
-            .AddErrorIf(Value.Length < MinNameLength, NameResources.NameMinLength, nameof(Name))
-            .AddErrorIf(Value.Length > MaxNameLength, NameResources.NameMaxLength, nameof(Name));
+            .AddErrorIf(() => string.IsNullOrWhiteSpace(Value), NameResources.NameIsRequired, nameof(Name))
+            .AddErrorIf(() => Value.Length < MinNameLength, NameResources.NameMinLength, nameof(Name))
+            .AddErrorIf(() => Value.Length > MaxNameLength, NameResources.NameMaxLength, nameof(Name));
         return validationResult;
     }
 

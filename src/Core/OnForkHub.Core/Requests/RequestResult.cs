@@ -116,7 +116,12 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
     public static RequestResult WithValidations(params ValidationErrorMessage[] validations)
     {
         var result = new RequestResult { Status = EResultStatus.HasValidation };
-        result.ValidationResult.AddErrors(validations.Select(v => (v.Message, v.Field)));
+
+        foreach (var validation in validations)
+        {
+            result.ValidationResult.AddError(validation.Message, validation.Field, validation.Source);
+        }
+
         return result;
     }
 
@@ -270,7 +275,12 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
     public static new RequestResult<T> WithValidations(params ValidationErrorMessage[] validations)
     {
         var result = new RequestResult<T> { Status = EResultStatus.HasValidation };
-        result.ValidationResult.AddErrors(validations.Select(v => (v.Message, v.Field)));
+
+        foreach (var validation in validations)
+        {
+            result.ValidationResult.AddError(validation.Message, validation.Field, validation.Source);
+        }
+
         return result;
     }
 }

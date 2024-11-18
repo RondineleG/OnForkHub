@@ -1,3 +1,5 @@
+using OnForkHub.Core.Interfaces.Validations;
+
 namespace OnForkHub.Core.Exceptions;
 
 public class DomainException(string message, string errorCode = "DOMAIN_ERROR") : CustomException(message, errorCode)
@@ -19,8 +21,8 @@ public class DomainException(string message, string errorCode = "DOMAIN_ERROR") 
         }
     }
 
-    public static ValidationResult Validate(Func<bool> hasError, string message)
+    public static IValidationResult Validate(Func<bool> condition, string message)
     {
-        return ValidationResult.Validate(hasError, message);
+        return ValidationResult.Success().AddErrorIf(condition, message);
     }
 }
