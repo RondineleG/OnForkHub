@@ -2,13 +2,13 @@ namespace OnForkHub.Core.ValueObjects;
 
 public class Title : ValueObject
 {
-    public string Value { get; set; }
-
     private Title(string value)
     {
         Value = value;
         Validate();
     }
+
+    public string Value { get; set; }
 
     public static Title Create(string value)
     {

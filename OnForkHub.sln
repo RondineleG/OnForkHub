@@ -45,8 +45,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Application.Test"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.App", "src\Presentations\OnForkHub.App\OnForkHub.App.csproj", "{4697F5E2-4380-45CA-BEC3-5BA03EE5C8B9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{554BC3EF-5901-4B96-91BD-ECA7D25D9888}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

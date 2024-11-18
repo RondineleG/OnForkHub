@@ -4,4 +4,5 @@ if (!await GitFlowConfiguration.VerifyGitInstallationAsync())
 {
     return;
 }
+
 await GitFlowConfiguration.ApplySharedConfigurationsAsync();

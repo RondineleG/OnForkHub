@@ -2,12 +2,7 @@ namespace OnForkHub.Core.Entities;
 
 public class User : BaseEntity
 {
-    private User()
-    {
-        _videos = [];
-    }
-
-    private readonly List<Video> _videos;
+    private readonly List<Video> _videos = new List<Video>();
 
     public Email Email { get; private set; } = null!;
 

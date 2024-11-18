@@ -4,21 +4,21 @@ namespace OnForkHub.Core.Requests;
 
 public class RequestResult : IRequestValidations, IRequestError, IRequestEntityWarning
 {
+    internal Dictionary<string, List<string>>? _entityErrors;
+
+    internal List<string>? _generalErrors;
+
     public RequestResult()
     {
         Status = EResultStatus.Success;
         ValidationResult = new CustomValidationResult();
     }
 
-    internal Dictionary<string, List<string>>? _entityErrors;
-
-    internal List<string>? _generalErrors;
-
     public DateTime Date { get; set; } = DateTime.Now;
 
-    public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= [];
+    public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= new Dictionary<string, List<string>>();
 
-    public List<string> GeneralErrors => _generalErrors ??= [];
+    public List<string> GeneralErrors => _generalErrors ??= new List<string>();
 
     public string Id { get; set; } = string.Empty;
 
@@ -32,7 +32,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public CustomValidationResult ValidationResult { get; protected set; }
 
-    public IEnumerable<RequestValidation> Validations { get; protected init; } = [];
+    public IEnumerable<RequestValidation> Validations { get; protected init; } = new List<RequestValidation>();
 
     public static RequestResult EntityAlreadyExists(string entity, object id, string description)
     {
@@ -125,9 +125,10 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         Status = EResultStatus.EntityHasError;
         if (!EntityErrors.TryGetValue(entity, out var value))
         {
-            value = [];
+            value = new List<string>();
             EntityErrors[entity] = value;
         }
+
         value.Add(message);
     }
 
@@ -180,21 +181,6 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 {
     public T? Data { get; private init; }
 
-    public static new RequestResult<T> EntityAlreadyExists(string entity, object id, string description)
-    {
-        return CreateEntityError<T>(entity, id, description, EResultStatus.EntityAlreadyExists);
-    }
-
-    public static new RequestResult<T> EntityHasError(string entity, object id, string description)
-    {
-        return CreateEntityError<T>(entity, id, description, EResultStatus.EntityHasError);
-    }
-
-    public static new RequestResult<T> EntityNotFound(string entity, object id, string description)
-    {
-        return CreateEntityError<T>(entity, id, description, EResultStatus.EntityNotFound);
-    }
-
     public static implicit operator RequestResult<T>(T data)
     {
         return Success(data);
@@ -213,6 +199,21 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
     public static implicit operator RequestResult<T>(RequestValidation validation)
     {
         return WithValidations(validation);
+    }
+
+    public static new RequestResult<T> EntityAlreadyExists(string entity, object id, string description)
+    {
+        return CreateEntityError<T>(entity, id, description, EResultStatus.EntityAlreadyExists);
+    }
+
+    public static new RequestResult<T> EntityHasError(string entity, object id, string description)
+    {
+        return CreateEntityError<T>(entity, id, description, EResultStatus.EntityHasError);
+    }
+
+    public static new RequestResult<T> EntityNotFound(string entity, object id, string description)
+    {
+        return CreateEntityError<T>(entity, id, description, EResultStatus.EntityNotFound);
     }
 
     public static RequestResult<T> Success(T data)

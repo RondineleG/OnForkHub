@@ -5,13 +5,13 @@ public class Name : ValueObject
     private const int MinNameLength = 3;
     private const int MaxNameLength = 50;
 
-    public string Value { get; }
-
     private Name(string value)
     {
         Value = value;
         Validate();
     }
+
+    public string Value { get; }
 
     public static Name Create(string value)
     {

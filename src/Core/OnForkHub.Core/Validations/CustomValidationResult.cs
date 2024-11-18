@@ -6,7 +6,7 @@ public sealed class CustomValidationResult
 
     public CustomValidationResult()
     {
-        _errors = [];
+        _errors = new List<ValidationErrorMessage>();
     }
 
     private CustomValidationResult(string errorMessage, string fieldName = "")
@@ -23,6 +23,21 @@ public sealed class CustomValidationResult
 
     public bool IsValid => _errors.Count == 0;
 
+    public static implicit operator bool(CustomValidationResult validation)
+    {
+        return validation?.IsValid ?? false;
+    }
+
+    public static CustomValidationResult operator &(CustomValidationResult left, CustomValidationResult right)
+    {
+        return GetAndOperatorResult(left, right);
+    }
+
+    public static CustomValidationResult operator |(CustomValidationResult left, CustomValidationResult right)
+    {
+        return left.IsValid ? left : right;
+    }
+
     public static CustomValidationResult Combine(params CustomValidationResult[] validations)
     {
         if ((validations == null) || (validations.Length == 0))
@@ -35,17 +50,13 @@ public sealed class CustomValidationResult
         {
             result.Merge(validation);
         }
+
         return result;
     }
 
     public static CustomValidationResult Failure(string errorMessage, string fieldName = "")
     {
         return new CustomValidationResult(errorMessage, fieldName);
-    }
-
-    public static implicit operator bool(CustomValidationResult validation)
-    {
-        return (validation?.IsValid) ?? false;
     }
 
     public static CustomValidationResult Success()
@@ -83,6 +94,7 @@ public sealed class CustomValidationResult
         {
             AddError(errorMessage, fieldName);
         }
+
         return this;
     }
 
@@ -114,6 +126,7 @@ public sealed class CustomValidationResult
         {
             AddError(message, field);
         }
+
         return this;
     }
 
@@ -145,16 +158,6 @@ public sealed class CustomValidationResult
     {
         ThrowIfInvalid();
         return this;
-    }
-
-    public static CustomValidationResult operator &(CustomValidationResult left, CustomValidationResult right)
-    {
-        return GetAndOperatorResult(left, right);
-    }
-
-    public static CustomValidationResult operator |(CustomValidationResult left, CustomValidationResult right)
-    {
-        return left.IsValid ? left : right;
     }
 
     private static CustomValidationResult GetAndOperatorResult(CustomValidationResult left, CustomValidationResult right)
