@@ -17,9 +17,9 @@ public sealed class ValidationErrorMessage
     }
 
     public string Source { get; } = string.Empty;
-    public string Field { get; } = string.Empty;
+    public string Field { get; }
 
-    public string Message { get; } = string.Empty;
+    public string Message { get; }
 
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 

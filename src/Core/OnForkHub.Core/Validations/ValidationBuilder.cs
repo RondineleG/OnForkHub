@@ -2,20 +2,21 @@ using OnForkHub.Core.Interfaces.Validations;
 
 namespace OnForkHub.Core.Validations;
 
-public class ValidationBuilder : IValidationBuilder
+public class ValidationBuilder<T> : IValidationBuilder<T>
+    where T : BaseEntity
 {
     private readonly ValidationResult _result = new();
     private string _currentField = string.Empty;
     private object? _currentValue;
 
-    public IValidationBuilder WithField(string fieldName, object? value = null)
+    public IValidationBuilder<T> WithField(string fieldName, object? value = null)
     {
         _currentField = fieldName;
         _currentValue = value;
         return this;
     }
 
-    public IValidationBuilder NotNull(string? message = null)
+    public IValidationBuilder<T> NotNull(string? message = null)
     {
         if (_currentValue is null)
         {
@@ -24,7 +25,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder NotEmpty(string? message = null)
+    public IValidationBuilder<T> NotEmpty(string? message = null)
     {
         if (_currentValue is string str && string.IsNullOrEmpty(str))
         {
@@ -33,7 +34,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder NotWhiteSpace(string? message = null)
+    public IValidationBuilder<T> NotWhiteSpace(string? message = null)
     {
         if (_currentValue is string str && string.IsNullOrWhiteSpace(str))
         {
@@ -42,7 +43,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder MinLength(int length, string? message = null)
+    public IValidationBuilder<T> MinLength(int length, string? message = null)
     {
         if (_currentValue is string str && str.Length < length)
         {
@@ -51,7 +52,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder MaxLength(int length, string? message = null)
+    public IValidationBuilder<T> MaxLength(int length, string? message = null)
     {
         if (_currentValue is string str && str.Length > length)
         {
@@ -60,7 +61,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder Length(int exactLength, string? message = null)
+    public IValidationBuilder<T> Length(int exactLength, string? message = null)
     {
         if (_currentValue is string str && str.Length != exactLength)
         {
@@ -69,17 +70,17 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder Range<T>(T min, T max, string? message = null)
-        where T : IComparable<T>
+    public IValidationBuilder<T> Range<TRange>(TRange min, TRange max, string? message = null)
+        where TRange : IComparable<TRange>
     {
-        if (_currentValue is T value && (value.CompareTo(min) < 0 || value.CompareTo(max) > 0))
+        if (_currentValue is TRange value && (value.CompareTo(min) < 0 || value.CompareTo(max) > 0))
         {
             _result.AddError(message ?? $"{_currentField} deve estar entre {min} e {max}", _currentField);
         }
         return this;
     }
 
-    public IValidationBuilder Matches(string pattern, string? message = null)
+    public IValidationBuilder<T> Matches(string pattern, string? message = null)
     {
         if (_currentValue is string str && !Regex.IsMatch(str, pattern))
         {
@@ -88,7 +89,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder Custom(Func<object?, bool> validation, string message)
+    public IValidationBuilder<T> Custom(Func<object?, bool> validation, string message)
     {
         if (!validation(_currentValue))
         {
@@ -97,7 +98,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public async Task<IValidationBuilder> CustomAsync(Func<object?, Task<bool>> validation, string message)
+    public async Task<IValidationBuilder<T>> CustomAsync(Func<object?, Task<bool>> validation, string message)
     {
         if (!await validation(_currentValue))
         {
@@ -106,13 +107,13 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public IValidationBuilder WithMetadata<T>(string key, T value)
+    public IValidationBuilder<T> WithMetadata<TMetadata>(string key, TMetadata value)
     {
         _result.Metadata[key] = value!;
         return this;
     }
 
-    public IValidationBuilder Ensure(Func<bool> predicate, string message)
+    public IValidationBuilder<T> Ensure(Func<bool> predicate, string message)
     {
         if (!predicate())
         {
@@ -121,7 +122,7 @@ public class ValidationBuilder : IValidationBuilder
         return this;
     }
 
-    public async Task<IValidationBuilder> EnsureAsync(Func<Task<bool>> predicate, string message)
+    public async Task<IValidationBuilder<T>> EnsureAsync(Func<Task<bool>> predicate, string message)
     {
         if (!await predicate())
         {

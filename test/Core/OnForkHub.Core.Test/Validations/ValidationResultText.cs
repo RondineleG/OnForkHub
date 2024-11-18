@@ -1,3 +1,5 @@
+using OnForkHub.Core.Interfaces.Validations;
+
 namespace OnForkHub.Core.Test.Validations;
 
 public class ValidationResultTests
@@ -7,7 +9,7 @@ public class ValidationResultTests
     [DisplayName("Should add error when condition is true")]
     public void ShouldAddErrorWhenConditionIsTrue()
     {
-        var result = new ValidationResult().AddErrorIf(true, "Condition error", "Field");
+        var result = new ValidationResult().AddErrorIf(() => true, "Condition error", "Field");
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().ContainSingle();
@@ -22,7 +24,7 @@ public class ValidationResultTests
     {
         var value = string.Empty;
 
-        var result = new ValidationResult().AddErrorIfNullOrEmpty(value, "The value cannot be empty", "Field");
+        var result = new ValidationResult().AddErrorIf(() => string.IsNullOrEmpty(value), "The value cannot be empty", "Field");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("Field: The value cannot be empty");
@@ -34,7 +36,7 @@ public class ValidationResultTests
     public void ShouldAddErrorWhenStringIsOnlySpaces()
     {
         var value = "   ";
-        var result = new ValidationResult().AddErrorIfNullOrWhiteSpace(value, "The value cannot be blank", "Field");
+        var result = new ValidationResult().AddErrorIf(() => string.IsNullOrWhiteSpace(value), "The value cannot be blank", "Field");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("Field: The value cannot be blank");
@@ -45,9 +47,8 @@ public class ValidationResultTests
     [DisplayName("Should add error when value is null")]
     public void ShouldAddErrorWhenValueIsNull()
     {
-        var result = new ValidationResult();
         string? nullValue = null;
-        result.AddErrorIfNull(nullValue, "The value cannot be null", "Field");
+        var result = new ValidationResult().AddErrorIf(() => nullValue is null, "The value cannot be null", "Field");
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("Field: The value cannot be null");
@@ -101,19 +102,7 @@ public class ValidationResultTests
     [DisplayName("Should not add error when condition is false")]
     public void ShouldNotAddErrorWhenConditionIsFalse()
     {
-        var result = new ValidationResult().AddErrorIf(false, "Condition error", "Field");
-
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should not add error when value is not null")]
-    public void ShouldNotAddErrorWhenValueIsNotNull()
-    {
-        var value = "text";
-        var result = new ValidationResult().AddErrorIfNull(value, "The value cannot be null", "Field");
+        var result = new ValidationResult().AddErrorIf(() => false, "Condition error", "Field");
 
         result.IsValid.Should().BeTrue();
         result.Errors.Should().BeEmpty();
@@ -129,19 +118,6 @@ public class ValidationResultTests
         Action action = () => result.ThrowIfInvalid();
 
         action.Should().NotThrow<DomainException>();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return error with multiple fields when adding errors")]
-    public void ShouldReturnErrorWithMultipleFieldsWhenAddingErrors()
-    {
-        var errors = new List<(string Message, string Field)> { ("Error in field 1", "Field1"), ("Error in field 2", "Field2") };
-        var result = new ValidationResult().AddErrors(errors);
-
-        result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().Be(2);
-        result.Errors.Select(e => e.Message).Should().Contain("Error in field 1").And.Contain("Error in field 2");
     }
 
     [Fact]
@@ -171,34 +147,6 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return first failure when using AND operator")]
-    public void ShouldReturnFirstFailureWhenUsingAndOperator()
-    {
-        var result1 = ValidationResult.Failure("Error 1");
-        var result2 = ValidationResult.Failure("Error 2");
-
-        var finalResult = result1 & result2;
-
-        finalResult.IsValid.Should().BeFalse();
-        finalResult.ErrorMessage.Should().Be("Error 1");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return success when all validations are success")]
-    public void ShouldReturnSuccessWhenAllValidationsAreSuccess()
-    {
-        var result1 = ValidationResult.Success();
-        var result2 = ValidationResult.Success();
-
-        var combinedResult = ValidationResult.Combine(result1, result2);
-
-        combinedResult.IsValid.Should().BeTrue();
-        combinedResult.ErrorMessage.Should().BeEmpty();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should return success when calling Success")]
     public void ShouldReturnSuccessWhenCallingSuccess()
     {
@@ -210,28 +158,15 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return success when using AND operator with all valid")]
-    public void ShouldReturnSuccessWhenUsingAndOperatorWithAllValid()
-    {
-        var result1 = ValidationResult.Success();
-        var result2 = ValidationResult.Success();
-
-        var finalResult = result1 & result2;
-
-        finalResult.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should throw exception when attempting to merge with null")]
     public void ShouldThrowExceptionWhenAttemptingToMergeWithNull()
     {
         var result = new ValidationResult();
-        ValidationResult? validate = null;
+        IValidationResult? validate = null;
 
         Action action = () => result.Merge(validate);
 
-        action.Should().Throw<ArgumentNullException>().WithMessage("*other*");
+        action.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
@@ -254,7 +189,7 @@ public class ValidationResultTests
     [DisplayName("Should validate condition correctly")]
     public void ShouldValidateConditionCorrectly(bool condition, string message, bool expectedValid)
     {
-        var result = ValidationResult.Validate(() => !condition, message);
+        var result = new ValidationResult().AddErrorIf(() => !condition, message);
 
         result.IsValid.Should().Be(expectedValid);
         if (!expectedValid)

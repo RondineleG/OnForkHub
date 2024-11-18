@@ -52,10 +52,7 @@ public class User : BaseEntity
     {
         try
         {
-            if (video is null)
-            {
-                throw new DomainException(UserResources.AddVideo);
-            }
+            ValidationResult.Success().AddErrorIf(() => video is null, UserResources.AddVideo).ThrowIfInvalid();
 
             _videos.Add(video);
             Update();
@@ -73,7 +70,6 @@ public class User : BaseEntity
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Email = Email.Create(email);
-
             ValidateEntityState();
             Update();
             return RequestResult.Success();
@@ -88,16 +84,16 @@ public class User : BaseEntity
     {
         base.ValidateEntityState();
 
-        var validationResult = new ValidationResult();
+        var validationResult = ValidationResult.Success().AddErrorIf(() => Name is null, "Name is required", nameof(Name));
 
-        validationResult.AddErrorIfNull(Name, "Name is required", nameof(Name));
-        if (Name != null)
+        if (Name is not null)
         {
             validationResult.Merge(Name.Validate());
         }
 
-        validationResult.AddErrorIfNull(Email, "Email is required", nameof(Email));
-        if (Email != null)
+        validationResult.AddErrorIf(() => Email is null, "Email is required", nameof(Email));
+
+        if (Email is not null)
         {
             validationResult.Merge(Email.Validate());
         }

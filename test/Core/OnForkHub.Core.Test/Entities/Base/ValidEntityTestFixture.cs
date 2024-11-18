@@ -9,7 +9,7 @@ public class ValidEntityTestFixture : BaseEntity
         : base(id, createdAt, updatedAt)
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIf(id < 0, "Id cannot be negative", nameof(Id));
+        validationResult.AddErrorIf(() => id < 0, "Id cannot be negative", nameof(Id));
 
         if (validationResult.HasError)
         {

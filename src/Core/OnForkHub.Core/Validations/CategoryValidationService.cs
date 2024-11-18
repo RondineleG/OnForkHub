@@ -1,21 +1,35 @@
 using OnForkHub.Core.Interfaces.Validations;
-using OnForkHub.Core.Validations.Base;
 
 namespace OnForkHub.Core.Validations;
 
-public class CategoryValidationService(IValidationBuilder builder) : BaseValidation<Category>(builder)
+public class CategoryValidationService : ValidationService<Category>
 {
-    protected override IValidationResult ValidateEntity(Category entity)
+    public CategoryValidationService(IValidationBuilder<Category> builder, IEntityValidator<Category> validator)
+        : base(builder, validator)
     {
-        var result = new ValidationResult();
-
-        result.Merge(ValidateStringLength(entity.Name.Value, nameof(entity.Name), 100));
-
-        if (entity.Description?.Length > 200)
+        AddValidation(category =>
         {
-            result.AddError("Description cannot exceed 200 characters", nameof(entity.Description));
-        }
+            var result = ValidationResult.Success();
 
-        return result;
+            result.Merge(
+                ValidateProperty(
+                    category,
+                    c => c.Name,
+                    builder =>
+                        builder.NotNull("Name is required").NotEmpty("Name cannot be empty").MaxLength(100, "Name cannot exceed 100 characters")
+                )
+            );
+
+            if (!string.IsNullOrEmpty(category.Description))
+            {
+                result.Merge(
+                    ValidateProperty(category, c => c.Description, builder => builder.MaxLength(200, "Description cannot exceed 200 characters"))
+                );
+            }
+
+            return result;
+        });
+
+        WithErrorHandler(error => ValidationResult.Failure(error.Message, error.Field));
     }
 }
