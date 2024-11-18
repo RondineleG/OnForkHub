@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Fixtures\" />
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
+</Project>

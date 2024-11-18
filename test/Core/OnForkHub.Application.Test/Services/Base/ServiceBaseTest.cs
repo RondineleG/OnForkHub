@@ -2,13 +2,11 @@ namespace OnForkHub.Application.Test.Services.Base;
 
 public class ServiceBaseTest
 {
-    private readonly IValidationService _validationService;
     private readonly TestService _serviceBase;
 
     public ServiceBaseTest()
     {
-        _validationService = Substitute.For<IValidationService>();
-        _serviceBase = new TestService(_validationService);
+        _serviceBase = new TestService();
     }
 
     [Fact]
@@ -49,28 +47,28 @@ public class ServiceBaseTest
         result.Data.Should().Be(entity);
     }
 
-    private static CustomValidationResult ValidateTestEntity(TestEntity entity)
+    private static ValidationResult ValidateTestEntity(TestEntity entity)
     {
-        var validationResult = new CustomValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(entity.Name, "Name is required", nameof(entity.Name));
+        var validationResult = new ValidationResult();
+        validationResult.AddErrorIf(() => string.IsNullOrWhiteSpace(entity.Name), "Name is required", nameof(entity.Name));
         return validationResult;
     }
 
-    private class TestService(IValidationService validationService) : ServiceBase(validationService)
+    public class TestService : BaseService
     {
-        public async Task<RequestResult<T>> ExecuteOperationAsync<T>(Func<Task<RequestResult<T>>> operation)
+        public Task<RequestResult<T>> ExecuteOperationAsync<T>(Func<Task<RequestResult<T>>> operation)
         {
-            return await ExecuteAsync(operation);
+            return ExecuteAsync(operation);
         }
 
-        public async Task<RequestResult<T>> ExecuteOperationAsync<T>(
+        public Task<RequestResult<T>> ExecuteOperationAsync<T>(
             T entity,
             Func<T, Task<RequestResult<T>>> operation,
-            Func<T, CustomValidationResult> validationFunc
+            Func<T, ValidationResult> validationFunc
         )
             where T : class
         {
-            return await ExecuteAsync(entity, operation, validationFunc);
+            return ExecuteAsync(entity, operation, validationFunc);
         }
     }
 

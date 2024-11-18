@@ -29,8 +29,8 @@ public class DomainExceptionTests
     [DisplayName("ThrowWhenInvalid should not throw exception when there are no errors")]
     public void ThrowWhenInvalidShouldNotThrowExceptionWhenNoErrors()
     {
-        var result1 = CustomValidationResult.Success();
-        var result2 = CustomValidationResult.Success();
+        var result1 = ValidationResult.Success();
+        var result2 = ValidationResult.Success();
 
         Action action = () => DomainException.ThrowWhenInvalid(result1, result2);
 
@@ -42,8 +42,8 @@ public class DomainExceptionTests
     [DisplayName("ThrowWhenInvalid should throw exception with messages for multiple errors")]
     public void ThrowWhenInvalidShouldThrowExceptionWithMessagesForMultipleErrors()
     {
-        var result1 = CustomValidationResult.Failure("Error 1");
-        var result2 = CustomValidationResult.Failure("Error 2");
+        var result1 = ValidationResult.Failure("Error 1");
+        var result2 = ValidationResult.Failure("Error 2");
 
         Action action = () => DomainException.ThrowWhenInvalid(result1, result2);
 
@@ -55,7 +55,7 @@ public class DomainExceptionTests
     [DisplayName("ThrowWhenInvalid with single error should throw exception with error message")]
     public void ThrowWhenInvalidWithSingleErrorShouldThrowExceptionWithErrorMessage()
     {
-        var result = CustomValidationResult.Failure("Single error");
+        var result = ValidationResult.Failure("Single error");
 
         Action action = () => DomainException.ThrowWhenInvalid(result);
 

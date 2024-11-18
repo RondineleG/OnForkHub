@@ -19,9 +19,14 @@ public class Url : ValueObject
         return urlObj;
     }
 
-    public override CustomValidationResult Validate()
+    protected override IEnumerable<object> GetEqualityComponents()
     {
-        var validationResult = new CustomValidationResult();
+        yield return Value.ToLower(CultureInfo.CurrentCulture);
+    }
+
+    public override ValidationResult Validate()
+    {
+        var _validationResult = new ValidationResult();
         DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), UrlResources.UrlInvalid);
 
         var uri = new Uri(Value, UriKind.Absolute);
