@@ -21,14 +21,6 @@ public partial class Email : ValueObject
         return email;
     }
 
-    public override CustomValidationResult Validate()
-    {
-        var regex = MyRegex();
-        DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), EmailResources.InvalidEmail);
-
-        return _validationResult;
-    }
-
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return Value.ToLower(CultureInfo.CurrentCulture);
@@ -44,4 +36,6 @@ public partial class Email : ValueObject
 
         return _validationResult;
     }
+
+
 }

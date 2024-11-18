@@ -26,17 +26,12 @@ public class Url : ValueObject
 
     public override ValidationResult Validate()
     {
-        var _validationResult = new ValidationResult();
+        var validationResult = new ValidationResult();
         DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), UrlResources.UrlInvalid);
 
         var uri = new Uri(Value, UriKind.Absolute);
         DomainException.ThrowErrorWhen(() => (uri.Scheme != Uri.UriSchemeHttp) && (uri.Scheme != Uri.UriSchemeHttps), UrlResources.UrlInvalid);
         validationResult.ThrowIfInvalid();
         return validationResult;
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Value.ToLower(CultureInfo.CurrentCulture);
     }
 }

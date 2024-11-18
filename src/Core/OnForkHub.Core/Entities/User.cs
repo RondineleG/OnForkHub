@@ -9,7 +9,6 @@ public class User : BaseEntity
 
     protected User(long id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
-    private readonly List<Video> _videos = new List<Video>();
 
     public Email Email { get; private set; } = null!;
     public Name Name { get; private set; } = null!;

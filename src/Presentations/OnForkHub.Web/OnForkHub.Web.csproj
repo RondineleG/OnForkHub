@@ -15,7 +15,6 @@
 
     <ItemGroup>
         <Folder Include="wwwroot\Videos\" />
-        <AdditionalFiles Include="..\..\..\stylecop.json" />
     </ItemGroup>
 
 </Project>
