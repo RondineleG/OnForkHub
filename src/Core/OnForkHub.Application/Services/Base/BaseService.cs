@@ -48,7 +48,7 @@ public abstract class BaseService
     protected async Task<RequestResult<T>> ExecuteWithValidationAsync<T>(
         T entity,
         Func<T, Task<RequestResult<T>>> operation,
-        IEntityValidator<T> validator,
+        IValidationService<T> validationService,
         bool isUpdate = false
     )
         where T : BaseEntity
@@ -59,7 +59,7 @@ public abstract class BaseService
             return RequestResult<T>.WithValidations(nullValidation);
         }
 
-        var validationResult = isUpdate ? validator.ValidateUpdate(entity) : validator.Validate(entity);
+        var validationResult = isUpdate ? validationService.ValidateUpdate(entity) : validationService.Validate(entity);
 
         return validationResult.HasError ? CreateErrorResult<T>(validationResult) : await ExecuteAsync(() => operation(entity));
     }
@@ -67,7 +67,7 @@ public abstract class BaseService
     protected async Task<RequestResult<IEnumerable<T>>> ExecuteBatchWithValidationAsync<T>(
         IEnumerable<T> entities,
         Func<IEnumerable<T>, Task<RequestResult<IEnumerable<T>>>> operation,
-        IEntityValidator<T> validator
+        IValidationService<T> validationService
     )
         where T : BaseEntity
     {
@@ -77,7 +77,7 @@ public abstract class BaseService
             return RequestResult<IEnumerable<T>>.WithValidations(nullValidation);
         }
 
-        var validationResults = entities.Select(validator.Validate);
+        var validationResults = entities.Select(validationService.Validate);
         var errors = validationResults.SelectMany(result => result.Errors).ToList();
 
         return errors.Count != 0 ? CreateBatchErrorResult<T>(errors) : await ExecuteAsync(() => operation(entities));

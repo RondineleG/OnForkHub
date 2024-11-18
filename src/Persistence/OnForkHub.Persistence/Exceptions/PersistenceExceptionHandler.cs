@@ -62,8 +62,11 @@ public static class PersistenceExceptionHandler
                 return errorMessage[start..end];
             }
         }
-        catch { }
-        return "unknown field";
+        catch (Exception ex)
+        {
+            return $"unknown field : {ex.Message}";
+        }
+        return $"unknown field : {errorMessage}";
     }
 
     public static string EntityNotFound(string entityName, long id)

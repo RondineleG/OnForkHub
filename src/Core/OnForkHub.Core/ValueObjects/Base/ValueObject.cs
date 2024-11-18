@@ -28,5 +28,6 @@ public abstract class ValueObject
     }
 
     public abstract ValidationResult Validate();
+
     protected abstract IEnumerable<object> GetEqualityComponents();
 }

@@ -50,7 +50,7 @@ public class ServiceBaseTest
     private static ValidationResult ValidateTestEntity(TestEntity entity)
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(entity.Name, "Name is required", nameof(entity.Name));
+        validationResult.AddErrorIf(() => string.IsNullOrWhiteSpace(entity.Name), "Name is required", nameof(entity.Name));
         return validationResult;
     }
 
