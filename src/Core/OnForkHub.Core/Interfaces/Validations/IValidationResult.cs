@@ -16,4 +16,5 @@ public interface IValidationResult
     T? GetMetadata<T>(string key)
         where T : class;
     IValidationResult ThrowIfInvalidAndReturn();
+    Task<ValidationResult> ValidateAsync(Func<Task<bool>> predicate, string message, string field = "");
 }

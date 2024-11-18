@@ -197,4 +197,68 @@ public class ValidationResultTests
             result.ErrorMessage.Should().Be(message);
         }
     }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should add error with source")]
+    public void ShouldAddErrorWithSource()
+    {
+        var result = new ValidationResult().AddError("Error message", "Field", "SourceTest");
+
+        result.Errors.First().Source.Should().Be("SourceTest");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw custom message when invalid")]
+    public void ShouldThrowCustomMessageWhenInvalid()
+    {
+        var result = ValidationResult.Failure("Original error");
+        var customMessage = "Custom error message";
+
+        Action action = () => result.ThrowIfInvalid(customMessage);
+
+        action.Should().Throw<DomainException>().WithMessage(customMessage);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should correctly handle metadata operations")]
+    public void ShouldHandleMetadataOperations()
+    {
+        var result = ValidationResult.Success();
+        var testObject = new { Name = "Test" };
+        result.Metadata["test"] = testObject;
+
+        var retrieved = result.GetMetadata<object>("test");
+
+        retrieved.Should().NotBeNull();
+        result.Metadata.Should().ContainKey("test");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should handle OR operator correctly")]
+    public void ShouldHandleOrOperatorCorrectly()
+    {
+        var success = ValidationResult.Success();
+        var failure = ValidationResult.Failure("Error");
+
+        var result = success | failure;
+
+        result.Should().Be(success);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should handle validation with all components")]
+    public void ShouldHandleCompleteValidation()
+    {
+        var result = ValidationResult.Success().AddError("Error 1", "Field1", "Source1").AddErrorIf(() => true, "Error 2", "Field2");
+
+        result.Errors.Should().HaveCount(2);
+        result.Errors.First().Source.Should().Be("Source1");
+        result.ErrorMessage.Should().Contain("Field1: Error 1");
+        result.ErrorMessage.Should().Contain("Field2: Error 2");
+    }
 }

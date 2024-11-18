@@ -4,5 +4,5 @@ public interface IValidationRule<in T>
     where T : BaseEntity
 {
     string PropertyName { get; }
-    ValidationResult Validate(T entity);
+    IValidationResult Validate(T entity);
 }

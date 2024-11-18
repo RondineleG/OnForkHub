@@ -1,5 +1,3 @@
-using OnForkHub.Core.Interfaces.Validations;
-
 namespace OnForkHub.Core.Validations;
 
 public sealed class ValidationResult : IValidationResult
@@ -123,5 +121,10 @@ public sealed class ValidationResult : IValidationResult
     public static ValidationResult Validate(Func<bool> predicate, string message, string field = "")
     {
         return predicate() ? Failure(message, field) : Success();
+    }
+
+    public async Task<ValidationResult> ValidateAsync(Func<Task<bool>> predicate, string message, string field = "")
+    {
+        return await predicate() ? Failure(message, field) : Success();
     }
 }

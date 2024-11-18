@@ -1,5 +1,3 @@
-using OnForkHub.Core.Interfaces.Validations;
-
 namespace OnForkHub.Core.Validations;
 
 public class ValidationBuilder<T> : IValidationBuilder<T>
@@ -27,9 +25,9 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
 
     public IValidationBuilder<T> NotEmpty(string? message = null)
     {
-        if (_currentValue is string str && string.IsNullOrEmpty(str))
+        if (_currentValue is null || (_currentValue is string str && string.IsNullOrEmpty(str)))
         {
-            _result.AddError(message ?? $"{_currentField} não pode estar vazio", _currentField);
+            _result.AddError(message ?? $"{_currentField} cannot be empty", _currentField);
         }
         return this;
     }
@@ -38,7 +36,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
     {
         if (_currentValue is string str && string.IsNullOrWhiteSpace(str))
         {
-            _result.AddError(message ?? $"{_currentField} não pode estar em branco", _currentField);
+            _result.AddError(message ?? $"{_currentField} cannot be blank", _currentField);
         }
         return this;
     }
@@ -56,7 +54,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
     {
         if (_currentValue is string str && str.Length > length)
         {
-            _result.AddError(message ?? $"{_currentField} deve ter no máximo {length} caracteres", _currentField);
+            _result.AddError(message ?? $"{_currentField} must have at most {length} characters", _currentField);
         }
         return this;
     }
@@ -65,7 +63,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
     {
         if (_currentValue is string str && str.Length != exactLength)
         {
-            _result.AddError(message ?? $"{_currentField} deve ter exatamente {exactLength} caracteres", _currentField);
+            _result.AddError(message ?? $"{_currentField} must have exactly {exactLength} characters", _currentField);
         }
         return this;
     }
@@ -75,7 +73,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
     {
         if (_currentValue is TRange value && (value.CompareTo(min) < 0 || value.CompareTo(max) > 0))
         {
-            _result.AddError(message ?? $"{_currentField} deve estar entre {min} e {max}", _currentField);
+            _result.AddError(message ?? $"{_currentField} must be between {min} and {max}", _currentField);
         }
         return this;
     }
@@ -84,7 +82,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
     {
         if (_currentValue is string str && !Regex.IsMatch(str, pattern))
         {
-            _result.AddError(message ?? $"{_currentField} não está no formato correto", _currentField);
+            _result.AddError(message ?? $"{_currentField} is not in the correct format", _currentField);
         }
         return this;
     }
