@@ -22,5 +22,6 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
+    <AdditionalFiles Include="..\..\..\stylecop.json" />
   </ItemGroup>
 </Project>
