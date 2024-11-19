@@ -4,11 +4,10 @@ public class Video : BaseEntity
 {
     private readonly List<Category> _categories = [];
 
-    private Video()
-        : base() { }
-
-    protected Video(long id, DateTime createdAt, DateTime? updatedAt = null)
-        : base(id, createdAt, updatedAt) { }
+    protected Video() { }
+    public Video(long id, DateTime createdAt, DateTime? updatedAt = null) : base(id, createdAt, updatedAt)
+    {
+    }
 
     public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
     public string Description { get; private set; } = string.Empty;
@@ -70,10 +69,7 @@ public class Video : BaseEntity
     {
         try
         {
-            if (category is null)
-            {
-                throw new DomainException(VideoResources.CategoryCannotBeNull);
-            }
+            ValidationResult.Success().AddErrorIf(() => category is null, VideoResources.CategoryCannotBeNull).ThrowIfInvalid();
 
             if (!_categories.Contains(category))
             {
@@ -93,10 +89,7 @@ public class Video : BaseEntity
     {
         try
         {
-            if (category is null)
-            {
-                throw new DomainException(VideoResources.CategoryCannotBeNull);
-            }
+            ValidationResult.Success().AddErrorIf(() => category is null, VideoResources.CategoryCannotBeNull).ThrowIfInvalid();
 
             if (_categories.Remove(category))
             {
@@ -133,13 +126,13 @@ public class Video : BaseEntity
     {
         base.ValidateEntityState();
 
-        var validationResult = new ValidationResult();
+        var validationResult = ValidationResult.Success();
 
         validationResult
-            .AddErrorIfNullOrWhiteSpace(Description, VideoResources.DescriptionRequired, nameof(Description))
-            .AddErrorIf(Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description))
-            .AddErrorIf(Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description))
-            .AddErrorIf(UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
+            .AddErrorIf(() => string.IsNullOrWhiteSpace(Description), VideoResources.DescriptionRequired, nameof(Description))
+            .AddErrorIf(() => Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description))
+            .AddErrorIf(() => Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description))
+            .AddErrorIf(() => UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
 
         if (Title != null)
         {

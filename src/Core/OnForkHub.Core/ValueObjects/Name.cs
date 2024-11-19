@@ -5,13 +5,13 @@ public class Name : ValueObject
     private const int MinNameLength = 3;
     private const int MaxNameLength = 50;
 
-    public string Value { get; }
-
     private Name(string value)
     {
         Value = value;
         Validate();
     }
+
+    public string Value { get; }
 
     public static Name Create(string value)
     {
@@ -25,9 +25,9 @@ public class Name : ValueObject
         var validationResult = new ValidationResult();
 
         validationResult
-            .AddErrorIfNullOrWhiteSpace(Value, NameResources.NameIsRequired, nameof(Name))
-            .AddErrorIf(Value.Length < MinNameLength, NameResources.NameMinLength, nameof(Name))
-            .AddErrorIf(Value.Length > MaxNameLength, NameResources.NameMaxLength, nameof(Name));
+            .AddErrorIf(() => string.IsNullOrWhiteSpace(Value), NameResources.NameIsRequired, nameof(Name))
+            .AddErrorIf(() => Value.Length < MinNameLength, NameResources.NameMinLength, nameof(Name))
+            .AddErrorIf(() => Value.Length > MaxNameLength, NameResources.NameMaxLength, nameof(Name));
         return validationResult;
     }
 

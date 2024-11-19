@@ -16,7 +16,6 @@ public class Category : BaseEntity
         try
         {
             var category = new Category { Name = name, Description = description };
-
             category.ValidateEntityState();
             return RequestResult<Category>.Success(category);
         }
@@ -47,7 +46,6 @@ public class Category : BaseEntity
         {
             Name = name;
             Description = description;
-
             ValidateEntityState();
             Update();
             return RequestResult.Success();
@@ -62,17 +60,16 @@ public class Category : BaseEntity
     {
         base.ValidateEntityState();
 
-        var validationResult = new ValidationResult();
+        var validationResult = ValidationResult.Success().AddErrorIf(() => Name is null, "Name is required", nameof(Name));
 
-        validationResult.AddErrorIfNull(Name, "Name is required", nameof(Name));
-        if (Name != null)
+        if (Name is not null)
         {
             validationResult.Merge(Name.Validate());
         }
 
         validationResult
-            .AddErrorIfNullOrWhiteSpace(Description, "Description is required", nameof(Description))
-            .AddErrorIf(Description?.Length > 200, "Description cannot exceed 200 characters", nameof(Description));
+            .AddErrorIf(() => string.IsNullOrWhiteSpace(Description), "Description is required", nameof(Description))
+            .AddErrorIf(() => Description?.Length > 200, "Description cannot exceed 200 characters", nameof(Description));
 
         if (validationResult.HasError)
         {

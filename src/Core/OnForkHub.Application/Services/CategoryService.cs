@@ -2,19 +2,19 @@ using OnForkHub.Core.Interfaces.Validations;
 
 namespace OnForkHub.Application.Services;
 
-public class CategoryService(ICategoryRepository categoryRepository, IEntityValidator<Category> validator) : BaseService, ICategoryService
+public class CategoryService(ICategoryRepository categoryRepository, IValidationService<Category> validationService) : BaseService, ICategoryService
 {
     private readonly ICategoryRepository _categoryRepository = categoryRepository;
-    private readonly IEntityValidator<Category> _validator = validator;
+    private readonly IValidationService<Category> _validationService = validationService;
 
     public Task<RequestResult<Category>> CreateAsync(Category category)
     {
-        return ExecuteWithValidationAsync(category, _categoryRepository.CreateAsync, _validator);
+        return ExecuteWithValidationAsync(category, _categoryRepository.CreateAsync, _validationService);
     }
 
     public Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validator, isUpdate: true);
+        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validationService, isUpdate: true);
     }
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)
