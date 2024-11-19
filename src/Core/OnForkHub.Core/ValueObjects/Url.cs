@@ -19,11 +19,6 @@ public class Url : ValueObject
         return urlObj;
     }
 
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Value.ToLower(CultureInfo.CurrentCulture);
-    }
-
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
@@ -33,5 +28,10 @@ public class Url : ValueObject
         DomainException.ThrowErrorWhen(() => (uri.Scheme != Uri.UriSchemeHttp) && (uri.Scheme != Uri.UriSchemeHttps), UrlResources.UrlInvalid);
         validationResult.ThrowIfInvalid();
         return validationResult;
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Value.ToLower(CultureInfo.CurrentCulture);
     }
 }

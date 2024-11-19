@@ -2,13 +2,13 @@ namespace OnForkHub.Core.Entities;
 
 public class User : BaseEntity
 {
-    private readonly List<Video> _videos = [];
-
-    private User()
-        : base() { }
+    private readonly List<Video> _videos = new();
 
     protected User(long id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
+
+    private User()
+        : base() { }
 
     public Email Email { get; private set; } = null!;
     public Name Name { get; private set; } = null!;

@@ -4,8 +4,8 @@ namespace OnForkHub.Persistence.Repositories;
 
 public class CategoryRepository(IEntityFrameworkDataContext context) : ICategoryRepository
 {
-    private readonly IEntityFrameworkDataContext _context = context;
     private const string EntityName = nameof(Category);
+    private readonly IEntityFrameworkDataContext _context = context;
 
     public async Task<RequestResult<Category>> CreateAsync(Category category)
     {

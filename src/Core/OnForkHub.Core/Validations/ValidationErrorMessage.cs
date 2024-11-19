@@ -17,6 +17,7 @@ public sealed class ValidationErrorMessage
     }
 
     public string Source { get; } = string.Empty;
+
     public string Field { get; }
 
     public string Message { get; }

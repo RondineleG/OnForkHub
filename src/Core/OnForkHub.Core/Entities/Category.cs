@@ -2,11 +2,11 @@ namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity
 {
-    private Category()
-        : base() { }
-
     protected Category(long id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
+
+    private Category()
+        : base() { }
 
     public Name Name { get; private set; } = null!;
     public string Description { get; private set; } = string.Empty;

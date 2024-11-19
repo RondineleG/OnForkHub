@@ -2,12 +2,12 @@ namespace OnForkHub.Core.Entities;
 
 public class Video : BaseEntity
 {
-    private readonly List<Category> _categories = [];
+    private readonly List<Category> _categories = new();
+
+    public Video(long id, DateTime createdAt, DateTime? updatedAt = null)
+        : base(id, createdAt, updatedAt) { }
 
     protected Video() { }
-    public Video(long id, DateTime createdAt, DateTime? updatedAt = null) : base(id, createdAt, updatedAt)
-    {
-    }
 
     public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
     public string Description { get; private set; } = string.Empty;
