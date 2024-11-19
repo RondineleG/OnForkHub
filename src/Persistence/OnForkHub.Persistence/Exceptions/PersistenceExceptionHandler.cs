@@ -12,6 +12,10 @@ public static class PersistenceExceptionHandler
         return new DatabaseOperationException(operation, exception.Message);
     }
 
+    public static string EntityNotFound(string entityName, long id) => $"{entityName} not found with ID: {id}.";
+
+    public static string UnexpectedError(string operation, string message) => $"Unexpected error when {operation}: {message}";
+
     private static PersistenceException HandleDbUpdateException(DbUpdateException exception, string operation, string entityName)
     {
         var innerException = GetInnermostException(exception);
@@ -51,6 +55,7 @@ public static class PersistenceExceptionHandler
         {
             exception = exception.InnerException;
         }
+
         return exception;
     }
 
@@ -60,8 +65,8 @@ public static class PersistenceExceptionHandler
         {
             if (errorMessage.Contains("column '"))
             {
-                var start = errorMessage.IndexOf("column '") + 8;
-                var end = errorMessage.IndexOf("'", start);
+                var start = errorMessage.IndexOf("column '", StringComparison.CurrentCulture) + 8;
+                var end = errorMessage.IndexOf("'", start, StringComparison.CurrentCulture);
                 return errorMessage[start..end];
             }
         }
@@ -69,10 +74,7 @@ public static class PersistenceExceptionHandler
         {
             // Em caso de erro na extração do nome do campo, retorna unknown
         }
+
         return "unknown field";
     }
-
-    public static string EntityNotFound(string entityName, long id) => $"{entityName} not found with ID: {id}.";
-
-    public static string UnexpectedError(string operation, string message) => $"Unexpected error when {operation}: {message}";
 }

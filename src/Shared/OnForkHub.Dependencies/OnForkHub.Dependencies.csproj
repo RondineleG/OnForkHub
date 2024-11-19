@@ -7,8 +7,7 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
-
-
+    
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.*" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.*" />
@@ -24,6 +23,10 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.*" />
         <PackageReference Include="MudBlazor" Version="7.15.0" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <AdditionalFiles Include="..\..\..\stylecop.json" />
     </ItemGroup>
 
 </Project>

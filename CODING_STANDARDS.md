@@ -40,8 +40,8 @@ This guide establishes coding standards and best practices to maintain clean, or
 
 ### 2.2. Class Structure
 1. **Private fields.**
-2. **Public properties.**
-3. **Constructors.**
+2. **Constructors.**
+3. **Public properties.**
 4. **Public methods.**
 5. **Private methods.**
 
@@ -117,7 +117,7 @@ This guide establishes coding standards and best practices to maintain clean, or
     - Formatting rules.
 
 ### 6.2. Code Analyzers
-- Use **SonarQube** or another tool to assess code quality.
+- Use **StyleCop** or another tool to assess code quality.
 
 ### 6.3. CI/CD
 - Include style and quality checks in the pipeline.
