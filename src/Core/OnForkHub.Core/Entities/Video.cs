@@ -2,101 +2,159 @@ namespace OnForkHub.Core.Entities;
 
 public class Video : BaseEntity
 {
-    private readonly List<Category> _categories = new List<Category>();
+    private readonly List<Category> _categories = new();
+
+    public Video(long id, DateTime createdAt, DateTime? updatedAt = null)
+        : base(id, createdAt, updatedAt) { }
+
+    protected Video() { }
 
     public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
-
     public string Description { get; private set; } = string.Empty;
-
     public Title Title { get; private set; } = null!;
-
     public Url Url { get; private set; } = null!;
-
     public long UserId { get; private set; }
 
-    public static Video Create(string title, string description, string url, long userId)
+    public static RequestResult<Video> Create(string title, string description, string url, long userId)
     {
-        var video = new Video
+        try
         {
-            Title = Title.Create(title),
-            Description = description,
-            Url = Url.Create(url),
-            UserId = userId,
-        };
+            var video = new Video
+            {
+                Title = Title.Create(title),
+                Description = description ?? throw new ArgumentNullException(nameof(description)),
+                Url = Url.Create(url),
+                UserId = userId,
+            };
 
-        video.Validate();
-        return video;
+            video.ValidateEntityState();
+            return RequestResult<Video>.Success(video);
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult<Video>.WithError(ex.Message);
+        }
     }
 
-    public static Video Load(long id, string title, string description, string url, long userId, DateTime createdAt, DateTime? updatedAt = null)
+    public static RequestResult<Video> Load(
+        long id,
+        string title,
+        string description,
+        string url,
+        long userId,
+        DateTime createdAt,
+        DateTime? updatedAt = null
+    )
     {
-        var video = new Video
+        try
         {
-            Title = Title.Create(title),
-            Description = description,
-            Url = Url.Create(url),
-            UserId = userId,
-        };
+            var video = new Video(id, createdAt, updatedAt)
+            {
+                Title = Title.Create(title),
+                Description = description ?? throw new ArgumentNullException(nameof(description)),
+                Url = Url.Create(url),
+                UserId = userId,
+            };
 
-        video.SetId(id, createdAt, updatedAt);
-        video.Validate();
-        return video;
+            video.ValidateEntityState();
+            return RequestResult<Video>.Success(video);
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult<Video>.WithError(ex.Message);
+        }
     }
 
-    public void AddCategory(Category category)
+    public RequestResult AddCategory(Category category)
     {
-        DomainException.ThrowErrorWhen(() => category == null, VideoResources.CategoryCannotBeNull);
-
-        if (!_categories.Contains(category))
+        try
         {
-            _categories.Add(category);
+            ValidationResult.Success().AddErrorIf(() => category is null, VideoResources.CategoryCannotBeNull).ThrowIfInvalid();
+
+            if (!_categories.Contains(category))
+            {
+                _categories.Add(category);
+                Update();
+            }
+
+            return RequestResult.Success();
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult.WithError(ex.Message);
+        }
+    }
+
+    public RequestResult RemoveCategory(Category category)
+    {
+        try
+        {
+            ValidationResult.Success().AddErrorIf(() => category is null, VideoResources.CategoryCannotBeNull).ThrowIfInvalid();
+
+            if (_categories.Remove(category))
+            {
+                Update();
+            }
+
+            return RequestResult.Success();
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult.WithError(ex.Message);
+        }
+    }
+
+    public RequestResult UpdateVideo(string title, string description, string url)
+    {
+        try
+        {
+            Title = Title.Create(title);
+            Description = description ?? throw new ArgumentNullException(nameof(description));
+            Url = Url.Create(url);
+
+            ValidateEntityState();
             Update();
+            return RequestResult.Success();
         }
-    }
-
-    public void RemoveCategory(Category category)
-    {
-        DomainException.ThrowErrorWhen(() => category == null, VideoResources.CategoryCannotBeNull);
-
-        if (_categories.Remove(category))
+        catch (DomainException ex)
         {
-            Update();
+            return RequestResult.WithError(ex.Message);
         }
     }
 
-    public CustomValidationResult UpdateCategory(string title, string description, string url)
+    protected override void ValidateEntityState()
     {
-        Title = Title.Create(title);
-        Description = description;
-        Url = Url.Create(url);
+        base.ValidateEntityState();
 
-        var validationResult = Validate();
+        var validationResult = ValidationResult.Success();
 
-        if (!validationResult.IsValid)
+        validationResult
+            .AddErrorIf(() => string.IsNullOrWhiteSpace(Description), VideoResources.DescriptionRequired, nameof(Description))
+            .AddErrorIf(() => Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description))
+            .AddErrorIf(() => Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description))
+            .AddErrorIf(() => UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
+
+        if (Title != null)
         {
-            return validationResult;
+            validationResult.Merge(Title.Validate());
+        }
+        else
+        {
+            validationResult.AddError("Title is required", nameof(Title));
         }
 
-        Update();
-        return validationResult;
-    }
+        if (Url != null)
+        {
+            validationResult.Merge(Url.Validate());
+        }
+        else
+        {
+            validationResult.AddError("Url is required", nameof(Url));
+        }
 
-    public override CustomValidationResult Validate()
-    {
-        var validationResult = new CustomValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Description, VideoResources.DescriptionRequired, nameof(Description));
-        validationResult.AddErrorIf(Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description));
-        validationResult.AddErrorIf(Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description));
-        validationResult.AddErrorIf(UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
-        validationResult = Title.Validate().Merge(validationResult);
-
-        return validationResult;
-    }
-
-    private void SetId(long id, DateTime createdAt, DateTime? updatedAt)
-    {
-        Id = id;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
+        if (validationResult.HasError)
+        {
+            throw new DomainException(validationResult.ErrorMessage);
+        }
     }
 }

@@ -83,7 +83,8 @@ public class RequestValidationTests
     [DisplayName("Should deserialize from JSON correctly")]
     public void ShouldDeserializeFromJsonCorrectly()
     {
-        var json = "{\"PropertyName\":\"TestField\",\"Description\":\"Error description\"}";
+        var json = /*lang=json,strict*/
+            "{\"PropertyName\":\"TestField\",\"Description\":\"Error description\"}";
         var validation = JsonSerializer.Deserialize<RequestValidation>(json);
 
         validation.Should().NotBeNull();

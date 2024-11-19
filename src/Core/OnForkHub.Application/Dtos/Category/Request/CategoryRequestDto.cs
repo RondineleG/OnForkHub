@@ -16,11 +16,27 @@ public class CategoryRequestDto
 
     public static RequestResult<Core.Entities.Category> Update(CategoryRequestDto request, Core.Entities.Category category)
     {
-        var name = Core.ValueObjects.Name.Create(request.Name);
-        category.UpdateCategory(name, request.Description);
+        if (request is null)
+        {
+            return RequestResult<Core.Entities.Category>.WithError("Request cannot be null");
+        }
+        if (category is null)
+        {
+            return RequestResult<Core.Entities.Category>.WithError("Category not found");
+        }
 
-        return (category == null)
-            ? RequestResult<Core.Entities.Category>.WithError("Category not found")
-            : RequestResult<Core.Entities.Category>.Success(category);
+        try
+        {
+            var name = Core.ValueObjects.Name.Create(request.Name);
+            var updateResult = category.UpdateCategory(name, request.Description);
+
+            return updateResult.Status == EResultStatus.Success
+                ? RequestResult<Core.Entities.Category>.Success(category)
+                : RequestResult<Core.Entities.Category>.WithError(updateResult.Message);
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult<Core.Entities.Category>.WithError(ex.Message);
+        }
     }
 }

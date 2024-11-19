@@ -8,16 +8,14 @@ public class InvalidEntityTestFixture : BaseEntity
     public InvalidEntityTestFixture(long id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
-    public void ExecuteUpdate()
+    public void ForceValidation()
     {
-        Validate();
-        Update();
+        ValidateEntityState();
     }
 
-    public override CustomValidationResult Validate()
+    protected override void ValidateEntityState()
     {
-        var validationResult = new CustomValidationResult();
-        CustomValidationResult.ThrowErrorIf(() => Id <= 0, BaseEntityResources.IdGreaterThanZero);
-        return validationResult;
+        base.ValidateEntityState();
+        throw new DomainException("Invalid entity state");
     }
 }

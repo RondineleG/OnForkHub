@@ -4,6 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,4 +14,5 @@
         <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
         <AdditionalFiles Include="..\..\..\stylecop.json" />
     </ItemGroup>
+
 </Project>

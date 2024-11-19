@@ -3,40 +3,69 @@ namespace OnForkHub.Application.Test.Services;
 public class CategoryServiceTest
 {
     private readonly ICategoryRepository _categoryRepository;
-    private readonly IValidationService _validationService;
+    private readonly IValidationService<Category> _validationService;
     private readonly CategoryService _categoryService;
 
     public CategoryServiceTest()
     {
         _categoryRepository = Substitute.For<ICategoryRepository>();
-        _validationService = Substitute.For<IValidationService>();
+        _validationService = Substitute.For<IValidationService<Category>>();
         _categoryService = new CategoryService(_categoryRepository, _validationService);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should create category successfully")]
-    public async Task ShouldCreateCategorySuccessfully()
+    [DisplayName("Should not create category when validation fails")]
+    public async Task ShouldNotCreateCategoryWhenValidationFails()
     {
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        _categoryRepository.CreateAsync(category).Returns(RequestResult<Category>.Success(category));
+        var validationResult = new ValidationResult();
+        validationResult.AddError("Test error", "TestField");
+
+        _validationService.Validate(Arg.Any<Category>()).Returns(validationResult);
 
         var result = await _categoryService.CreateAsync(category);
 
-        result.Status.Should().Be(EResultStatus.Success);
-        result.Data.Should().Be(category);
-        await _categoryRepository.Received(1).CreateAsync(category);
+        result.Status.Should().Be(EResultStatus.HasValidation);
+        result.Validations.Should().Contain(v => v.Description == "Test error" && v.PropertyName == "TestField");
+
+        await _categoryRepository.DidNotReceive().CreateAsync(Arg.Any<Category>());
+        _validationService.Received(1).Validate(Arg.Is<Category>(c => c == category));
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should update category successfully")]
-    public async Task ShouldUpdateCategorySuccessfully()
+    [DisplayName("Should not update category when validation fails")]
+    public async Task ShouldNotUpdateCategoryWhenValidationFails()
     {
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
+
+        var validationResult = new ValidationResult();
+        validationResult.AddError("Test error", "TestField");
+
+        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(validationResult);
+
+        var result = await _categoryService.UpdateAsync(category);
+
+        result.Status.Should().Be(EResultStatus.HasValidation);
+        result.Validations.Should().Contain(v => v.Description == "Test error" && v.PropertyName == "TestField");
+
+        await _categoryRepository.DidNotReceive().UpdateAsync(Arg.Any<Category>());
+        _validationService.Received(1).ValidateUpdate(Arg.Is<Category>(c => c == category));
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should update category when validation passes")]
+    public async Task ShouldUpdateCategoryWhenValidationPasses()
+    {
+        var name = Name.Create("Test Category");
+        var category = Category.Create(name, "Test Description").Data!;
+
+        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(new ValidationResult());
 
         _categoryRepository.UpdateAsync(category).Returns(RequestResult<Category>.Success(category));
 
@@ -44,7 +73,9 @@ public class CategoryServiceTest
 
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().Be(category);
-        await _categoryRepository.Received(1).UpdateAsync(category);
+
+        await _categoryRepository.Received(1).UpdateAsync(Arg.Is<Category>(c => c == category));
+        _validationService.Received(1).ValidateUpdate(Arg.Is<Category>(c => c == category));
     }
 
     [Fact]
@@ -108,8 +139,8 @@ public class CategoryServiceTest
     [DisplayName("Should return categories successfully")]
     public async Task ShouldReturnCategoriesSuccessfully()
     {
-        int page = 1;
-        int size = 10;
+        var page = 1;
+        var size = 10;
         var categories = new List<Category>
         {
             Category.Create(Name.Create("Category 1"), "Description 1").Data!,
@@ -123,5 +154,23 @@ public class CategoryServiceTest
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().BeEquivalentTo(categories);
         await _categoryRepository.Received(1).GetAsync(page, size);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should handle null category in update")]
+    public async Task ShouldHandleNullCategoryInUpdate()
+    {
+        Category? category = null;
+
+        var result = await _categoryService.UpdateAsync(category!);
+
+        result.Status.Should().Be(EResultStatus.HasValidation);
+        result.Validations.Should().NotBeEmpty();
+        result.Validations.Should().Contain(v => v.Description == "Category cannot be null" && v.PropertyName == "Category");
+
+        await _categoryRepository.DidNotReceive().UpdateAsync(Arg.Any<Category>());
+
+        _validationService.DidNotReceive().ValidateUpdate(Arg.Any<Category>());
     }
 }

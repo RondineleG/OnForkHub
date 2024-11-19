@@ -19,9 +19,9 @@ public class Url : ValueObject
         return urlObj;
     }
 
-    public override CustomValidationResult Validate()
+    public override ValidationResult Validate()
     {
-        var validationResult = new CustomValidationResult();
+        var validationResult = new ValidationResult();
         DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), UrlResources.UrlInvalid);
 
         var uri = new Uri(Value, UriKind.Absolute);

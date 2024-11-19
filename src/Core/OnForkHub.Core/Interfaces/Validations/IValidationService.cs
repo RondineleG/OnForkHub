@@ -1,14 +1,13 @@
 namespace OnForkHub.Core.Interfaces.Validations;
 
-public interface IValidationService
+public interface IValidationService<T>
+    where T : BaseEntity
 {
-    void AddErrorIfInvalid(CustomValidationResult validationResult, string contexto, RequestResult requestResult);
-
-    void Validate<T>(T entity, Func<T, CustomValidationResult> funcValidationResult, string entityName, RequestResult requestResult);
-
-    void Validate<T>(IEnumerable<T> entities, Func<T, CustomValidationResult> funcValidationResult, string entityName, RequestResult requestResult);
-
-    public CustomValidationResult Validate(string value, string regexPattern, string fieldName);
-
-    public CustomValidationResult Validate(DateTime dateTimeStart, DateTime dateTimeFinish, string fieldName);
+    IEntityValidator<T> Validator { get; }
+    IValidationBuilder<T> Builder { get; }
+    IValidationResult Validate(T entity);
+    IValidationResult ValidateUpdate(T entity);
+    IValidationService<T> AddRule(IValidationRule<T> rule);
+    IValidationService<T> AddValidation(Func<T, ValidationResult> validation);
+    IValidationService<T> WithErrorHandler(Action<ValidationErrorMessage> errorHandler);
 }

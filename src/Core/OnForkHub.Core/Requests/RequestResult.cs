@@ -11,7 +11,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
     public RequestResult()
     {
         Status = EResultStatus.Success;
-        ValidationResult = new CustomValidationResult();
+        ValidationResult = new ValidationResult();
     }
 
     public DateTime Date { get; set; } = DateTime.Now;
@@ -30,7 +30,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public EResultStatus Status { get; set; }
 
-    public CustomValidationResult ValidationResult { get; protected set; }
+    public ValidationResult ValidationResult { get; protected set; }
 
     public IEnumerable<RequestValidation> Validations { get; protected init; } = new List<RequestValidation>();
 
@@ -116,7 +116,12 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
     public static RequestResult WithValidations(params ValidationErrorMessage[] validations)
     {
         var result = new RequestResult { Status = EResultStatus.HasValidation };
-        result.ValidationResult.AddErrors(validations.Select(v => (v.Message, v.Field)));
+
+        foreach (var validation in validations)
+        {
+            result.ValidationResult.AddError(validation.Message, validation.Field, validation.Source);
+        }
+
         return result;
     }
 
@@ -271,7 +276,12 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
     public static new RequestResult<T> WithValidations(params ValidationErrorMessage[] validations)
     {
         var result = new RequestResult<T> { Status = EResultStatus.HasValidation };
-        result.ValidationResult.AddErrors(validations.Select(v => (v.Message, v.Field)));
+
+        foreach (var validation in validations)
+        {
+            result.ValidationResult.AddError(validation.Message, validation.Field, validation.Source);
+        }
+
         return result;
     }
 }

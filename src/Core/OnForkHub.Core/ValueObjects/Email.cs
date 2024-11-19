@@ -2,9 +2,9 @@ namespace OnForkHub.Core.ValueObjects;
 
 public partial class Email : ValueObject
 {
-    private readonly CustomValidationResult _validationResult;
+    private readonly ValidationResult _validationResult;
 
-    private Email(string value, CustomValidationResult validationResult)
+    private Email(string value, ValidationResult validationResult)
     {
         Value = value;
         Validate();
@@ -16,12 +16,12 @@ public partial class Email : ValueObject
     public static Email Create(string value)
     {
         DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), EmailResources.EmailCannotBeEmpty);
-        var email = new Email(value, new CustomValidationResult());
+        var email = new Email(value, new ValidationResult());
         email.Validate();
         return email;
     }
 
-    public override CustomValidationResult Validate()
+    public override ValidationResult Validate()
     {
         var regex = MyRegex();
         DomainException.ThrowErrorWhen(() => !regex.IsMatch(Value), EmailResources.InvalidEmail);

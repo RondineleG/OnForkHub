@@ -7,7 +7,15 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
-    
+
+
+
+    <!--Dependencies for ui projects-->
+    <ItemGroup>
+        <PackageReference Include="MudBlazor" Version="7.15.0" />
+    </ItemGroup>
+
+    <!--Dependencies for persitence projects-->
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.*" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.*" />
@@ -20,13 +28,25 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.*" />
-        <PackageReference Include="MudBlazor" Version="7.15.0" />
-        <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+    </ItemGroup>
+    
+    <!--Dependencies for test projects-->
+    <ItemGroup>
+        <PackageReference Include="FluentAssertions" Version="6.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.*" />
+        <PackageReference Include="NSubstitute" Version="5.*" />
+        <PackageReference Include="coverlet.collector" Version="6.*" />
+        <PackageReference Include="xunit" Version="2.*" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    </ItemGroup>
+
+    <ItemGroup>
         <AdditionalFiles Include="..\..\..\stylecop.json" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.*">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
 </Project>
