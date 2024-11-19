@@ -4,43 +4,20 @@
 }
 
 .hc-card {
-    width: 150px;
-    height: 150px;
+    width: 100px;
+    height: 100px;
     border-radius: 15px;
-    padding: 1.5rem;
+    padding: 3px;
     background: white;
     position: relative;
     box-shadow: 0px 7px 10px rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: flex-end;
     transition: 0.4s ease-out;
+    cursor: pointer;
 }
 
 .selected {
     border: 3px solid var(--cf-theme-core);
-}
-
-.hc-card .hc-content {
-    color: white;
-    z-index: 3;
-    position: relative;
-    transform: translateY(30px);
-    opacity: 0;
-    transition: 0.5s;
-}
-
-.hc-card:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    border-radius: 15px;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 2;
-    transition: 0.5s;
 }
 
 .hc-card img {
@@ -58,9 +35,8 @@
     color: white;
     z-index: 3;
     position: relative;
-    transform: translateY(30px);
-    opacity: 0;
-    transition: 0.5s;
+    opacity: 1;
+    transition: 0.35s;
 }
 
     .hc-card .hc-content p {
@@ -70,22 +46,60 @@
         margin-top: .5em;
     }
 
-.hc-card:hover {
-    transform: translateY(20px);
+.hc-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    width: 100%;
+    height: 100%;
 }
 
-    .hc-card:hover:before {
-        opacity: 1;
-    }
 
-    .hc-card:hover .hc-content {
-        opacity: 1;
-        transform: translateY(0px);
-    }
+.btn-glass {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    transition: 0.3s;
+}
 
-@media (min-width: 768px) {
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-glass > i {
+    display: flex;
+    font-size: 2rem;
+}
+
+@media screen and (min-width: 768px) {
     .hc-card {
-        width: 175px;
-        height: 175px;
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media screen and (min-width: 1360px) {
+    .hc-card {
+        width: 170px;
+        height: 170px;
+    }
+}
+
+@media screen and (min-width: 1920px) {
+    .hc-card {
+        width: 260px;
+        height: 260px;
     }
 }

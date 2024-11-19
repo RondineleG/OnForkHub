@@ -2,13 +2,13 @@ namespace OnForkHub.Core.ValueObjects;
 
 public class Title : ValueObject
 {
-    public string Value { get; set; }
-
     private Title(string value)
     {
         Value = value;
         Validate();
     }
+
+    public string Value { get; set; }
 
     public static Title Create(string value)
     {
@@ -19,9 +19,9 @@ public class Title : ValueObject
     public override ValidationResult Validate()
     {
         var validationResult = new ValidationResult();
-        validationResult.AddErrorIfNullOrWhiteSpace(Value, TitleResources.TitleRequired, nameof(Title));
-        validationResult.AddErrorIf(Value.Length < 3, TitleResources.TitleMinLength, nameof(Title));
-        validationResult.AddErrorIf(Value.Length > 50, TitleResources.TitleMaxLength, nameof(Title));
+        validationResult.AddErrorIf(() => string.IsNullOrWhiteSpace(Value), TitleResources.TitleRequired, nameof(Title));
+        validationResult.AddErrorIf(() => Value.Length < 3, TitleResources.TitleMinLength, nameof(Title));
+        validationResult.AddErrorIf(() => Value.Length > 50, TitleResources.TitleMaxLength, nameof(Title));
         return validationResult;
     }
 

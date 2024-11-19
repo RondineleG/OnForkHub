@@ -1,0 +1,14 @@
+{
+    "settings": {
+        "documentationRules": {
+            "documentExposedElements": false,
+            "documentInternalElements": false,
+            "documentPrivateFields": false,
+            "documentInterfaces": false
+        },
+        "orderingRules": {
+            "usingDirectivesPlacement": "outsideNamespace",
+            "systemUsingDirectivesFirst": true
+        }
+    }
+}

@@ -50,3 +50,4 @@ public static class Program
         throw new DirectoryNotFoundException("[ERROR] Could not find project root. Make sure a .sln file, .git folder, or .gitignore file exists.");
     }
 }
+

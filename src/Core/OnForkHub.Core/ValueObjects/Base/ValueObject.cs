@@ -18,6 +18,7 @@ public abstract class ValueObject
         {
             return false;
         }
+
         var other = (ValueObject)obj;
         return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
     }
@@ -28,5 +29,6 @@ public abstract class ValueObject
     }
 
     public abstract ValidationResult Validate();
+
     protected abstract IEnumerable<object> GetEqualityComponents();
 }

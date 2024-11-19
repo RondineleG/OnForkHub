@@ -13,11 +13,11 @@
                 <button type="button" class="btn btn-glass">
                     @if (NowPlayingVideo == Video.Title)
                     {
-                        <span>Playing</span>
+                        <i class="bi bi-pause"></i>
                     }
                     else
                     {
-                        <span>Play</span>
+                        <i class="bi bi-play"></i>
                     }
                 </button>
             </div>
@@ -36,8 +36,17 @@
     [Parameter]
     public EventCallback OnPlayCallBack { get; set; }
 
+    [Parameter]
+    public EventCallback OnStopCallBack { get; set; }
+
     private async Task playVideo()
     {
         await OnPlayCallBack.InvokeAsync();
     }
+
+    private async Task stopVideo()
+    {
+        await OnStopCallBack.InvokeAsync();
+    }
+
 }
