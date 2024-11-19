@@ -6,13 +6,14 @@ public static class GitFlowConfiguration
     {
         try
         {
-            var gitVersion = await RunGitCommandAsync("--version");
-            Console.WriteLine($"Git version: {gitVersion.Trim()}");
+            Console.WriteLine("[INFO] Checking Git installation...");
+            var gitVersion = await RunProcessAsync("git", "--version");
+            Console.WriteLine($"[INFO] Git Version: {gitVersion.Trim()}");
             return true;
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error verifying Git installation:");
+            Console.WriteLine("[ERROR] Failed to verify Git installation:");
             Console.WriteLine(ex.Message);
             return false;
         }
@@ -20,58 +21,53 @@ public static class GitFlowConfiguration
 
     public static async Task ApplySharedConfigurationsAsync()
     {
-        Console.WriteLine("Applying shared Git configurations...");
-
+        Console.WriteLine("[INFO] Applying shared Git configurations...");
         var existingValuesFound = false;
 
         try
         {
-            Console.WriteLine("Checking for existing 'include.path' values...");
+            Console.WriteLine("[INFO] Checking existing values for 'include.path'...");
 
             try
             {
-                var existingValues = await RunGitCommandAsync("config --local --get-all include.path");
+                var existingValues = await RunProcessAsync("git", "config --local --get-all include.path");
                 if (!string.IsNullOrWhiteSpace(existingValues))
                 {
-                    Console.WriteLine("Found existing 'include.path' values:");
+                    Console.WriteLine("[INFO] Existing values found:");
                     Console.WriteLine(existingValues);
                     existingValuesFound = true;
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) when (ex.Message.Contains("exit code 1"))
             {
-                if (ex.Message.Contains("exit code 1"))
-                {
-                    Console.WriteLine("No existing 'include.path' values found.");
-                }
-                else
-                {
-                    throw;
-                }
+                Console.WriteLine("[INFO] No existing values found for 'include.path'.");
             }
 
-            await RunGitCommandAsync("config --local --replace-all include.path ../.gitconfig");
-            Console.WriteLine("Configuration applied successfully!");
+            Console.WriteLine("[INFO] Replacing existing values with '../.gitconfig'...");
+            await RunProcessAsync("git", "config --local --replace-all include.path ../.gitconfig");
+            Console.WriteLine("[INFO] Configuration applied successfully!");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error applying Git configuration:");
+            Console.WriteLine("[ERROR] Failed to apply Git configurations:");
             Console.WriteLine(ex.Message);
 
             if (!existingValuesFound)
             {
-                Console.WriteLine("No changes were made to the Git configuration.");
+                Console.WriteLine("[INFO] No changes were made to Git configuration.");
             }
             else
             {
-                Console.WriteLine("The configuration attempt failed after finding existing values.");
+                Console.WriteLine("[INFO] Configuration attempt failed after finding existing values.");
             }
         }
     }
 
-    private static async Task<string> RunGitCommandAsync(string command)
+    private static async Task<string> RunProcessAsync(string fileName, string arguments)
     {
-        var processInfo = new ProcessStartInfo("git", command)
+        Console.WriteLine($"[INFO] Executing command: {fileName} {arguments}");
+
+        var processInfo = new ProcessStartInfo(fileName, arguments)
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -79,12 +75,26 @@ public static class GitFlowConfiguration
             CreateNoWindow = true,
         };
 
-        using var process = Process.Start(processInfo) ?? throw new InvalidOperationException("Failed to start Git process.");
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
+        try
+        {
+            using var process = Process.Start(processInfo) ?? throw new InvalidOperationException("[ERROR] Failed to start process.");
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
 
-        await process.WaitForExitAsync();
+            await process.WaitForExitAsync();
 
-        return process.ExitCode != 0 ? throw new InvalidOperationException($"Git command failed with exit code {process.ExitCode}. {error}") : output;
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"[ERROR] Command failed with exit code {process.ExitCode}. {error}");
+            }
+
+            Console.WriteLine("[INFO] Command executed successfully.");
+            return output;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to execute command: {fileName} {arguments}");
+            throw new InvalidOperationException($"[DEBUG] Exception: {ex.Message}", ex);
+        }
     }
 }
