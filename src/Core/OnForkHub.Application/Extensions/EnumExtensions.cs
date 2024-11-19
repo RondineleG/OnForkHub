@@ -8,12 +8,14 @@ public static class EnumExtensions
         {
             throw new ArgumentNullException(nameof(tEnum));
         }
+
         var info = tEnum.GetType().GetField(tEnum.ToString()!)!;
         var attributes = (DescriptionAttribute[])info.GetCustomAttributes(typeof(DescriptionAttribute), false)!;
         if (attributes.Length > 0)
         {
             return attributes[0].Description;
         }
+
         return tEnum.ToString()!;
     }
 
@@ -31,6 +33,7 @@ public static class EnumExtensions
                 return value;
             }
         }
+
         throw new ArgumentException($"Could not find a matching value for '{description}' em {typeof(TEnum).Name}.");
     }
 }

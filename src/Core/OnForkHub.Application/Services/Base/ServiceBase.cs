@@ -1,10 +1,24 @@
 namespace OnForkHub.Application.Services.Base;
 
-public abstract class ServiceBase(IValidationService validationService)
+public abstract class ServiceBase
 {
-    protected readonly IValidationService _validationService = validationService;
+#pragma warning disable CA1051
 
-    protected async Task<RequestResult<T>> ExecuteAsync<T>(Func<Task<RequestResult<T>>> operacao)
+    protected readonly IValidationService _validationService;
+
+#pragma warning restore CA1051
+
+    protected ServiceBase(IValidationService validationService)
+    {
+        _validationService = validationService;
+    }
+
+    public static object ValidateEntity<T>(object value, Func<T, CustomValidationResult> validateTestEntity)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected static async Task<RequestResult<T>> ExecuteAsync<T>(Func<Task<RequestResult<T>>> operacao)
     {
         try
         {
@@ -20,7 +34,7 @@ public abstract class ServiceBase(IValidationService validationService)
         }
     }
 
-    protected async Task<RequestResult<T>> ExecuteAsync<T>(
+    protected static async Task<RequestResult<T>> ExecuteAsync<T>(
         T entity,
         Func<T, Task<RequestResult<T>>> operacao,
         Func<T, CustomValidationResult> validationFunc
@@ -36,6 +50,7 @@ public abstract class ServiceBase(IValidationService validationService)
                 result.Status = EResultStatus.EntityHasError;
                 result.AddError(error.Message);
             }
+
             return result;
         }
 
@@ -54,10 +69,5 @@ public abstract class ServiceBase(IValidationService validationService)
         }
 
         return validationFunc(entity);
-    }
-
-    public static object ValidateEntity<T>(object value, Func<T, CustomValidationResult> validateTestEntity)
-    {
-        throw new NotImplementedException();
     }
 }

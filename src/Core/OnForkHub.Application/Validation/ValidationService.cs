@@ -56,6 +56,7 @@ public sealed class ValidationService : IValidationService
                     requestResult.AddEntityError(entityName, $"Error at index {index}: {error.Message}");
                 }
             }
+
             index++;
         }
     }
