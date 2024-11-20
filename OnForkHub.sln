@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.App", "src\Presen
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{0FA620CF-9BF3-45D1-82D1-761226D37480}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.TestExtensions", "test\Shared\OnForkHub.TestExtensions\OnForkHub.TestExtensions.csproj", "{3C8D3DE0-767B-4438-A5C2-BE77619664A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.TestExtensions", "test\Shared\OnForkHub.TestExtensions\OnForkHub.TestExtensions.csproj", "{3C8D3DE0-767B-4438-A5C2-BE77619664A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

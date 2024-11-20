@@ -1,0 +1,60 @@
+@page "/"
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="video-container mt-4">
+    <h3>Torrent Video Player</h3>
+
+    <video @ref="videoElement"
+           controls
+           class="video-player"
+           style="max-width: 100%; height: auto;">
+    </video>
+
+    <div @ref="progressElement" class="progress mt-2">Loading...</div>
+
+    <div class="mt-3">
+        <button class="btn btn-primary me-2" @onclick="StartDownload">Play Video</button>
+        <button class="btn btn-danger" @onclick="StopDownload">Stop</button>
+    </div>
+</div>
+
+@code {
+    private IJSObjectReference? module;
+    private ElementReference progressElement;
+    private ElementReference videoElement;
+    private readonly string magnetUri = "magnet:?xt=urn:btih:209c8226b299b308beaf2b9cd3fb49212dbd13ec&dn=Tears+of+Steel";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/main.min.js");
+            await module.InvokeVoidAsync("setupTorrentPlayer", progressElement, videoElement, magnetUri);
+        }
+    }
+
+    private async Task StartDownload()
+    {
+        if (module != null)
+        {
+            await module.InvokeVoidAsync("start");
+        }
+    }
+
+    private async Task StopDownload()
+    {
+        if (module != null)
+        {
+            await module.InvokeVoidAsync("stop");
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}

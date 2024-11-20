@@ -229,6 +229,7 @@ dotnet_diagnostic.IDE2002.severity = none
 dotnet_diagnostic.IDE2003.severity = none
 dotnet_diagnostic.IDE2004.severity = none
 dotnet_diagnostic.CA1824.severity = none
+dotnet_diagnostic.CA1602.severity = none
 
 #Disable some rules of StyleCopAnalyzers
 dotnet_diagnostic.SA1010.severity = none
@@ -236,6 +237,9 @@ dotnet_diagnostic.SA1009.severity = none
 dotnet_diagnostic.SA1200.severity = none
 dotnet_diagnostic.SA1208.severity = none
 dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1602.severity = none
+dotnet_diagnostic.SA1601.severity = none
+dotnet_diagnostic.IDE1100.severity = none
 
 # Custom word list
 csharp_preferred_words = Invalido
