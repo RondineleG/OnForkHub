@@ -2,9 +2,9 @@ namespace OnForkHub.Core.Entities;
 
 public class Video : BaseEntity
 {
-    private readonly List<Category> _categories = new();
+    private readonly List<Category> _categories = [];
 
-    public Video(long id, DateTime createdAt, DateTime? updatedAt = null)
+    public Video(Id id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
     protected Video() { }
@@ -13,9 +13,9 @@ public class Video : BaseEntity
     public string Description { get; private set; } = string.Empty;
     public Title Title { get; private set; } = null!;
     public Url Url { get; private set; } = null!;
-    public long UserId { get; private set; }
+    public Id? UserId { get; private set; }
 
-    public static RequestResult<Video> Create(string title, string description, string url, long userId)
+    public static RequestResult<Video> Create(string title, string description, string url, Id userId)
     {
         try
         {
@@ -37,11 +37,11 @@ public class Video : BaseEntity
     }
 
     public static RequestResult<Video> Load(
-        long id,
+        Id id,
         string title,
         string description,
         string url,
-        long userId,
+        Id userId,
         DateTime createdAt,
         DateTime? updatedAt = null
     )
@@ -132,7 +132,7 @@ public class Video : BaseEntity
             .AddErrorIf(() => string.IsNullOrWhiteSpace(Description), VideoResources.DescriptionRequired, nameof(Description))
             .AddErrorIf(() => Description.Length < 5, VideoResources.DescriptionMinLength, nameof(Description))
             .AddErrorIf(() => Description.Length > 200, VideoResources.DescriptionMaxLength, nameof(Description))
-            .AddErrorIf(() => UserId <= 0, VideoResources.UserIdRequired, nameof(UserId));
+            .AddErrorIf(() => UserId == null, VideoResources.UserIdRequired, nameof(UserId));
 
         if (Title != null)
         {

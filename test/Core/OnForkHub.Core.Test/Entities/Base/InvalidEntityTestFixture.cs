@@ -5,7 +5,7 @@ public class InvalidEntityTestFixture : BaseEntity
     public InvalidEntityTestFixture()
         : base() { }
 
-    public InvalidEntityTestFixture(long id, DateTime createdAt, DateTime? updatedAt = null)
+    public InvalidEntityTestFixture(Id id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
     public void ForceValidation()

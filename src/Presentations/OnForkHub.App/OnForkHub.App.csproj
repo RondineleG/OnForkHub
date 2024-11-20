@@ -9,15 +9,10 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-        <AdditionalFiles Include="..\..\..\stylecop.json" />
     </ItemGroup>
     <Target Name="RunSharedScripts" AfterTargets="Build">
         <Message Text="Running shared scripts..." Importance="high" />
-        <Exec
-            Command="echo Current Working Directory: %CD%"
-            WorkingDirectory="$(MSBuildProjectDirectory)\.."
-            StandardOutputImportance="High"
-            StandardErrorImportance="High" >
+        <Exec Command="echo Current Working Directory: %CD%" WorkingDirectory="$(MSBuildProjectDirectory)\.." StandardOutputImportance="High" StandardErrorImportance="High">
             <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
         </Exec>
         <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode). Check the logs for more details." />

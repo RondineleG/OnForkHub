@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using OnForkHub.Core.Interfaces.Validations;
 
 namespace OnForkHub.Core.Validations;
 
@@ -60,7 +59,7 @@ public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntit
     {
         var result = Validate(entity);
 
-        if (entity?.Id <= 0)
+        if (entity?.Id is null)
         {
             result.AddError($"{typeof(T).Name} ID is required for updates", nameof(entity.Id));
         }

@@ -10,7 +10,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
         <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
-        <AdditionalFiles Include="..\..\..\stylecop.json" />
     </ItemGroup>
     
 </Project>
