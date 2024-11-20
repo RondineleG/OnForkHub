@@ -11,7 +11,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
         <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
-        <AdditionalFiles Include="..\..\..\stylecop.json" />
     </ItemGroup>
 
 </Project>
