@@ -13,35 +13,118 @@ public class BaseEntityTest
         entity.CreatedAt.Should().NotBe(default).And.BeIn(DateTimeKind.Utc);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(100)]
-    [InlineData(long.MaxValue)]
+    [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should create entity with valid ID")]
-    public void ShouldCreateEntityWhenIdIsValid(long id)
+    public void ShouldCreateEntityWhenIdIsValid()
     {
+        var id = Id.Create();
         var creationDate = DateTime.UtcNow;
         var entity = new ValidEntityTestFixture(id, creationDate);
 
         var result = new ValidationResult();
         result.BeValid();
+
         entity.Id.Should().Be(id);
         entity.CreatedAt.Should().Be(creationDate);
         entity.UpdatedAt.Should().BeNull();
     }
 
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(long.MinValue)]
+    [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception for negative ID")]
-    public void ShouldThrowExceptionForNegativeId(long id)
+    [DisplayName("Should throw exception for invalid ID format")]
+    public void ShouldThrowExceptionForInvalidIdFormat()
     {
         var creationDate = DateTime.UtcNow;
-        Action action = () => new ValidEntityTestFixture(id, creationDate);
 
-        action.Should().Throw<DomainException>().WithValidationError(ValidationFields.Id, "Id cannot be negative");
+        Action action = () => new ValidEntityTestFixture("invalid-guid-format", creationDate);
+
+        action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw exception for empty ID")]
+    public void ShouldThrowExceptionForEmptyId()
+    {
+        var creationDate = DateTime.UtcNow;
+
+        Action action = () => new ValidEntityTestFixture(string.Empty, creationDate);
+
+        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should initialize properties when using default constructor")]
+    public void ShouldInitializePropertiesWhenUsingDefaultConstructor()
+    {
+        var entity = new ValidEntityTestFixture();
+        var currentDate = DateTime.UtcNow;
+
+        entity.CreatedAt.Should().BeCloseTo(currentDate, TimeSpan.FromSeconds(1));
+        entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
+        entity.UpdatedAt.Should().BeNull();
+        entity.Id.Should().NotBeNull();
+        entity.Id.Value.Should().NotBe(Guid.Empty);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("invalid-guid")]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw exception for invalid ID")]
+    public void ShouldThrowExceptionForInvalidId(string invalidId)
+    {
+        var creationDate = DateTime.UtcNow;
+        Action action = () => new ValidEntityTestFixture(invalidId, creationDate);
+
+        if (string.IsNullOrWhiteSpace(invalidId))
+        {
+            action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
+        }
+        else
+        {
+            action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
+        }
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw exception for empty GUID")]
+    public void ShouldThrowExceptionForEmptyGuid()
+    {
+        var creationDate = DateTime.UtcNow;
+        var emptyGuid = "00000000000000000000000000000000";
+
+        Action action = () => new ValidEntityTestFixture(emptyGuid, creationDate);
+
+        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should include field name in error message")]
+    public void ShouldIncludeFieldNameInErrorMessage()
+    {
+        var creationDate = DateTime.UtcNow;
+        Action action = () => new ValidEntityTestFixture("invalid-guid", creationDate);
+
+        action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should accept valid GUID as ID")]
+    public void ShouldAcceptValidGuidAsId()
+    {
+        var creationDate = DateTime.UtcNow;
+        var validId = Id.Create();
+
+        var entity = new ValidEntityTestFixture(validId, creationDate);
+
+        entity.Id.Should().Be(validId);
     }
 
     [Fact]
@@ -49,7 +132,8 @@ public class BaseEntityTest
     [DisplayName("Should throw for default CreatedAt with all validation errors")]
     public void ShouldThrowForDefaultCreatedAt()
     {
-        Action action = () => new ValidEntityTestFixture(1, default);
+        var id = Id.Create();
+        Action action = () => new ValidEntityTestFixture(id, default);
 
         action
             .Should()
@@ -62,10 +146,11 @@ public class BaseEntityTest
     [DisplayName("Should throw when UpdatedAt is not UTC")]
     public void ShouldThrowWhenUpdatedAtIsNotUtc()
     {
+        var id = Id.Create();
         var creationDate = DateTime.UtcNow;
         var updateDate = DateTime.Now.AddDays(1).AddMilliseconds(1);
 
-        Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
+        Action action = () => new ValidEntityTestFixture(id, creationDate, updateDate);
 
         action.Should().Throw<DomainException>().WithValidationError(ValidationFields.UpdatedAt, "UpdatedAt must be UTC");
     }
@@ -75,10 +160,11 @@ public class BaseEntityTest
     [DisplayName("Should throw when UpdatedAt is not greater than CreatedAt")]
     public void ShouldThrowWhenUpdatedAtIsNotGreaterThanCreatedAt()
     {
+        var id = Id.Create();
         var creationDate = DateTime.UtcNow;
         var updateDate = creationDate.AddSeconds(-1);
 
-        Action action = () => new ValidEntityTestFixture(1, creationDate, updateDate);
+        Action action = () => new ValidEntityTestFixture(id, creationDate, updateDate);
 
         action.Should().Throw<DomainException>().WithValidationError(ValidationFields.UpdatedAt, "UpdatedAt must be greater than CreatedAt");
     }
@@ -125,20 +211,6 @@ public class BaseEntityTest
         Action action = entity.ForceValidation;
 
         action.Should().Throw<DomainException>().WithMessage("Invalid entity state");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should initialize properties when using default constructor")]
-    public void ShouldInitializePropertiesWhenUsingDefaultConstructor()
-    {
-        var entity = new ValidEntityTestFixture();
-        var currentDate = DateTime.UtcNow;
-
-        entity.CreatedAt.Should().BeCloseTo(currentDate, TimeSpan.FromSeconds(1));
-        entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
-        entity.UpdatedAt.Should().BeNull();
-        entity.Id.Should().Be(0);
     }
 
     [Fact]
@@ -194,14 +266,12 @@ public class BaseEntityTest
         entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(100)]
+    [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should create entity with valid non-negative ID")]
-    public void ShouldCreateEntityWithValidNonNegativeId(long id)
+    [DisplayName("Should create entity with valid Id value object")]
+    public void ShouldCreateEntityWithValidIdValueObject()
     {
+        var id = Id.Create();
         var createdAt = DateTime.UtcNow;
         var entity = new ValidEntityTestFixture(id, createdAt);
 
@@ -214,9 +284,10 @@ public class BaseEntityTest
     [DisplayName("Should throw when UpdatedAt equals CreatedAt")]
     public void ShouldThrowWhenUpdatedAtEqualsCreatedAt()
     {
+        var id = Id.Create();
         var createdAt = DateTime.UtcNow;
 
-        Action action = () => new ValidEntityTestFixture(1, createdAt, createdAt);
+        Action action = () => new ValidEntityTestFixture(id, createdAt, createdAt);
 
         action.Should().Throw<DomainException>().WithValidationError(ValidationFields.UpdatedAt, "UpdatedAt must be greater than CreatedAt");
     }

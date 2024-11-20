@@ -2,11 +2,11 @@ namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity
 {
+    protected Category(Id id, DateTime createdAt, DateTime? updatedAt = null)
+        : base(id, createdAt, updatedAt) { }
+
     private Category()
         : base() { }
-
-    protected Category(long id, DateTime createdAt, DateTime? updatedAt = null)
-        : base(id, createdAt, updatedAt) { }
 
     public Name Name { get; private set; } = null!;
     public string Description { get; private set; } = string.Empty;
@@ -25,7 +25,7 @@ public class Category : BaseEntity
         }
     }
 
-    public static RequestResult<Category> Load(long id, Name name, string description, DateTime createdAt, DateTime? updatedAt = null)
+    public static RequestResult<Category> Load(Id id, Name name, string description, DateTime createdAt, DateTime? updatedAt = null)
     {
         try
         {

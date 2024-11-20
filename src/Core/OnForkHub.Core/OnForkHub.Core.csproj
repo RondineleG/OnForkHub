@@ -4,11 +4,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
         <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
         <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
-  </ItemGroup>
-
+    </ItemGroup>
+    
 </Project>

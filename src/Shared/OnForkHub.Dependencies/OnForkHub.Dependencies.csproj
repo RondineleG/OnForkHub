@@ -9,13 +9,6 @@
     </PropertyGroup>
 
 
-    <!--Core-->
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-    </ItemGroup>
-
-
 
     <!--Dependencies for ui projects-->
     <ItemGroup>
@@ -37,8 +30,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.*" />
     </ItemGroup>
-
-
+    
     <!--Dependencies for test projects-->
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="6.*" />
@@ -49,14 +41,11 @@
         <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
     </ItemGroup>
 
-    <!--stylecop-->
     <ItemGroup>
         <AdditionalFiles Include="..\..\..\stylecop.json" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.*">
-            <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-
 
 </Project>

@@ -8,7 +8,7 @@ public class VideoTest
     public void ShouldAddCategoryToVideo()
     {
         var name = Name.Create("Category");
-        var video = Video.Create("Title", "Description", "https://example.com/video", 1L).Data!;
+        var video = Video.Create("Title", "Description", "https://example.com/video", Id.Create()).Data!;
         var category = Category.Create(name, "Category description").Data!;
 
         var result = video.AddCategory(category);
@@ -23,7 +23,7 @@ public class VideoTest
     public void ShouldRemoveCategoryFromVideo()
     {
         var name = Name.Create("Category");
-        var video = Video.Create("Title", "Description", "https://example.com/video", 1L).Data!;
+        var video = Video.Create("Title", "Description", "https://example.com/video", Id.Create()).Data!;
         var category = Category.Create(name, "Category description").Data!;
         video.AddCategory(category);
 
@@ -38,7 +38,7 @@ public class VideoTest
     [DisplayName("Should return error when adding null category")]
     public void ShouldReturnErrorWhenAddingNullCategory()
     {
-        var video = Video.Create("Title", "Description", "https://example.com/video", 1L).Data!;
+        var video = Video.Create("Title", "Description", "https://example.com/video", Id.Create()).Data!;
 
         var result = video.AddCategory(null!);
 
@@ -51,7 +51,7 @@ public class VideoTest
     [DisplayName("Should return error when removing null category")]
     public void ShouldReturnErrorWhenRemovingNullCategory()
     {
-        var video = Video.Create("Title", "Description", "https://example.com/video", 1L).Data!;
+        var video = Video.Create("Title", "Description", "https://example.com/video", Id.Create()).Data!;
 
         var result = video.RemoveCategory(null!);
 
@@ -67,7 +67,7 @@ public class VideoTest
         var title = "Test Video";
         var description = "Video description";
         var url = "https://example.com/video";
-        var userId = 1L;
+        var userId = Id.Create();
 
         var result = Video.Create(title, description, url, userId);
 
@@ -84,7 +84,7 @@ public class VideoTest
     [DisplayName("Should successfully update video data with valid data")]
     public void ShouldSuccessfullyUpdateVideoDataWithValidData()
     {
-        var video = Video.Create("Original Title", "Original Description", "https://original.com/video", 1L).Data!;
+        var video = Video.Create("Original Title", "Original Description", "https://original.com/video", Id.Create()).Data!;
         var newTitle = "New Title";
         var newDescription = "New description";
         var newUrl = "https://new.com/video";
