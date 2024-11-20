@@ -9,13 +9,6 @@
     </PropertyGroup>
 
 
-    <!--Core-->
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-    </ItemGroup>
-
-
 
     <!--Dependencies for ui projects-->
     <ItemGroup>
@@ -25,7 +18,9 @@
     <!--Dependencies for persitence projects-->
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.*" />
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.*" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.*">
+            <ExcludeAssets>runtime</ExcludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*">
             <PrivateAssets>all</PrivateAssets>
@@ -37,26 +32,19 @@
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.*" />
     </ItemGroup>
-
-
+    
     <!--Dependencies for test projects-->
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="6.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.*" />
         <PackageReference Include="NSubstitute" Version="5.*" />
-        <PackageReference Include="coverlet.collector" Version="6.*" />
-        <PackageReference Include="xunit" Version="2.*" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
     </ItemGroup>
 
-    <!--stylecop-->
     <ItemGroup>
         <AdditionalFiles Include="..\..\..\stylecop.json" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.*">
-            <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-
 
 </Project>

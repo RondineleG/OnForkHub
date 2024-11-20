@@ -9,6 +9,16 @@ public static class PersistenceExceptionHandler
             : new DatabaseOperationException(operation, exception.Message);
     }
 
+    public static string EntityNotFound(string entityName, long id)
+    {
+        return $"{entityName} not found with ID: {id}.";
+    }
+
+    public static string UnexpectedError(string operation, string message)
+    {
+        return $"Unexpected error when {operation}: {message}";
+    }
+
     private static PersistenceException HandleDbUpdateException(DbUpdateException exception, string operation, string entityName)
     {
         var innerException = GetInnermostException(exception);
@@ -67,15 +77,5 @@ public static class PersistenceExceptionHandler
             return $"unknown field : {ex.Message}";
         }
         return $"unknown field : {errorMessage}";
-    }
-
-    public static string EntityNotFound(string entityName, long id)
-    {
-        return $"{entityName} not found with ID: {id}.";
-    }
-
-    public static string UnexpectedError(string operation, string message)
-    {
-        return $"Unexpected error when {operation}: {message}";
     }
 }

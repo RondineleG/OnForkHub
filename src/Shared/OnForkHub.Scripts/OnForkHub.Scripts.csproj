@@ -7,4 +7,16 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
+
+    <Target Name="RunScript" AfterTargets="Build">
+        <Message Text="Running script..." Importance="high" />
+        <Exec
+            Command="dotnet OnForkHub.Scripts.dll"
+            WorkingDirectory="$(OutDir)"
+            StandardOutputImportance="High"
+            StandardErrorImportance="High">
+            <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
+        </Exec>
+        <Error Condition="'$(RunExitCode)' != '0'" Text="RunScript failed with exit code $(RunExitCode). Check the logs for more details." />
+    </Target>
 </Project>

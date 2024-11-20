@@ -16,7 +16,10 @@ public class ValidationServiceTest
             TestEntity entity,
             Expression<Func<TestEntity, TProperty>> propertyExpression,
             Action<IValidationBuilder<TestEntity>> validationAction
-        ) => ValidateProperty(entity, propertyExpression, validationAction);
+        )
+        {
+            return ValidateProperty(entity, propertyExpression, validationAction);
+        }
     }
 
     private readonly IValidationBuilder<TestEntity> _builder;
@@ -57,15 +60,15 @@ public class ValidationServiceTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should validate update with invalid id")]
-    public void ShouldValidateUpdateWithInvalidId()
+    [DisplayName("Should validate update with null entity")]
+    public void ShouldValidateUpdateWithNullEntity()
     {
-        var entity = new TestEntity();
+        TestEntity? entity = null;
 
-        var result = _service.ValidateUpdate(entity);
+        var result = _service.ValidateUpdate(entity!);
 
         result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("ID is required");
+        result.ErrorMessage.Should().Contain("TestEntity cannot be null").And.Contain("TestEntity ID is required for updates");
     }
 
     [Fact]

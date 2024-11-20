@@ -4,11 +4,11 @@ public class User : BaseEntity
 {
     private readonly List<Video> _videos = [];
 
+    protected User(Id id, DateTime createdAt, DateTime? updatedAt = null)
+        : base(id, createdAt, updatedAt) { }
+
     private User()
         : base() { }
-
-    protected User(long id, DateTime createdAt, DateTime? updatedAt = null)
-        : base(id, createdAt, updatedAt) { }
 
     public Email Email { get; private set; } = null!;
     public Name Name { get; private set; } = null!;
@@ -29,7 +29,7 @@ public class User : BaseEntity
         }
     }
 
-    public static RequestResult<User> Load(long id, Name name, string email, DateTime createdAt, DateTime? updatedAt = null)
+    public static RequestResult<User> Load(Id id, Name name, string email, DateTime createdAt, DateTime? updatedAt = null)
     {
         try
         {

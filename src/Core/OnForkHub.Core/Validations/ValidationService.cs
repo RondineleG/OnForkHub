@@ -1,16 +1,16 @@
 using System.Linq.Expressions;
-using OnForkHub.Core.Interfaces.Validations;
 
 namespace OnForkHub.Core.Validations;
 
 public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntityValidator<T> validator) : IValidationService<T>
     where T : BaseEntity
 {
-    private readonly List<IValidationRule<T>> _customRules = [];
-    private readonly List<Func<T, ValidationResult>> _validations = [];
-    private readonly List<Action<ValidationErrorMessage>> _errorHandlers = [];
+    private readonly List<IValidationRule<T>> _customRules = new();
+    private readonly List<Func<T, ValidationResult>> _validations = new();
+    private readonly List<Action<ValidationErrorMessage>> _errorHandlers = new();
 
     public IEntityValidator<T> Validator { get; } = validator ?? throw new ArgumentNullException(nameof(validator));
+
     public IValidationBuilder<T> Builder { get; } = builder ?? throw new ArgumentNullException(nameof(builder));
 
     public virtual IValidationResult Validate(T entity)
@@ -59,7 +59,7 @@ public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntit
     {
         var result = Validate(entity);
 
-        if (entity?.Id <= 0)
+        if (entity?.Id is null)
         {
             result.AddError($"{typeof(T).Name} ID is required for updates", nameof(entity.Id));
         }
