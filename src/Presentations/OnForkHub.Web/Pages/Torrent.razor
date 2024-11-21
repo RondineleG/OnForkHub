@@ -1,52 +1,233 @@
-@page "/"
+@page "/torrent-player"
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
 <div class="video-container mt-4">
     <h3>Torrent Video Player</h3>
 
-    <video @ref="videoElement"
-           controls
-           class="video-player"
-           style="max-width: 100%; height: auto;">
-    </video>
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong> @error
+            <button type="button" class="btn-close" @onclick="() => error = null"></button>
+        </div>
+    }
 
-    <div @ref="progressElement" class="progress mt-2">Loading...</div>
+    @if (!string.IsNullOrEmpty(status))
+    {
+        <div class="alert alert-info">
+            <strong>Status:</strong> @status
+        </div>
+    }
 
-    <div class="mt-3">
-        <button class="btn btn-primary me-2" @onclick="StartDownload">Play Video</button>
-        <button class="btn btn-danger" @onclick="StopDownload">Stop</button>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Video Player</h5>
+            <div id="videoContainer" class="ratio ratio-16x9 bg-dark">
+                <div class="text-center text-white p-4">
+                    Video will appear here
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Progress</h5>
+            <div @ref="progressElement" class="alert alert-secondary">
+                Awaiting initialization...
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <button class="btn btn-primary me-2" @onclick="StartPlayback" disabled="@(!isInitialized)">
+                <i class="bi bi-play-fill"></i> Play Video
+            </button>
+            <button class="btn btn-danger" @onclick="StopPlayback" disabled="@(!isInitialized)">
+                <i class="bi bi-stop-fill"></i> Stop
+            </button>
+        </div>
     </div>
 </div>
 
+
+<style>
+    .video-container {
+        min-height: 480px;
+        background: #000;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    #videoContainer {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 480px;
+        background: #000;
+    }
+
+        #videoContainer video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 1;
+        }
+
+    .loading-status {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        z-index: 2;
+        font-size: 1.1rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        z-index: 3;
+    }
+
+    .progress-bar {
+        background: #0d6efd;
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .w-100 {
+        width: 100% !important;
+    }
+
+    .h-100 {
+        height: 100% !important;
+    }
+
+    .d-flex {
+        display: flex !important;
+    }
+
+    .flex-column {
+        flex-direction: column !important;
+    }
+
+    .align-items-center {
+        align-items: center !important;
+    }
+
+    .justify-content-center {
+        justify-content: center !important;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem !important;
+    }
+
+    .w-75 {
+        width: 75% !important;
+    }
+</style>
 @code {
     private IJSObjectReference? module;
     private ElementReference progressElement;
-    private ElementReference videoElement;
-    private readonly string magnetUri = "magnet:?xt=urn:btih:209c8226b299b308beaf2b9cd3fb49212dbd13ec&dn=Tears+of+Steel";
+    private string? error;
+    private string? status;
+    private bool isInitialized;
+    private readonly string magnetUri = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F&xs=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2Fsintel.torrent";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/main.min.js");
-            await module.InvokeVoidAsync("setupTorrentPlayer", progressElement, videoElement, magnetUri);
+            try
+            {
+                status = "Loading WebTorrent...";
+                await InvokeAsync(StateHasChanged);
+
+                module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/main.min.js");
+                await module.InvokeVoidAsync("initTorrentPlayer", progressElement);
+
+                isInitialized = true;
+                status = "WebTorrent loaded successfully";
+                error = null;
+            }
+            catch (Exception ex)
+            {
+                error = $"Error initializing player: {ex.Message}";
+                status = null;
+                Console.WriteLine($"Error initializing player: {ex}");
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
-    private async Task StartDownload()
+    private async Task StartPlayback()
     {
         if (module != null)
         {
-            await module.InvokeVoidAsync("start");
+            try
+            {
+                status = "Starting download...";
+                await InvokeAsync(StateHasChanged);
+
+                await module.InvokeVoidAsync(
+                    "startDownload",
+                    progressElement,
+                    "#videoContainer",
+                    magnetUri
+                );
+
+                error = null;
+                status = null;
+            }
+            catch (Exception ex)
+            {
+                error = $"Error starting download: {ex.Message}";
+                status = null;
+                Console.WriteLine($"Error starting download: {ex}");
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
-    private async Task StopDownload()
+    private async Task StopPlayback()
     {
         if (module != null)
         {
-            await module.InvokeVoidAsync("stop");
+            try
+            {
+                await module.InvokeVoidAsync("stopDownload");
+                error = null;
+                status = "Download stopped";
+            }
+            catch (Exception ex)
+            {
+                error = $"Error stopping download: {ex.Message}";
+                status = null;
+                Console.WriteLine($"Error stopping download: {ex}");
+            }
+            finally
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
