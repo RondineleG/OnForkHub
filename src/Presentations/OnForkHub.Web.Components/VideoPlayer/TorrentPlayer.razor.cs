@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace OnForkHub.Web.Components;
+namespace OnForkHub.Web.Components.VideoPlayer;
 
 public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
 {
+    [Inject]
+    protected IJSRuntime JSRuntime { get; set; } = default!;
+
     [Parameter]
     public string PlayerId { get; set; } = "torrent-player";
 
     [Parameter]
     [EditorRequired]
-    public string TorrentId { get; set; }
+    public string TorrentId { get; set; } = default!;
 
     [Parameter]
     public EventCallback OnEndedVideo { get; set; }
@@ -21,8 +24,8 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
     [Parameter]
     public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
 
-    private DotNetObjectReference<TorrentPlayer> _objectRef;
-    private IJSObjectReference _moduleRef;
+    private DotNetObjectReference<TorrentPlayer>? _objectRef;
+    private IJSObjectReference? _moduleRef;
 
     protected override void OnInitialized()
     {
@@ -37,9 +40,7 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
             {
                 _moduleRef = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/js/main.min.js");
 
-                // Corrigido o formato dos parâmetros
-                var parameters = new object[] { PlayerId, _objectRef, TorrentId };
-                await _moduleRef.InvokeVoidAsync("initTorrentPlayer", parameters);
+                await _moduleRef.InvokeVoidAsync("initTorrentPlayer", new object[] { PlayerId, _objectRef, TorrentId });
             }
             catch (Exception ex)
             {
@@ -67,8 +68,7 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
         await OnVideoTimeUpdate.InvokeAsync((currentTime, duration));
     }
 
-    // Corrigido a implementação do IAsyncDisposable
-    public virtual async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         try
         {
