@@ -1,0 +1,32 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+commit_message=$(cat "$1")
+current_branch=$(git symbolic-ref --short HEAD)
+
+case "$current_branch" in
+  feature/*)
+    required_prefix="feat:"
+    ;;
+  hotfix/*)
+    required_prefix="hotfix:"
+    ;;
+  bugfix/*)
+    required_prefix="fix:"
+    ;;
+  release/*)
+    required_prefix="release:"
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+
+if ! echo "$commit_message" | grep -q "^$required_prefix"; then
+    echo "❌ Invalid commit message!"
+    echo "➡️  Commit message must start with '$required_prefix' for branch '$current_branch'."
+    echo "Example: '$required_prefix Add your message here.'"
+    exit 1
+fi
+
+echo "✅ Commit message is valid."
