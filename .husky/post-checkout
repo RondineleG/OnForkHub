@@ -2,3 +2,82 @@
 . "$(dirname "$0")/_/husky.sh"
 
 dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj
+
+# Get current branch name
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+echo "🔍 Current branch: $current_branch"
+
+# Check if this is a git flow finish operation
+previous_branch=$(git reflog -1 | grep -o 'from.*' | cut -d' ' -f2)
+
+# Only proceed if we're finishing a branch
+case "$previous_branch" in
+  feature/*|hotfix/*|bugfix/*|release/*)
+    echo "📦 Detected git flow finish operation from $previous_branch"
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+
+# Function to get PR body
+get_pr_body() {
+    default_body=$1
+    echo "💬 Enter PR body (press CTRL+D when finished, or ENTER to use default):"
+    echo "Default body: $default_body"
+    echo "-------------------"
+    NEW_BODY=$(cat)
+    
+    if [ -z "$NEW_BODY" ]; then
+        echo "$default_body"
+    else
+        echo "$NEW_BODY"
+    fi
+}
+
+case "$previous_branch" in
+  feature/*)
+    PR_TITLE="Feature completed: ${previous_branch#feature/}"
+    DEFAULT_BODY="This feature is ready for review."
+    PR_BODY=$(get_pr_body "$DEFAULT_BODY")
+    BASE_BRANCH="dev"
+    ;;
+  hotfix/*)
+    PR_TITLE="Hotfix: ${previous_branch#hotfix/}"
+    DEFAULT_BODY="Urgent hotfix for production."
+    PR_BODY=$(get_pr_body "$DEFAULT_BODY")
+    BASE_BRANCH="main"
+    ;;
+  bugfix/*)
+    PR_TITLE="Bugfix: ${previous_branch#bugfix/}"
+    DEFAULT_BODY="Bug fixed and ready for review."
+    PR_BODY=$(get_pr_body "$DEFAULT_BODY")
+    BASE_BRANCH="dev"
+    ;;
+  release/*)
+    PR_TITLE="Release: ${previous_branch#release/}"
+    DEFAULT_BODY="Release is ready for production."
+    PR_BODY=$(get_pr_body "$DEFAULT_BODY")
+    BASE_BRANCH="main"
+    ;;
+  *)
+    echo "⚠️ Branch $previous_branch does not match any configured case. Ignoring."
+    exit 0
+    ;;
+esac
+
+echo "📝 Creating Pull Request..."
+echo "Title: $PR_TITLE"
+echo "Body: $PR_BODY"
+echo "Base branch: $BASE_BRANCH"
+echo "Source branch: $previous_branch"
+
+# First ensure branch is pushed
+git push origin "$previous_branch" || true
+
+# Create PR
+gh pr create \
+  --title "$PR_TITLE" \
+  --body "$PR_BODY" \
+  --base "$BASE_BRANCH" \
+  --head "$previous_branch" || true

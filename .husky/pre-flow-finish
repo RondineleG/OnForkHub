@@ -1,9 +1,11 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-current_branch=$(git symbolic-ref --short HEAD)
-echo "📎 Current branch: $current_branch"
+# Get current branch name
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+echo "🔍 Current branch: $current_branch"
 
+# Function to get PR body
 get_pr_body() {
     default_body=$1
     echo "💬 Enter PR body (press CTRL+D when finished, or ENTER to use default):"
@@ -18,6 +20,9 @@ get_pr_body() {
     fi
 }
 
+# First push the branch if not already pushed
+git push origin "$current_branch" || true
+
 case "$current_branch" in
   feature/*)
     PR_TITLE="Feature completed: ${current_branch#feature/}"
@@ -29,22 +34,7 @@ case "$current_branch" in
     PR_TITLE="Hotfix: ${current_branch#hotfix/}"
     DEFAULT_BODY="Urgent hotfix for production."
     PR_BODY=$(get_pr_body "$DEFAULT_BODY")
-    
-    echo "📝 Creating Pull Request for main..."
-    gh pr create \
-      --title "$PR_TITLE" \
-      --body "$PR_BODY" \
-      --base "main" \
-      --head "$current_branch"
-    
-    echo "📝 Creating Pull Request for dev..."
-    gh pr create \
-      --title "$PR_TITLE" \
-      --body "$PR_BODY" \
-      --base "dev" \
-      --head "$current_branch"
-    
-    exit 0
+    BASE_BRANCH="main"
     ;;
   bugfix/*)
     PR_TITLE="Bugfix: ${current_branch#bugfix/}"
@@ -56,22 +46,7 @@ case "$current_branch" in
     PR_TITLE="Release: ${current_branch#release/}"
     DEFAULT_BODY="Release is ready for production."
     PR_BODY=$(get_pr_body "$DEFAULT_BODY")
-    
-    echo "📝 Creating Pull Request for main..."
-    gh pr create \
-      --title "$PR_TITLE" \
-      --body "$PR_BODY" \
-      --base "main" \
-      --head "$current_branch"
-    
-    echo "📝 Creating Pull Request for dev..."
-    gh pr create \
-      --title "$PR_TITLE" \
-      --body "$PR_BODY" \
-      --base "dev" \
-      --head "$current_branch"
-    
-    exit 0
+    BASE_BRANCH="main"
     ;;
   *)
     echo "⚠️ Branch $current_branch does not match any configured case. Ignoring."
@@ -79,25 +54,15 @@ case "$current_branch" in
     ;;
 esac
 
-if [[ "$current_branch" =~ ^(feature|bugfix)/ ]]; then
-    echo "📝 Creating Pull Request..."
-    echo "Title: $PR_TITLE"
-    echo "Body: $PR_BODY"
-    echo "Base branch: $BASE_BRANCH"
-    echo "Source branch: $current_branch"
+echo "📝 Creating Pull Request..."
+echo "Title: $PR_TITLE"
+echo "Body: $PR_BODY"
+echo "Base branch: $BASE_BRANCH"
+echo "Source branch: $current_branch"
 
-    gh pr create \
-      --title "$PR_TITLE" \
-      --body "$PR_BODY" \
-      --base "$BASE_BRANCH" \
-      --head "$current_branch"
-
-    if [[ $? -eq 0 ]]; then
-        echo "✅ Pull Request created successfully!"
-    else
-        echo "❌ Error creating Pull Request. Trying to debug..."
-        echo "Current repository: $(git remote get-url origin)"
-        echo "Available branches:"
-        git branch -a
-    fi
-fi
+# Create PR
+gh pr create \
+  --title "$PR_TITLE" \
+  --body "$PR_BODY" \
+  --base "$BASE_BRANCH" \
+  --head "$current_branch" || true
