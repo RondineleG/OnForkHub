@@ -11,16 +11,16 @@
     versiontag = v
 
 [gitflow "feature.start"]
-    hooks = pre-git-flow-finish
+    hooks = pre-flow-finish
 
 [gitflow "hotfix.start"]
-    hooks = pre-git-flow-finish
+    hooks = pre-flow-finish
 
 [gitflow "release.start"]
-    hooks = pre-git-flow-finish
+    hooks = pre-flow-finish
 
 [gitflow "bugfix.start"]
-    hooks = pre-git-flow-finish
+    hooks = pre-flow-finish
 
 [gitflow "path"]
     hooks = .husky
