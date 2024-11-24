@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace OnForkHub.Scripts.Git;
 
 public partial class PullRequestManager
@@ -11,23 +9,18 @@ public partial class PullRequestManager
             var currentBranch = await GetCurrentBranchAsync();
             Console.WriteLine($"[INFO] Current branch: {currentBranch}");
 
-            var previousBranch = await GetPreviousBranchAsync();
-            if (string.IsNullOrEmpty(previousBranch))
-            {
-                Console.WriteLine("[INFO] No previous branch found. Skipping PR creation.");
-                return;
-            }
+            var branchToUse = currentBranch;
 
-            Console.WriteLine($"[INFO] Previous branch: {previousBranch}");
+            Console.WriteLine($"[INFO] Using branch: {branchToUse}");
 
-            var prInfo = GetPullRequestInfo(previousBranch);
+            var prInfo = GetPullRequestInfo(branchToUse);
             if (prInfo == null)
             {
                 Console.WriteLine("[INFO] Branch type not recognized. Skipping PR creation.");
                 return;
             }
 
-            await PushBranchAsync(previousBranch);
+            await PushBranchAsync(branchToUse);
             await CreatePullRequestAsync(prInfo);
         }
         catch (Exception ex)
@@ -39,16 +32,6 @@ public partial class PullRequestManager
     private static async Task<string> GetCurrentBranchAsync()
     {
         return (await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
-    }
-
-    [GeneratedRegex(@"from (feature/[^:\s]+|hotfix/[^:\s]+|bugfix/[^:\s]+|release/[^:\s]+)", RegexOptions.Compiled)]
-    private static partial Regex GetBranchNameRegex();
-
-    private static async Task<string> GetPreviousBranchAsync()
-    {
-        var reflog = await RunProcessAsync("git", "reflog -1");
-        var match = GetBranchNameRegex().Match(reflog);
-        return match.Success ? match.Groups[1].Value : string.Empty;
     }
 
     private static PullRequestInfo? GetPullRequestInfo(string branchName)

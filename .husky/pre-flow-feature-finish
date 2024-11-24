@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "📦 Pre-flow-feature-finish hook started"
+echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
+echo "Running script..."
+
+dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj -- create-pr
+
+echo "Script finished"
+sleep 2
