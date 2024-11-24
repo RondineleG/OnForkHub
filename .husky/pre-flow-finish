@@ -1,8 +1,15 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-echo "🔍 Current branch: $current_branch"
+current_branch=$(git symbolic-ref --short HEAD)
+commit_msg=$(cat "$1")
+
+if ! echo "$commit_msg" | grep -q "Merge.*branch.*into"; then
+    exit 0
+fi
+
+echo "🔍 Detected git flow finish operation"
+echo "Current branch: $current_branch"
 
 get_pr_body() {
     default_body=$1
@@ -18,8 +25,6 @@ get_pr_body() {
     fi
 }
 
-git push origin "$current_branch" || true
-
 case "$current_branch" in
   feature/*)
     PR_TITLE="Feature completed: ${current_branch#feature/}"
@@ -32,6 +37,13 @@ case "$current_branch" in
     DEFAULT_BODY="Urgent hotfix for production."
     PR_BODY=$(get_pr_body "$DEFAULT_BODY")
     BASE_BRANCH="main"
+    
+    echo "📝 Creating additional PR for dev..."
+    gh pr create \
+      --title "$PR_TITLE" \
+      --body "$PR_BODY" \
+      --base "dev" \
+      --head "$current_branch" || true
     ;;
   bugfix/*)
     PR_TITLE="Bugfix: ${current_branch#bugfix/}"
@@ -44,6 +56,13 @@ case "$current_branch" in
     DEFAULT_BODY="Release is ready for production."
     PR_BODY=$(get_pr_body "$DEFAULT_BODY")
     BASE_BRANCH="main"
+    
+    echo "📝 Creating additional PR for dev..."
+    gh pr create \
+      --title "$PR_TITLE" \
+      --body "$PR_BODY" \
+      --base "dev" \
+      --head "$current_branch" || true
     ;;
   *)
     echo "⚠️ Branch $current_branch does not match any configured case. Ignoring."
@@ -56,6 +75,8 @@ echo "Title: $PR_TITLE"
 echo "Body: $PR_BODY"
 echo "Base branch: $BASE_BRANCH"
 echo "Source branch: $current_branch"
+
+git push origin "$current_branch" || true
 
 gh pr create \
   --title "$PR_TITLE" \
