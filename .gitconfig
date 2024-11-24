@@ -9,3 +9,18 @@
     hotfix = hotfix/
     support = support/
     versiontag = v
+
+[gitflow "feature.start"]
+    hooks = pre-git-flow-finish
+
+[gitflow "hotfix.start"]
+    hooks = pre-git-flow-finish
+
+[gitflow "release.start"]
+    hooks = pre-git-flow-finish
+
+[gitflow "bugfix.start"]
+    hooks = pre-git-flow-finish
+
+[gitflow "path"]
+    hooks = .husky
