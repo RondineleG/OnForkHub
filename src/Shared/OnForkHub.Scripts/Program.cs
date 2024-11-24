@@ -5,7 +5,7 @@ namespace OnForkHub.Scripts;
 
 public static class Program
 {
-    private static async Task Main()
+    private static async Task Main(string[] args)
     {
         try
         {
@@ -25,8 +25,11 @@ public static class Program
                 return;
             }
 
-            var prManager = new PullRequestManager();
-            await PullRequestManager.CreatePullRequestForGitFlowFinishAsync();
+            if (args.Length > 0 && args[0] == "create-pr")
+            {
+                await PullRequestManager.CreatePullRequestForGitFlowFinishAsync();
+                return;
+            }
 
             Console.WriteLine("[INFO] Configuration completed successfully.");
         }
