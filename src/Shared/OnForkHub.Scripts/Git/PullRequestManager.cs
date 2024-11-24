@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace OnForkHub.Scripts.Git;
 
 public partial class PullRequestManager
@@ -6,21 +8,22 @@ public partial class PullRequestManager
     {
         try
         {
-            var currentBranch = await GetCurrentBranchAsync();
-            Console.WriteLine($"[INFO] Current branch: {currentBranch}");
+            var lastBranch = await GetLastBranchAsync();
+            Console.WriteLine($"[INFO] Last branch before merge: {lastBranch}");
 
-            var branchToUse = currentBranch;
+            if (string.IsNullOrEmpty(lastBranch))
+            {
+                Console.WriteLine("[ERROR] Could not determine source branch.");
+                return;
+            }
 
-            Console.WriteLine($"[INFO] Using branch: {branchToUse}");
-
-            var prInfo = GetPullRequestInfo(branchToUse);
+            var prInfo = GetPullRequestInfo(lastBranch);
             if (prInfo == null)
             {
                 Console.WriteLine("[INFO] Branch type not recognized. Skipping PR creation.");
                 return;
             }
 
-            await PushBranchAsync(branchToUse);
             await CreatePullRequestAsync(prInfo);
         }
         catch (Exception ex)
@@ -29,9 +32,52 @@ public partial class PullRequestManager
         }
     }
 
-    private static async Task<string> GetCurrentBranchAsync()
+    [GeneratedRegex(@"from (feature/[^:\s]+|hotfix/[^:\s]+|bugfix/[^:\s]+|release/[^:\s]+)", RegexOptions.Compiled)]
+    private static partial Regex GetBranchNameRegex();
+
+    private static async Task<string> GetLastBranchAsync()
     {
-        return (await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
+        try
+        {
+            var reflog = await RunProcessAsync("git", "reflog -1");
+            var match = GetBranchNameRegex().Match(reflog);
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+
+            var lastCommitMsg = await RunProcessAsync("git", "log -1 --pretty=%B");
+            if (lastCommitMsg.Contains("Merge branch", StringComparison.Ordinal))
+            {
+                match = GetBranchNameRegex().Match(lastCommitMsg);
+                if (match.Success)
+                {
+                    return match.Groups[1].Value;
+                }
+            }
+
+            var mergedBranches = await RunProcessAsync("git", "branch --merged");
+            foreach (var line in mergedBranches.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var branch = line.Trim();
+                if (
+                    branch.StartsWith("feature/", StringComparison.Ordinal)
+                    || branch.StartsWith("hotfix/", StringComparison.Ordinal)
+                    || branch.StartsWith("bugfix/", StringComparison.Ordinal)
+                    || branch.StartsWith("release/", StringComparison.Ordinal)
+                )
+                {
+                    return branch;
+                }
+            }
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to get last branch: {ex.Message}");
+            return string.Empty;
+        }
     }
 
     private static PullRequestInfo? GetPullRequestInfo(string branchName)
@@ -75,24 +121,20 @@ public partial class PullRequestManager
         return info;
     }
 
-    private static async Task PushBranchAsync(string branch)
-    {
-        try
-        {
-            await RunProcessAsync("git", $"push origin {branch}");
-            Console.WriteLine($"[INFO] Successfully pushed branch {branch}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WARN] Failed to push branch: {ex.Message}");
-        }
-    }
-
     private static async Task CreatePullRequestAsync(PullRequestInfo prInfo)
     {
         try
         {
+            var existingPrs = await RunProcessAsync("gh", $"pr list --head {prInfo.SourceBranch} --state all");
+            if (!string.IsNullOrEmpty(existingPrs))
+            {
+                Console.WriteLine($"[INFO] PR already exists or existed for branch {prInfo.SourceBranch}");
+                return;
+            }
+
             var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
+            Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
+
             var result = await RunProcessAsync("gh", command);
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
 
@@ -102,6 +144,8 @@ public partial class PullRequestManager
             )
             {
                 command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
+                Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
+
                 result = await RunProcessAsync("gh", command);
                 Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
             }

@@ -2,10 +2,22 @@
 . "$(dirname "$0")/_/husky.sh"
 
 echo "📦 Pre-flow-feature-finish hook started"
+echo "Current path: $(pwd)"
 echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
-echo "Running script..."
+echo "Git status:"
+git status
 
+echo "Running script for PR creation..."
 dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj -- create-pr
 
-echo "Script finished"
-sleep 2
+# Verificar se o comando foi bem sucedido
+PR_RESULT=$?
+if [ $PR_RESULT -eq 0 ]; then
+    echo "✅ PR creation script completed successfully"
+else
+    echo "❌ PR creation script failed with exit code: $PR_RESULT"
+    # Não bloquear o finish mesmo se falhar
+fi
+
+# Aguardar um pouco antes de continuar
+sleep 3
