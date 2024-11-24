@@ -26,17 +26,14 @@ dotnet husky run --name dotnet-format-csharpier || {
     exit 1
 }
 
-# Get current branch name
 current_branch=$(git symbolic-ref --short HEAD)
 
-# Check if this is a git flow finish operation
 is_finish=$(git reflog -1 | grep -q "finish" && echo "yes" || echo "no")
 
 if [ "$is_finish" = "yes" ]; then
     echo "🔍 Detected git flow finish operation"
     echo "Current branch: $current_branch"
 
-    # Function to get PR body
     get_pr_body() {
         default_body=$1
         echo "💬 Enter PR body (press CTRL+D when finished, or ENTER to use default):"
@@ -64,7 +61,6 @@ if [ "$is_finish" = "yes" ]; then
         PR_BODY=$(get_pr_body "$DEFAULT_BODY")
         BASE_BRANCH="main"
         
-        # Create PR for dev
         echo "📝 Creating additional PR for dev..."
         gh pr create \
           --title "$PR_TITLE" \
@@ -84,7 +80,6 @@ if [ "$is_finish" = "yes" ]; then
         PR_BODY=$(get_pr_body "$DEFAULT_BODY")
         BASE_BRANCH="main"
         
-        # Create PR for dev
         echo "📝 Creating additional PR for dev..."
         gh pr create \
           --title "$PR_TITLE" \
