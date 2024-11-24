@@ -1,16 +1,20 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Get current branch name
 current_branch=$(git symbolic-ref --short HEAD)
 echo "📎 Current branch: $current_branch"
 
+# Function to get PR body
 get_pr_body() {
     default_body=$1
     echo "💬 Enter PR body (press CTRL+D when finished, or ENTER to use default):"
     echo "Default body: $default_body"
     echo "-------------------"
+    # Try to read user input
     NEW_BODY=$(cat)
     
+    # If nothing was typed, use default body
     if [ -z "$NEW_BODY" ]; then
         echo "$default_body"
     else
@@ -26,6 +30,7 @@ case "$current_branch" in
     BASE_BRANCH="dev"
     ;;
   hotfix/*)
+    # Create PR for main
     PR_TITLE="Hotfix: ${current_branch#hotfix/}"
     DEFAULT_BODY="Urgent hotfix for production."
     PR_BODY=$(get_pr_body "$DEFAULT_BODY")
@@ -37,6 +42,7 @@ case "$current_branch" in
       --base "main" \
       --head "$current_branch"
     
+    # Create PR for dev
     echo "📝 Creating Pull Request for dev..."
     gh pr create \
       --title "$PR_TITLE" \
@@ -53,6 +59,7 @@ case "$current_branch" in
     BASE_BRANCH="dev"
     ;;
   release/*)
+    # Create PR for main
     PR_TITLE="Release: ${current_branch#release/}"
     DEFAULT_BODY="Release is ready for production."
     PR_BODY=$(get_pr_body "$DEFAULT_BODY")
@@ -64,6 +71,7 @@ case "$current_branch" in
       --base "main" \
       --head "$current_branch"
     
+    # Create PR for dev
     echo "📝 Creating Pull Request for dev..."
     gh pr create \
       --title "$PR_TITLE" \
@@ -79,6 +87,7 @@ case "$current_branch" in
     ;;
 esac
 
+# For feature and bugfix branches that only need one PR
 if [[ "$current_branch" =~ ^(feature|bugfix)/ ]]; then
     echo "📝 Creating Pull Request..."
     echo "Title: $PR_TITLE"
@@ -90,14 +99,5 @@ if [[ "$current_branch" =~ ^(feature|bugfix)/ ]]; then
       --title "$PR_TITLE" \
       --body "$PR_BODY" \
       --base "$BASE_BRANCH" \
-      --head "$current_branch"
-
-    if [[ $? -eq 0 ]]; then
-        echo "✅ Pull Request created successfully!"
-    else
-        echo "❌ Error creating Pull Request. Trying to debug..."
-        echo "Current repository: $(git remote get-url origin)"
-        echo "Available branches:"
-        git branch -a
-    fi
+      --head "$current_branch" || true
 fi
