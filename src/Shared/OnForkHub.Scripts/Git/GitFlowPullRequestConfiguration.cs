@@ -40,7 +40,11 @@ public static class GitFlowPullRequestConfiguration
         );
 
         await CreatePullRequestWithGitHubCLIAsync(prInfo);
-        await RunProcessAsync("git", "merge --abort");
+        try
+        {
+            await RunProcessAsync("git", "merge --abort");
+        }
+        catch { }
         Environment.Exit(0);
     }
 
