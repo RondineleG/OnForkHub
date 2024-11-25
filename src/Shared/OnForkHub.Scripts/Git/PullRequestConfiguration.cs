@@ -7,12 +7,14 @@ public partial class PullRequestConfiguration
 
     public static async Task CreatePullRequestForGitFlowFinishAsync()
     {
+        Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
             var gitLog = await RunProcessAsync("git", "reflog -1");
-            Console.WriteLine($"[DEBUG] Git reflog: {gitLog}");
+            Console.WriteLine($"[DEBUG] Git reflog output: {gitLog}");
 
             var match = BranchNameRegex().Match(gitLog);
+            Console.WriteLine($"[DEBUG] Regex match success: {match.Success}");
             if (!match.Success)
             {
                 Console.WriteLine("[INFO] No matching branch found in git reflog");
@@ -23,48 +25,84 @@ public partial class PullRequestConfiguration
             Console.WriteLine($"[INFO] Source branch: {sourceBranch}");
 
             var prInfo = await GetPullRequestInfoAsync(sourceBranch);
+            Console.WriteLine($"[DEBUG] PR Info created: {(prInfo != null ? "yes" : "no")}");
             if (prInfo is null)
             {
                 Console.WriteLine("[INFO] Branch type not recognized");
                 return;
             }
 
+            Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
             await AuthenticateWithGitHubCliAsync();
 
+            Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Failed to create pull request: {ex.Message}");
+            Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+            // Rethrow the exception to ensure it's not silently caught
+            throw;
         }
     }
 
     private static async Task AuthenticateWithGitHubCliAsync()
     {
+        Console.WriteLine("[DEBUG] Starting GitHub CLI authentication check");
         try
         {
             if (!await IsGitHubCliInstalledAsync())
             {
-                Console.WriteLine("❌ GitHub CLI (gh) is not installed. Please install it.");
-                return;
+                throw new InvalidOperationException("GitHub CLI (gh) is not installed");
             }
 
             var status = await RunProcessAsync("gh", "auth status");
+            Console.WriteLine($"[DEBUG] GitHub CLI auth status: {status}");
+
             if (string.IsNullOrWhiteSpace(status))
             {
-                Console.WriteLine("❌ GitHub CLI is not authenticated. Please log in.");
+                Console.WriteLine("[DEBUG] Attempting GitHub CLI login");
                 var loginResult = await RunProcessAsync("gh", "auth login");
                 if (string.IsNullOrWhiteSpace(loginResult))
                 {
-                    Console.WriteLine("❌ Failed to authenticate. Exiting.");
-                    return;
+                    throw new InvalidOperationException("Failed to authenticate with GitHub CLI");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Error authenticating with GitHub CLI: {ex.Message}");
+            Console.WriteLine($"[ERROR] GitHub CLI authentication error: {ex.Message}");
+            throw; // Rethrow to ensure the error is not silently caught
         }
+    }
+
+    private static async Task<string> RunProcessAsync(string fileName, string arguments)
+    {
+        Console.WriteLine($"[DEBUG] Running process: {fileName} {arguments}");
+        var processInfo = new ProcessStartInfo(fileName, arguments)
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        using var process = Process.Start(processInfo) ?? throw new InvalidOperationException("Failed to start process");
+        var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
+
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
+        {
+            Console.WriteLine($"[ERROR] Process failed with exit code {process.ExitCode}");
+            Console.WriteLine($"[ERROR] Error output: {error}");
+            throw new InvalidOperationException($"Command failed: {error}");
+        }
+
+        Console.WriteLine($"[DEBUG] Process output: {output}");
+        return output;
     }
 
     private static async Task<bool> IsGitHubCliInstalledAsync()
@@ -145,24 +183,5 @@ public partial class PullRequestConfiguration
             Console.WriteLine($"[ERROR] Failed to create PR with GitHub CLI: {ex.Message}");
             throw;
         }
-    }
-
-    private static async Task<string> RunProcessAsync(string fileName, string arguments)
-    {
-        var processInfo = new ProcessStartInfo(fileName, arguments)
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        };
-
-        using var process = Process.Start(processInfo) ?? throw new InvalidOperationException("Failed to start process");
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
-
-        await process.WaitForExitAsync();
-
-        return process.ExitCode != 0 && !string.IsNullOrEmpty(error) ? throw new InvalidOperationException($"Command failed: {error}") : output;
     }
 }
