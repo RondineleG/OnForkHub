@@ -15,6 +15,7 @@ public partial class PullRequestConfiguration
             Console.WriteLine("[DEBUG] Not a finish command, skipping PR creation");
             return;
         }
+
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
@@ -69,7 +70,6 @@ public partial class PullRequestConfiguration
         {
             var gitDir = await RunProcessAsync("git", "rev-parse --git-dir");
             var originalArgs = await File.ReadAllTextAsync(Path.Combine(gitDir.Trim(), "gitflow.finish"));
-            Console.WriteLine($"[DEBUG] 1207 {originalArgs}");
             return !string.IsNullOrEmpty(originalArgs);
         }
         catch
@@ -83,7 +83,6 @@ public partial class PullRequestConfiguration
         try
         {
             var result = await RunProcessAsync("git", $"rev-list --count dev..{branch}");
-            Console.WriteLine($"[DEBUG] 1207 {result}");
             return int.Parse(result.Trim(), CultureInfo.InvariantCulture) > 0;
         }
         catch
