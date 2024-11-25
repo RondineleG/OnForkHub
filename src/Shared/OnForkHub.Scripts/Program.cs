@@ -29,6 +29,10 @@ public static class Program
             {
                 await PullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
             }
+            else
+            {
+                Console.WriteLine("[INFO] Skipping PR creation (pr-create flag not present)");
+            }
 
             Console.WriteLine("[INFO] Configuration completed successfully.");
         }

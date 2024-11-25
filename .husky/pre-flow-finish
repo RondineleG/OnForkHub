@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Para criar PR
+dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj pr-create

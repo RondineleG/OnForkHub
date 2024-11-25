@@ -10,10 +10,31 @@ public partial class PullRequestConfiguration
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
-            var currentBranch = await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
-            Console.WriteLine($"[DEBUG] Current branch: {currentBranch}");
+            var branchOutput = await RunProcessAsync("git", "branch --show-current");
+            Console.WriteLine($"[DEBUG] Current branch output: {branchOutput}");
 
-            var match = BranchNameRegex().Match(currentBranch);
+            if (branchOutput.Trim() == "dev")
+            {
+                var reflogOutput = await RunProcessAsync("git", "reflog -2");
+                Console.WriteLine($"[DEBUG] Reflog output: {reflogOutput}");
+
+                var reflogLines = reflogOutput.Split('\n');
+                foreach (var line in reflogLines)
+                {
+                    if (line.Contains("from"))
+                    {
+                        var mat = BranchNameRegex().Match(line);
+                        if (mat.Success)
+                        {
+                            branchOutput = mat.Groups[1].Value;
+                            Console.WriteLine($"[DEBUG] Found branch in reflog: {branchOutput}");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            var match = BranchNameRegex().Match(branchOutput);
             Console.WriteLine($"[DEBUG] Regex match success: {match.Success}");
             if (!match.Success)
             {
@@ -35,8 +56,6 @@ public partial class PullRequestConfiguration
             Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
             await AuthenticateWithGitHubCliAsync();
 
-            await RunProcessAsync("git", "push origin HEAD");
-
             Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
         }
@@ -44,6 +63,33 @@ public partial class PullRequestConfiguration
         {
             Console.WriteLine($"[ERROR] Failed to create pull request: {ex.Message}");
             Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+            throw;
+        }
+    }
+
+    private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
+    {
+        try
+        {
+            var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
+            Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
+            var result = await RunProcessAsync("gh", command);
+            Console.WriteLine($"[INFO] Successfully created PR: {result}");
+
+            if (
+                prInfo.SourceBranch.StartsWith("hotfix/", StringComparison.Ordinal)
+                || prInfo.SourceBranch.StartsWith("release/", StringComparison.Ordinal)
+            )
+            {
+                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
+                Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
+                result = await RunProcessAsync("gh", command);
+                Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to create PR with GitHub CLI: {ex.Message}");
             throw;
         }
     }
@@ -158,35 +204,6 @@ public partial class PullRequestConfiguration
         {
             Console.WriteLine($"[ERROR] Error preparing PR info: {ex.Message}");
             return Task.FromResult<PullRequestInfo?>(null);
-        }
-    }
-
-    private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
-    {
-        try
-        {
-            await RunProcessAsync("git", $"push origin {prInfo.SourceBranch}");
-
-            var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
-            Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
-            var result = await RunProcessAsync("gh", command);
-            Console.WriteLine($"[INFO] Successfully created PR: {result}");
-
-            if (
-                prInfo.SourceBranch.StartsWith("hotfix/", StringComparison.Ordinal)
-                || prInfo.SourceBranch.StartsWith("release/", StringComparison.Ordinal)
-            )
-            {
-                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
-                Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
-                result = await RunProcessAsync("gh", command);
-                Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR] Failed to create PR with GitHub CLI: {ex.Message}");
-            throw;
         }
     }
 }
