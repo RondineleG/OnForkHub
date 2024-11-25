@@ -19,20 +19,11 @@ public partial class PullRequestConfiguration
 
             Console.WriteLine($"[INFO] Found branch name: {branchName}");
 
-            if (!await HasUnpushedCommits(branchName))
+            if (await PullRequestExists(branchName))
             {
-                Console.WriteLine("[INFO] No unpushed commits found");
+                Console.WriteLine("[INFO] Pull request already exists");
                 return;
             }
-
-            if (!await BranchExistsRemotely(branchName))
-            {
-                Console.WriteLine($"[DEBUG] Branch {branchName} doesn't exist remotely. Pushing...");
-                await PushBranch(branchName);
-            }
-
-            Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
-            await AuthenticateWithGitHubCliAsync();
 
             var prInfo = await GetPullRequestInfoAsync(branchName);
             if (prInfo == null)
@@ -41,11 +32,10 @@ public partial class PullRequestConfiguration
                 return;
             }
 
-            if (await PullRequestExists(branchName))
-            {
-                Console.WriteLine("[INFO] Pull request already exists");
-                return;
-            }
+            Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
+            await AuthenticateWithGitHubCliAsync();
+
+            await RunProcessAsync("git", $"push origin {branchName}");
 
             Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
@@ -60,40 +50,25 @@ public partial class PullRequestConfiguration
 
     private static async Task<string> GetCurrentBranch()
     {
-        var output = await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
-        var match = BranchNameRegex().Match(output);
-        return match.Success ? match.Groups[1].Value : string.Empty;
-    }
-
-    private static async Task<bool> HasUnpushedCommits(string branchName)
-    {
         try
         {
-            var result = await RunProcessAsync("git", $"log origin/{branchName}..{branchName} --oneline");
-            return !string.IsNullOrWhiteSpace(result);
+            var reflogOutput = await RunProcessAsync("git", "reflog -1");
+            var match = BranchNameRegex().Match(reflogOutput);
+
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+
+            var currentBranch = await RunProcessAsync("git", "branch --show-current");
+            match = BranchNameRegex().Match(currentBranch);
+
+            return match.Success ? match.Groups[1].Value : string.Empty;
         }
         catch
         {
-            return true;
+            return string.Empty;
         }
-    }
-
-    private static async Task<bool> BranchExistsRemotely(string branchName)
-    {
-        try
-        {
-            var result = await RunProcessAsync("git", $"ls-remote --heads origin {branchName}");
-            return !string.IsNullOrWhiteSpace(result);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private static async Task PushBranch(string branchName)
-    {
-        await RunProcessAsync("git", $"push -u origin {branchName}");
     }
 
     private static async Task<bool> PullRequestExists(string branchName)
