@@ -3,8 +3,6 @@
 
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 
-echo "${BRANCH_NAME}✅ BRANCH_NAME !"
-
 if [[ $BRANCH_NAME == feature/* ]]; then
     dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj -- pr-create
 fi

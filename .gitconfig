@@ -14,8 +14,7 @@
     hooks = .husky
 
 [gitflow "feature"]
-    finish = false
     no-ff = true
     no-merge = true
     keepbranch = true
-    finish-hooks = pre-flow-feature-finish
+    finish = false
