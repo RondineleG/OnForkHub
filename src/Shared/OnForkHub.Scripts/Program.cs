@@ -1,3 +1,6 @@
+using OnForkHub.Scripts.Git;
+using OnForkHub.Scripts.Husky;
+
 namespace OnForkHub.Scripts;
 
 public static class Program

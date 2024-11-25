@@ -1,0 +1,15 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+current_branch=$(git symbolic-ref --short HEAD)
+
+echo "🔄 Git Flow Finish Hook - Current branch: $current_branch"
+echo "Creating Pull Request before finishing branch..."
+
+dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj -- create-pr --branch "$current_branch"
+
+if [ $? -eq 0 ]; then
+    echo "✅ Pull Request created successfully."
+else
+    echo "⚠️ Pull Request creation failed. Proceeding with finish..."
+fi
