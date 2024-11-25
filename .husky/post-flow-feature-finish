@@ -4,4 +4,4 @@
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 export HUSKY_GIT_PARAMS="$BRANCH_NAME"
 
-dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj
+dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj pr-create

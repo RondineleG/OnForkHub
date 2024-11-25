@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace OnForkHub.Scripts.Git;
 
 public partial class PullRequestConfiguration
@@ -12,52 +10,37 @@ public partial class PullRequestConfiguration
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
-            var sourceBranch = Environment.GetEnvironmentVariable("HUSKY_GIT_PARAMS") ?? "";
-            Console.WriteLine($"[DEBUG] HUSKY_GIT_PARAMS: {sourceBranch}");
+            var reflogOutput = await RunProcessAsync("git", "reflog -1");
+            Console.WriteLine($"[DEBUG] Reflog output: {reflogOutput}");
 
-            if (string.IsNullOrEmpty(sourceBranch))
+            var branchName = "";
+
+            var match = BranchNameRegex().Match(reflogOutput);
+            if (match.Success)
             {
-                var reflogOutput = await RunProcessAsync("git", "reflog -2");
-                Console.WriteLine($"[DEBUG] Reflog output: {reflogOutput}");
+                branchName = match.Groups[1].Value;
+            }
+            else
+            {
+                var mergedBranches = await RunProcessAsync("git", "log -1 --merges --oneline");
+                Console.WriteLine($"[DEBUG] Recent merges: {mergedBranches}");
 
-                foreach (var line in reflogOutput.Split('\n'))
+                match = BranchNameRegex().Match(mergedBranches);
+                if (match.Success)
                 {
-                    var mat = BranchNameRegex().Match(line);
-                    if (mat.Success)
-                    {
-                        sourceBranch = mat.Groups[1].Value;
-                        Console.WriteLine($"[DEBUG] Found branch in reflog: {sourceBranch}");
-                        break;
-                    }
+                    branchName = match.Groups[1].Value;
                 }
             }
 
-            if (string.IsNullOrEmpty(sourceBranch))
+            if (string.IsNullOrEmpty(branchName))
             {
-                Console.WriteLine("[INFO] No source branch found");
+                Console.WriteLine("[INFO] No branch name found");
                 return;
             }
 
-            var match = BranchNameRegex().Match(sourceBranch);
-            Console.WriteLine($"[DEBUG] Regex mat success: {match.Success}");
-            if (!match.Success)
-            {
-                Console.WriteLine("[INFO] Branch name does not mat expected pattern");
-                return;
-            }
+            Console.WriteLine($"[INFO] Found branch name: {branchName}");
 
-            sourceBranch = match.Groups[1].Value;
-            Console.WriteLine($"[INFO] Source branch: {sourceBranch}");
-
-            var hasCommits = await HasCommitsAsync(sourceBranch);
-            if (!hasCommits)
-            {
-                Console.WriteLine("[INFO] No commits found in branch, skipping PR creation");
-                return;
-            }
-
-            var prInfo = await GetPullRequestInfoAsync(sourceBranch);
-            Console.WriteLine($"[DEBUG] PR Info created: {(prInfo != null ? "yes" : "no")}");
+            var prInfo = await GetPullRequestInfoAsync(branchName);
             if (prInfo is null)
             {
                 Console.WriteLine("[INFO] Branch type not recognized");
@@ -66,8 +49,6 @@ public partial class PullRequestConfiguration
 
             Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
             await AuthenticateWithGitHubCliAsync();
-
-            await RunProcessAsync("git", $"push origin {sourceBranch}");
 
             Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
@@ -80,25 +61,15 @@ public partial class PullRequestConfiguration
         }
     }
 
-    private static async Task<bool> HasCommitsAsync(string branch)
-    {
-        try
-        {
-            var result = await RunProcessAsync("git", $"rev-list --count HEAD..{branch}");
-            return int.Parse(result.Trim(), CultureInfo.InvariantCulture) > 0;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[DEBUG] Error checking commits: {ex.Message}");
-            return true;
-        }
-    }
-
     private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
     {
         try
         {
-            var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
+            await RunProcessAsync("git", "checkout dev");
+            await RunProcessAsync("git", "pull origin dev");
+
+            var command =
+                $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head origin/{prInfo.SourceBranch}";
             Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
             var result = await RunProcessAsync("gh", command);
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
@@ -108,7 +79,7 @@ public partial class PullRequestConfiguration
                 || prInfo.SourceBranch.StartsWith("release/", StringComparison.Ordinal)
             )
             {
-                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
+                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head origin/{prInfo.SourceBranch}";
                 Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
                 result = await RunProcessAsync("gh", command);
                 Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
