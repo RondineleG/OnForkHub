@@ -20,6 +20,48 @@ public static class HuskyConfiguration
             return false;
         }
 
+        // Configure Git editor
+        try
+        {
+            var processInfo = new ProcessStartInfo("code", "-v")
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
+            using var process = Process.Start(processInfo);
+            await process!.WaitForExitAsync();
+
+            if (process.ExitCode == 0)
+            {
+                if (!await RunProcessAsync("git", "config --local core.editor \"code --wait\"", projectRoot))
+                {
+                    Console.WriteLine("[WARN] Failed to set VSCode as Git editor");
+                }
+                else
+                {
+                    Console.WriteLine("[INFO] VSCode configured as Git editor");
+                }
+            }
+            else
+            {
+                if (!await RunProcessAsync("git", "config --local core.editor \"notepad\"", projectRoot))
+                {
+                    Console.WriteLine("[WARN] Failed to set Notepad as Git editor");
+                }
+                else
+                {
+                    Console.WriteLine("[INFO] Notepad configured as Git editor (VSCode not found)");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            await RunProcessAsync("git", "config --local core.editor \"notepad\"", projectRoot);
+            Console.WriteLine("[INFO] Notepad configured as Git editor (VSCode not found)");
+        }
+
         Console.WriteLine("[INFO] Husky configured successfully.");
         return true;
     }
