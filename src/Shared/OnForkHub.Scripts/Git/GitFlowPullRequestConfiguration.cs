@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace OnForkHub.Scripts.Git;
 
 public static class GitFlowPullRequestConfiguration
@@ -24,12 +22,6 @@ public static class GitFlowPullRequestConfiguration
             return;
         }
 
-        if (!await HasCommits(branchName))
-        {
-            Console.WriteLine("[INFO] No commits to create PR");
-            return;
-        }
-
         await PushBranch(branchName);
 
         if (IsInMergeProcess())
@@ -46,41 +38,18 @@ public static class GitFlowPullRequestConfiguration
             return;
         }
 
-        var prInfo = GetPullRequestInfoAsync(branchName);
-        if (prInfo is null)
-        {
-            Console.WriteLine("[INFO] Branch type not recognized");
-            return;
-        }
-
-        prInfo.BaseBranch = "dev";
-
         Console.WriteLine("[DEBUG] Creating pull request");
-        await CreatePullRequestWithGitHubCLIAsync(prInfo);
 
         await AuthenticateWithGitHubCliAsync();
 
         await CreatePullRequestWithGitHubCLIAsync(
             new PullRequestInfo(
                 $"Merge {branchName} into dev",
-                $"Automatically generated PR for merging branch {branchName} into {prInfo.BaseBranch}.",
+                $"Automatically generated PR for merging branch {branchName} into dev .",
                 branchName,
                 "dev"
             )
         );
-    }
-
-    private static async Task<bool> HasCommits(string sourceBranch, string targetBranch = "dev")
-    {
-        try
-        {
-            var result = await RunProcessAsync("git", $"rev-list --count {targetBranch}..{sourceBranch}");
-            return int.Parse(result, CultureInfo.InvariantCulture) > 0;
-        }
-        catch
-        {
-            return false;
-        }
     }
 
     private static bool IsInMergeProcess()
@@ -112,16 +81,6 @@ public static class GitFlowPullRequestConfiguration
         {
             return false;
         }
-    }
-
-    private static PullRequestInfo GetPullRequestInfoAsync(string branchName)
-    {
-        return new PullRequestInfo(
-            $"Merge {branchName} into dev",
-            $"Automatically generated PR for merging branch {branchName} into dev.",
-            branchName,
-            "dev"
-        );
     }
 
     private static async Task AuthenticateWithGitHubCliAsync()
