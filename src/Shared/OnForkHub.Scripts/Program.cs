@@ -1,8 +1,11 @@
+using OnForkHub.Scripts.Git;
+using OnForkHub.Scripts.Husky;
+
 namespace OnForkHub.Scripts;
 
 public static class Program
 {
-    private static async Task Main()
+    private static async Task Main(string[] args)
     {
         try
         {
@@ -20,6 +23,15 @@ public static class Program
             {
                 Console.WriteLine("[ERROR] Husky configuration failed.");
                 return;
+            }
+
+            if (args.Contains("pr-create"))
+            {
+                await PullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
+            }
+            else
+            {
+                Console.WriteLine("[INFO] Skipping PR creation (pr-create flag not present)");
             }
 
             Console.WriteLine("[INFO] Configuration completed successfully.");

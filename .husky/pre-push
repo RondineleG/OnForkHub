@@ -9,6 +9,15 @@ GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 RESET=$(tput sgr0)
 
+if [[ $BRANCH_NAME =~ $PROTECTED_BRANCHES ]]; then
+    echo "${RED}❌ Direct push to $BRANCH_NAME branch is not allowed!${RESET}"
+    echo "${YELLOW}ℹ️  Please:${RESET}"
+    echo "1. Create a feature or hotfix branch"
+    echo "2. Push to this branch"
+    echo "3. Create a Pull Request"
+    exit 1
+fi
+
 echo "🚀 Preparing to push changes..."
 echo "----------------------------------"
 

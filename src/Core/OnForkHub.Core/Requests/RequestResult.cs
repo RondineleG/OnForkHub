@@ -16,9 +16,9 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public DateTime Date { get; set; } = DateTime.Now;
 
-    public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= new Dictionary<string, List<string>>();
+    public Dictionary<string, List<string>> EntityErrors => _entityErrors ??= [];
 
-    public List<string> GeneralErrors => _generalErrors ??= new List<string>();
+    public List<string> GeneralErrors => _generalErrors ??= [];
 
     public string Id { get; set; } = string.Empty;
 
@@ -32,7 +32,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public ValidationResult ValidationResult { get; protected set; }
 
-    public IEnumerable<RequestValidation> Validations { get; protected init; } = new List<RequestValidation>();
+    public IEnumerable<RequestValidation> Validations { get; protected init; } = [];
 
     public static RequestResult EntityAlreadyExists(string entity, object id, string description)
     {
@@ -130,7 +130,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
         Status = EResultStatus.EntityHasError;
         if (!EntityErrors.TryGetValue(entity, out var value))
         {
-            value = new List<string>();
+            value = [];
             EntityErrors[entity] = value;
         }
 
