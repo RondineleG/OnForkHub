@@ -2,7 +2,7 @@ namespace OnForkHub.Scripts.Git;
 
 public partial class PullRequestConfiguration
 {
-    [GeneratedRegex(@"from (feature/[^:\s]+|hotfix/[^:\s]+|bugfix/[^:\s]+|release/[^:\s]+)")]
+    [GeneratedRegex(@"(feature/[^:\s]+|hotfix/[^:\s]+|bugfix/[^:\s]+|release/[^:\s]+)")]
     public static partial Regex BranchNameRegex();
 
     public static async Task CreatePullRequestForGitFlowFinishAsync()
@@ -10,14 +10,14 @@ public partial class PullRequestConfiguration
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
-            var gitLog = await RunProcessAsync("git", "reflog -1");
-            Console.WriteLine($"[DEBUG] Git reflog output: {gitLog}");
+            var currentBranch = await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
+            Console.WriteLine($"[DEBUG] Current branch: {currentBranch}");
 
-            var match = BranchNameRegex().Match(gitLog);
+            var match = BranchNameRegex().Match(currentBranch);
             Console.WriteLine($"[DEBUG] Regex match success: {match.Success}");
             if (!match.Success)
             {
-                Console.WriteLine("[INFO] No matching branch found in git reflog");
+                Console.WriteLine("[INFO] No matching branch found");
                 return;
             }
 
@@ -35,6 +35,8 @@ public partial class PullRequestConfiguration
             Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
             await AuthenticateWithGitHubCliAsync();
 
+            await RunProcessAsync("git", "push origin HEAD");
+
             Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
         }
@@ -42,7 +44,6 @@ public partial class PullRequestConfiguration
         {
             Console.WriteLine($"[ERROR] Failed to create pull request: {ex.Message}");
             Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
-            // Rethrow the exception to ensure it's not silently caught
             throw;
         }
     }
@@ -73,7 +74,7 @@ public partial class PullRequestConfiguration
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] GitHub CLI authentication error: {ex.Message}");
-            throw; // Rethrow to ensure the error is not silently caught
+            throw;
         }
     }
 
@@ -164,7 +165,10 @@ public partial class PullRequestConfiguration
     {
         try
         {
+            await RunProcessAsync("git", $"push origin {prInfo.SourceBranch}");
+
             var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
+            Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
             var result = await RunProcessAsync("gh", command);
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
 
@@ -174,6 +178,7 @@ public partial class PullRequestConfiguration
             )
             {
                 command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
+                Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
                 result = await RunProcessAsync("gh", command);
                 Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
             }
