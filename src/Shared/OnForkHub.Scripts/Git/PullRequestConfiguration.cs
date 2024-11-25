@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace OnForkHub.Scripts.Git;
 
 public partial class PullRequestConfiguration
@@ -7,34 +9,19 @@ public partial class PullRequestConfiguration
 
     public static async Task CreatePullRequestForGitFlowFinishAsync()
     {
+        var isFinishCommand = await IsGitFlowFinishCommandAsync();
+        if (!isFinishCommand)
+        {
+            Console.WriteLine("[DEBUG] Not a finish command, skipping PR creation");
+            return;
+        }
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
-            var branchOutput = await RunProcessAsync("git", "branch --show-current");
-            Console.WriteLine($"[DEBUG] Current branch output: {branchOutput}");
+            var currentBranch = await RunProcessAsync("git", "branch --show-current");
+            Console.WriteLine($"[DEBUG] Current branch output: {currentBranch}");
 
-            if (branchOutput.Trim() == "dev")
-            {
-                var reflogOutput = await RunProcessAsync("git", "reflog -2");
-                Console.WriteLine($"[DEBUG] Reflog output: {reflogOutput}");
-
-                var reflogLines = reflogOutput.Split('\n');
-                foreach (var line in reflogLines)
-                {
-                    if (line.Contains("from"))
-                    {
-                        var mat = BranchNameRegex().Match(line);
-                        if (mat.Success)
-                        {
-                            branchOutput = mat.Groups[1].Value;
-                            Console.WriteLine($"[DEBUG] Found branch in reflog: {branchOutput}");
-                            break;
-                        }
-                    }
-                }
-            }
-
-            var match = BranchNameRegex().Match(branchOutput);
+            var match = BranchNameRegex().Match(currentBranch);
             Console.WriteLine($"[DEBUG] Regex match success: {match.Success}");
             if (!match.Success)
             {
@@ -44,6 +31,13 @@ public partial class PullRequestConfiguration
 
             var sourceBranch = match.Groups[1].Value;
             Console.WriteLine($"[INFO] Source branch: {sourceBranch}");
+
+            var hasCommits = await HasCommitsAsync(sourceBranch);
+            if (!hasCommits)
+            {
+                Console.WriteLine("[INFO] No commits found in branch, skipping PR creation");
+                return;
+            }
 
             var prInfo = await GetPullRequestInfoAsync(sourceBranch);
             Console.WriteLine($"[DEBUG] PR Info created: {(prInfo != null ? "yes" : "no")}");
@@ -56,6 +50,8 @@ public partial class PullRequestConfiguration
             Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
             await AuthenticateWithGitHubCliAsync();
 
+            await RunProcessAsync("git", $"push origin {sourceBranch}");
+
             Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
         }
@@ -64,6 +60,33 @@ public partial class PullRequestConfiguration
             Console.WriteLine($"[ERROR] Failed to create pull request: {ex.Message}");
             Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
             throw;
+        }
+    }
+
+    private static async Task<bool> IsGitFlowFinishCommandAsync()
+    {
+        try
+        {
+            var gitDir = await RunProcessAsync("git", "rev-parse --git-dir");
+            var originalArgs = await File.ReadAllTextAsync(Path.Combine(gitDir.Trim(), "gitflow.finish"));
+            return !string.IsNullOrEmpty(originalArgs);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task<bool> HasCommitsAsync(string branch)
+    {
+        try
+        {
+            var result = await RunProcessAsync("git", $"rev-list --count dev..{branch}");
+            return int.Parse(result.Trim(), CultureInfo.InvariantCulture) > 0;
+        }
+        catch
+        {
+            return false;
         }
     }
 
