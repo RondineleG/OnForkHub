@@ -25,6 +25,8 @@ public static class Program
                 return;
             }
 
+            await PullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
+
             Console.WriteLine("[INFO] Configuration completed successfully.");
         }
         catch (Exception ex)

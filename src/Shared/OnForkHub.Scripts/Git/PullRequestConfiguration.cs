@@ -29,6 +29,8 @@ public partial class PullRequestConfiguration
                 return;
             }
 
+            await AuthenticateWithGitHubCliAsync();
+
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
         }
         catch (Exception ex)
@@ -37,13 +39,47 @@ public partial class PullRequestConfiguration
         }
     }
 
-    private static async Task<PullRequestInfo?> GetPullRequestInfoAsync(string branchName)
+    private static async Task AuthenticateWithGitHubCliAsync()
+    {
+        try
+        {
+            if (!await IsGitHubCliInstalledAsync())
+            {
+                Console.WriteLine("❌ GitHub CLI (gh) is not installed. Please install it.");
+                return;
+            }
+
+            var status = await RunProcessAsync("gh", "auth status");
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                Console.WriteLine("❌ GitHub CLI is not authenticated. Please log in.");
+                var loginResult = await RunProcessAsync("gh", "auth login");
+                if (string.IsNullOrWhiteSpace(loginResult))
+                {
+                    Console.WriteLine("❌ Failed to authenticate. Exiting.");
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Error authenticating with GitHub CLI: {ex.Message}");
+        }
+    }
+
+    private static async Task<bool> IsGitHubCliInstalledAsync()
+    {
+        var result = await RunProcessAsync("gh", "--version");
+        return !string.IsNullOrWhiteSpace(result);
+    }
+
+    private static Task<PullRequestInfo?> GetPullRequestInfoAsync(string branchName)
     {
         try
         {
             if (string.IsNullOrEmpty(branchName))
             {
-                return null;
+                return Task.FromResult<PullRequestInfo?>(null);
             }
 
             var info = new PullRequestInfo(branchName);
@@ -53,45 +89,36 @@ public partial class PullRequestConfiguration
                 info.Title = $"Feature completed: {branchName.Replace("feature/", "", StringComparison.Ordinal)}";
                 info.Body = "This feature is ready for review.";
                 info.BaseBranch = "dev";
-
-                await RunProcessAsync("git", $"checkout {branchName}");
-                await RunProcessAsync("git", "pull origin dev --rebase");
             }
             else if (branchName.StartsWith("hotfix/", StringComparison.Ordinal))
             {
                 info.Title = $"Hotfix: {branchName.Replace("hotfix/", "", StringComparison.Ordinal)}";
                 info.Body = "Urgent hotfix for production.";
                 info.BaseBranch = "main";
-                await RunProcessAsync("git", $"checkout {branchName}");
-                await RunProcessAsync("git", "pull origin main --rebase");
             }
             else if (branchName.StartsWith("bugfix/", StringComparison.Ordinal))
             {
                 info.Title = $"Bugfix: {branchName.Replace("bugfix/", "", StringComparison.Ordinal)}";
                 info.Body = "Bug fixed and ready for review.";
                 info.BaseBranch = "dev";
-                await RunProcessAsync("git", $"checkout {branchName}");
-                await RunProcessAsync("git", "pull origin dev --rebase");
             }
             else if (branchName.StartsWith("release/", StringComparison.Ordinal))
             {
                 info.Title = $"Release: {branchName.Replace("release/", "", StringComparison.Ordinal)}";
                 info.Body = "Release is ready for production.";
                 info.BaseBranch = "main";
-                await RunProcessAsync("git", $"checkout {branchName}");
-                await RunProcessAsync("git", "pull origin main --rebase");
             }
             else
             {
-                return null;
+                return Task.FromResult<PullRequestInfo?>(null);
             }
 
-            return info;
+            return Task.FromResult<PullRequestInfo?>(info);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Error preparing PR info: {ex.Message}");
-            return null;
+            return Task.FromResult<PullRequestInfo?>(null);
         }
     }
 
@@ -99,9 +126,6 @@ public partial class PullRequestConfiguration
     {
         try
         {
-            var ghVersion = await RunProcessAsync("gh", "--version");
-            Console.WriteLine($"[INFO] GitHub CLI version: {ghVersion}");
-
             var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
             var result = await RunProcessAsync("gh", command);
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
