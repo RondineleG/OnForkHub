@@ -9,28 +9,44 @@ public partial class PullRequestConfiguration
 
     public static async Task CreatePullRequestForGitFlowFinishAsync()
     {
-        var isFinishCommand = await IsGitFlowFinishCommandAsync();
-        if (!isFinishCommand)
-        {
-            Console.WriteLine("[DEBUG] Not a finish command, skipping PR creation");
-            return;
-        }
-
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
-            var currentBranch = await RunProcessAsync("git", "branch --show-current");
-            Console.WriteLine($"[DEBUG] Current branch output: {currentBranch}");
+            var sourceBranch = Environment.GetEnvironmentVariable("HUSKY_GIT_PARAMS") ?? "";
+            Console.WriteLine($"[DEBUG] HUSKY_GIT_PARAMS: {sourceBranch}");
 
-            var match = BranchNameRegex().Match(currentBranch);
-            Console.WriteLine($"[DEBUG] Regex match success: {match.Success}");
-            if (!match.Success)
+            if (string.IsNullOrEmpty(sourceBranch))
             {
-                Console.WriteLine("[INFO] No matching branch found");
+                var reflogOutput = await RunProcessAsync("git", "reflog -2");
+                Console.WriteLine($"[DEBUG] Reflog output: {reflogOutput}");
+
+                foreach (var line in reflogOutput.Split('\n'))
+                {
+                    var mat = BranchNameRegex().Match(line);
+                    if (mat.Success)
+                    {
+                        sourceBranch = mat.Groups[1].Value;
+                        Console.WriteLine($"[DEBUG] Found branch in reflog: {sourceBranch}");
+                        break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(sourceBranch))
+            {
+                Console.WriteLine("[INFO] No source branch found");
                 return;
             }
 
-            var sourceBranch = match.Groups[1].Value;
+            var match = BranchNameRegex().Match(sourceBranch);
+            Console.WriteLine($"[DEBUG] Regex mat success: {match.Success}");
+            if (!match.Success)
+            {
+                Console.WriteLine("[INFO] Branch name does not mat expected pattern");
+                return;
+            }
+
+            sourceBranch = match.Groups[1].Value;
             Console.WriteLine($"[INFO] Source branch: {sourceBranch}");
 
             var hasCommits = await HasCommitsAsync(sourceBranch);
@@ -64,30 +80,17 @@ public partial class PullRequestConfiguration
         }
     }
 
-    private static async Task<bool> IsGitFlowFinishCommandAsync()
-    {
-        try
-        {
-            var gitDir = await RunProcessAsync("git", "rev-parse --git-dir");
-            var originalArgs = await File.ReadAllTextAsync(Path.Combine(gitDir.Trim(), "gitflow.finish"));
-            return !string.IsNullOrEmpty(originalArgs);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private static async Task<bool> HasCommitsAsync(string branch)
     {
         try
         {
-            var result = await RunProcessAsync("git", $"rev-list --count dev..{branch}");
+            var result = await RunProcessAsync("git", $"rev-list --count HEAD..{branch}");
             return int.Parse(result.Trim(), CultureInfo.InvariantCulture) > 0;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            Console.WriteLine($"[DEBUG] Error checking commits: {ex.Message}");
+            return true;
         }
     }
 
