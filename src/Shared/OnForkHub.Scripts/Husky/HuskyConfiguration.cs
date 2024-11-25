@@ -1,4 +1,4 @@
-namespace OnForkHub.Scripts;
+namespace OnForkHub.Scripts.Husky;
 
 public static class HuskyConfiguration
 {

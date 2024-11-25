@@ -1,4 +1,4 @@
-namespace OnForkHub.Scripts;
+namespace OnForkHub.Scripts.Git;
 
 public static class GitFlowConfiguration
 {
