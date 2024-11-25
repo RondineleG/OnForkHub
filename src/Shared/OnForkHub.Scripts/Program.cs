@@ -5,7 +5,7 @@ namespace OnForkHub.Scripts;
 
 public static class Program
 {
-    private static async Task Main(string[] args)
+    private static async Task Main()
     {
         try
         {
@@ -25,14 +25,7 @@ public static class Program
                 return;
             }
 
-            if (args.Contains("pr-create"))
-            {
-                await PullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
-            }
-            else
-            {
-                Console.WriteLine("[INFO] Skipping PR creation (pr-create flag not present)");
-            }
+            await PullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
 
             Console.WriteLine("[INFO] Configuration completed successfully.");
         }
