@@ -8,6 +8,16 @@ public static class HuskyConfiguration
         var huskyPath = Path.Combine(projectRoot, ".husky");
         Console.WriteLine($"[INFO] Husky Path: {huskyPath}");
 
+        try
+        {
+            await ConfigureGitFlow(projectRoot);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to configure Git Flow: {ex.Message}");
+            return false;
+        }
+
         if (!await RunProcessAsync("dotnet", "tool restore", projectRoot))
         {
             Console.WriteLine("[ERROR] Failed to restore dotnet tools.");
@@ -20,7 +30,6 @@ public static class HuskyConfiguration
             return false;
         }
 
-        // Configure Git editor
         try
         {
             var processInfo = new ProcessStartInfo("code", "-v")
@@ -64,6 +73,49 @@ public static class HuskyConfiguration
 
         Console.WriteLine("[INFO] Husky configured successfully.");
         return true;
+    }
+
+    private static async Task ConfigureGitFlow(string projectRoot)
+    {
+        Console.WriteLine("[INFO] Configuring Git Flow...");
+
+        try
+        {
+            await RunProcessAsync("git", "flow version", projectRoot);
+            Console.WriteLine("[INFO] Git Flow already configured.");
+            return;
+        }
+        catch
+        {
+            Console.WriteLine("[INFO] Initializing Git Flow...");
+        }
+
+        var gitFlowConfig = new Dictionary<string, string>
+        {
+            { "branch.master", "main" },
+            { "branch.develop", "dev" },
+            { "prefix.feature", "feature/" },
+            { "prefix.bugfix", "bugfix/" },
+            { "prefix.release", "release/" },
+            { "prefix.hotfix", "hotfix/" },
+            { "prefix.support", "support/" },
+            { "prefix.versiontag", "v" },
+        };
+
+        foreach (var config in gitFlowConfig)
+        {
+            if (!await RunProcessAsync("git", $"config --local gitflow.{config.Key} {config.Value}", projectRoot))
+            {
+                throw new InvalidOperationException($"Failed to configure Git Flow {config.Key}");
+            }
+        }
+
+        if (!await RunProcessAsync("git", "flow init -d", projectRoot))
+        {
+            throw new InvalidOperationException("Failed to initialize Git Flow");
+        }
+
+        Console.WriteLine("[INFO] Git Flow configured successfully.");
     }
 
     private static async Task<bool> RunProcessAsync(string fileName, string arguments, string workingDirectory)
