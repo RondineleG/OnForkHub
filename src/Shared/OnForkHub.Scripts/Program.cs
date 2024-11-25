@@ -1,3 +1,6 @@
+using OnForkHub.Scripts.Git;
+using OnForkHub.Scripts.Husky;
+
 namespace OnForkHub.Scripts;
 
 public static class Program
@@ -21,6 +24,8 @@ public static class Program
                 Console.WriteLine("[ERROR] Husky configuration failed.");
                 return;
             }
+
+            await PullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
 
             Console.WriteLine("[INFO] Configuration completed successfully.");
         }

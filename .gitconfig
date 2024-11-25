@@ -9,3 +9,6 @@
     hotfix = hotfix/
     support = support/
     versiontag = v
+
+[gitflow "path"]
+    hooks = .husky
