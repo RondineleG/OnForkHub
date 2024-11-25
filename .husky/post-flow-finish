@@ -1,4 +1,6 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+unset GIT_FLOW_BRANCH
+
 dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj

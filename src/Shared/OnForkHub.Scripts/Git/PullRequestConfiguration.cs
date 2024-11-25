@@ -10,28 +10,7 @@ public partial class PullRequestConfiguration
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
-            var reflogOutput = await RunProcessAsync("git", "reflog -1");
-            Console.WriteLine($"[DEBUG] Reflog output: {reflogOutput}");
-
-            var branchName = "";
-
-            var match = BranchNameRegex().Match(reflogOutput);
-            if (match.Success)
-            {
-                branchName = match.Groups[1].Value;
-            }
-            else
-            {
-                var mergedBranches = await RunProcessAsync("git", "log -1 --merges --oneline");
-                Console.WriteLine($"[DEBUG] Recent merges: {mergedBranches}");
-
-                match = BranchNameRegex().Match(mergedBranches);
-                if (match.Success)
-                {
-                    branchName = match.Groups[1].Value;
-                }
-            }
-
+            var branchName = await GetCurrentBranch();
             if (string.IsNullOrEmpty(branchName))
             {
                 Console.WriteLine("[INFO] No branch name found");
@@ -40,15 +19,33 @@ public partial class PullRequestConfiguration
 
             Console.WriteLine($"[INFO] Found branch name: {branchName}");
 
+            if (!await HasUnpushedCommits(branchName))
+            {
+                Console.WriteLine("[INFO] No unpushed commits found");
+                return;
+            }
+
+            if (!await BranchExistsRemotely(branchName))
+            {
+                Console.WriteLine($"[DEBUG] Branch {branchName} doesn't exist remotely. Pushing...");
+                await PushBranch(branchName);
+            }
+
+            Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
+            await AuthenticateWithGitHubCliAsync();
+
             var prInfo = await GetPullRequestInfoAsync(branchName);
-            if (prInfo is null)
+            if (prInfo == null)
             {
                 Console.WriteLine("[INFO] Branch type not recognized");
                 return;
             }
 
-            Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
-            await AuthenticateWithGitHubCliAsync();
+            if (await PullRequestExists(branchName))
+            {
+                Console.WriteLine("[INFO] Pull request already exists");
+                return;
+            }
 
             Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
@@ -61,15 +58,62 @@ public partial class PullRequestConfiguration
         }
     }
 
+    private static async Task<string> GetCurrentBranch()
+    {
+        var output = await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
+        var match = BranchNameRegex().Match(output);
+        return match.Success ? match.Groups[1].Value : string.Empty;
+    }
+
+    private static async Task<bool> HasUnpushedCommits(string branchName)
+    {
+        try
+        {
+            var result = await RunProcessAsync("git", $"log origin/{branchName}..{branchName} --oneline");
+            return !string.IsNullOrWhiteSpace(result);
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    private static async Task<bool> BranchExistsRemotely(string branchName)
+    {
+        try
+        {
+            var result = await RunProcessAsync("git", $"ls-remote --heads origin {branchName}");
+            return !string.IsNullOrWhiteSpace(result);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task PushBranch(string branchName)
+    {
+        await RunProcessAsync("git", $"push -u origin {branchName}");
+    }
+
+    private static async Task<bool> PullRequestExists(string branchName)
+    {
+        try
+        {
+            var result = await RunProcessAsync("gh", $"pr list --head {branchName} --state all");
+            return !string.IsNullOrWhiteSpace(result);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
     {
         try
         {
-            await RunProcessAsync("git", "checkout dev");
-            await RunProcessAsync("git", "pull origin dev");
-
-            var command =
-                $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head origin/{prInfo.SourceBranch}";
+            var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
             Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
             var result = await RunProcessAsync("gh", command);
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
@@ -79,7 +123,7 @@ public partial class PullRequestConfiguration
                 || prInfo.SourceBranch.StartsWith("release/", StringComparison.Ordinal)
             )
             {
-                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head origin/{prInfo.SourceBranch}";
+                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
                 Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
                 result = await RunProcessAsync("gh", command);
                 Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
