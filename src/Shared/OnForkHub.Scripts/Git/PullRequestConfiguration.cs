@@ -10,23 +10,23 @@ public partial class PullRequestConfiguration
         Console.WriteLine("[DEBUG] Starting CreatePullRequestForGitFlowFinishAsync");
         try
         {
-            var currentBranch = await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
-            Console.WriteLine($"[DEBUG] Current branch: {currentBranch}");
-
-            var match = BranchNameRegex().Match(currentBranch);
-            Console.WriteLine($"[DEBUG] Regex match success: {match.Success}");
-            if (!match.Success)
+            var branchName = await GetCurrentBranch();
+            if (string.IsNullOrEmpty(branchName))
             {
-                Console.WriteLine("[INFO] No matching branch found");
+                Console.WriteLine("[INFO] No branch name found");
                 return;
             }
 
-            var sourceBranch = match.Groups[1].Value;
-            Console.WriteLine($"[INFO] Source branch: {sourceBranch}");
+            Console.WriteLine($"[INFO] Found branch name: {branchName}");
 
-            var prInfo = await GetPullRequestInfoAsync(sourceBranch);
-            Console.WriteLine($"[DEBUG] PR Info created: {(prInfo != null ? "yes" : "no")}");
-            if (prInfo is null)
+            if (await PullRequestExists(branchName))
+            {
+                Console.WriteLine("[INFO] Pull request already exists");
+                return;
+            }
+
+            var prInfo = await GetPullRequestInfoAsync(branchName);
+            if (prInfo == null)
             {
                 Console.WriteLine("[INFO] Branch type not recognized");
                 return;
@@ -35,7 +35,7 @@ public partial class PullRequestConfiguration
             Console.WriteLine("[DEBUG] Attempting to authenticate with GitHub CLI");
             await AuthenticateWithGitHubCliAsync();
 
-            await RunProcessAsync("git", "push origin HEAD");
+            await RunProcessAsync("git", $"push origin {branchName}");
 
             Console.WriteLine("[DEBUG] Creating pull request");
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
@@ -44,6 +44,69 @@ public partial class PullRequestConfiguration
         {
             Console.WriteLine($"[ERROR] Failed to create pull request: {ex.Message}");
             Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+            throw;
+        }
+    }
+
+    private static async Task<string> GetCurrentBranch()
+    {
+        try
+        {
+            var reflogOutput = await RunProcessAsync("git", "reflog -1");
+            var match = BranchNameRegex().Match(reflogOutput);
+
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+
+            var currentBranch = await RunProcessAsync("git", "branch --show-current");
+            match = BranchNameRegex().Match(currentBranch);
+
+            return match.Success ? match.Groups[1].Value : string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private static async Task<bool> PullRequestExists(string branchName)
+    {
+        try
+        {
+            var result = await RunProcessAsync("gh", $"pr list --head {branchName} --state all");
+            return !string.IsNullOrWhiteSpace(result);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
+    {
+        try
+        {
+            var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
+            Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
+            var result = await RunProcessAsync("gh", command);
+            Console.WriteLine($"[INFO] Successfully created PR: {result}");
+
+            if (
+                prInfo.SourceBranch.StartsWith("hotfix/", StringComparison.Ordinal)
+                || prInfo.SourceBranch.StartsWith("release/", StringComparison.Ordinal)
+            )
+            {
+                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
+                Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
+                result = await RunProcessAsync("gh", command);
+                Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to create PR with GitHub CLI: {ex.Message}");
             throw;
         }
     }
@@ -158,35 +221,6 @@ public partial class PullRequestConfiguration
         {
             Console.WriteLine($"[ERROR] Error preparing PR info: {ex.Message}");
             return Task.FromResult<PullRequestInfo?>(null);
-        }
-    }
-
-    private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
-    {
-        try
-        {
-            await RunProcessAsync("git", $"push origin {prInfo.SourceBranch}");
-
-            var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
-            Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
-            var result = await RunProcessAsync("gh", command);
-            Console.WriteLine($"[INFO] Successfully created PR: {result}");
-
-            if (
-                prInfo.SourceBranch.StartsWith("hotfix/", StringComparison.Ordinal)
-                || prInfo.SourceBranch.StartsWith("release/", StringComparison.Ordinal)
-            )
-            {
-                command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base dev --head {prInfo.SourceBranch}";
-                Console.WriteLine($"[DEBUG] Creating additional PR with command: gh {command}");
-                result = await RunProcessAsync("gh", command);
-                Console.WriteLine($"[INFO] Successfully created additional PR to dev: {result}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR] Failed to create PR with GitHub CLI: {ex.Message}");
-            throw;
         }
     }
 }
