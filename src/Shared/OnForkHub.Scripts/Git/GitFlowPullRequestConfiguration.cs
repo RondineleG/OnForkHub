@@ -40,7 +40,7 @@ public static class GitFlowPullRequestConfiguration
         );
 
         await CreatePullRequestWithGitHubCLIAsync(prInfo);
-
+        await RunProcessAsync("git", "merge --abort");
         Environment.Exit(0);
     }
 
@@ -66,14 +66,23 @@ public static class GitFlowPullRequestConfiguration
     {
         try
         {
+            var existingPRs = await RunProcessAsync("gh", $"pr list --head {prInfo.SourceBranch} --base {prInfo.BaseBranch} --state open");
+
+            if (!string.IsNullOrWhiteSpace(existingPRs))
+            {
+                var prNumber = existingPRs.Split('\t')[0];
+                await RunProcessAsync("gh", $"pr edit {prNumber} --title \"{prInfo.Title}\" --body \"{prInfo.Body}\"");
+                Console.WriteLine($"[INFO] Updated existing PR #{prNumber}");
+                return;
+            }
+
             var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
-            Console.WriteLine($"[DEBUG] Creating PR with command: gh {command}");
             var result = await RunProcessAsync("gh", command);
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[WARNING] Could not create PR: {ex.Message}");
+            Console.WriteLine($"[WARNING] Could not create/update PR: {ex.Message}");
             throw;
         }
     }
