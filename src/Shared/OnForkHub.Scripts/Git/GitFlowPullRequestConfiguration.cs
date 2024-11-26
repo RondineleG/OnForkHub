@@ -2,27 +2,71 @@ namespace OnForkHub.Scripts.Git;
 
 public static class GitFlowPullRequestConfiguration
 {
+    public record PullRequestInfo(string Title, string Body, string BaseBranch, string SourceBranch);
+
     private static async Task<string> GetSourceBranch()
     {
         return await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
+    }
+
+    private static async Task EnsureLabelsExistAsync()
+    {
+        var requiredLabels = new Dictionary<string, string>
+        {
+            { "in-review", "#19034f" },
+            { "high", "#7a2102" },
+            { "large", "#010821" },
+        };
+
+        foreach (var label in requiredLabels)
+        {
+            try
+            {
+                await RunProcessAsync("gh", $"label list --search \"{label.Key}\"");
+                var result = await RunProcessAsync("gh", $"label create \"{label.Key}\" --color \"{label.Value}\" --force");
+                Console.WriteLine($"[INFO] Label check/creation: {result}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARNING] Label creation warning: {ex.Message}");
+            }
+        }
     }
 
     private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
     {
         try
         {
-            var existingPRs = await RunProcessAsync("gh", $"pr list --head {prInfo.SourceBranch} --base {prInfo.BaseBranch} --state open");
+            await EnsureLabelsExistAsync();
 
+            var existingPRs = await RunProcessAsync("gh", $"pr list --head {prInfo.SourceBranch} --base {prInfo.BaseBranch} --state open");
             if (!string.IsNullOrWhiteSpace(existingPRs))
             {
                 var prNumber = existingPRs.Split('\t')[0];
-                await RunProcessAsync("gh", $"pr edit {prNumber} --title \"{prInfo.Title}\" --body \"{prInfo.Body}\"");
+                var editCommand =
+                    $"pr edit {prNumber}"
+                    + $" --title \"{prInfo.Title}\""
+                    + $" --body \"{prInfo.Body}\""
+                    + " --add-label \"status:in-review,priority:high,size:large\""
+                    + " --add-assignee @me"
+                    + " --milestone onforkhub-core-foundation";
+
+                await RunProcessAsync("gh", editCommand);
                 Console.WriteLine($"[INFO] Updated existing PR #{prNumber}");
                 return;
             }
 
-            var command = $"pr create --title \"{prInfo.Title}\" --body \"{prInfo.Body}\" --base {prInfo.BaseBranch} --head {prInfo.SourceBranch}";
-            var result = await RunProcessAsync("gh", command);
+            var createCommand =
+                $"pr create"
+                + $" --title \"{prInfo.Title}\""
+                + $" --body \"{prInfo.Body}\""
+                + $" --base {prInfo.BaseBranch}"
+                + $" --head {prInfo.SourceBranch}"
+                + " --label \"status:in-review,priority:high,size:large\""
+                + " --assignee @me"
+                + " --milestone onforkhub-core-foundation";
+
+            var result = await RunProcessAsync("gh", createCommand);
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
         }
         catch (Exception ex)
@@ -44,22 +88,19 @@ public static class GitFlowPullRequestConfiguration
 
             Console.WriteLine($"[INFO] Starting PR creation for {branchName}");
 
-            // Força push da branch feature antes de qualquer operação
             await ForcePushFeatureBranch(branchName);
 
             var prInfo = new PullRequestInfo(
-                $"Merge {branchName} into dev",
-                $"Automatically generated PR for merging branch {branchName} into dev.",
-                "dev",
-                branchName
+                Title: $"Merge {branchName} into dev",
+                Body: $"Automatically generated PR for merging branch {branchName} into dev.",
+                BaseBranch: "dev",
+                SourceBranch: branchName
             );
 
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
 
-            // Aborta qualquer merge em andamento
             await AbortMerge();
 
-            // Mantém na branch feature
             await RunProcessAsync("git", $"checkout {branchName}");
 
             Environment.Exit(0);
@@ -76,13 +117,8 @@ public static class GitFlowPullRequestConfiguration
         try
         {
             Console.WriteLine($"[INFO] Force pushing {branchName}...");
-
-            // Garante que estamos na branch correta
             await RunProcessAsync("git", $"checkout {branchName}");
-
-            // Força o push da feature branch
             await RunProcessAsync("git", $"push -f origin {branchName}");
-
             Console.WriteLine($"[INFO] Successfully pushed {branchName}");
         }
         catch (Exception ex)
@@ -101,7 +137,6 @@ public static class GitFlowPullRequestConfiguration
         }
         catch
         {
-            // Ignora erro se não houver merge em andamento
             Console.WriteLine("[INFO] No merge to abort");
         }
     }
@@ -126,7 +161,7 @@ public static class GitFlowPullRequestConfiguration
         process.Start();
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
-        process.WaitForExit();
+        await process.WaitForExitAsync();
 
         if (!string.IsNullOrEmpty(error))
         {
