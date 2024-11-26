@@ -13,9 +13,9 @@ public static class GitFlowPullRequestConfiguration
     {
         var requiredLabels = new Dictionary<string, string>
         {
-            { "in-review", "6E49CB" },
-            { "high", "D93F0B" },
-            { "large", "2B52D4" },
+            { "in-review", "#19034f" },
+            { "high", "#7a2102" },
+            { "large", "#010821" },
         };
 
         foreach (var label in requiredLabels)
