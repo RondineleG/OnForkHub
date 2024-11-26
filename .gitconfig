@@ -2,13 +2,52 @@
     master = main
     develop = dev
 
+[gitflow "path"]
+    hooks = .husky
+
+[gitflow "feature"]
+    finish = false
+    no-ff = true
+    no-merge = true
+    keepremote = true
+    keeplocal = true
+    keepbranch = true
+    squash = false
+    no-push = true
+
+
+[gitflow "bugfix"]
+    finish = false
+    no-ff = true
+    no-merge = true
+    keepremote = true
+    keeplocal = true
+    keepbranch = true
+    squash = false
+
+
+[gitflow "release"]
+    finish = false
+    no-ff = true
+    no-merge = true
+    keepremote = true
+    keeplocal = true
+    keepbranch = true
+    squash = false
+
+[gitflow "hotfix"]
+    finish = false
+    no-ff = true
+    no-merge = true
+    keepremote = true
+    keeplocal = true
+    keepbranch = true
+    squash = false
+
+
 [gitflow "prefix"]
     feature = feature/
     bugfix = bugfix/
     release = release/
     hotfix = hotfix/
-    support = support/
     versiontag = v
-
-[gitflow "path"]
-    hooks = .husky
