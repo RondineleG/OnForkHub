@@ -14,16 +14,54 @@ public static class HuskyConfiguration
                 Console.WriteLine("[INFO] Git repository initialized");
             }
 
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "flow init",
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = projectRoot,
+            };
+
+            using (var process = Process.Start(processInfo))
+            {
+                if (process == null)
+                {
+                    throw new InvalidOperationException("Failed to start Git Flow init process");
+                }
+
+                using (var writer = process.StandardInput)
+                {
+                    await writer.WriteLineAsync("main");
+                    await writer.WriteLineAsync("dev");
+                    await writer.WriteLineAsync("feature/");
+                    await writer.WriteLineAsync("bugfix/");
+                    await writer.WriteLineAsync("release/");
+                    await writer.WriteLineAsync("hotfix/");
+                    await writer.WriteLineAsync("support/");
+                    await writer.WriteLineAsync("v");
+                    await writer.WriteLineAsync(".husky");
+                }
+
+                var output = await process.StandardOutput.ReadToEndAsync();
+                var error = await process.StandardError.ReadToEndAsync();
+
+                Console.WriteLine("[INFO] Git Flow init output:");
+                Console.WriteLine(output);
+
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    Console.WriteLine("[INFO] Git Flow init messages:");
+                    Console.WriteLine(error);
+                }
+
+                await process.WaitForExitAsync();
+            }
+
             var configs = new Dictionary<string, string>
             {
-                { "gitflow.branch.master", "main" },
-                { "gitflow.branch.develop", "dev" },
-                { "gitflow.prefix.feature", "feature/" },
-                { "gitflow.prefix.bugfix", "bugfix/" },
-                { "gitflow.prefix.release", "release/" },
-                { "gitflow.prefix.hotfix", "hotfix/" },
-                { "gitflow.prefix.support", "support/" },
-                { "gitflow.prefix.versiontag", "v" },
                 { "gitflow.feature.finish", "false" },
                 { "gitflow.feature.no-ff", "true" },
                 { "gitflow.feature.no-merge", "true" },
@@ -35,41 +73,12 @@ public static class HuskyConfiguration
                 await RunProcessAsync("git", $"config --local {config.Key} {config.Value}", projectRoot);
             }
 
-            if (!await BranchExists("main", projectRoot))
-            {
-                await RunProcessAsync("git", "checkout -b main", projectRoot);
-                await RunProcessAsync("git", "add .", projectRoot);
-                await RunProcessAsync("git", "commit --allow-empty -m \"Initial commit\"", projectRoot);
-            }
-
-            if (!await BranchExists("dev", projectRoot))
-            {
-                await RunProcessAsync("git", "checkout -b dev", projectRoot);
-                await RunProcessAsync("git", "add .", projectRoot);
-                await RunProcessAsync("git", "commit --allow-empty -m \"Initial dev commit\"", projectRoot);
-            }
-
-            await RunProcessAsync("git", "flow init -d -f", projectRoot);
-
             Console.WriteLine("[INFO] Git Flow configured successfully");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Exception during Git Flow init: {ex.Message}");
             throw;
-        }
-    }
-
-    private static async Task<bool> BranchExists(string branchName, string projectRoot)
-    {
-        try
-        {
-            var result = await RunProcessAsync("git", $"rev-parse --verify {branchName}", projectRoot);
-            return result;
-        }
-        catch
-        {
-            return false;
         }
     }
 
