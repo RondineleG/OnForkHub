@@ -2,6 +2,8 @@ namespace OnForkHub.Scripts.Git;
 
 public static class GitFlowPullRequestConfiguration
 {
+    public record PullRequestInfo(string Title, string Body, string BaseBranch, string SourceBranch);
+
     private static async Task<string> GetSourceBranch()
     {
         return await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
@@ -40,15 +42,15 @@ public static class GitFlowPullRequestConfiguration
             var existingPRs = await RunProcessAsync("gh", $"pr list --head {prInfo.SourceBranch} --base {prInfo.BaseBranch} --state open");
             if (!string.IsNullOrWhiteSpace(existingPRs))
             {
-                await RunProcessAsync(
-                    "gh",
+                var editCommand =
                     $"pr edit {existingPRs.Split('\t')[0]}"
-                        + $" --title \"{prInfo.Title}\""
-                        + $" --body \"{prInfo.Body}\""
-                        + " --add-label \"status:in-review,priority:high,size:large\""
-                        + " --add-assignee @me"
-                        + " --milestone onforkhub-core-foundation"
-                );
+                    + $" --title \"{prInfo.Title}\""
+                    + $" --body \"{prInfo.Body}\""
+                    + " --add-label \"status:in-review,priority:high,size:large\""
+                    + " --add-assignee @me"
+                    + " --milestone onforkhub-core-foundation";
+
+                await RunProcessAsync("gh", editCommand);
 
                 await RunProcessAsync("gh", $"project-v2 item-add --project OnForkHub --id {existingPRs.Split('\t')[0]} --status \"In Review\"");
 
@@ -69,7 +71,6 @@ public static class GitFlowPullRequestConfiguration
             var result = await RunProcessAsync("gh", createCommand);
 
             var prNumber = ExtractPRNumber(result);
-
             if (!string.IsNullOrEmpty(prNumber))
             {
                 await RunProcessAsync("gh", $"project-v2 item-add --project OnForkHub --id {prNumber} --status \"In Review\"");
@@ -82,12 +83,6 @@ public static class GitFlowPullRequestConfiguration
             Console.WriteLine($"[WARNING] Could not create/update PR: {ex.Message}");
             throw;
         }
-    }
-
-    private static string ExtractPRNumber(string prUrl)
-    {
-        var parts = prUrl.TrimEnd().Split('/');
-        return parts[^1];
     }
 
     public static async Task CreatePullRequestForGitFlowFinishAsync()
@@ -105,10 +100,10 @@ public static class GitFlowPullRequestConfiguration
             await ForcePushFeatureBranch(branchName);
 
             var prInfo = new PullRequestInfo(
-                $"Merge {branchName} into dev",
-                $"Automatically generated PR for merging branch {branchName} into dev.",
-                "dev",
-                branchName
+                Title: $"Merge {branchName} into dev",
+                Body: $"Automatically generated PR for merging branch {branchName} into dev.",
+                BaseBranch: "dev",
+                SourceBranch: branchName
             );
 
             await CreatePullRequestWithGitHubCLIAsync(prInfo);
@@ -131,11 +126,8 @@ public static class GitFlowPullRequestConfiguration
         try
         {
             Console.WriteLine($"[INFO] Force pushing {branchName}...");
-
             await RunProcessAsync("git", $"checkout {branchName}");
-
             await RunProcessAsync("git", $"push -f origin {branchName}");
-
             Console.WriteLine($"[INFO] Successfully pushed {branchName}");
         }
         catch (Exception ex)
@@ -158,6 +150,12 @@ public static class GitFlowPullRequestConfiguration
         }
     }
 
+    private static string ExtractPRNumber(string prUrl)
+    {
+        var parts = prUrl.TrimEnd().Split('/');
+        return parts[^1];
+    }
+
     private static async Task<string> RunProcessAsync(string command, string arguments)
     {
         Console.WriteLine($"[DEBUG] Executing: {command} {arguments}");
@@ -178,7 +176,7 @@ public static class GitFlowPullRequestConfiguration
         process.Start();
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
-        process.WaitForExit();
+        await process.WaitForExitAsync();
 
         if (!string.IsNullOrEmpty(error))
         {
