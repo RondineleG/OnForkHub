@@ -52,7 +52,7 @@ public static class GitFlowPullRequestConfiguration
 
                 await RunProcessAsync("gh", editCommand);
 
-                await RunProcessAsync("gh", $"project-v2 item-add --project OnForkHub --id {existingPRs.Split('\t')[0]} --status \"In Review\"");
+                await RunProcessAsync("gh", $"project item-add --project OnForkHub --id {existingPRs.Split('\t')[0]} --status \"In Review\"");
 
                 Console.WriteLine($"[INFO] Updated existing PR #{existingPRs.Split('\t')[0]}");
                 return;
@@ -73,7 +73,7 @@ public static class GitFlowPullRequestConfiguration
             var prNumber = ExtractPRNumber(result);
             if (!string.IsNullOrEmpty(prNumber))
             {
-                await RunProcessAsync("gh", $"project-v2 item-add --project OnForkHub --id {prNumber} --status \"In Review\"");
+                await RunProcessAsync("gh", $"project item-add --project OnForkHub --id {prNumber} --status \"In Review\"");
             }
 
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
