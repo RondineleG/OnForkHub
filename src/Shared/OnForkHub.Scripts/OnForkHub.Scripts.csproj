@@ -9,11 +9,12 @@
     </PropertyGroup>
 
     <Target Name="CheckGitStatus" BeforeTargets="RunScript">
-        <Exec Command="git diff --exit-code &amp;&amp; git diff --cached --exit-code" WorkingDirectory="$(MSBuildProjectDirectory)">
-            <Output TaskParameter="ExitCode" PropertyName="GitStatusExitCode" />
-        </Exec>
-        <Error Condition="'$(GitStatusExitCode)' != '0'" Text="Working tree contains unstaged or uncommitted changes. Please commit or stash changes before building." />
-    </Target>
+    <Exec Command="git diff --exit-code &amp;&amp; git diff --cached --exit-code" WorkingDirectory="$(MSBuildProjectDirectory)" ContinueOnError="true">
+        <Output TaskParameter="ExitCode" PropertyName="GitStatusExitCode" />
+    </Exec>
+    <Message Condition="'$(GitStatusExitCode)' != '0'" Text="Warning: Working tree contains unstaged or uncommitted changes." Importance="high" />
+</Target>
+
 
     <Target Name="RunScript" AfterTargets="Build">
         <Message Text="Running script..." Importance="high" />

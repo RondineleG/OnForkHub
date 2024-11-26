@@ -27,9 +27,8 @@ public static class GitFlowConfiguration
             var statusOutput = await RunProcessAsync("git", "status --porcelain");
             if (!string.IsNullOrWhiteSpace(statusOutput))
             {
-                throw new InvalidOperationException(
-                    "[ERROR] Working tree contains unstaged changes. Commit, stash, or discard changes before proceeding."
-                );
+                Console.WriteLine("[ERROR] Working tree contains unstaged changes. Please commit or stash changes before proceeding.");
+                throw new InvalidOperationException("Working tree is not clean.");
             }
             Console.WriteLine("[INFO] Working tree is clean.");
         }
