@@ -7,6 +7,7 @@ public static class Program
 {
     private static async Task Main(string[] args)
     {
+        Console.WriteLine($"[INFO] args: {args}");
         try
         {
             var projectRoot = GetProjectRootPath();
@@ -27,7 +28,14 @@ public static class Program
 
             if (args.Contains("pr-create"))
             {
-                await PullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
+                try
+                {
+                    await GitFlowPullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] An error occurred: {ex.Message}");
+                }
             }
             else
             {

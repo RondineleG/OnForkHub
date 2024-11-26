@@ -4,6 +4,9 @@
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+PROTECTED_BRANCHES="^(main|dev)$"
+
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)

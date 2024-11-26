@@ -1,0 +1,8 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ $BRANCH_NAME == feature/* ]]; then
+    dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj -- pr-create
+fi
