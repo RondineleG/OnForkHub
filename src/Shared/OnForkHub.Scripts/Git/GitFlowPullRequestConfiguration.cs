@@ -13,9 +13,9 @@ public static class GitFlowPullRequestConfiguration
     {
         var requiredLabels = new Dictionary<string, string>
         {
-            { "status:in-review", "6E49CB" },
-            { "priority:high", "D93F0B" },
-            { "size:large", "2B52D4" },
+            { "in-review", "6E49CB" },
+            { "high", "D93F0B" },
+            { "large", "2B52D4" },
         };
 
         foreach (var label in requiredLabels)
@@ -139,12 +139,6 @@ public static class GitFlowPullRequestConfiguration
         {
             Console.WriteLine("[INFO] No merge to abort");
         }
-    }
-
-    private static string ExtractPRNumber(string prUrl)
-    {
-        var parts = prUrl.TrimEnd().Split('/');
-        return parts[^1];
     }
 
     private static async Task<string> RunProcessAsync(string command, string arguments)
