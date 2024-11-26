@@ -42,8 +42,9 @@ public static class GitFlowPullRequestConfiguration
             var existingPRs = await RunProcessAsync("gh", $"pr list --head {prInfo.SourceBranch} --base {prInfo.BaseBranch} --state open");
             if (!string.IsNullOrWhiteSpace(existingPRs))
             {
+                var prNumber = existingPRs.Split('\t')[0];
                 var editCommand =
-                    $"pr edit {existingPRs.Split('\t')[0]}"
+                    $"pr edit {prNumber}"
                     + $" --title \"{prInfo.Title}\""
                     + $" --body \"{prInfo.Body}\""
                     + " --add-label \"status:in-review,priority:high,size:large\""
@@ -51,10 +52,7 @@ public static class GitFlowPullRequestConfiguration
                     + " --milestone onforkhub-core-foundation";
 
                 await RunProcessAsync("gh", editCommand);
-
-                await RunProcessAsync("gh", $"project item-add 8 --id {existingPRs.Split('\t')[0]} --status \"In Review\"");
-
-                Console.WriteLine($"[INFO] Updated existing PR #{existingPRs.Split('\t')[0]}");
+                Console.WriteLine($"[INFO] Updated existing PR #{prNumber}");
                 return;
             }
 
@@ -69,13 +67,6 @@ public static class GitFlowPullRequestConfiguration
                 + " --milestone onforkhub-core-foundation";
 
             var result = await RunProcessAsync("gh", createCommand);
-
-            var prNumber = ExtractPRNumber(result);
-            if (!string.IsNullOrEmpty(prNumber))
-            {
-                await RunProcessAsync("gh", $"project item-add 8 --id {prNumber} --status \"In Review\"");
-            }
-
             Console.WriteLine($"[INFO] Successfully created PR: {result}");
         }
         catch (Exception ex)
