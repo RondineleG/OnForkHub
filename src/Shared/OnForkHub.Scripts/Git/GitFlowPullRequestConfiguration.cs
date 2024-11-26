@@ -45,6 +45,17 @@ public static class GitFlowPullRequestConfiguration
             await RunProcessAsync("git", "merge --abort");
         }
         catch { }
+
+        try
+        {
+            await RunProcessAsync("git", "checkout origin/dev");
+        }
+        catch
+        {
+            Console.WriteLine("[INFO] Could not checkout origin/dev, trying dev...");
+            await RunProcessAsync("git", "checkout dev");
+        }
+
         Environment.Exit(0);
     }
 
