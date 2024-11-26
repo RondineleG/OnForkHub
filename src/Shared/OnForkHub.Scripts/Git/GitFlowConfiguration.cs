@@ -19,47 +19,47 @@ public static class GitFlowConfiguration
         }
     }
 
-    public static async Task ApplySharedConfigurationsAsync()
+    public static async Task EnsureCleanWorkingTreeAsync()
     {
-        Console.WriteLine("[INFO] Applying shared Git configurations...");
-        var existingValuesFound = false;
-
         try
         {
-            Console.WriteLine("[INFO] Checking existing values for 'include.path'...");
-
-            try
+            Console.WriteLine("[INFO] Checking for unstaged changes...");
+            var statusOutput = await RunProcessAsync("git", "status --porcelain");
+            if (!string.IsNullOrWhiteSpace(statusOutput))
             {
-                var existingValues = await RunProcessAsync("git", "config --local --get-all include.path");
-                if (!string.IsNullOrWhiteSpace(existingValues))
-                {
-                    Console.WriteLine("[INFO] Existing values found:");
-                    Console.WriteLine(existingValues);
-                    existingValuesFound = true;
-                }
+                throw new InvalidOperationException(
+                    "[ERROR] Working tree contains unstaged changes. Commit, stash, or discard changes before proceeding."
+                );
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("exit code 1"))
-            {
-                Console.WriteLine("[INFO] No existing values found for 'include.path'.");
-            }
-
-            Console.WriteLine("[INFO] Replacing existing values with '../.gitconfig'...");
-            await RunProcessAsync("git", "config --local --replace-all include.path ../.gitconfig");
-            Console.WriteLine("[INFO] Configuration applied successfully!");
+            Console.WriteLine("[INFO] Working tree is clean.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("[ERROR] Failed to apply Git configurations:");
+            Console.WriteLine("[ERROR] Failed to verify clean working tree:");
             Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
 
-            if (!existingValuesFound)
-            {
-                Console.WriteLine("[INFO] No changes were made to Git configuration.");
-            }
-            else
-            {
-                Console.WriteLine("[INFO] Configuration attempt failed after finding existing values.");
-            }
+    public static async Task EnsureGitFlowConfiguredAsync()
+    {
+        try
+        {
+            Console.WriteLine("[INFO] Checking if Git Flow is already configured...");
+            await RunProcessAsync("git", "flow config");
+            Console.WriteLine("[INFO] Git Flow is already configured.");
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Not a gitflow-enabled repo"))
+        {
+            Console.WriteLine("[INFO] Git Flow is not configured. Initializing...");
+            await RunProcessAsync("git", "flow init -d");
+            Console.WriteLine("[INFO] Git Flow configured successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("[ERROR] An error occurred while checking Git Flow configuration:");
+            Console.WriteLine(ex.Message);
+            throw;
         }
     }
 

@@ -18,7 +18,13 @@ public static class Program
                 Console.WriteLine("[ERROR] Git not installed.");
                 return;
             }
-            await GitFlowConfiguration.ApplySharedConfigurationsAsync();
+
+            if (await GitFlowConfiguration.VerifyGitInstallationAsync())
+            {
+                await GitFlowConfiguration.EnsureCleanWorkingTreeAsync();
+                await GitFlowConfiguration.EnsureGitFlowConfiguredAsync();
+                Console.WriteLine("[INFO] Git Flow configuration completed successfully.");
+            }
 
             if (!await HuskyConfiguration.ConfigureHuskyAsync(projectRoot))
             {
