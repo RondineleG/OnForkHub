@@ -8,6 +8,14 @@
         <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
+    <Target Name="CheckGitStatus" BeforeTargets="RunScript">
+    <Exec Command="git diff --exit-code &amp;&amp; git diff --cached --exit-code" WorkingDirectory="$(MSBuildProjectDirectory)" ContinueOnError="true">
+        <Output TaskParameter="ExitCode" PropertyName="GitStatusExitCode" />
+    </Exec>
+    <Message Condition="'$(GitStatusExitCode)' != '0'" Text="Warning: Working tree contains unstaged or uncommitted changes." Importance="high" />
+</Target>
+
+
     <Target Name="RunScript" AfterTargets="Build">
         <Message Text="Running script..." Importance="high" />
         <Exec Command="dotnet OnForkHub.Scripts.dll" WorkingDirectory="$(OutDir)" StandardOutputImportance="High" StandardErrorImportance="High">
