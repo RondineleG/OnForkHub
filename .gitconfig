@@ -13,6 +13,8 @@
     keeplocal = true
     keepbranch = true
     squash = false
+    no-push = true
+
 
 [gitflow "bugfix"]
     finish = false

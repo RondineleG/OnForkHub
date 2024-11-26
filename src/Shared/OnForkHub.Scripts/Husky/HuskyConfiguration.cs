@@ -104,11 +104,13 @@ public static class HuskyConfiguration
 
         try
         {
-            var processInfo = new ProcessStartInfo("code", "-v")
+            var processInfo = new ProcessStartInfo("code", "--version")
             {
                 UseShellExecute = false,
+                RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                WorkingDirectory = projectRoot,
             };
 
             using var process = Process.Start(processInfo);
