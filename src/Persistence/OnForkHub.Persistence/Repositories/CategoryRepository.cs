@@ -49,8 +49,6 @@ public class CategoryRepository(IEntityFrameworkDataContext context) : ICategory
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
         try
         {
             var category = await _context.Categories.FindAsync(id);
@@ -76,8 +74,6 @@ public class CategoryRepository(IEntityFrameworkDataContext context) : ICategory
 
     public async Task<RequestResult<Category>> GetByIdAsync(long id)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
         try
         {
             var category = await _context.Categories.FindAsync(id);
