@@ -1,4 +1,4 @@
- #!/bin/sh
+#!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
 commit_message=$(cat "$1")
@@ -6,7 +6,7 @@ current_branch=$(git symbolic-ref --short HEAD)
 
 case "$current_branch" in
   feature/*)
-    valid_prefixes=("feat:" "refactor:")
+    valid_prefixes=("feat:" "refactor:" "fix:")
     ;;
   hotfix/*)
     valid_prefixes=("hotfix:")
