@@ -1,14 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
+        <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
+
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
+        <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
     </ItemGroup>
     <Target Name="RunSharedScripts" AfterTargets="Build">
         <Message Text="Running shared scripts..." Importance="high" />

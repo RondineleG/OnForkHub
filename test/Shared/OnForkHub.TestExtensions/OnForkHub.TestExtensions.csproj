@@ -1,18 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Extensions\**" />
-      <Compile Remove="Fixtures\**" />
-      <EmbeddedResource Remove="Extensions\**" />
-      <EmbeddedResource Remove="Fixtures\**" />
-      <None Remove="Extensions\**" />
-      <None Remove="Fixtures\**" />
+        <Compile Remove="Extensions\**" />
+        <Compile Remove="Fixtures\**" />
+        <EmbeddedResource Remove="Extensions\**" />
+        <EmbeddedResource Remove="Fixtures\**" />
+        <None Remove="Extensions\**" />
+        <None Remove="Fixtures\**" />
     </ItemGroup>
 
     <ItemGroup>
