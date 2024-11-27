@@ -128,7 +128,7 @@ public static class GitFlowPullRequestConfiguration
         }
     }
 
-    private static async Task AbortMerge()
+    public static async Task AbortMerge()
     {
         try
         {
