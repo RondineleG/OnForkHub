@@ -40,6 +40,31 @@ public static class GitFlowConfiguration
         }
     }
 
+    private static async Task EnsureBranchExistsAsync(string branchName)
+    {
+        try
+        {
+            Console.WriteLine($"[INFO] Checking if branch '{branchName}' exists...");
+            var branchesOutput = await RunProcessAsync("git", "branch --list");
+            if (!branchesOutput.Contains(branchName))
+            {
+                Console.WriteLine($"[INFO] Branch '{branchName}' does not exist. Checking out from origin/{branchName}...");
+                await RunProcessAsync("git", $"checkout -b {branchName} origin/{branchName}");
+                Console.WriteLine($"[INFO] Branch '{branchName}' created successfully from origin.");
+            }
+            else
+            {
+                Console.WriteLine($"[INFO] Branch '{branchName}' already exists locally.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to ensure branch '{branchName}' exists:");
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+
     public static async Task EnsureGitFlowConfiguredAsync()
     {
         try
@@ -51,12 +76,39 @@ public static class GitFlowConfiguration
         catch (InvalidOperationException ex) when (ex.Message.Contains("Not a gitflow-enabled repo"))
         {
             Console.WriteLine("[INFO] Git Flow is not configured. Initializing...");
+
+            Console.WriteLine("[INFO] Saving current branch...");
+            var currentBranch = await GetCurrentBranchAsync();
+
+            await EnsureBranchExistsAsync("main");
+            await EnsureBranchExistsAsync("dev");
+
+            Console.WriteLine($"[INFO] Returning to the original branch: {currentBranch}...");
+            await RunProcessAsync("git", $"checkout {currentBranch}");
+
             await RunProcessAsync("git", "flow init -d");
             Console.WriteLine("[INFO] Git Flow configured successfully.");
         }
         catch (Exception ex)
         {
             Console.WriteLine("[ERROR] An error occurred while checking Git Flow configuration:");
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+
+    private static async Task<string> GetCurrentBranchAsync()
+    {
+        try
+        {
+            Console.WriteLine("[INFO] Retrieving current branch...");
+            var branchOutput = await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
+            Console.WriteLine($"[INFO] Current branch: {branchOutput.Trim()}");
+            return branchOutput.Trim();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("[ERROR] Failed to retrieve current branch:");
             Console.WriteLine(ex.Message);
             throw;
         }
