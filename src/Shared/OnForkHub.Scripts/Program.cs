@@ -2,8 +2,9 @@ namespace OnForkHub.Scripts;
 
 public static class Program
 {
-    private static async Task Main()
+    private static async Task Main(string[] args)
     {
+        Console.WriteLine($"[INFO] args: {args}");
         try
         {
             var projectRoot = GetProjectRootPath();
@@ -14,12 +15,34 @@ public static class Program
                 Console.WriteLine("[ERROR] Git not installed.");
                 return;
             }
-            await GitFlowConfiguration.ApplySharedConfigurationsAsync();
+
+            if (await GitFlowConfiguration.VerifyGitInstallationAsync())
+            {
+                await GitFlowConfiguration.EnsureCleanWorkingTreeAsync();
+                await GitFlowConfiguration.EnsureGitFlowConfiguredAsync();
+                Console.WriteLine("[INFO] Git Flow configuration completed successfully.");
+            }
 
             if (!await HuskyConfiguration.ConfigureHuskyAsync(projectRoot))
             {
                 Console.WriteLine("[ERROR] Husky configuration failed.");
                 return;
+            }
+
+            if (args.Contains("pr-create"))
+            {
+                try
+                {
+                    await GitFlowPullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ERROR] An error occurred: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("[INFO] Skipping PR creation (pr-create flag not present)");
             }
 
             Console.WriteLine("[INFO] Configuration completed successfully.");

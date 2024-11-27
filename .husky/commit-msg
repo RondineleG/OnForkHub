@@ -1,4 +1,4 @@
-#!/bin/sh
+ #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
 commit_message=$(cat "$1")
@@ -6,26 +6,38 @@ current_branch=$(git symbolic-ref --short HEAD)
 
 case "$current_branch" in
   feature/*)
-    required_prefix="feat:"
+    valid_prefixes=("feat:" "refactor:")
     ;;
   hotfix/*)
-    required_prefix="hotfix:"
+    valid_prefixes=("hotfix:")
     ;;
   bugfix/*)
-    required_prefix="fix:"
+    valid_prefixes=("fix:")
     ;;
   release/*)
-    required_prefix="release:"
+    valid_prefixes=("release:")
     ;;
   *)
     exit 0
     ;;
 esac
 
-if ! echo "$commit_message" | grep -q "^$required_prefix"; then
+valid_prefixes_list=$(printf ", %s" "${valid_prefixes[@]}")
+valid_prefixes_list=${valid_prefixes_list:2} 
+
+is_valid=false
+for prefix in "${valid_prefixes[@]}"; do
+    if echo "$commit_message" | grep -q "^$prefix"; then
+        is_valid=true
+        break
+    fi
+done
+
+if [ "$is_valid" = false ]; then
     echo "❌ Invalid commit message!"
-    echo "➡️  Commit message must start with '$required_prefix' for branch '$current_branch'."
-    echo "Example: '$required_prefix Add your message here.'"
+    echo "➡️  Commit message must start with one of the following prefixes for branch '$current_branch':"
+    echo "  - $valid_prefixes_list"
+    echo "Example: '${valid_prefixes[0]} Add your message here.'"
     exit 1
 fi
 
