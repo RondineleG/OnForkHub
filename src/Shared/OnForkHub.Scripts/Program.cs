@@ -43,22 +43,7 @@ public static class Program
             else
             {
                 Console.WriteLine("[INFO] Skipping PR creation (pr-create flag not present)");
-            }
-
-            if (args.Contains("no-merge"))
-            {
-                try
-                {
-                    await GitFlowPullRequestConfiguration.AbortMerge();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ERROR] An error occurred: {ex.Message}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("[INFO] Skipping Merge Abort (no-merge flag not present)");
+                await GitFlowPullRequestConfiguration.AbortMerge();
             }
 
             Console.WriteLine("[INFO] Configuration completed successfully.");
