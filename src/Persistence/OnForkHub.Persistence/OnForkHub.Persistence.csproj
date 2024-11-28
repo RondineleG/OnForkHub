@@ -6,12 +6,10 @@
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
-        <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-        <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
         <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
     </ItemGroup>
 
