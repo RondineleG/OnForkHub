@@ -6,7 +6,29 @@
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
+        <StaticWebAssetCompression>false</StaticWebAssetCompression>
+        <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+        <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     </PropertyGroup>
+
+    <Target Name="NpmInstall" BeforeTargets="Build" Condition=" !Exists('wwwroot\npm\node_modules') ">
+        <Message Importance="high" Text="Instalando pacotes NPM..." />
+        <Exec Command="npm install" WorkingDirectory="wwwroot\npm" />
+    </Target>
+
+    <Target Name="NpmBuild" AfterTargets="NpmInstall">
+        <Message Importance="high" Text="Buildando TypeScript..." />
+        <Exec Command="npm run build" WorkingDirectory="wwwroot\npm" />
+    </Target>
+
+    <ItemGroup>
+        <Content Remove="wwwroot\npm\**\node_modules\**" />
+        <None Remove="wwwroot\npm\**\node_modules\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="wwwroot\npm\src\modules\torrent.ts" />
+    </ItemGroup>
 
     <ItemGroup>
       <None Remove=".gitignore" />
@@ -15,10 +37,22 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.*" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.*" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.6.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="wwwroot\Videos\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <TypeScriptCompile Include="wwwroot\npm\src\modules\torrent.ts" />
     </ItemGroup>
 
 </Project>

@@ -43,6 +43,7 @@ public static class Program
             else
             {
                 Console.WriteLine("[INFO] Skipping PR creation (pr-create flag not present)");
+                await GitFlowPullRequestConfiguration.AbortMerge();
             }
 
             Console.WriteLine("[INFO] Configuration completed successfully.");

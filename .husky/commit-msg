@@ -6,13 +6,13 @@ current_branch=$(git symbolic-ref --short HEAD)
 
 case "$current_branch" in
   feature/*)
-    valid_prefixes=("feat:" "refactor:")
+    valid_prefixes=("feat:" "refactor:" "fix:" "merge:")
     ;;
   hotfix/*)
-    valid_prefixes=("hotfix:")
+    valid_prefixes=("hotfix:" "refactor:" "fix:" "merge:")
     ;;
   bugfix/*)
-    valid_prefixes=("fix:")
+    valid_prefixes=("fix:" "refactor:" "fix:" "merge:")
     ;;
   release/*)
     valid_prefixes=("release:")
