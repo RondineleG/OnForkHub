@@ -16,11 +16,6 @@
         <Exec Command="npm install" WorkingDirectory="wwwroot\npm" />
     </Target>
 
-    <Target Name="NpmBuild" AfterTargets="NpmInstall">
-        <Message Importance="high" Text="Buildando TypeScript..." />
-        <Exec Command="npm run build" WorkingDirectory="wwwroot\npm" />
-    </Target>
-
     <ItemGroup>
         <Content Remove="wwwroot\npm\**\node_modules\**" />
         <None Remove="wwwroot\npm\**\node_modules\**" />
