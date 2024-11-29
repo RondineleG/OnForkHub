@@ -1,4 +1,3 @@
-
 namespace OnForkHub.Api.Configuration;
 
 public interface IEndpointAsync

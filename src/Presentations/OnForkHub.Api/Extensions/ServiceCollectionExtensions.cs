@@ -1,6 +1,5 @@
 using MoreLinq.Extensions;
 
-
 using System.Diagnostics.CodeAnalysis;
 
 namespace OnForkHub.Api.Extensions;

@@ -1,4 +1,3 @@
-
 namespace OnForkHub.Api.Endpoints.Base;
 
 public interface IBaseEndPoint
