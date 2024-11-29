@@ -1,9 +1,6 @@
-using Asp.Versioning;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
-using OnForkHub.Api.Configuration;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;

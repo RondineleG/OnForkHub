@@ -1,6 +1,3 @@
-using Asp.Versioning;
-
-using OnForkHub.Api.Configuration;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Repositories;
 
@@ -8,7 +5,7 @@ namespace OnForkHub.Api.Endpoints.V1.Categories;
 
 public class GetAllCategoriesEndpoint : IEndpoint
 {
-    private const string RouteV1 = "/api/v1/person";
+    private const string RouteV1 = "/api/v1/category";
     private const int V1 = 1;
 
     public void Register(WebApplication app)
@@ -19,13 +16,13 @@ public class GetAllCategoriesEndpoint : IEndpoint
            .WithName("GetPersonsV1")
            .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
            .Produces(StatusCodes.Status500InternalServerError)
-           .WithTags("Pessoas")
+           .WithTags("Categories")
            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
            .WithApiVersionSet(apiVersionSet)
            .MapToApiVersion(V1)
            .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))
-           .WithDescription("Retorna todas as pessoas")
-           .WithSummary("Listar Pessoas");
+           .WithDescription("Returns all Categories")
+           .WithSummary("List Categories");
     }
 
     private static ApiVersionSet CreateApiVersionSet(WebApplication app)

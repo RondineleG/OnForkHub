@@ -1,23 +1,22 @@
-using Asp.Versioning;
-
-using OnForkHub.Api.Configuration;
+using OnForkHub.Api.Endpoints.Base;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Repositories;
 
 namespace OnForkHub.Api.Endpoints.V2.Categories;
 
-public class GetAllCategoriesEndpoint : IEndpointAsync
+public class GetAllCategoriesEndpoint : BaseEndpoint<Category>, IEndpointAsync
 {
-    private const string RouteV2 = "/api/v2/person";
     private const int V2 = 2;
+
+    private static readonly string Route = GetVersionedRoute(V2);
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
         try
         {
-            var apiVersionSet = CreateApiVersionSet(app);
+            var apiVersionSet = CreateApiVersionSet(app, V2);
 
-            app.MapGet(RouteV2, async ([FromServices] ICategoryRepositoryEF personRepository) =>
+            app.MapGet(Route, async ([FromServices] ICategoryRepositoryEF personRepository) =>
             {
                 try
                 {
@@ -34,7 +33,7 @@ public class GetAllCategoriesEndpoint : IEndpointAsync
                .WithName("GetCategoriesV2")
                .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
                .Produces(StatusCodes.Status500InternalServerError)
-               .WithTags("Pessoas")
+               .WithTags("Categories")
                .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V2}" })
                .WithApiVersionSet(apiVersionSet)
                .MapToApiVersion(V2)
@@ -48,13 +47,5 @@ public class GetAllCategoriesEndpoint : IEndpointAsync
         {
             return Task.FromResult(RequestResult.WithError(ex));
         }
-    }
-
-    private static ApiVersionSet CreateApiVersionSet(WebApplication app)
-    {
-        return app.NewApiVersionSet()
-            .HasApiVersion(new ApiVersion(V2))
-            .ReportApiVersions()
-            .Build();
     }
 }

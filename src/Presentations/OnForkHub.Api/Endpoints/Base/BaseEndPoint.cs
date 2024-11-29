@@ -1,7 +1,19 @@
 namespace OnForkHub.Api.Endpoints.Base;
 
-public interface IBaseEndPoint
+public abstract class BaseEndpoint<TEntity>
+    where TEntity : BaseEntity
 {
-    Task<IResult> HandleAsync(params object[] args);
-    ApiVersionSet CreateApiVersionSet(WebApplication app);
+    protected static string GetVersionedRoute(int version)
+    {
+        var route = typeof(TEntity).Name.ToLowerInvariant();
+        return $"/api/v{version}/{route}";
+    }
+
+    protected static ApiVersionSet CreateApiVersionSet(WebApplication app, int version)
+    {
+        return app.NewApiVersionSet()
+            .HasApiVersion(new ApiVersion(version))
+            .ReportApiVersions()
+            .Build();
+    }
 }
