@@ -1,5 +1,3 @@
-using OnForkHub.Core.ValueObjects;
-
 namespace OnForkHub.Persistence.Repositories;
 
 public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context) : ICategoryRepositoryComos

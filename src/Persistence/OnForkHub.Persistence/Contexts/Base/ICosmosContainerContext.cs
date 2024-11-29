@@ -1,5 +1,3 @@
-using OnForkHub.Core.Entities.Base;
-
 namespace OnForkHub.Persistence.Contexts.Base;
 
 public interface ICosmosContainerContext<T>

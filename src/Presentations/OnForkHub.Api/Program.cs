@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using OnForkHub.Api.Configuration;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Persistence.Contexts;
+using OnForkHub.Persistence.Contexts.Base;
 using OnForkHub.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,10 +46,11 @@ var configurationBuilder = new ConfigurationBuilder()
           .SetBasePath(Directory.GetCurrentDirectory())
           .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true);
 IConfiguration configuration = configurationBuilder.Build();
-var connectionString = configuration.GetConnectionString("PersonDB");
+var connectionString = configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
-builder.Services.AddTransient<ICategoryRepositoryEF, CategoryRepositoryEF>();
+builder.Services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
+builder.Services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
