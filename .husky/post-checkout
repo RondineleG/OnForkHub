@@ -1,4 +1,15 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-dotnet run --project src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+
+PROJECT_PATH="src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj"
+
+if [ "$BRANCH_NAME" = "dev" ] || [ "$BRANCH_NAME" = "main" ]; then
+    echo "Branch $BRANCH_NAME detected. Running command with 'no-merge' and aborting the merge if necessary."
+    dotnet run --project "$PROJECT_PATH" -- no-merge
+    git merge --abort
+else
+    echo "Branch $BRANCH_NAME detected. Running command normally."
+    dotnet run --project "$PROJECT_PATH"
+fi

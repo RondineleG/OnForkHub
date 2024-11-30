@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using OnForkHub.Persistence.Contexts.Base;
-
 namespace OnForkHub.Persistence.Contexts;
 
 public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkDataContext> options) : DbContext(options), IEntityFrameworkDataContext
