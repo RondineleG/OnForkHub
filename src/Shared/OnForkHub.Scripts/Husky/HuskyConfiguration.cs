@@ -1,201 +1,98 @@
+using OnForkHub.Scripts.Enums;
+using OnForkHub.Scripts.Interfaces;
+
 namespace OnForkHub.Scripts.Husky;
 
-public static class HuskyConfiguration
+public sealed class HuskyConfiguration(
+    string projectRoot,
+    ILogger logger,
+    IProcessRunner processRunner,
+    IGitEditorService gitEditorService,
+    GitFlowConfiguration gitFlowConfiguration
+)
 {
-    private static async Task ConfigureGitFlow(string projectRoot)
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
+    private readonly IGitEditorService _gitEditorService = gitEditorService ?? throw new ArgumentNullException(nameof(gitEditorService));
+    private readonly GitFlowConfiguration _gitFlowConfiguration =
+        gitFlowConfiguration ?? throw new ArgumentNullException(nameof(gitFlowConfiguration));
+    private readonly string _projectRoot = projectRoot ?? throw new ArgumentNullException(nameof(projectRoot));
+
+    public async Task<bool> ConfigureAsync()
     {
-        Console.WriteLine("[INFO] Configuring Git Flow...");
+        _logger.Log(ELogLevel.Info, "Starting Husky configuration...");
+        var huskyPath = Path.Combine(_projectRoot, ".husky");
+        _logger.Log(ELogLevel.Info, $"Husky Path: {huskyPath}");
 
         try
         {
-            if (!await RunProcessAsync("git", "rev-parse --git-dir", projectRoot))
+            if (!await _gitFlowConfiguration.VerifyGitInstallationAsync())
             {
-                await RunProcessAsync("git", "init", projectRoot);
-                Console.WriteLine("[INFO] Git repository initialized");
-            }
-
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = "git",
-                Arguments = "flow init",
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                WorkingDirectory = projectRoot,
-            };
-
-            using (var process = Process.Start(processInfo))
-            {
-                if (process == null)
-                {
-                    throw new InvalidOperationException("Failed to start Git Flow init process");
-                }
-
-                using (var writer = process.StandardInput)
-                {
-                    await writer.WriteLineAsync("main");
-                    await writer.WriteLineAsync("dev");
-                    await writer.WriteLineAsync("feature/");
-                    await writer.WriteLineAsync("bugfix/");
-                    await writer.WriteLineAsync("release/");
-                    await writer.WriteLineAsync("hotfix/");
-                    await writer.WriteLineAsync("support/");
-                    await writer.WriteLineAsync("v");
-                    await writer.WriteLineAsync(".husky");
-                }
-
-                var output = await process.StandardOutput.ReadToEndAsync();
-                var error = await process.StandardError.ReadToEndAsync();
-
-                Console.WriteLine("[INFO] Git Flow init output:");
-                Console.WriteLine(output);
-
-                if (!string.IsNullOrWhiteSpace(error))
-                {
-                    Console.WriteLine("[INFO] Git Flow init messages:");
-                    Console.WriteLine(error);
-                }
-
-                await process.WaitForExitAsync();
-            }
-
-            var configs = new Dictionary<string, string>
-            {
-                { "gitflow.feature.finish", "false" },
-                { "gitflow.feature.no-ff", "true" },
-                { "gitflow.feature.no-merge", "true" },
-                { "gitflow.feature.keepbranch", "true" },
-            };
-
-            foreach (var config in configs)
-            {
-                await RunProcessAsync("git", $"config --local {config.Key} {config.Value}", projectRoot);
-            }
-
-            Console.WriteLine("[INFO] Git Flow configured successfully");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR] Exception during Git Flow init: {ex.Message}");
-            throw;
-        }
-    }
-
-    public static async Task<bool> ConfigureHuskyAsync(string projectRoot)
-    {
-        Console.WriteLine("[INFO] Starting Husky configuration...");
-        var huskyPath = Path.Combine(projectRoot, ".husky");
-        Console.WriteLine($"[INFO] Husky Path: {huskyPath}");
-
-        await ConfigureGitFlow(projectRoot);
-
-        if (!await RunProcessAsync("dotnet", "tool restore", projectRoot))
-        {
-            Console.WriteLine("[ERROR] Failed to restore dotnet tools.");
-            return false;
-        }
-
-        if (!await RunProcessAsync("dotnet", "husky install", projectRoot))
-        {
-            Console.WriteLine("[ERROR] Failed to install Husky.");
-            return false;
-        }
-
-        try
-        {
-            var processInfo = new ProcessStartInfo("code", "--version")
-            {
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                WorkingDirectory = projectRoot,
-            };
-
-            using var process = Process.Start(processInfo);
-            await process!.WaitForExitAsync();
-
-            if (process.ExitCode == 0)
-            {
-                if (!await RunProcessAsync("git", "config --local core.editor \"code --wait\"", projectRoot))
-                {
-                    Console.WriteLine("[WARN] Failed to set VSCode as Git editor");
-                }
-                else
-                {
-                    Console.WriteLine("[INFO] VSCode configured as Git editor");
-                }
-            }
-            else
-            {
-                if (!await RunProcessAsync("git", "config --local core.editor \"notepad\"", projectRoot))
-                {
-                    Console.WriteLine("[WARN] Failed to set Notepad as Git editor");
-                }
-                else
-                {
-                    Console.WriteLine("[INFO] Notepad configured as Git editor (VSCode not found)");
-                }
-            }
-        }
-        catch (Exception)
-        {
-            await RunProcessAsync("git", "config --local core.editor \"notepad\"", projectRoot);
-            Console.WriteLine("[INFO] Notepad configured as Git editor (VSCode not found)");
-        }
-
-        Console.WriteLine("[INFO] Husky configured successfully.");
-        return true;
-    }
-
-    private static async Task<bool> RunProcessAsync(string fileName, string arguments, string workingDirectory)
-    {
-        Console.WriteLine($"[INFO] Executing: {fileName} {arguments}");
-        Console.WriteLine($"[INFO] Working directory: {workingDirectory}");
-
-        var processInfo = new ProcessStartInfo(fileName, arguments)
-        {
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            WorkingDirectory = workingDirectory,
-        };
-
-        try
-        {
-            using var process = Process.Start(processInfo);
-            if (process == null)
-            {
-                Console.WriteLine("[ERROR] Failed to start process.");
+                _logger.Log(ELogLevel.Error, "Git installation verification failed.");
                 return false;
             }
 
-            var output = await process.StandardOutput.ReadToEndAsync();
-            var error = await process.StandardError.ReadToEndAsync();
+            await _gitFlowConfiguration.EnsureCleanWorkingTreeAsync();
+            await _gitFlowConfiguration.EnsureGitFlowConfiguredAsync();
 
-            Console.WriteLine("[INFO] Process output:");
-            Console.WriteLine(output);
-
-            if (!string.IsNullOrWhiteSpace(error))
+            if (!await ConfigureHuskyToolsAsync())
             {
-                Console.WriteLine("[ERROR] Process error(s):");
-                Console.WriteLine(error);
-            }
-
-            await process.WaitForExitAsync();
-            if (process.ExitCode != 0)
-            {
-                Console.WriteLine($"[ERROR] Process exited with code {process.ExitCode}.");
                 return false;
             }
 
-            Console.WriteLine("[INFO] Process completed successfully.");
+            await _gitEditorService.ConfigureEditorAsync();
+
+            _logger.Log(ELogLevel.Info, "Husky configured successfully.");
             return true;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Exception while executing process: {ex.Message}");
+            _logger.Log(ELogLevel.Error, $"Husky configuration failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    private async Task<bool> ConfigureHuskyToolsAsync()
+    {
+        if (!await RestoreDotnetToolsAsync())
+        {
+            _logger.Log(ELogLevel.Error, "Failed to restore dotnet tools.");
+            return false;
+        }
+
+        if (!await InstallHuskyAsync())
+        {
+            _logger.Log(ELogLevel.Error, "Failed to install Husky.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> RestoreDotnetToolsAsync()
+    {
+        try
+        {
+            await _processRunner.RunAsync("dotnet", "tool restore", _projectRoot);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Failed to restore dotnet tools: {ex.Message}");
+            return false;
+        }
+    }
+
+    private async Task<bool> InstallHuskyAsync()
+    {
+        try
+        {
+            await _processRunner.RunAsync("dotnet", "husky install", _projectRoot);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Failed to install Husky: {ex.Message}");
             return false;
         }
     }
