@@ -16,30 +16,33 @@ public class GetAllCategoriesEndpoint : BaseEndpoint<Category>, IEndpointAsync
         {
             var apiVersionSet = CreateApiVersionSet(app, V2);
 
-            app.MapGet(Route, async ([FromServices] ICategoryRepositoryEF personRepository) =>
-            {
-                try
-                {
-                    var persons = await personRepository.GetAsync(1, 10);
-                    return (persons?.Data is null)
-                        ? TypedResults.Ok(RequestResult<IEnumerable<Category>>.WithNoContent())
-                        : TypedResults.Ok(RequestResult<IEnumerable<Category>>.Success(persons.Data));
-                }
-                catch (Exception ex)
-                {
-                    return Results.BadRequest(RequestResult.WithError(ex));
-                }
-            })
-               .WithName("GetCategoriesV2")
-               .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
-               .Produces(StatusCodes.Status500InternalServerError)
-               .WithTags("Categories")
-               .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V2}" })
-               .WithApiVersionSet(apiVersionSet)
-               .MapToApiVersion(V2)
-               .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))
-               .WithDescription("Returns all categories")
-               .WithSummary("List categories");
+            app.MapGet(
+                    Route,
+                    async ([FromServices] ICategoryRepositoryEF personRepository) =>
+                    {
+                        try
+                        {
+                            var persons = await personRepository.GetAsync(1, 10);
+                            return (persons?.Data is null)
+                                ? TypedResults.Ok(RequestResult<IEnumerable<Category>>.WithNoContent())
+                                : TypedResults.Ok(RequestResult<IEnumerable<Category>>.Success(persons.Data));
+                        }
+                        catch (Exception ex)
+                        {
+                            return Results.BadRequest(RequestResult.WithError(ex));
+                        }
+                    }
+                )
+                .WithName("GetCategoriesV2")
+                .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
+                .Produces(StatusCodes.Status500InternalServerError)
+                .WithTags("Categories")
+                .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V2}" })
+                .WithApiVersionSet(apiVersionSet)
+                .MapToApiVersion(V2)
+                .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))
+                .WithDescription("Returns all categories")
+                .WithSummary("List categories");
 
             return Task.FromResult(RequestResult.Success());
         }

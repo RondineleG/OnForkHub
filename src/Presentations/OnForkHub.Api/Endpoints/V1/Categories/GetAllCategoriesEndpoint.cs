@@ -13,28 +13,24 @@ public class GetAllCategoriesEndpoint : IEndpoint
         var apiVersionSet = CreateApiVersionSet(app);
 
         app.MapGet(RouteV1, HandleGetPersonsAsync)
-           .WithName("GetPersonsV1")
-           .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
-           .Produces(StatusCodes.Status500InternalServerError)
-           .WithTags("Categories")
-           .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-           .WithApiVersionSet(apiVersionSet)
-           .MapToApiVersion(V1)
-           .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))
-           .WithDescription("Returns all Categories")
-           .WithSummary("List Categories");
+            .WithName("GetPersonsV1")
+            .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status500InternalServerError)
+            .WithTags("Categories")
+            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
+            .WithApiVersionSet(apiVersionSet)
+            .MapToApiVersion(V1)
+            .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))
+            .WithDescription("Returns all Categories")
+            .WithSummary("List Categories");
     }
 
     private static ApiVersionSet CreateApiVersionSet(WebApplication app)
     {
-        return app.NewApiVersionSet()
-            .HasApiVersion(new ApiVersion(V1))
-            .ReportApiVersions()
-            .Build();
+        return app.NewApiVersionSet().HasApiVersion(new ApiVersion(V1)).ReportApiVersions().Build();
     }
 
-    private static async Task<IResult> HandleGetPersonsAsync(
-        [FromServices] ICategoryRepositoryEF personRepository)
+    private static async Task<IResult> HandleGetPersonsAsync([FromServices] ICategoryRepositoryEF personRepository)
     {
         try
         {

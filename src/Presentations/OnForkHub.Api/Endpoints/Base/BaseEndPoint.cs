@@ -11,9 +11,6 @@ public abstract class BaseEndpoint<TEntity>
 
     protected static ApiVersionSet CreateApiVersionSet(WebApplication app, int version)
     {
-        return app.NewApiVersionSet()
-            .HasApiVersion(new ApiVersion(version))
-            .ReportApiVersions()
-            .Build();
+        return app.NewApiVersionSet().HasApiVersion(new ApiVersion(version)).ReportApiVersions().Build();
     }
 }

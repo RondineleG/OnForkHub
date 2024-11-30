@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;
@@ -11,37 +10,44 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1",
-        Title = "Minimal API - Version 1",
-        Description = "API version 1 documentation",
-    });
+    options.SwaggerDoc(
+        "v1",
+        new OpenApiInfo
+        {
+            Version = "v1",
+            Title = "Minimal API - Version 1",
+            Description = "API version 1 documentation",
+        }
+    );
 
-    options.SwaggerDoc("v2", new OpenApiInfo
-    {
-        Version = "v2",
-        Title = "Minimal API - Version 2",
-        Description = "API version 2 documentation",
-    });
+    options.SwaggerDoc(
+        "v2",
+        new OpenApiInfo
+        {
+            Version = "v2",
+            Title = "Minimal API - Version 2",
+            Description = "API version 2 documentation",
+        }
+    );
 });
 
-builder.Services.AddApiVersioning(options =>
-{
-    options.DefaultApiVersion = new ApiVersion(1);
-    options.ReportApiVersions = true;
-    options.AssumeDefaultVersionWhenUnspecified = true;
-})
-.AddApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'V";
-    options.SubstituteApiVersionInUrl = true;
-});
+builder
+    .Services.AddApiVersioning(options =>
+    {
+        options.DefaultApiVersion = new ApiVersion(1);
+        options.ReportApiVersions = true;
+        options.AssumeDefaultVersionWhenUnspecified = true;
+    })
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'V";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
 builder.Services.AddWebApi(typeof(Program));
 var configurationBuilder = new ConfigurationBuilder()
-          .SetBasePath(Directory.GetCurrentDirectory())
-          .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true);
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true);
 IConfiguration configuration = configurationBuilder.Build();
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 

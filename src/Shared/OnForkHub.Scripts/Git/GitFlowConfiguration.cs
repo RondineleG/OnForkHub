@@ -40,58 +40,98 @@ public static class GitFlowConfiguration
         }
     }
 
+    public static async Task EnsureGitFlowConfiguredAsync()
+    {
+        try
+        {
+            if (!await VerifyGitInstallationAsync())
+            {
+                throw new InvalidOperationException("Git is not installed or not accessible.");
+            }
+
+            await EnsureCleanWorkingTreeAsync();
+
+            var currentBranch = await GetCurrentBranchAsync();
+
+            await RunProcessAsync("git", "config gitflow.branch.master main");
+            await RunProcessAsync("git", "config gitflow.branch.develop dev");
+            await RunProcessAsync("git", "config gitflow.prefix.feature feature/");
+            await RunProcessAsync("git", "config gitflow.prefix.release release/");
+            await RunProcessAsync("git", "config gitflow.prefix.hotfix hotfix/");
+            await RunProcessAsync("git", "config gitflow.prefix.support support/");
+            await RunProcessAsync("git", "config gitflow.prefix.versiontag v");
+
+            await EnsureBranchExistsAsync("main");
+            await EnsureBranchExistsAsync("dev");
+
+            try
+            {
+                await RunProcessAsync("git", "flow init -f -d");
+                Console.WriteLine("[INFO] Git Flow configured successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[WARN] Initial Git Flow initialization failed, but configuration should still work: {ex.Message}");
+            }
+
+            if (!string.IsNullOrEmpty(currentBranch))
+            {
+                Console.WriteLine($"[INFO] Returning to the original branch: {currentBranch}...");
+                await RunProcessAsync("git", $"checkout {currentBranch}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("[ERROR] An error occurred while configuring Git Flow:");
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+
     private static async Task EnsureBranchExistsAsync(string branchName)
     {
         try
         {
             Console.WriteLine($"[INFO] Checking if branch '{branchName}' exists...");
             var branchesOutput = await RunProcessAsync("git", "branch --list");
+
             if (!branchesOutput.Contains(branchName))
             {
-                Console.WriteLine($"[INFO] Branch '{branchName}' does not exist. Checking out from origin/{branchName}...");
-                await RunProcessAsync("git", $"checkout -b {branchName} origin/{branchName}");
-                Console.WriteLine($"[INFO] Branch '{branchName}' created successfully from origin.");
+                try
+                {
+                    Console.WriteLine($"[INFO] Checking remote for branch '{branchName}'...");
+                    await RunProcessAsync("git", "fetch origin");
+                    var remoteOutput = await RunProcessAsync("git", $"ls-remote --heads origin {branchName}");
+
+                    if (!string.IsNullOrWhiteSpace(remoteOutput))
+                    {
+                        Console.WriteLine($"[INFO] Branch '{branchName}' found in remote. Creating local branch...");
+                        await RunProcessAsync("git", $"checkout -b {branchName} origin/{branchName}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[INFO] Branch '{branchName}' not found in remote. Creating new branch...");
+                        var defaultBranch = await GetDefaultBranchAsync();
+                        await RunProcessAsync("git", $"checkout -b {branchName} {defaultBranch}");
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine($"[INFO] Creating new local branch '{branchName}'...");
+                    var defaultBranch = await GetDefaultBranchAsync();
+                    await RunProcessAsync("git", $"checkout -b {branchName} {defaultBranch}");
+                }
+                Console.WriteLine($"[INFO] Branch '{branchName}' created successfully.");
             }
             else
             {
                 Console.WriteLine($"[INFO] Branch '{branchName}' already exists locally.");
+                await RunProcessAsync("git", $"checkout {branchName}");
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] Failed to ensure branch '{branchName}' exists:");
-            Console.WriteLine(ex.Message);
-            throw;
-        }
-    }
-
-    public static async Task EnsureGitFlowConfiguredAsync()
-    {
-        try
-        {
-            Console.WriteLine("[INFO] Checking if Git Flow is already configured...");
-            await RunProcessAsync("git", "flow config");
-            Console.WriteLine("[INFO] Git Flow is already configured.");
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("Not a gitflow-enabled repo"))
-        {
-            Console.WriteLine("[INFO] Git Flow is not configured. Initializing...");
-
-            Console.WriteLine("[INFO] Saving current branch...");
-            var currentBranch = await GetCurrentBranchAsync();
-
-            await EnsureBranchExistsAsync("main");
-            await EnsureBranchExistsAsync("dev");
-
-            Console.WriteLine($"[INFO] Returning to the original branch: {currentBranch}...");
-            await RunProcessAsync("git", $"checkout {currentBranch}");
-
-            await RunProcessAsync("git", "flow init -d");
-            Console.WriteLine("[INFO] Git Flow configured successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[ERROR] An error occurred while checking Git Flow configuration:");
             Console.WriteLine(ex.Message);
             throw;
         }
@@ -111,6 +151,19 @@ public static class GitFlowConfiguration
             Console.WriteLine("[ERROR] Failed to retrieve current branch:");
             Console.WriteLine(ex.Message);
             throw;
+        }
+    }
+
+    private static async Task<string> GetDefaultBranchAsync()
+    {
+        try
+        {
+            var result = await RunProcessAsync("git", "rev-parse --abbrev-ref origin/HEAD");
+            return result.Replace("origin/", "").Trim();
+        }
+        catch
+        {
+            return "main";
         }
     }
 

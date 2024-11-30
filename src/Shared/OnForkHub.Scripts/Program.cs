@@ -13,6 +13,7 @@ public static class Program
             if (!await GitFlowConfiguration.VerifyGitInstallationAsync())
             {
                 Console.WriteLine("[ERROR] Git not installed.");
+                Environment.Exit(1);
                 return;
             }
 
@@ -26,6 +27,7 @@ public static class Program
             if (!await HuskyConfiguration.ConfigureHuskyAsync(projectRoot))
             {
                 Console.WriteLine("[ERROR] Husky configuration failed.");
+                Environment.Exit(1);
                 return;
             }
 
@@ -38,6 +40,7 @@ public static class Program
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[ERROR] An error occurred: {ex.Message}");
+                    Environment.Exit(1);
                 }
             }
             else
@@ -47,11 +50,13 @@ public static class Program
             }
 
             Console.WriteLine("[INFO] Configuration completed successfully.");
+            Environment.Exit(0);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] An unexpected error occurred: {ex.Message}");
             Console.WriteLine($"[DEBUG] Stack Trace: {ex.StackTrace}");
+            Environment.Exit(1);
         }
     }
 
