@@ -9,16 +9,12 @@
         <StaticWebAssetCompression>false</StaticWebAssetCompression>
         <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
         <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+        <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     </PropertyGroup>
 
     <Target Name="NpmInstall" BeforeTargets="Build" Condition=" !Exists('wwwroot\npm\node_modules') ">
         <Message Importance="high" Text="Instalando pacotes NPM..." />
         <Exec Command="npm install" WorkingDirectory="wwwroot\npm" />
-    </Target>
-
-    <Target Name="NpmBuild" AfterTargets="NpmInstall">
-        <Message Importance="high" Text="Buildando TypeScript..." />
-        <Exec Command="npm run build" WorkingDirectory="wwwroot\npm" />
     </Target>
 
     <ItemGroup>

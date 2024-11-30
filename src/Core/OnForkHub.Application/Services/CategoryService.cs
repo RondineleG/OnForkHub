@@ -2,9 +2,9 @@ using OnForkHub.Core.Interfaces.Validations;
 
 namespace OnForkHub.Application.Services;
 
-public class CategoryService(ICategoryRepository categoryRepository, IValidationService<Category> validationService) : BaseService, ICategoryService
+public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidationService<Category> validationService) : BaseService, ICategoryService
 {
-    private readonly ICategoryRepository _categoryRepository = categoryRepository;
+    private readonly ICategoryRepositoryEF _categoryRepository = categoryRepository;
     private readonly IValidationService<Category> _validationService = validationService;
 
     public Task<RequestResult<Category>> CreateAsync(Category category)

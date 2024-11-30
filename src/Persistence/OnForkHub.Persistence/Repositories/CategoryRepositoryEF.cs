@@ -1,8 +1,6 @@
-using OnForkHub.Persistence.Contexts.Base;
-
 namespace OnForkHub.Persistence.Repositories;
 
-public class CategoryRepository(IEntityFrameworkDataContext context) : ICategoryRepository
+public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICategoryRepositoryEF
 {
     private const string EntityName = nameof(Category);
     private readonly IEntityFrameworkDataContext _context = context;
