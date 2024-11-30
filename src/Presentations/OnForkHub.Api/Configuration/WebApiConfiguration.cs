@@ -1,6 +1,5 @@
-﻿using OnForkHub.Api.Extensions;
-
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using OnForkHub.Api.Extensions;
 
 namespace OnForkHub.Api.Configuration;
 
