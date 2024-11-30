@@ -1,175 +1,114 @@
+using OnForkHub.Scripts.Enums;
+using OnForkHub.Scripts.Interfaces;
+
 namespace OnForkHub.Scripts.Git;
 
-public static class GitFlowPullRequestConfiguration
+public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunner processRunner, IGitHubClient githubClient)
 {
-    public record PullRequestInfo(string Title, string Body, string BaseBranch, string SourceBranch);
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
+    private readonly IGitHubClient _githubClient = githubClient ?? throw new ArgumentNullException(nameof(githubClient));
+    private const string DevBranch = "dev";
 
-    private static async Task<string> GetSourceBranch()
-    {
-        return await RunProcessAsync("git", "rev-parse --abbrev-ref HEAD");
-    }
-
-    private static async Task EnsureLabelsExistAsync()
-    {
-        var requiredLabels = new Dictionary<string, string>
-        {
-            { "in-review", "#19034f" },
-            { "high", "#7a2102" },
-            { "large", "#010821" },
-        };
-
-        foreach (var label in requiredLabels)
-        {
-            try
-            {
-                await RunProcessAsync("gh", $"label list --search \"{label.Key}\"");
-                var result = await RunProcessAsync("gh", $"label create \"{label.Key}\" --color \"{label.Value}\" --force");
-                Console.WriteLine($"[INFO] Label check/creation: {result}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[WARNING] Label creation warning: {ex.Message}");
-            }
-        }
-    }
-
-    private static async Task CreatePullRequestWithGitHubCLIAsync(PullRequestInfo prInfo)
+    public async Task CreatePullRequestForGitFlowFinishAsync()
     {
         try
         {
-            await EnsureLabelsExistAsync();
-
-            var existingPRs = await RunProcessAsync("gh", $"pr list --head {prInfo.SourceBranch} --base {prInfo.BaseBranch} --state open");
-            if (!string.IsNullOrWhiteSpace(existingPRs))
+            var branchName = await GetCurrentBranchAsync();
+            if (!IsFeatureBranch(branchName))
             {
-                var prNumber = existingPRs.Split('\t')[0];
-                var editCommand =
-                    $"pr edit {prNumber}"
-                    + $" --title \"{prInfo.Title}\""
-                    + $" --body \"{prInfo.Body}\""
-                    + " --add-label \"status:in-review,priority:high,size:large\""
-                    + " --add-assignee @me"
-                    + " --milestone onforkhub-core-foundation";
-
-                await RunProcessAsync("gh", editCommand);
-                Console.WriteLine($"[INFO] Updated existing PR #{prNumber}");
+                _logger.Log(ELogLevel.Info, "Current branch is not a feature branch. Skipping PR creation.");
                 return;
             }
 
-            var createCommand =
-                $"pr create"
-                + $" --title \"{prInfo.Title}\""
-                + $" --body \"{prInfo.Body}\""
-                + $" --base {prInfo.BaseBranch}"
-                + $" --head {prInfo.SourceBranch}"
-                + " --label \"status:in-review,priority:high,size:large\""
-                + " --assignee @me"
-                + " --milestone onforkhub-core-foundation";
+            _logger.Log(ELogLevel.Info, $"Starting PR creation for {branchName}");
 
-            var result = await RunProcessAsync("gh", createCommand);
-            Console.WriteLine($"[INFO] Successfully created PR: {result}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WARNING] Could not create/update PR: {ex.Message}");
-            throw;
-        }
-    }
-
-    public static async Task CreatePullRequestForGitFlowFinishAsync()
-    {
-        try
-        {
-            var branchName = await GetSourceBranch();
-            if (string.IsNullOrEmpty(branchName) || !branchName.StartsWith("feature/", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            Console.WriteLine($"[INFO] Starting PR creation for {branchName}");
-
-            await ForcePushFeatureBranch(branchName);
+            await ForcePushFeatureBranchAsync(branchName);
 
             var prInfo = new PullRequestInfo(
-                Title: $"Merge {branchName} into dev",
-                Body: $"Automatically generated PR for merging branch {branchName} into dev.",
-                BaseBranch: "dev",
+                Title: $"Merge {branchName} into {DevBranch}",
+                Body: $"Automatically generated PR for merging branch {branchName} into {DevBranch}.",
+                BaseBranch: DevBranch,
                 SourceBranch: branchName
             );
 
-            await CreatePullRequestWithGitHubCLIAsync(prInfo);
-
-            await AbortMerge();
-
-            await RunProcessAsync("git", $"checkout {branchName}");
+            await CreateOrUpdatePullRequestAsync(prInfo);
+            await AbortMergeAsync();
+            await SwitchToBranchAsync(branchName);
 
             Environment.Exit(0);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Error in CreatePullRequestForGitFlowFinishAsync: {ex.Message}");
+            _logger.Log(ELogLevel.Error, $"Error in CreatePullRequestForGitFlowFinishAsync: {ex.Message}");
             Environment.Exit(1);
         }
     }
 
-    private static async Task ForcePushFeatureBranch(string branchName)
+    private async Task<string> GetCurrentBranchAsync()
+    {
+        return await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD");
+    }
+
+    private static bool IsFeatureBranch(string branchName)
+    {
+        return !string.IsNullOrEmpty(branchName) && branchName.StartsWith("feature/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ForcePushFeatureBranchAsync(string branchName)
     {
         try
         {
-            Console.WriteLine($"[INFO] Force pushing {branchName}...");
-            await RunProcessAsync("git", $"checkout {branchName}");
-            await RunProcessAsync("git", $"push -f origin {branchName}");
-            Console.WriteLine($"[INFO] Successfully pushed {branchName}");
+            _logger.Log(ELogLevel.Info, $"Force pushing {branchName}...");
+            await SwitchToBranchAsync(branchName);
+            await _processRunner.RunAsync("git", $"push -f origin {branchName}");
+            _logger.Log(ELogLevel.Info, $"Successfully pushed {branchName}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to push branch {branchName}: {ex.Message}");
-            throw;
+            throw new GitOperationException($"Failed to push branch {branchName}", ex);
         }
     }
 
-    public static async Task AbortMerge()
+    private async Task AbortMergeAsync()
     {
         try
         {
-            await RunProcessAsync("git", "merge --abort");
-            Console.WriteLine("[INFO] Merge aborted successfully");
+            await _processRunner.RunAsync("git", "merge --abort");
+            _logger.Log(ELogLevel.Info, "Merge aborted successfully");
         }
         catch
         {
-            Console.WriteLine("[INFO] No merge to abort");
+            _logger.Log(ELogLevel.Info, "No merge to abort");
         }
     }
 
-    private static async Task<string> RunProcessAsync(string command, string arguments)
+    private async Task SwitchToBranchAsync(string branchName)
     {
-        Console.WriteLine($"[DEBUG] Executing: {command} {arguments}");
+        await _processRunner.RunAsync("git", $"checkout {branchName}");
+    }
 
-        var process = new Process
+    private async Task CreateOrUpdatePullRequestAsync(PullRequestInfo prInfo)
+    {
+        try
         {
-            StartInfo = new ProcessStartInfo
+            await _githubClient.EnsureLabelsExistAsync();
+
+            var existingPrNumber = await _githubClient.FindExistingPullRequestAsync(prInfo.SourceBranch, prInfo.BaseBranch);
+
+            if (existingPrNumber != null)
             {
-                FileName = command,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            },
-        };
+                await _githubClient.UpdatePullRequestAsync(existingPrNumber, prInfo);
+                _logger.Log(ELogLevel.Info, $"Updated existing PR #{existingPrNumber}");
+                return;
+            }
 
-        process.Start();
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-
-        if (!string.IsNullOrEmpty(error))
-        {
-            Console.WriteLine($"[DEBUG] Process error output: {error}");
+            await _githubClient.CreatePullRequestAsync(prInfo);
+            _logger.Log(ELogLevel.Info, "Successfully created PR");
         }
-
-        return process.ExitCode != 0
-            ? throw new InvalidOperationException($"Command '{command} {arguments}' failed with error: {error}")
-            : output.Trim();
+        catch (Exception ex)
+        {
+            throw new GitOperationException("Could not create/update PR", ex);
+        }
     }
 }

@@ -1,63 +1,49 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OnForkHub.Scripts.Interfaces;
+using OnForkHub.Scripts.Logger;
+
 namespace OnForkHub.Scripts;
 
 public static class Program
 {
-    private static async Task Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
-        Console.WriteLine($"[INFO] args: {args}");
         try
         {
-            var projectRoot = GetProjectRootPath();
-            Console.WriteLine($"[INFO] Project Root: {projectRoot}");
-
-            if (!await GitFlowConfiguration.VerifyGitInstallationAsync())
-            {
-                Console.WriteLine("[ERROR] Git not installed.");
-                Environment.Exit(1);
-                return;
-            }
-
-            if (await GitFlowConfiguration.VerifyGitInstallationAsync())
-            {
-                await GitFlowConfiguration.EnsureCleanWorkingTreeAsync();
-                await GitFlowConfiguration.EnsureGitFlowConfiguredAsync();
-                Console.WriteLine("[INFO] Git Flow configuration completed successfully.");
-            }
-
-            if (!await HuskyConfiguration.ConfigureHuskyAsync(projectRoot))
-            {
-                Console.WriteLine("[ERROR] Husky configuration failed.");
-                Environment.Exit(1);
-                return;
-            }
-
-            if (args.Contains("pr-create"))
-            {
-                try
-                {
-                    await GitFlowPullRequestConfiguration.CreatePullRequestForGitFlowFinishAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ERROR] An error occurred: {ex.Message}");
-                    Environment.Exit(1);
-                }
-            }
-            else
-            {
-                Console.WriteLine("[INFO] Skipping PR creation (pr-create flag not present)");
-                await GitFlowPullRequestConfiguration.AbortMerge();
-            }
-
-            Console.WriteLine("[INFO] Configuration completed successfully.");
-            Environment.Exit(0);
+            using var host = CreateHostBuilder(args).Build();
+            var app = ActivatorUtilities.CreateInstance<Startup>(host.Services);
+            return await app.RunAsync(args);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] An unexpected error occurred: {ex.Message}");
+            Console.WriteLine($"[ERROR] Fatal error: {ex.Message}");
             Console.WriteLine($"[DEBUG] Stack Trace: {ex.StackTrace}");
-            Environment.Exit(1);
+            return 1;
         }
+    }
+
+    private static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureServices(
+                (context, services) =>
+                {
+                    services.AddSingleton<ILogger, ConsoleLogger>();
+                    services.AddSingleton<IProcessRunner, ProcessRunner>();
+                    services.AddSingleton<IGitEditorService, GitEditorService>();
+                    services.AddSingleton<IGitHubClient, GitHubClient>();
+
+                    var projectRoot = GetProjectRootPath();
+                    services.AddSingleton(projectRoot);
+
+                    services.AddSingleton<GitFlowConfiguration>();
+                    services.AddSingleton<HuskyConfiguration>();
+                    services.AddSingleton<GitFlowPullRequestConfiguration>();
+
+                    services.AddSingleton<Startup>();
+                }
+            );
     }
 
     private static string GetProjectRootPath()
@@ -65,10 +51,7 @@ public static class Program
         var currentDir = new DirectoryInfo(Environment.CurrentDirectory);
         while (currentDir != null)
         {
-            var gitPath = Path.Combine(currentDir.FullName, ".git");
-            var gitIgnorePath = Path.Combine(currentDir.FullName, ".gitignore");
-
-            if (Directory.Exists(gitPath) || File.Exists(gitIgnorePath) || currentDir.EnumerateFiles("*.sln").Any())
+            if (IsProjectRoot(currentDir))
             {
                 Console.WriteLine($"[INFO] Project root found: {currentDir.FullName}");
                 return currentDir.FullName;
@@ -77,5 +60,12 @@ public static class Program
         }
 
         throw new DirectoryNotFoundException("[ERROR] Could not find project root. Make sure a .sln file, .git folder, or .gitignore file exists.");
+    }
+
+    private static bool IsProjectRoot(DirectoryInfo directory)
+    {
+        return Directory.Exists(Path.Combine(directory.FullName, ".git"))
+            || File.Exists(Path.Combine(directory.FullName, ".gitignore"))
+            || directory.EnumerateFiles("*.sln").Any();
     }
 }
