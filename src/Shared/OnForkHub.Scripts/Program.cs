@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OnForkHub.Scripts.Enums;
 using OnForkHub.Scripts.Interfaces;
 using OnForkHub.Scripts.Logger;
 
@@ -7,6 +8,8 @@ namespace OnForkHub.Scripts;
 
 public static class Program
 {
+    private static readonly ConsoleLogger StartupLogger = new();
+
     public static async Task<int> Main(string[] args)
     {
         try
@@ -17,8 +20,8 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Fatal error: {ex.Message}");
-            Console.WriteLine($"[DEBUG] Stack Trace: {ex.StackTrace}");
+            StartupLogger.Log(ELogLevel.Error, $"Fatal error: {ex.Message}");
+            StartupLogger.Log(ELogLevel.Debug, $"Stack Trace: {ex.StackTrace}");
             return 1;
         }
     }
@@ -40,7 +43,6 @@ public static class Program
                     services.AddSingleton<GitFlowConfiguration>();
                     services.AddSingleton<HuskyConfiguration>();
                     services.AddSingleton<GitFlowPullRequestConfiguration>();
-
                     services.AddSingleton<Startup>();
                 }
             );
@@ -53,13 +55,13 @@ public static class Program
         {
             if (IsProjectRoot(currentDir))
             {
-                Console.WriteLine($"[INFO] Project root found: {currentDir.FullName}");
+                StartupLogger.Log(ELogLevel.Info, $"Project root found: {currentDir.FullName}");
                 return currentDir.FullName;
             }
             currentDir = currentDir.Parent;
         }
 
-        throw new DirectoryNotFoundException("[ERROR] Could not find project root. Make sure a .sln file, .git folder, or .gitignore file exists.");
+        throw new DirectoryNotFoundException("Could not find project root. Make sure a .sln file, .git folder, or .gitignore file exists.");
     }
 
     private static bool IsProjectRoot(DirectoryInfo directory)
