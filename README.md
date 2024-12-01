@@ -17,23 +17,160 @@ This project aims to create a scalable and distributed platform for video sharin
 - **Torrent Conversion**: MonoTorrent (C# library for torrent management)
 - **CDN**: Configured with P2P support (options: Azure CDN, Peer5, Streamroot, or CDNBye)
 - **Database**: Azure Cosmos DB for video metadata and moderation logs
-- **Git Flow**: Branch management
+- **Git Flow**: Branch management with Conventional Commits
+- **Code Quality**: CSharpier for formatting, Husky for Git hooks
 
- ### Development Environment
+### Development Environment
 - **🟥 Windows**: Used for local development
+- **🔷 VS Code And Visual Studio**: Recommended IDE
+- **🔨 Git Flow**: Branch management
+- **📝 Conventional Commits**: Commit message standard
+- **🎨 CSharpier**: Code formatting
+- **🐶 Husky**: Git hooks
 
-## Environment Setup
+## Prerequisites
 
-### Prerequisites
+Before you begin, ensure you have the following installed:
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Git](https://git-scm.com/)
+- [GitHub CLI (gh)](https://cli.github.com/)
+- [Node.js](https://nodejs.org/) 
+- [Docker](https://www.docker.com/)
+- [WebTorrent](https://webtorrent.io/)
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) SDK for development
-- [WebTorrent](https://webtorrent.io/) for WebTorrent packages and dependencies
-- [Docker](https://www.docker.com/) for seed containers and orchestration
+## Installation
 
-### Initial Setup
+1. Clone and setup the repository:
+```bash
+git clone https://github.com/RondineleG/OnForkHub.git
+cd OnForkHub
+```
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/RondineleG/OnForkHub.git
-   cd OnForkHub
-    dotnet build && dotnet husky run
+2. Build and setup hooks:
+```bash
+dotnet build && dotnet husky run
+```
+
+3. Install GitHub CLI:
+```bash
+# Windows (via winget)
+winget install GitHub.cli
+
+gh auth login
+
+```
+
+## Development Workflow
+
+### Git Flow and Commits
+
+We use Git Flow with Conventional Commits for development:
+
+1. Start a feature:
+```bash
+git flow feature start FeatureName
+```
+
+2. Make changes and commit using Conventional Commits pattern:
+```bash
+# Example commits:
+feat(auth): implement JWT authentication
+fix(api): resolve null reference exception
+docs: update API documentation
+```
+
+3. Publish a feature:
+```bash
+git flow feature publish FeatureName
+```
+
+4. Finish the feature:
+```bash
+git flow feature finish FeatureName
+```
+
+### Commit Message Format 
+
+```
+feat(auth): add JWT authentication system
+
+Added comprehensive JWT implementation:
+- Token generation and validation
+- Refresh token mechanism
+- Role-based authorization
+- Secure cookie handling
+
+Closes #123
+Breaking-Change: Previous token format is no longer supported
+```
+
+#### Types per Branch
+
+- **feature/***
+  - `feat:` - New features
+  - `refactor:` - Code refactoring
+  - `fix:` - Bug fixes
+  - `test:` - Tests
+  - `docs:` - Documentation
+  - `style:` - Code style
+
+- **hotfix/***
+  - `fix:` - Bug fixes
+  - `hotfix:` - Critical fixes
+  - `perf:` - Performance
+
+- **bugfix/***
+   - `fix:` - Bug fixes
+  - `hotfix:` - Critical fixes
+  - `perf:` - Performance
+
+- **release/***
+  - `release:` - Release changes
+  - `chore:` - Maintenance
+  - `docs:` - Documentation
+
+### Code Quality
+
+- **Formatting**: CSharpier automatically formats code in pre-commit
+```bash
+dotnet csharpier .
+```
+
+- **Git Hooks**: 
+  - pre-commit: Format check
+  - commit-msg: Message validation
+  - pre-push: Test execution
+  - post-checkout: Setup hooks in checkout
+  - pre-flow-feature-finish: PR creation
+
+## Contribution Guide
+
+1. Create a feature branch using Git Flow
+2. Make changes following our coding standards
+3. Commit using Conventional Commits format
+4. Ensure all tests pass
+5. Finish feature (PR created automatically)
+6. Address review comments
+
+## Troubleshooting
+
+### Common Issues
+
+1. **PR Creation Fails**:
+   - Verify GitHub CLI auth: `gh auth status`
+   - Check hook logs
+   - Create PR manually if needed
+
+2. **Commit Rejected**:
+   - Verify branch type
+   - Check commit format
+   - Follow error message examples
+
+3. **Format Issues**:
+   - Run `dotnet csharpier .`
+   - Fix syntax errors
+   - Commit formatted files
+
+## License
+
+This project is licensed under [MIT License](LICENSE).
