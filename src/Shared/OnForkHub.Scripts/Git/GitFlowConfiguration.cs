@@ -68,60 +68,96 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         {
             _logger.Log(ELogLevel.Info, "Checking if Git Flow is already configured...");
 
-            // Check if git flow is initialized by checking for the develop branch
-            var branches = await _processRunner.RunAsync("git", "branch -a");
-            if (!branches.Contains("dev") && !branches.Contains("develop"))
+            try
             {
-                _logger.Log(ELogLevel.Info, "Git Flow is not configured. Initializing...");
-                await InitializeGitFlowAsync();
-                _logger.Log(ELogLevel.Info, "Git Flow configured successfully.");
-                return;
+                await _processRunner.RunAsync("git", "flow init -d");
+                _logger.Log(ELogLevel.Info, "Git Flow initialized with default settings.");
+            }
+            catch
+            {
+                _logger.Log(ELogLevel.Info, "Default initialization failed, trying manual configuration...");
             }
 
-            _logger.Log(ELogLevel.Info, "Git Flow is already configured.");
+            await ConfigureGitFlowSettingsAsync();
+
+            await EnsureDevBranchExistsAsync();
+
+            _logger.Log(ELogLevel.Info, "Git Flow configuration completed.");
         }
         catch (Exception ex)
         {
-            _logger.Log(ELogLevel.Error, "An error occurred while checking Git Flow configuration:");
+            _logger.Log(ELogLevel.Error, "An error occurred while configuring Git Flow:");
             _logger.Log(ELogLevel.Error, ex.Message);
             throw new GitOperationException("Failed to configure Git Flow.", ex);
         }
     }
 
-    private async Task InitializeGitFlowAsync()
+    private async Task ConfigureGitFlowSettingsAsync()
     {
-        try
+        foreach (var config in _defaultConfig)
         {
-            // Create dev branch if it doesn't exist
-            await _processRunner.RunAsync("git", "checkout -b dev");
-
-            // Configure git flow settings
-            foreach (var config in _defaultConfig)
+            try
             {
                 await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}");
             }
+            catch (Exception ex)
+            {
+                _logger.Log(ELogLevel.Warning, $"Failed to set {config.Key}: {ex.Message}");
+            }
+        }
 
-            // Additional git flow specific configurations
-            await _processRunner.RunAsync("git", "config --local gitflow.feature.finish false");
-            await _processRunner.RunAsync("git", "config --local gitflow.feature.no-ff true");
-            await _processRunner.RunAsync("git", "config --local gitflow.feature.no-merge true");
-            await _processRunner.RunAsync("git", "config --local gitflow.feature.keepbranch true");
+        var additionalConfigs = new Dictionary<string, string>
+        {
+            { "gitflow.feature.finish", "false" },
+            { "gitflow.feature.no-ff", "true" },
+            { "gitflow.feature.no-merge", "true" },
+            { "gitflow.feature.keepbranch", "true" },
+        };
 
-            // Push dev branch to remote if it exists
+        foreach (var config in additionalConfigs)
+        {
             try
             {
-                await _processRunner.RunAsync("git", "push -u origin dev");
+                await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}");
             }
-            catch
+            catch (Exception ex)
             {
-                _logger.Log(ELogLevel.Warning, "Could not push dev branch to remote. This is normal for new repositories.");
+                _logger.Log(ELogLevel.Warning, $"Failed to set {config.Key}: {ex.Message}");
             }
+        }
+    }
 
-            await _processRunner.RunAsync("git", "checkout main");
+    private async Task EnsureDevBranchExistsAsync()
+    {
+        try
+        {
+            var branches = await _processRunner.RunAsync("git", "branch -a");
+            if (!branches.Contains("dev") && !branches.Contains("develop"))
+            {
+                await _processRunner.RunAsync("git", "checkout -b dev");
+                _logger.Log(ELogLevel.Info, "Created dev branch");
+
+                try
+                {
+                    await _processRunner.RunAsync("git", "push -u origin dev");
+                    _logger.Log(ELogLevel.Info, "Pushed dev branch to remote");
+                }
+                catch
+                {
+                    _logger.Log(ELogLevel.Warning, "Could not push dev branch to remote. This is normal for new repositories.");
+                }
+
+                await _processRunner.RunAsync("git", "checkout -");
+            }
+            else
+            {
+                _logger.Log(ELogLevel.Info, "Dev branch already exists");
+            }
         }
         catch (Exception ex)
         {
-            throw new GitOperationException("Failed to initialize Git Flow.", ex);
+            _logger.Log(ELogLevel.Warning, $"Error managing dev branch: {ex.Message}");
+            throw;
         }
     }
 }
