@@ -8,19 +8,6 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
-    private readonly Dictionary<string, string> _defaultConfig =
-        new()
-        {
-            { "gitflow.branch.master", "main" },
-            { "gitflow.branch.develop", "dev" },
-            { "gitflow.prefix.feature", "feature/" },
-            { "gitflow.prefix.bugfix", "bugfix/" },
-            { "gitflow.prefix.release", "release/" },
-            { "gitflow.prefix.hotfix", "hotfix/" },
-            { "gitflow.prefix.support", "support/" },
-            { "gitflow.prefix.versiontag", "v" },
-        };
-
     public async Task<bool> VerifyGitInstallationAsync()
     {
         try
@@ -66,21 +53,43 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     {
         try
         {
-            _logger.Log(ELogLevel.Info, "Checking if Git Flow is already configured...");
+            _logger.Log(ELogLevel.Info, "Checking Git Flow configuration...");
+
+            var tempScriptPath = Path.GetTempFileName();
+            var isWindows = OperatingSystem.IsWindows();
+            var scriptExtension = isWindows ? ".bat" : ".sh";
+            var finalScriptPath = Path.ChangeExtension(tempScriptPath, scriptExtension);
 
             try
             {
-                await _processRunner.RunAsync("git", "flow init -d");
-                _logger.Log(ELogLevel.Info, "Git Flow initialized with default settings.");
+                var scriptContent = isWindows ? GenerateWindowsScript() : GenerateUnixScript();
+
+                await File.WriteAllTextAsync(finalScriptPath, scriptContent);
+
+                if (!isWindows)
+                {
+                    await _processRunner.RunAsync("chmod", $"+x {finalScriptPath}");
+                }
+
+                await _processRunner.RunAsync(finalScriptPath, "");
+                _logger.Log(ELogLevel.Info, "Git Flow initialized successfully.");
+
+                await ConfigureAdditionalSettingsAsync();
             }
-            catch
+            finally
             {
-                _logger.Log(ELogLevel.Info, "Default initialization failed, trying manual configuration...");
+                try
+                {
+                    if (File.Exists(finalScriptPath))
+                    {
+                        File.Delete(finalScriptPath);
+                    }
+                }
+                catch
+                {
+                    _logger.Log(ELogLevel.Warning, "Could not delete temporary script file.");
+                }
             }
-
-            await ConfigureGitFlowSettingsAsync();
-
-            await EnsureDevBranchExistsAsync();
 
             _logger.Log(ELogLevel.Info, "Git Flow configuration completed.");
         }
@@ -92,26 +101,65 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         }
     }
 
-    private async Task ConfigureGitFlowSettingsAsync()
+    private static string GenerateWindowsScript()
     {
-        foreach (var config in _defaultConfig)
-        {
-            try
-            {
-                await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(ELogLevel.Warning, $"Failed to set {config.Key}: {ex.Message}");
-            }
-        }
+        return @"@echo off
+git config --local gitflow.branch.master main
+git config --local gitflow.branch.develop dev
+git config --local gitflow.prefix.feature feature/
+git config --local gitflow.prefix.bugfix bugfix/
+git config --local gitflow.prefix.release release/
+git config --local gitflow.prefix.hotfix hotfix/
+git config --local gitflow.prefix.support support/
+git config --local gitflow.prefix.versiontag v
 
+git config --local core.bare false
+git config --local core.logallrefupdates true
+
+if not exist .git\refs\heads\dev (
+    git checkout -b dev
+    git push -u origin dev 2>nul
+    git checkout main
+)
+
+echo ""GitFlow initialization complete.""
+";
+    }
+
+    private static string GenerateUnixScript()
+    {
+        return @"#!/bin/bash
+git config --local gitflow.branch.master main
+git config --local gitflow.branch.develop dev
+git config --local gitflow.prefix.feature feature/
+git config --local gitflow.prefix.bugfix bugfix/
+git config --local gitflow.prefix.release release/
+git config --local gitflow.prefix.hotfix hotfix/
+git config --local gitflow.prefix.support support/
+git config --local gitflow.prefix.versiontag v
+
+git config --local core.bare false
+git config --local core.logallrefupdates true
+
+if ! git show-ref --verify --quiet refs/heads/dev; then
+    git checkout -b dev
+    git push -u origin dev 2>/dev/null || true
+    git checkout main
+fi
+
+echo 'GitFlow initialization complete.'
+";
+    }
+
+    private async Task ConfigureAdditionalSettingsAsync()
+    {
         var additionalConfigs = new Dictionary<string, string>
         {
             { "gitflow.feature.finish", "false" },
             { "gitflow.feature.no-ff", "true" },
             { "gitflow.feature.no-merge", "true" },
             { "gitflow.feature.keepbranch", "true" },
+            { "gitflow.path.hooks", ".husky" },
         };
 
         foreach (var config in additionalConfigs)
@@ -119,45 +167,12 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             try
             {
                 await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}");
+                _logger.Log(ELogLevel.Info, $"Set {config.Key} to {config.Value}");
             }
             catch (Exception ex)
             {
                 _logger.Log(ELogLevel.Warning, $"Failed to set {config.Key}: {ex.Message}");
             }
-        }
-    }
-
-    private async Task EnsureDevBranchExistsAsync()
-    {
-        try
-        {
-            var branches = await _processRunner.RunAsync("git", "branch -a");
-            if (!branches.Contains("dev") && !branches.Contains("develop"))
-            {
-                await _processRunner.RunAsync("git", "checkout -b dev");
-                _logger.Log(ELogLevel.Info, "Created dev branch");
-
-                try
-                {
-                    await _processRunner.RunAsync("git", "push -u origin dev");
-                    _logger.Log(ELogLevel.Info, "Pushed dev branch to remote");
-                }
-                catch
-                {
-                    _logger.Log(ELogLevel.Warning, "Could not push dev branch to remote. This is normal for new repositories.");
-                }
-
-                await _processRunner.RunAsync("git", "checkout -");
-            }
-            else
-            {
-                _logger.Log(ELogLevel.Info, "Dev branch already exists");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Warning, $"Error managing dev branch: {ex.Message}");
-            throw;
         }
     }
 }
