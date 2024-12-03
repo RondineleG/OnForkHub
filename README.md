@@ -1,7 +1,8 @@
 <div align="center">
-  <h1>Video Sharing Platform with Torrent and CDN Support</h1>
+
+# Video Sharing Platform with Torrent and CDN Support
+
 <img src="docs/assets/logo.svg" width="400" alt="OnForkHub Logo"/>
-<br>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
@@ -9,7 +10,6 @@
 *A distributed video-sharing platform with hybrid P2P and CDN delivery*
 
 </div>
-
 
 ## 🎯 Project Overview
 
@@ -24,6 +24,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 ## 🛠 Tech Stack
 
 ### Core Technologies
+
 - **🎯 Backend**: .NET 9 with ASP.NET Core
 - **🌐 Frontend**: Blazor WebAssembly
 - **📦 Storage**: Azure Blob Storage/AWS S3
@@ -31,6 +32,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 - **🐳 Containers**: Docker
 
 ### Development Tools
+
 - **📝 IDE**: Visual Studio 2022/VS Code
 - **🔨 Version Control**: Git + Git Flow
 - **🎨 Code Style**: CSharpier
@@ -40,6 +42,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 ## 📋 Prerequisites
 
 ### Required Software
+
 - **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
 - **Git** - [Download](https://git-scm.com/)
 - **GitHub CLI** - [Download](https://cli.github.com/)
@@ -47,6 +50,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 - **Docker** - [Download](https://www.docker.com/)
 
 ### Recommended Extensions
+
 - **Visual Studio**
   - GitFlow for Visual Studio 2022
   - CSharpier
@@ -62,6 +66,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 ### First-Time Setup
 
 1. **Install and Configure GitHub CLI**
+
 ```bash
 # Download and install GitHub CLI from https://cli.github.com/
 
@@ -69,18 +74,24 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 gh auth login
 gh auth status  # Verify authentication
 ```
+
+2. **Clone and Setup Repository**
+
+```bash
 # Clone using GitHub CLI
 gh repo clone RondineleG/OnForkHub
 cd OnForkHub
 
 # Build and configure project (includes .NET tools and Husky setup)
 dotnet build && dotnet husky run
+```
 
 3. **Setup Local Environment**
+
 ```bash
 # Install dependencies
- dotnet build && dotnet husky run
- 
+dotnet build && dotnet husky run
+
 # Build solution
 dotnet build
 
@@ -91,6 +102,7 @@ dotnet dev-certs https --trust
 ### Development Workflow
 
 #### 1. Branch Management (Git Flow)
+
 ```bash
 # Start new feature
 git flow feature start FeatureName
@@ -98,11 +110,12 @@ git flow feature start FeatureName
 # Publish feature
 git flow feature publish FeatureName
 
-# Complete feature and create an automatic Pull Request if the GitHub CLI is configured correctly.
-git flow feature FeatureName
+# Complete feature and create an automatic Pull Request
+git flow feature finish FeatureName
 ```
 
 #### 2. Commit Standards
+
 ```bash
 # Structure
 <type>(<scope>): <description>
@@ -122,6 +135,7 @@ Closes #123
 ```
 
 #### 3. Local Development
+
 ```bash
 # Run API
 cd src/Presentations/OnForkHub.Api
@@ -132,7 +146,7 @@ cd src/Presentations/OnForkHub.Web
 dotnet watch run
 ```
 
-#### 4.  Git Aliases
+#### 4. Git Aliases
 
 After setting up the project, you will have access to convenient Git aliases. They become available after restarting your terminal or running `. $PROFILE` in your terminal:
 
@@ -154,23 +168,26 @@ gl  # git log with nice formatting
 gt  # git log --graph (tree view)
 gd  # git diff
 gr  # git remote -v
+```
 
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Setting Up for Development
+
 1. Fork the repository
 2. Create your feature branch (`git flow feature start FeatureName`)
 3. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/)
 4. Push to the branch (`git flow feature publish FeatureName`)
-5. Open a Pull Request in GitHub manually, or use (`git flow feature finish FeatureName`) to create an automatic Pull Request if the GitHub CLI is configured correctly.
+5. Open a Pull Request in GitHub manually, or use (`git flow feature finish FeatureName`) to create an automatic Pull Request
 
 ## ❓ Troubleshooting
 
 ### Common Issues & Solutions
 
 #### GitHub CLI Issues
+
 ```bash
 # Reset authentication
 gh auth logout
@@ -181,6 +198,7 @@ gh auth status
 ```
 
 #### Git Flow Issues
+
 ```bash
 # Reinitialize Git Flow
 git flow init -f
@@ -190,6 +208,7 @@ git config --list | findstr "gitflow"
 ```
 
 #### Build Issues
+
 ```bash
 # Clean solution
 dotnet clean
@@ -197,8 +216,8 @@ dotnet clean
 # Clear NuGet cache
 dotnet nuget locals all --clear
 
-# Build
-dotnet build 
+# Rebuild
+dotnet build --no-incremental
 ```
 
 ## 📜 License
