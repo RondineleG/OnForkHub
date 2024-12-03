@@ -55,19 +55,8 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         {
             _logger.Log(ELogLevel.Info, "Initializing Git Flow...");
 
-            var currentBranch = await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD");
-            currentBranch = currentBranch.Trim();
-
-            await CreateBranchIfNotExists("main");
-
-            await CreateBranchIfNotExists("dev");
-
+            await EnsureRequiredBranchesExistAsync();
             await ConfigureGitFlow();
-
-            if (currentBranch is not "main" and not "dev")
-            {
-                await _processRunner.RunAsync("git", $"checkout {currentBranch}");
-            }
 
             _logger.Log(ELogLevel.Info, "Git Flow configuration completed successfully.");
         }
@@ -79,32 +68,48 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         }
     }
 
-    private async Task CreateBranchIfNotExists(string branchName)
+    private async Task EnsureRequiredBranchesExistAsync()
+    {
+        var currentBranch = (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
+        var branches = (await _processRunner.RunAsync("git", "branch")).Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(b => b.Trim('*', ' ')).ToList();
+
+        if (!branches.Contains("main") && !IsFeatureBranch(currentBranch))
+        {
+            await CreateBranch("main");
+        }
+
+        if (!branches.Contains("dev") && !IsFeatureBranch(currentBranch))
+        {
+            await CreateBranch("dev");
+        }
+    }
+
+    private static bool IsFeatureBranch(string branchName)
+    {
+        return branchName.StartsWith("feature/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task CreateBranch(string branchName)
     {
         try
         {
-            var branches = await _processRunner.RunAsync("git", "branch");
-            if (!branches.Contains(branchName))
+            _logger.Log(ELogLevel.Info, $"Creating {branchName} branch...");
+            await _processRunner.RunAsync("git", $"branch {branchName}");
+
+            try
             {
-                _logger.Log(ELogLevel.Info, $"Creating {branchName} branch...");
-                await _processRunner.RunAsync("git", $"checkout -b {branchName}");
-                try
-                {
-                    await _processRunner.RunAsync("git", $"push -u origin {branchName}");
-                }
-                catch
-                {
-                    _logger.Log(ELogLevel.Warning, $"Could not push {branchName} branch to remote. This is normal for new repositories.");
-                }
+                await _processRunner.RunAsync("git", $"push -u origin {branchName}");
+                _logger.Log(ELogLevel.Info, $"Pushed {branchName} branch to remote.");
             }
-            else
+            catch
             {
-                await _processRunner.RunAsync("git", $"checkout {branchName}");
+                _logger.Log(ELogLevel.Warning, $"Could not push {branchName} branch to remote. This is normal for new repositories.");
             }
         }
         catch (Exception ex)
         {
-            _logger.Log(ELogLevel.Error, $"Error creating/checking out {branchName} branch: {ex.Message}");
+            _logger.Log(ELogLevel.Error, $"Error creating {branchName} branch: {ex.Message}");
             throw;
         }
     }
