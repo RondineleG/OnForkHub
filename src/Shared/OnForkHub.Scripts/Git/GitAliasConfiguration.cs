@@ -87,6 +87,17 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
                 await File.WriteAllTextAsync(psProfilePath, aliasContent);
             }
 
+            try
+            {
+                await _processRunner.RunAsync("powershell", "-NoProfile -Command & {. $PROFILE}");
+                _logger.Log(ELogLevel.Info, "PowerShell profile reloaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(ELogLevel.Warning, $"Failed to reload PowerShell profile: {ex.Message}");
+                _logger.Log(ELogLevel.Info, "Please restart your PowerShell session or run '. $PROFILE' to load the new aliases.");
+            }
+
             _logger.Log(ELogLevel.Info, "PowerShell Git aliases configured successfully.");
         }
         catch (Exception ex)
