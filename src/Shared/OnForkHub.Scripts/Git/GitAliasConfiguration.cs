@@ -59,46 +59,64 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
     {
         try
         {
-            var psProfilePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "Documents",
-                "WindowsPowerShell",
-                "Microsoft.PowerShell_profile.ps1"
-            );
-
-            var profileDir = Path.GetDirectoryName(psProfilePath);
-            if (!Directory.Exists(profileDir))
+            var profilePaths = new[]
             {
-                Directory.CreateDirectory(profileDir!);
-            }
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Documents",
+                    "WindowsPowerShell",
+                    "Microsoft.PowerShell_profile.ps1"
+                ),
+                Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Documents",
+                    "PowerShell",
+                    "Microsoft.PowerShell_profile.ps1"
+                ),
+            };
 
-            var aliasContent = GeneratePowerShellAliasContent();
-
-            if (File.Exists(psProfilePath))
+            foreach (var psProfilePath in profilePaths)
             {
-                var currentContent = await File.ReadAllTextAsync(psProfilePath);
-                if (!currentContent.Contains("# Git Aliases"))
+                var profileDir = Path.GetDirectoryName(psProfilePath);
+                if (!Directory.Exists(profileDir))
                 {
-                    await File.AppendAllTextAsync(psProfilePath, $"\n{aliasContent}");
+                    Directory.CreateDirectory(profileDir!);
+                }
+
+                var aliasContent = GeneratePowerShellAliasContent();
+
+                if (File.Exists(psProfilePath))
+                {
+                    var currentContent = await File.ReadAllTextAsync(psProfilePath);
+                    if (!currentContent.Contains("# Git Aliases"))
+                    {
+                        await File.AppendAllTextAsync(psProfilePath, $"\n{aliasContent}");
+                        _logger.Log(ELogLevel.Info, $"Added aliases to existing profile: {psProfilePath}");
+                    }
+                }
+                else
+                {
+                    await File.WriteAllTextAsync(psProfilePath, aliasContent);
+                    _logger.Log(ELogLevel.Info, $"Created new profile with aliases: {psProfilePath}");
                 }
             }
-            else
+
+            foreach (var shell in new[] { "powershell", "pwsh" })
             {
-                await File.WriteAllTextAsync(psProfilePath, aliasContent);
+                try
+                {
+                    await _processRunner.RunAsync(shell, "-NoProfile -Command . $PROFILE -Force");
+                }
+                catch { }
             }
 
-            try
-            {
-                await _processRunner.RunAsync("powershell", "-NoProfile -Command & {. $PROFILE}");
-                _logger.Log(ELogLevel.Info, "PowerShell profile reloaded successfully.");
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(ELogLevel.Warning, $"Failed to reload PowerShell profile: {ex.Message}");
-                _logger.Log(ELogLevel.Info, "Please restart your PowerShell session or run '. $PROFILE' to load the new aliases.");
-            }
-
-            _logger.Log(ELogLevel.Info, "PowerShell Git aliases configured successfully.");
+            _logger.Log(
+                ELogLevel.Info,
+                @"PowerShell Git aliases configured successfully.
+To use the aliases immediately, please:
+1. Close and reopen your PowerShell window, or
+2. Run this command: . $PROFILE"
+            );
         }
         catch (Exception ex)
         {
@@ -108,43 +126,44 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
 
     private static string GeneratePowerShellAliasContent()
     {
-        return """
-            # Git Aliases
-            function GitStatus { & git status -sb $args }
-            New-Alias -Name gs -Value GitStatus -Force -Option AllScope
+        return $@"
+# Git Aliases
+# Generated on {DateTime.Now:yyyy-MM-dd HH:mm:ss}
+if (Get-Command git -ErrorAction SilentlyContinue) {{
+    function GitStatus {{ & git status -sb $args }}
+    Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
+    
+    function GitCommit {{ & git commit -ev $args }}
+    Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
+    
+    function GitAdd {{ & git add --all $args }}
+    Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
+    
+    function GitTree {{ & git log --graph --oneline --decorate $args }}
+    Set-Alias -Name gt -Value GitTree -Force -Option AllScope
+    
+    function GitPush {{ & git push $args }}
+    Set-Alias -Name gps -Value GitPush -Force -Option AllScope
+    
+    function GitPull {{ & git pull $args }}
+    Set-Alias -Name gpl -Value GitPull -Force -Option AllScope
+    
+    function GitFetch {{ & git fetch $args }}
+    Set-Alias -Name gf -Value GitFetch -Force -Option AllScope
+    
+    function GitCheckout {{ & git checkout $args }}
+    Set-Alias -Name gco -Value GitCheckout -Force -Option AllScope
+    
+    function GitBranch {{ & git branch $args }}
+    Set-Alias -Name gb -Value GitBranch -Force -Option AllScope
+    
+    function GitRemote {{ & git remote -v $args }}
+    Set-Alias -Name gr -Value GitRemote -Force -Option AllScope
+    
+    function GitDiff {{ & git diff $args }}
+    Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
 
-            function GitCommit { & git commit -ev $args }
-            New-Alias -Name gc -Value GitCommit -Force -Option AllScope
-
-            function GitAdd { & git add --all $args }
-            New-Alias -Name ga -Value GitAdd -Force -Option AllScope
-
-            function GitTree { & git log --graph --oneline --decorate $args }
-            New-Alias -Name gt -Value GitTree -Force -Option AllScope
-
-            function GitPush { & git push $args }
-            New-Alias -Name gps -Value GitPush -Force -Option AllScope
-
-            function GitPull { & git pull $args }
-            New-Alias -Name gpl -Value GitPull -Force -Option AllScope
-
-            function GitFetch { & git fetch $args }
-            New-Alias -Name gf -Value GitFetch -Force -Option AllScope
-
-            function GitCheckout { & git checkout $args }
-            New-Alias -Name gco -Value GitCheckout -Force -Option AllScope
-
-            function GitBranch { & git branch $args }
-            New-Alias -Name gb -Value GitBranch -Force -Option AllScope
-
-            function GitRemote { & git remote -v $args }
-            New-Alias -Name gr -Value GitRemote -Force -Option AllScope
-
-            function GitDiff { & git diff $args }
-            New-Alias -Name gd -Value GitDiff -Force -Option AllScope
-
-            # Load the aliases immediately
-            $null = Get-Alias | Where-Object { $_.Name -like "g*" }
-            """;
+    Write-Host 'Git aliases loaded successfully!'
+}}";
     }
 }
