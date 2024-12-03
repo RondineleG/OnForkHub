@@ -1,7 +1,5 @@
-# Video Sharing Platform with Torrent and CDN Support
-
 <div align="center">
-
+  <h1>Video Sharing Platform with Torrent and CDN Support</h1>
 <img src="docs/assets/logo.svg" width="400" alt="OnForkHub Logo"/>
 <br>
 
@@ -51,7 +49,6 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 ### Recommended Extensions
 - **Visual Studio**
   - GitFlow for Visual Studio 2022
-  - WebTorrent for Visual Studio
   - CSharpier
 
 - **VS Code**
@@ -64,24 +61,20 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
 ### First-Time Setup
 
-1. **Clone & Configure**
+1. **Install and Configure GitHub CLI**
 ```bash
-# Clone repository
-git clone https://github.com/RondineleG/OnForkHub.git
-cd OnForkHub
+# Download and install GitHub CLI from https://cli.github.com/
 
-# Install .NET tools
-dotnet tool restore
-
-# Setup Husky hooks
-dotnet husky install
-```
-
-2. **Configure GitHub CLI**
-```bash
+# Then configure:
 gh auth login
 gh auth status  # Verify authentication
 ```
+# Clone using GitHub CLI
+gh repo clone RondineleG/OnForkHub
+cd OnForkHub
+
+# Build and configure project (includes .NET tools and Husky setup)
+dotnet build && dotnet husky run
 
 3. **Setup Local Environment**
 ```bash
@@ -171,7 +164,7 @@ gh auth status
 git flow init -f
 
 # Check configuration
-git config --list | grep "gitflow"
+git config --list | findstr "gitflow"
 ```
 
 #### Build Issues
