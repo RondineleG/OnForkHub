@@ -32,7 +32,13 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
     {
         try
         {
-            await _processRunner.RunAsync("code", "--version", _projectRoot);
+            var vsCodePath = GetVsCodePath();
+            if (string.IsNullOrEmpty(vsCodePath))
+            {
+                return false;
+            }
+
+            await _processRunner.RunAsync(vsCodePath, "--version", _projectRoot);
             return true;
         }
         catch
@@ -43,7 +49,14 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
 
     private async Task ConfigureVsCodeAsGitEditor()
     {
-        await _processRunner.RunAsync("git", "config --local core.editor \"code --wait\"", _projectRoot);
+        var vsCodePath = GetVsCodePath();
+        if (string.IsNullOrEmpty(vsCodePath))
+        {
+            throw new InvalidOperationException("VSCode path not found");
+        }
+
+        var escapedPath = vsCodePath.Replace("\\", "/");
+        await _processRunner.RunAsync("git", $"config --local core.editor \"\"{escapedPath}\" --wait\"", _projectRoot);
         _logger.Log(ELogLevel.Info, "VSCode configured as Git editor");
     }
 
@@ -51,5 +64,19 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
     {
         await _processRunner.RunAsync("git", "config --local core.editor \"notepad\"", _projectRoot);
         _logger.Log(ELogLevel.Info, "Notepad configured as Git editor (VSCode not found)");
+    }
+
+    private static string GetVsCodePath()
+    {
+        var possiblePaths = new[]
+        {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft VS Code", "Code.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft VS Code", "Code.exe"),
+        };
+
+        var path = Array.Find(possiblePaths, path => !string.IsNullOrEmpty(path) && File.Exists(path));
+
+        return string.IsNullOrEmpty(path) ? throw new FileNotFoundException("VS Code executable not found in standard locations.") : path;
     }
 }

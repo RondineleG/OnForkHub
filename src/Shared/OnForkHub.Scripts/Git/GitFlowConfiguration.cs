@@ -71,8 +71,10 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     private async Task EnsureRequiredBranchesExistAsync()
     {
         var currentBranch = (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
-        var branches = (await _processRunner.RunAsync("git", "branch")).Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(b => b.Trim('*', ' ')).ToList();
+        var branches = (await _processRunner.RunAsync("git", "branch"))
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(b => b.Trim('*', ' '))
+            .ToList();
 
         if (!branches.Contains("main") && !IsFeatureBranch(currentBranch))
         {
@@ -132,7 +134,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             { "gitflow.feature.no-ff", "true" },
             { "gitflow.feature.no-merge", "true" },
             { "gitflow.feature.keepbranch", "true" },
-            { "gitflow.path.hooks", ".husky" }
+            { "gitflow.path.hooks", ".husky" },
         };
 
         foreach (var config in configs)
