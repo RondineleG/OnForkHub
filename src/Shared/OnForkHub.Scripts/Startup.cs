@@ -3,12 +3,19 @@ using OnForkHub.Scripts.Interfaces;
 
 namespace OnForkHub.Scripts;
 
-public class Startup(ILogger logger, GitFlowConfiguration gitFlowConfig, HuskyConfiguration huskyConfig, GitFlowPullRequestConfiguration prConfig)
+public class Startup(
+    ILogger logger,
+    GitFlowConfiguration gitFlowConfig,
+    HuskyConfiguration huskyConfig,
+    GitFlowPullRequestConfiguration prConfig,
+    IGitAliasConfiguration aliasConfig
+)
 {
     private readonly ILogger _logger = logger;
     private readonly GitFlowConfiguration _gitFlowConfig = gitFlowConfig;
     private readonly HuskyConfiguration _huskyConfig = huskyConfig;
     private readonly GitFlowPullRequestConfiguration _prConfig = prConfig;
+    private readonly IGitAliasConfiguration _aliasConfig = aliasConfig;
 
     public async Task<int> RunAsync(string[] args)
     {
@@ -23,6 +30,7 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlowConfig, HuskyCo
             }
 
             await ConfigureGitFlowAsync();
+            await _aliasConfig.ConfigureAliasesAsync();
 
             if (!await ConfigureHuskyAsync())
             {

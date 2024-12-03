@@ -36,6 +36,7 @@ public static class Program
                     services.AddSingleton<IProcessRunner, ProcessRunner>();
                     services.AddSingleton<IGitEditorService, GitEditorService>();
                     services.AddSingleton<IGitHubClient, GitHubClient>();
+                    services.AddSingleton<IGitAliasConfiguration, GitAliasConfiguration>();
 
                     var projectRoot = GetProjectRootPath();
                     services.AddSingleton(projectRoot);
