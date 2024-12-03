@@ -54,4 +54,11 @@
         </PackageReference>
     </ItemGroup>
 
+    <!--Dependencies for OnForkHub.Scripts-->
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.*" />
+    </ItemGroup>
+
 </Project>
