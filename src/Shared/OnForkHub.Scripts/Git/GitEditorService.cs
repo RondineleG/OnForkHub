@@ -1,6 +1,3 @@
-using OnForkHub.Scripts.Enums;
-using OnForkHub.Scripts.Interfaces;
-
 namespace OnForkHub.Scripts.Git;
 
 public class GitEditorService(string projectRoot, IProcessRunner processRunner, ILogger logger) : IGitEditorService

@@ -1,9 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using OnForkHub.Scripts.Enums;
-using OnForkHub.Scripts.Interfaces;
-using OnForkHub.Scripts.Logger;
-
 namespace OnForkHub.Scripts;
 
 public static class Program

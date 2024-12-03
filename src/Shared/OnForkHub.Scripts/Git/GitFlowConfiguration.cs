@@ -1,6 +1,3 @@
-using OnForkHub.Scripts.Enums;
-using OnForkHub.Scripts.Interfaces;
-
 namespace OnForkHub.Scripts.Git;
 
 public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processRunner)
