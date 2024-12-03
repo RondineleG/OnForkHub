@@ -22,8 +22,9 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
                 await ConfigureNotepadAsGitEditor();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.Log(ELogLevel.Warning, $"Error configuring editor: {ex.Message}");
             await ConfigureNotepadAsGitEditor();
         }
     }
@@ -33,11 +34,6 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
         try
         {
             var vsCodePath = GetVsCodePath();
-            if (string.IsNullOrEmpty(vsCodePath))
-            {
-                return false;
-            }
-
             await _processRunner.RunAsync(vsCodePath, "--version", _projectRoot);
             return true;
         }
@@ -50,14 +46,21 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
     private async Task ConfigureVsCodeAsGitEditor()
     {
         var vsCodePath = GetVsCodePath();
-        if (string.IsNullOrEmpty(vsCodePath))
-        {
-            throw new InvalidOperationException("VSCode path not found");
-        }
-
         var escapedPath = vsCodePath.Replace("\\", "/");
-        await _processRunner.RunAsync("git", $"config --local core.editor \"\"{escapedPath}\" --wait\"", _projectRoot);
-        _logger.Log(ELogLevel.Info, "VSCode configured as Git editor");
+
+        // Format the command with proper escaping
+        var editorCommand = $"config --local core.editor \"\\\"${escapedPath}\\\" --wait\"";
+
+        try
+        {
+            await _processRunner.RunAsync("git", editorCommand, _projectRoot);
+            _logger.Log(ELogLevel.Info, "VSCode configured as Git editor");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Failed to configure VSCode as Git editor: {ex.Message}");
+            throw;
+        }
     }
 
     private async Task ConfigureNotepadAsGitEditor()
@@ -77,6 +80,11 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
 
         var path = Array.Find(possiblePaths, path => !string.IsNullOrEmpty(path) && File.Exists(path));
 
-        return string.IsNullOrEmpty(path) ? throw new FileNotFoundException("VS Code executable not found in standard locations.") : path;
+        if (string.IsNullOrEmpty(path))
+        {
+            throw new FileNotFoundException("VS Code executable not found in standard locations.");
+        }
+
+        return path;
     }
 }
