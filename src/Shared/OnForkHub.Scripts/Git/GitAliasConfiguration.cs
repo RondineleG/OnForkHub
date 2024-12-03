@@ -191,8 +191,16 @@ if (Get-Command git -ErrorAction SilentlyContinue) {{
     function GitDiff {{ & git diff $args }}
     Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
 
-    function GitLog {{ & git log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short $args }}
+    function GitLog {{ 
+        & git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit $args 
+    }}
     Set-Alias -Name gl -Value GitLog -Force -Option AllScope
+
+    # Force reload the alias
+    if (Test-Path alias:gl) {{
+        Remove-Item alias:gl -Force
+        Set-Alias -Name gl -Value GitLog -Force -Option AllScope
+    }}
 
     Write-Host 'Git aliases loaded successfully!'
 }}";
