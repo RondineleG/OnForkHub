@@ -132,7 +132,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             { "gitflow.feature.no-ff", "true" },
             { "gitflow.feature.no-merge", "true" },
             { "gitflow.feature.keepbranch", "true" },
-            { "gitflow.path.hooks", ".husky" },
+            { "gitflow.path.hooks", ".husky" }
         };
 
         foreach (var config in configs)
@@ -150,11 +150,12 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
 
         try
         {
-            await _processRunner.RunAsync("git", "flow init -d");
+            await _processRunner.RunAsync("git", "config --local gitflow.initialized true");
+            await _processRunner.RunAsync("git", "config --local gitflow.version 1.12.3");
         }
         catch (Exception ex)
         {
-            _logger.Log(ELogLevel.Warning, $"Git flow init warning (this is usually ok): {ex.Message}");
+            _logger.Log(ELogLevel.Warning, $"Git flow initialization warning: {ex.Message}");
         }
     }
 }
