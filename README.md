@@ -132,6 +132,28 @@ cd src/Presentations/OnForkHub.Web
 dotnet watch run
 ```
 
+#### 4.  Git Aliases
+
+After setting up the project, you will have access to convenient Git aliases. They become available after restarting your terminal or running `. $PROFILE` in your terminal:
+
+```bash
+# Core Commands
+gs  # git status -sb
+ga  # git add --all
+gc  # git commit -ev
+gps # git push
+gpl # git pull
+gf  # git fetch
+
+# Branch Management
+gb  # git branch
+gco # git checkout
+
+# Viewing Changes
+gl  # git log with nice formatting
+gt  # git log --graph (tree view)
+gd  # git diff
+gr  # git remote -v
 
 ## 🤝 Contributing
 
