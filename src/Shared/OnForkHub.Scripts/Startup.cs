@@ -23,10 +23,11 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 return 0;
             }
 
+            await gitFlow.EnsureCleanWorkingTreeAsync();
+            await gitFlow.EnsureGitFlowConfiguredAsync();
+
             if (args.Contains("-p"))
             {
-                await gitFlow.EnsureCleanWorkingTreeAsync();
-                await gitFlow.EnsureGitFlowConfiguredAsync();
                 await prConfig.CreatePullRequestForGitFlowFinishAsync();
                 return 0;
             }
