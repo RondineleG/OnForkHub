@@ -44,7 +44,6 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
                 await _processRunner.RunAsync("git", "init");
             }
 
-            // Força a reinicialização do Git Flow
             await RunGitFlowInit(workingDir);
             await ConfigureGitFlowSettings(workingDir);
             await EnsureRequiredBranchesExistAsync();
@@ -187,31 +186,91 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     {
         _logger.Log(ELogLevel.Info, "Initializing Git Flow...");
 
-        var startInfo = new ProcessStartInfo
+        try
         {
-            FileName = "git",
-            Arguments = "flow init -d",
-            UseShellExecute = false,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            WorkingDirectory = workingDir,
-            CreateNoWindow = true,
-        };
+            await _processRunner.RunAsync("git", "flow init -f -d", workingDir);
+            _logger.Log(ELogLevel.Info, "Initial Git Flow initialization done.");
 
-        using var process = new Process { StartInfo = startInfo };
-        process.Start();
+            var branchConfigs = new Dictionary<string, string>
+            {
+                { "flow.branch.main", "main" },
+                { "flow.branch.develop", "dev" },
+                { "flow.prefix.feature", "feature/" },
+                { "flow.prefix.bugfix", "bugfix/" },
+                { "flow.prefix.release", "release/" },
+                { "flow.prefix.hotfix", "hotfix/" },
+                { "flow.prefix.support", "support/" },
+                { "flow.prefix.versiontag", "v" },
+            };
 
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
+            foreach (var config in branchConfigs)
+            {
+                await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}", workingDir);
+                _logger.Log(ELogLevel.Debug, $"Set {config.Key} to {config.Value}");
+            }
 
-        if (process.ExitCode != 0)
-        {
-            throw new GitOperationException($"Git Flow initialization failed: {error}");
+            var behaviorConfigs = new Dictionary<string, string>
+            {
+                { "flow.feature.start.fetch", "true" },
+                { "flow.feature.finish.fetch", "true" },
+                { "flow.feature.finish", "false" },
+                { "flow.feature.no-ff", "true" },
+                { "flow.feature.no-merge", "true" },
+                { "flow.feature.keepbranch", "true" },
+                { "flow.path.hooks", ".husky" },
+                { "flow.initialized", "true" },
+            };
+
+            foreach (var config in behaviorConfigs)
+            {
+                await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}", workingDir);
+                _logger.Log(ELogLevel.Debug, $"Set {config.Key} to {config.Value}");
+            }
+
+            var initCheck = await _processRunner.RunAsync("git", "flow version", workingDir);
+            _logger.Log(ELogLevel.Info, $"Git Flow initialized successfully. Version: {initCheck}");
         }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Git Flow initialization failed: {ex.Message}");
 
-        _logger.Log(ELogLevel.Info, "Git Flow initialized successfully.");
-        _logger.Log(ELogLevel.Debug, $"Git Flow output: {output}");
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "flow init -f",
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = workingDir,
+                CreateNoWindow = true,
+            };
+
+            using var process = new Process { StartInfo = startInfo };
+            process.Start();
+
+            using (var writer = process.StandardInput)
+            {
+                await writer.WriteLineAsync("main");
+                await writer.WriteLineAsync("dev");
+                await writer.WriteLineAsync("feature/");
+                await writer.WriteLineAsync("bugfix/");
+                await writer.WriteLineAsync("release/");
+                await writer.WriteLineAsync("hotfix/");
+                await writer.WriteLineAsync("support/");
+                await writer.WriteLineAsync("v");
+            }
+
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+            {
+                _logger.Log(ELogLevel.Error, $"Alternative Git Flow initialization failed: {error}");
+                throw new GitOperationException($"Git Flow initialization failed after multiple attempts: {error}");
+            }
+
+            _logger.Log(ELogLevel.Info, "Git Flow initialized successfully using alternative method.");
+        }
     }
 }
