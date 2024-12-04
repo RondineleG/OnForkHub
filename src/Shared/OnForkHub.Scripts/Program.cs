@@ -1,9 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using OnForkHub.Scripts.Enums;
-using OnForkHub.Scripts.Interfaces;
-using OnForkHub.Scripts.Logger;
-
 namespace OnForkHub.Scripts;
 
 public static class Program
@@ -36,6 +30,8 @@ public static class Program
                     services.AddSingleton<IProcessRunner, ProcessRunner>();
                     services.AddSingleton<IGitEditorService, GitEditorService>();
                     services.AddSingleton<IGitHubClient, GitHubClient>();
+                    services.AddSingleton<IPackageInstaller, DependencyPackageInstaller>();
+                    services.AddSingleton<CliHandler>();
 
                     var projectRoot = GetProjectRootPath();
                     services.AddSingleton(projectRoot);

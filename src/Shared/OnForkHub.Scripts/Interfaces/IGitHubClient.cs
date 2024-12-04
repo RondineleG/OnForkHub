@@ -1,5 +1,3 @@
-using OnForkHub.Scripts.Models;
-
 namespace OnForkHub.Scripts.Interfaces;
 
 public interface IGitHubClient

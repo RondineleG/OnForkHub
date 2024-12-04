@@ -40,6 +40,6 @@ public static class ServiceCollectionExtensions
     {
         return !type.IsAbstract
             && type.IsClass
-            && type.GetInterfaces().Any(y => y.IsGenericType ? (y.GetGenericTypeDefinition() == interfaceType) : (y == interfaceType));
+            && type.GetInterfaces().ToList().Exists(y => y.IsGenericType ? (y.GetGenericTypeDefinition() == interfaceType) : (y == interfaceType));
     }
 }
