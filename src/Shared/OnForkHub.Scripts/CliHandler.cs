@@ -1,7 +1,14 @@
+using OnForkHub.Scripts.Enums;
+using OnForkHub.Scripts.Interfaces;
+
 namespace OnForkHub.Scripts;
 
-public class CliHandler(ILogger logger, IPackageInstaller packageInstaller)
+public sealed class CliHandler : ICliHandler
 {
+    private const int CommandColumnWidth = 20;
+    private readonly ILogger _logger;
+    private readonly IPackageInstaller _packageInstaller;
+
     private readonly Dictionary<string, string> _commands =
         new()
         {
@@ -11,22 +18,37 @@ public class CliHandler(ILogger logger, IPackageInstaller packageInstaller)
             { "-p", "Create pull request" },
         };
 
+    public CliHandler(ILogger logger, IPackageInstaller packageInstaller)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _packageInstaller = packageInstaller ?? throw new ArgumentNullException(nameof(packageInstaller));
+    }
+
     public void ShowHelp()
     {
-        logger.Log(ELogLevel.Info, "\nUsage: dtn <command> [options]");
-        logger.Log(ELogLevel.Info, "\nCommands:");
+        _logger.Log(ELogLevel.Info, "\nUsage: dtn <command> [options]");
+        _logger.Log(ELogLevel.Info, "\nCommands:");
+
         foreach (var cmd in _commands)
         {
-            logger.Log(ELogLevel.Info, $"  {cmd.Key, -20} {cmd.Value}");
+            var formattedCommand = $"  {cmd.Key.PadRight(CommandColumnWidth)} {cmd.Value}";
+            _logger.Log(ELogLevel.Info, formattedCommand);
         }
-        logger.Log(ELogLevel.Info, "\nExamples:");
-        logger.Log(ELogLevel.Info, "  dtn -i Serilog -v 3.*");
-        logger.Log(ELogLevel.Info, "  dtn -s Newtonsoft");
-        logger.Log(ELogLevel.Info, "  dtn -p");
+
+        _logger.Log(ELogLevel.Info, "\nExamples:");
+        _logger.Log(ELogLevel.Info, "  dtn -i Serilog -v 3.*");
+        _logger.Log(ELogLevel.Info, "  dtn -s Newtonsoft");
+        _logger.Log(ELogLevel.Info, "  dtn -p");
     }
 
     public async Task<bool> HandlePackageCommand(string[] args)
     {
+        if (args is null || args.Length == 0)
+        {
+            ShowHelp();
+            return true;
+        }
+
         if (args.Contains("-h"))
         {
             ShowHelp();
@@ -35,34 +57,61 @@ public class CliHandler(ILogger logger, IPackageInstaller packageInstaller)
 
         if (args.Contains("-i"))
         {
-            var pkgIndex = Array.IndexOf(args, "-i") + 1;
-            if (pkgIndex >= args.Length)
-            {
-                logger.Log(ELogLevel.Error, "Package name required");
-                return false;
-            }
-
-            var version = string.Empty;
-            if (args.Contains("-v"))
-            {
-                var vIndex = Array.IndexOf(args, "-v") + 1;
-                if (vIndex < args.Length)
-                {
-                    version = args[vIndex];
-                }
-            }
-
-            await packageInstaller.InstallPackageDirectAsync(args[pkgIndex], version);
-            return true;
+            return await HandleDirectInstall(args);
         }
 
         if (args.Contains("-s"))
         {
-            var term = args.Length > Array.IndexOf(args, "-s") + 1 ? args[Array.IndexOf(args, "-s") + 1] : null;
-            await packageInstaller.SearchAndInstallInteractiveAsync(term);
-            return true;
+            return await HandleSearch(args);
         }
 
         return false;
+    }
+
+    private async Task<bool> HandleDirectInstall(string[] args)
+    {
+        var pkgIndex = Array.IndexOf(args, "-i") + 1;
+        if (pkgIndex >= args.Length)
+        {
+            _logger.Log(ELogLevel.Error, "Package name required");
+            return false;
+        }
+
+        var version = string.Empty;
+        if (args.Contains("-v"))
+        {
+            var vIndex = Array.IndexOf(args, "-v") + 1;
+            if (vIndex < args.Length)
+            {
+                version = args[vIndex];
+            }
+        }
+
+        try
+        {
+            await _packageInstaller.InstallPackageDirectAsync(args[pkgIndex], version);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Failed to install package: {ex.Message}");
+            return false;
+        }
+    }
+
+    private async Task<bool> HandleSearch(string[] args)
+    {
+        try
+        {
+            var searchIndex = Array.IndexOf(args, "-s");
+            var term = args.Length > searchIndex + 1 ? args[searchIndex + 1] : null;
+            await _packageInstaller.SearchAndInstallInteractiveAsync(term);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Search failed: {ex.Message}");
+            return false;
+        }
     }
 }
