@@ -5,23 +5,6 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
-    public async Task<bool> VerifyGitInstallationAsync()
-    {
-        try
-        {
-            _logger.Log(ELogLevel.Info, "Checking Git installation...");
-            var gitVersion = await _processRunner.RunAsync("git", "--version");
-            _logger.Log(ELogLevel.Info, $"Git Version: {gitVersion.Trim()}");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Error, "Failed to verify Git installation:");
-            _logger.Log(ELogLevel.Error, ex.Message);
-            return false;
-        }
-    }
-
     public async Task EnsureCleanWorkingTreeAsync()
     {
         try
@@ -65,52 +48,26 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         }
     }
 
-    private async Task EnsureRequiredBranchesExistAsync()
+    public async Task<bool> VerifyGitInstallationAsync()
     {
-        var currentBranch = (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
-        var branches = (await _processRunner.RunAsync("git", "branch"))
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(b => b.Trim('*', ' '))
-            .ToList();
-
-        if (!branches.Contains("main") && !IsFeatureBranch(currentBranch))
+        try
         {
-            await CreateBranch("main");
+            _logger.Log(ELogLevel.Info, "Checking Git installation...");
+            var gitVersion = await _processRunner.RunAsync("git", "--version");
+            _logger.Log(ELogLevel.Info, $"Git Version: {gitVersion.Trim()}");
+            return true;
         }
-
-        if (!branches.Contains("dev") && !IsFeatureBranch(currentBranch))
+        catch (Exception ex)
         {
-            await CreateBranch("dev");
+            _logger.Log(ELogLevel.Error, "Failed to verify Git installation:");
+            _logger.Log(ELogLevel.Error, ex.Message);
+            return false;
         }
     }
 
     private static bool IsFeatureBranch(string branchName)
     {
         return branchName.StartsWith("feature/", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task CreateBranch(string branchName)
-    {
-        try
-        {
-            _logger.Log(ELogLevel.Info, $"Creating {branchName} branch...");
-            await _processRunner.RunAsync("git", $"branch {branchName}");
-
-            try
-            {
-                await _processRunner.RunAsync("git", $"push -u origin {branchName}");
-                _logger.Log(ELogLevel.Info, $"Pushed {branchName} branch to remote.");
-            }
-            catch
-            {
-                _logger.Log(ELogLevel.Warning, $"Could not push {branchName} branch to remote. This is normal for new repositories.");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Error, $"Error creating {branchName} branch: {ex.Message}");
-            throw;
-        }
     }
 
     private async Task ConfigureGitFlow()
@@ -155,6 +112,49 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         catch (Exception ex)
         {
             _logger.Log(ELogLevel.Warning, $"Git flow initialization warning: {ex.Message}");
+        }
+    }
+
+    private async Task CreateBranch(string branchName)
+    {
+        try
+        {
+            _logger.Log(ELogLevel.Info, $"Creating {branchName} branch...");
+            await _processRunner.RunAsync("git", $"branch {branchName}");
+
+            try
+            {
+                await _processRunner.RunAsync("git", $"push -u origin {branchName}");
+                _logger.Log(ELogLevel.Info, $"Pushed {branchName} branch to remote.");
+            }
+            catch
+            {
+                _logger.Log(ELogLevel.Warning, $"Could not push {branchName} branch to remote. This is normal for new repositories.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Error creating {branchName} branch: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task EnsureRequiredBranchesExistAsync()
+    {
+        var currentBranch = (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
+        var branches = (await _processRunner.RunAsync("git", "branch"))
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(b => b.Trim('*', ' '))
+            .ToList();
+
+        if (!branches.Contains("main") && !IsFeatureBranch(currentBranch))
+        {
+            await CreateBranch("main");
+        }
+
+        if (!branches.Contains("dev") && !IsFeatureBranch(currentBranch))
+        {
+            await CreateBranch("dev");
         }
     }
 }

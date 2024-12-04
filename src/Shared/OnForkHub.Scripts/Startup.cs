@@ -1,86 +1,44 @@
 namespace OnForkHub.Scripts;
 
-public class Startup(
-    ILogger logger,
-    GitFlowConfiguration gitFlowConfig,
-    HuskyConfiguration huskyConfig,
-    GitFlowPullRequestConfiguration prConfig,
-    IGitAliasConfiguration aliasConfig
-)
+public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRequestConfiguration prConfig, CliHandler cliHandler)
 {
-    private readonly ILogger _logger = logger;
-    private readonly GitFlowConfiguration _gitFlowConfig = gitFlowConfig;
-    private readonly HuskyConfiguration _huskyConfig = huskyConfig;
-    private readonly GitFlowPullRequestConfiguration _prConfig = prConfig;
-    private readonly IGitAliasConfiguration _aliasConfig = aliasConfig;
-
     public async Task<int> RunAsync(string[] args)
     {
         try
         {
-            _logger.Log(ELogLevel.Info, $"Starting application with args: {string.Join(" ", args)}");
-
-            if (!await _gitFlowConfig.VerifyGitInstallationAsync())
+            if (args.Length == 0 || args.Contains("-h"))
             {
-                _logger.Log(ELogLevel.Error, "Git not installed.");
+                cliHandler.ShowHelp();
+                return 0;
+            }
+
+            if (!await gitFlow.VerifyGitInstallationAsync())
+            {
+                logger.Log(ELogLevel.Error, "Git not installed");
                 return 1;
             }
 
-            await ConfigureGitFlowAsync();
-            await _aliasConfig.ConfigureAliasesAsync();
-
-            if (!await ConfigureHuskyAsync())
+            if (await cliHandler.HandlePackageCommand(args))
             {
-                return 1;
+                return 0;
             }
 
-            if (args.Contains("pr-create"))
+            if (args.Contains("-p"))
             {
-                await HandlePullRequestCreationAsync();
-            }
-            else
-            {
-                _logger.Log(ELogLevel.Info, "Skipping PR creation (pr-create flag not present)");
+                await gitFlow.EnsureCleanWorkingTreeAsync();
+                await gitFlow.EnsureGitFlowConfiguredAsync();
+                await prConfig.CreatePullRequestForGitFlowFinishAsync();
+                return 0;
             }
 
-            _logger.Log(ELogLevel.Info, "Configuration completed successfully.");
-            return 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Error, $"An unexpected error occurred: {ex.Message}");
-            _logger.Log(ELogLevel.Debug, $"Stack Trace: {ex.StackTrace}");
+            logger.Log(ELogLevel.Error, "Unknown command. Use -h for help.");
             return 1;
         }
-    }
-
-    private async Task ConfigureGitFlowAsync()
-    {
-        await _gitFlowConfig.EnsureCleanWorkingTreeAsync();
-        await _gitFlowConfig.EnsureGitFlowConfiguredAsync();
-        _logger.Log(ELogLevel.Info, "Git Flow configuration completed successfully.");
-    }
-
-    private async Task<bool> ConfigureHuskyAsync()
-    {
-        if (!await _huskyConfig.ConfigureAsync())
-        {
-            _logger.Log(ELogLevel.Error, "Husky configuration failed.");
-            return false;
-        }
-        return true;
-    }
-
-    private async Task HandlePullRequestCreationAsync()
-    {
-        try
-        {
-            await _prConfig.CreatePullRequestForGitFlowFinishAsync();
-        }
         catch (Exception ex)
         {
-            _logger.Log(ELogLevel.Error, $"Failed to create pull request: {ex.Message}");
-            throw;
+            logger.Log(ELogLevel.Error, ex.Message);
+            logger.Log(ELogLevel.Debug, ex.StackTrace ?? string.Empty);
+            return 1;
         }
     }
 }

@@ -1,94 +1,56 @@
-namespace OnForkHub.Scripts.Nuget;
+namespace OnForkHub.Scripts.NuGet;
 
 public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRunner, string solutionRoot) : IPackageInstaller
 {
+    private const string NugetSearchUrl = "https://api-v2v3search-0.nuget.org/query?q={0}&take=10";
     private const string DependenciesProjectPath = "src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj";
-    private static readonly CompositeFormat SearchUrlFormat = CompositeFormat.Parse("https://api-v2v3search-0.nuget.org/query?q={0}&take=10");
-
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
     private readonly string _solutionRoot = solutionRoot ?? throw new ArgumentNullException(nameof(solutionRoot));
 
-    public async Task InstallPackagesInteractively()
-    {
-        while (true)
-        {
-            _logger.Log(ELogLevel.Info, "\nEnter the NuGet package name to search, or 'exit' to quit:");
-            var searchTerm = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Equals("exit", StringComparison.OrdinalIgnoreCase))
-            {
-                break;
-            }
-
-            await SearchAndInstallPackages(searchTerm);
-
-            _logger.Log(ELogLevel.Info, "\nContinue searching and installing packages? (yes/no)");
-            var continueChoice = Console.ReadLine();
-            if (continueChoice?.ToLowerInvariant() != "yes")
-            {
-                break;
-            }
-        }
-    }
-
-    private async Task InstallPackage(string packageName, string version)
+    public async Task InstallPackageDirectAsync(string packageId, string version = "")
     {
         try
         {
-            var projectPath = Path.Combine(_solutionRoot, DependenciesProjectPath);
-            if (!File.Exists(projectPath))
-            {
-                throw new FileNotFoundException($"Dependencies project not found at: {projectPath}");
-            }
-
-            var versionArg = string.IsNullOrWhiteSpace(version) ? string.Empty : $"--version {version}";
-            var command = $"add {projectPath} package {packageName} {versionArg}";
-
-            _logger.Log(ELogLevel.Info, $"Installing {packageName} {version} to {projectPath}");
-            await _processRunner.RunAsync("dotnet", command);
-            _logger.Log(ELogLevel.Info, $"Successfully installed {packageName}");
+            await InstallPackage(packageId, version);
         }
         catch (Exception ex)
         {
-            _logger.Log(ELogLevel.Error, $"Failed to install package {packageName}: {ex.Message}");
+            _logger.Log(ELogLevel.Error, $"Failed to install {packageId}: {ex.Message}");
+            throw;
         }
     }
 
-    private async Task SearchAndInstallPackages(string searchTerm)
+    public async Task SearchAndInstallInteractiveAsync(string? searchTerm = null)
     {
-        try
+        if (searchTerm == null)
         {
-            var packages = await SearchPackages(searchTerm);
-            if (packages.Count != 0)
+            _logger.Log(ELogLevel.Info, "Enter search term:");
+            searchTerm = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                await SelectAndInstallPackages(packages);
-            }
-            else
-            {
-                _logger.Log(ELogLevel.Warning, "No packages found.");
+                return;
             }
         }
-        catch (Exception ex)
+        var packages = await SearchPackages(searchTerm);
+        if (packages.Count == 0)
         {
-            _logger.Log(ELogLevel.Error, $"Error during package search and install: {ex.Message}");
+            _logger.Log(ELogLevel.Warning, "No packages found.");
+            return;
         }
+        await ProcessPackageSelections(packages);
     }
 
     private async Task<List<PackageInfo>> SearchPackages(string searchTerm)
     {
-        var apiUrl = string.Format(CultureInfo.InvariantCulture, SearchUrlFormat, searchTerm);
         using var client = new HttpClient();
-        var response = await client.GetAsync(apiUrl);
+        var url = $"{NugetSearchUrl}{searchTerm}";
+        var response = await client.GetAsync(url);
         response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync();
-        var results = JsonDocument.Parse(json);
+        var results = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var packages = new List<PackageInfo>();
         var data = results.RootElement.GetProperty("data");
-
         _logger.Log(ELogLevel.Info, "\nFound packages:");
-
         for (var i = 0; i < data.GetArrayLength(); i++)
         {
             var package = new PackageInfo(
@@ -97,34 +59,42 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
                 data[i].GetProperty("description").GetString() ?? string.Empty
             );
             packages.Add(package);
-            _logger.Log(ELogLevel.Info, $"{i}: {package.Id} (Latest: {package.Version})");
+            _logger.Log(ELogLevel.Info, $"{i}: {package.Id} ({package.Version})");
         }
-
         return packages;
     }
 
-    private async Task SelectAndInstallPackages(List<PackageInfo> packages)
+    private async Task ProcessPackageSelections(List<PackageInfo> packages)
     {
-        _logger.Log(ELogLevel.Info, "\nEnter the package numbers to install, separated by commas (optionally specify version after space):");
+        _logger.Log(ELogLevel.Info, "\nEnter selections (format: '0 4.*, 1 6.*'):");
         var input = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(input))
         {
             return;
         }
-
-        var selections = input.Split(',');
-        foreach (var selection in selections)
+        foreach (var selection in input.Split(','))
         {
-            var packageParts = selection.Trim().Split(' ');
-            if (!int.TryParse(packageParts[0], out var packageIndex) || packageIndex < 0 || packageIndex >= packages.Count)
+            var parts = selection.Trim().Split(' ', 2);
+            if (!int.TryParse(parts[0], out var index) || index < 0 || index >= packages.Count)
             {
                 _logger.Log(ELogLevel.Error, $"Invalid selection: {selection}");
                 continue;
             }
-
-            var package = packages[packageIndex];
-            var version = packageParts.Length > 1 ? packageParts[1] : string.Empty;
-            await InstallPackage(package.Id, version);
+            await InstallPackage(packages[index].Id, parts.Length > 1 ? parts[1] : string.Empty);
         }
+    }
+
+    private async Task InstallPackage(string packageName, string version)
+    {
+        var projectPath = Path.Combine(_solutionRoot, DependenciesProjectPath);
+        if (!File.Exists(projectPath))
+        {
+            throw new FileNotFoundException($"Dependencies project not found: {projectPath}");
+        }
+        var versionArg = string.IsNullOrWhiteSpace(version) ? string.Empty : $"--version {version}";
+        var command = $"add {projectPath} package {packageName} {versionArg}";
+        _logger.Log(ELogLevel.Info, $"Installing {packageName} {version}...");
+        await _processRunner.RunAsync("dotnet", command);
+        _logger.Log(ELogLevel.Info, $"Installed {packageName}");
     }
 }

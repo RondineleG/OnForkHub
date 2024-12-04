@@ -2,9 +2,6 @@ namespace OnForkHub.Scripts.Git;
 
 public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner processRunner) : IGitAliasConfiguration
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
-
     private readonly Dictionary<string, string> _aliasCommands =
         new()
         {
@@ -21,6 +18,10 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
             { "gd", "diff" },
             { "gl", "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short" },
         };
+
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
     public async Task ConfigureAliasesAsync()
     {
@@ -50,6 +51,76 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
             _logger.Log(ELogLevel.Error, $"Error configuring Git aliases: {ex.Message}");
             throw;
         }
+    }
+
+    private static string GeneratePowerShellAliasContent()
+    {
+        return $@"
+# Git Aliases
+# Generated on {DateTime.Now:yyyy-MM-dd HH:mm:ss}
+if (Get-Command git -ErrorAction SilentlyContinue) {{
+    function GitStatus {{ & git status -sb $args }}
+    Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
+
+    function GitCommit {{ & git commit -ev $args }}
+    Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
+
+    function GitAdd {{ & git add --all $args }}
+    Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
+
+    function GitTree {{ & git log --graph --oneline --decorate $args }}
+    Set-Alias -Name gt -Value GitTree -Force -Option AllScope
+
+    function GitPush {{ & git push $args }}
+    Set-Alias -Name gps -Value GitPush -Force -Option AllScope
+
+    function GitPull {{ & git pull $args }}
+    Set-Alias -Name gpl -Value GitPull -Force -Option AllScope
+
+    function GitFetch {{ & git fetch $args }}
+    Set-Alias -Name gf -Value GitFetch -Force -Option AllScope
+
+    function GitCheckout {{ & git checkout $args }}
+    Set-Alias -Name gco -Value GitCheckout -Force -Option AllScope
+
+    function GitBranch {{ & git branch $args }}
+    Set-Alias -Name gb -Value GitBranch -Force -Option AllScope
+
+    function GitRemote {{ & git remote -v $args }}
+    Set-Alias -Name gr -Value GitRemote -Force -Option AllScope
+
+    function GitDiff {{ & git diff $args }}
+    Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
+
+    function GitLog {{
+        & git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit $args
+    }}
+    Set-Alias -Name gl -Value GitLog -Force -Option AllScope
+
+    # Force reload the alias
+    if (Test-Path alias:gl) {{
+        Remove-Item alias:gl -Force
+        Set-Alias -Name gl -Value GitLog -Force -Option AllScope
+    }}
+
+    Write-Host 'Git aliases loaded successfully!'
+}}";
+    }
+
+    private static string UpdateExistingAliases(string currentContent, string newAliases)
+    {
+        var lines = currentContent.Split('\n');
+        var startIndex = Array.FindIndex(lines, l => l.Contains("# Git Aliases"));
+        var endIndex = Array.FindIndex(lines, startIndex + 1, l => l.Contains("}}"));
+
+        if (startIndex >= 0 && endIndex >= 0)
+        {
+            var beforeAliases = string.Join('\n', lines.Take(startIndex));
+            var afterAliases = string.Join('\n', lines.Skip(endIndex + 1));
+            return $"{beforeAliases}\n{newAliases}{afterAliases}";
+        }
+
+        return currentContent + "\n" + newAliases;
     }
 
     private async Task ConfigurePowerShellAliasesAsync()
@@ -86,12 +157,8 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
 
             foreach (var shell in new[] { "powershell", "pwsh" })
             {
-                try
-                {
-                    await _processRunner.RunAsync(shell, $"-NoProfile -Command {reloadScript}");
-                    _logger.Log(ELogLevel.Info, $"Aliases loaded in {shell}");
-                }
-                catch { }
+                await _processRunner.RunAsync(shell, $"-NoProfile -Command {reloadScript}");
+                _logger.Log(ELogLevel.Info, $"Aliases loaded in {shell}");
             }
 
             _logger.Log(ELogLevel.Info, "PowerShell Git aliases configured successfully.");
@@ -131,75 +198,5 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
         }
 
         _logger.Log(ELogLevel.Info, $"Configured aliases in: {profilePath}");
-    }
-
-    private static string UpdateExistingAliases(string currentContent, string newAliases)
-    {
-        var lines = currentContent.Split('\n');
-        var startIndex = Array.FindIndex(lines, l => l.Contains("# Git Aliases"));
-        var endIndex = Array.FindIndex(lines, startIndex + 1, l => l.Contains("}}"));
-
-        if (startIndex >= 0 && endIndex >= 0)
-        {
-            var beforeAliases = string.Join('\n', lines.Take(startIndex));
-            var afterAliases = string.Join('\n', lines.Skip(endIndex + 1));
-            return $"{beforeAliases}\n{newAliases}{afterAliases}";
-        }
-
-        return currentContent + "\n" + newAliases;
-    }
-
-    private static string GeneratePowerShellAliasContent()
-    {
-        return $@"
-# Git Aliases
-# Generated on {DateTime.Now:yyyy-MM-dd HH:mm:ss}
-if (Get-Command git -ErrorAction SilentlyContinue) {{
-    function GitStatus {{ & git status -sb $args }}
-    Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
-    
-    function GitCommit {{ & git commit -ev $args }}
-    Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
-    
-    function GitAdd {{ & git add --all $args }}
-    Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
-    
-    function GitTree {{ & git log --graph --oneline --decorate $args }}
-    Set-Alias -Name gt -Value GitTree -Force -Option AllScope
-    
-    function GitPush {{ & git push $args }}
-    Set-Alias -Name gps -Value GitPush -Force -Option AllScope
-    
-    function GitPull {{ & git pull $args }}
-    Set-Alias -Name gpl -Value GitPull -Force -Option AllScope
-    
-    function GitFetch {{ & git fetch $args }}
-    Set-Alias -Name gf -Value GitFetch -Force -Option AllScope
-    
-    function GitCheckout {{ & git checkout $args }}
-    Set-Alias -Name gco -Value GitCheckout -Force -Option AllScope
-    
-    function GitBranch {{ & git branch $args }}
-    Set-Alias -Name gb -Value GitBranch -Force -Option AllScope
-    
-    function GitRemote {{ & git remote -v $args }}
-    Set-Alias -Name gr -Value GitRemote -Force -Option AllScope
-    
-    function GitDiff {{ & git diff $args }}
-    Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
-
-    function GitLog {{ 
-        & git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit $args 
-    }}
-    Set-Alias -Name gl -Value GitLog -Force -Option AllScope
-
-    # Force reload the alias
-    if (Test-Path alias:gl) {{
-        Remove-Item alias:gl -Force
-        Set-Alias -Name gl -Value GitLog -Force -Option AllScope
-    }}
-
-    Write-Host 'Git aliases loaded successfully!'
-}}";
     }
 }

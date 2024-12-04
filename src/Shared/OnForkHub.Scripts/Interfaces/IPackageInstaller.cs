@@ -2,5 +2,6 @@ namespace OnForkHub.Scripts.Interfaces;
 
 public interface IPackageInstaller
 {
-    Task InstallPackagesInteractively();
+    Task InstallPackageDirectAsync(string packageId, string version = "");
+    Task SearchAndInstallInteractiveAsync(string? searchTerm = null);
 }

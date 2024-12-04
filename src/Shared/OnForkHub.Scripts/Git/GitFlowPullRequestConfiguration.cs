@@ -2,11 +2,14 @@ namespace OnForkHub.Scripts.Git;
 
 public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunner processRunner, IGitHubClient githubClient)
 {
+    private const string DevBranch = "dev";
+
+    private const int MaxRetries = 3;
+
+    private readonly IGitHubClient _githubClient = githubClient ?? throw new ArgumentNullException(nameof(githubClient));
+
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
-    private readonly IGitHubClient _githubClient = githubClient ?? throw new ArgumentNullException(nameof(githubClient));
-    private const string DevBranch = "dev";
-    private const int MaxRetries = 3;
 
     public async Task CreatePullRequestForGitFlowFinishAsync()
     {
@@ -43,11 +46,6 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
         }
     }
 
-    private static string GetFeatureName(string branchName)
-    {
-        return branchName.Replace("feature/", "", StringComparison.OrdinalIgnoreCase).Replace("-", " ").ToLowerInvariant();
-    }
-
     private static string GeneratePullRequestBody(string branchName)
     {
         return $"""
@@ -67,57 +65,14 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
             """;
     }
 
-    private async Task<string> GetCurrentBranchAsync()
+    private static string GetFeatureName(string branchName)
     {
-        var branch = await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD");
-        return branch.Trim();
+        return branchName.Replace("feature/", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("-", " ").ToLowerInvariant();
     }
 
     private static bool IsFeatureBranch(string branchName)
     {
         return !string.IsNullOrEmpty(branchName) && branchName.StartsWith("feature/", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private async Task SwitchToBranchAsync(string branchName)
-    {
-        try
-        {
-            await _processRunner.RunAsync("git", $"checkout {branchName}");
-            _logger.Log(ELogLevel.Info, $"Switched to branch {branchName}");
-        }
-        catch (Exception ex)
-        {
-            throw new GitOperationException($"Failed to switch to branch {branchName}", ex);
-        }
-    }
-
-    private async Task ForcePushFeatureBranchWithRetryAsync(string branchName)
-    {
-        var attempts = 0;
-        while (attempts < MaxRetries)
-        {
-            try
-            {
-                attempts++;
-                _logger.Log(ELogLevel.Info, $"Force pushing {branchName} (attempt {attempts}/{MaxRetries})...");
-
-                await _processRunner.RunAsync("git", "fetch origin");
-
-                await _processRunner.RunAsync("git", $"push -f origin {branchName}");
-
-                _logger.Log(ELogLevel.Info, $"Successfully pushed {branchName}");
-                return;
-            }
-            catch (Exception ex)
-            {
-                if (attempts == MaxRetries)
-                {
-                    throw new GitOperationException($"Failed to push branch {branchName} after {MaxRetries} attempts", ex);
-                }
-                _logger.Log(ELogLevel.Warning, $"Push attempt {attempts} failed, retrying...");
-                await Task.Delay(1000 * attempts);
-            }
-        }
     }
 
     private async Task AbortMergeAsync()
@@ -154,6 +109,54 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
         catch (Exception ex)
         {
             throw new GitOperationException("Could not create/update PR", ex);
+        }
+    }
+
+    private async Task ForcePushFeatureBranchWithRetryAsync(string branchName)
+    {
+        var attempts = 0;
+        while (attempts < MaxRetries)
+        {
+            try
+            {
+                attempts++;
+                _logger.Log(ELogLevel.Info, $"Force pushing {branchName} (attempt {attempts}/{MaxRetries})...");
+
+                await _processRunner.RunAsync("git", "fetch origin");
+
+                await _processRunner.RunAsync("git", $"push -f origin {branchName}");
+
+                _logger.Log(ELogLevel.Info, $"Successfully pushed {branchName}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                if (attempts == MaxRetries)
+                {
+                    throw new GitOperationException($"Failed to push branch {branchName} after {MaxRetries} attempts", ex);
+                }
+                _logger.Log(ELogLevel.Warning, $"Push attempt {attempts} failed, retrying...");
+                await Task.Delay(1000 * attempts);
+            }
+        }
+    }
+
+    private async Task<string> GetCurrentBranchAsync()
+    {
+        var branch = await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD");
+        return branch.Trim();
+    }
+
+    private async Task SwitchToBranchAsync(string branchName)
+    {
+        try
+        {
+            await _processRunner.RunAsync("git", $"checkout {branchName}");
+            _logger.Log(ELogLevel.Info, $"Switched to branch {branchName}");
+        }
+        catch (Exception ex)
+        {
+            throw new GitOperationException($"Failed to switch to branch {branchName}", ex);
         }
     }
 }

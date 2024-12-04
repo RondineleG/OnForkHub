@@ -1,6 +1,4 @@
 global using System.Diagnostics;
-global using System.Globalization;
-global using System.Text;
 global using System.Text.Json;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
@@ -10,3 +8,4 @@ global using OnForkHub.Scripts.Husky;
 global using OnForkHub.Scripts.Interfaces;
 global using OnForkHub.Scripts.Logger;
 global using OnForkHub.Scripts.Models;
+global using OnForkHub.Scripts.NuGet;

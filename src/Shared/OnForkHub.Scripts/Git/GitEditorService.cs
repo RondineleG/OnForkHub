@@ -2,8 +2,9 @@ namespace OnForkHub.Scripts.Git;
 
 public class GitEditorService(string projectRoot, IProcessRunner processRunner, ILogger logger) : IGitEditorService
 {
-    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
     private readonly string _projectRoot = projectRoot ?? throw new ArgumentNullException(nameof(projectRoot));
 
     public async Task ConfigureEditorAsync()
@@ -26,18 +27,24 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
         }
     }
 
-    private async Task<bool> IsVsCodeAvailableAsync()
+    private static string GetVsCodePath()
     {
-        try
+        var possiblePaths = new[]
         {
-            var vsCodePath = GetVsCodePath();
-            await _processRunner.RunAsync(vsCodePath, "--version", _projectRoot);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft VS Code", "Code.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft VS Code", "Code.exe"),
+        };
+
+        var path = Array.Find(possiblePaths, path => !string.IsNullOrEmpty(path) && File.Exists(path));
+
+        return string.IsNullOrEmpty(path) ? throw new FileNotFoundException("VS Code executable not found in standard locations.") : path;
+    }
+
+    private async Task ConfigureNotepadAsGitEditor()
+    {
+        await _processRunner.RunAsync("git", "config --local core.editor \"notepad\"", _projectRoot);
+        _logger.Log(ELogLevel.Info, "Notepad configured as Git editor (VSCode not found)");
     }
 
     private async Task ConfigureVsCodeAsGitEditor()
@@ -45,7 +52,6 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
         var vsCodePath = GetVsCodePath();
         var escapedPath = vsCodePath.Replace("\\", "/");
 
-        // Format the command with proper escaping
         var editorCommand = $"config --local core.editor \"\\\"${escapedPath}\\\" --wait\"";
 
         try
@@ -60,28 +66,17 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
         }
     }
 
-    private async Task ConfigureNotepadAsGitEditor()
+    private async Task<bool> IsVsCodeAvailableAsync()
     {
-        await _processRunner.RunAsync("git", "config --local core.editor \"notepad\"", _projectRoot);
-        _logger.Log(ELogLevel.Info, "Notepad configured as Git editor (VSCode not found)");
-    }
-
-    private static string GetVsCodePath()
-    {
-        var possiblePaths = new[]
+        try
         {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft VS Code", "Code.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft VS Code", "Code.exe"),
-        };
-
-        var path = Array.Find(possiblePaths, path => !string.IsNullOrEmpty(path) && File.Exists(path));
-
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new FileNotFoundException("VS Code executable not found in standard locations.");
+            var vsCodePath = GetVsCodePath();
+            await _processRunner.RunAsync(vsCodePath, "--version", _projectRoot);
+            return true;
         }
-
-        return path;
+        catch
+        {
+            return false;
+        }
     }
 }

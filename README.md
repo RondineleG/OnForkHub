@@ -170,6 +170,74 @@ gd  # git diff
 gr  # git remote -v
 ```
 
+#### 5. CLI Tool (dtn)
+
+The `dtn` CLI tool is a development utility for OnForkHub that helps with package management and pull request creation.
+
+#### Installation
+
+The CLI tool is automatically installed when you build the project. To manually install or update:
+
+```bash
+cd src/Shared/OnForkHub.Scripts
+dotnet pack
+dotnet tool update -g --add-source ./nupkg OnForkHub.Scripts
+```
+
+#### Usage
+
+```bash
+dtn <command> [options]
+```
+
+#### Commands
+
+- **Package Management**
+  ```bash
+  # Install package directly
+  dtn -i <package> [-v version]    # Example: dtn -i Serilog -v 3.*
+  
+  # Search and install packages interactively
+  dtn -s [searchTerm]             # Example: dtn -s Newtonsoft
+  ```
+
+- **Pull Requests**
+  ```bash
+  # Create pull request
+  dtn -p                          # Creates PR from current feature branch to dev
+  ```
+
+- **Help**
+  ```bash
+  # Show help
+  dtn -h                          # Display available commands and examples
+  ```
+
+#### Examples
+
+```bash
+# Install specific package version
+dtn -i Microsoft.EntityFrameworkCore -v 9.0.0
+
+# Search for logging packages
+dtn -s Serilog
+
+# Interactive package selection example:
+Found packages:
+[INFO] 0: Serilog (Latest: 4.1.0)
+[INFO] 1: Serilog.Sinks.File (Latest: 6.0.0)
+# Enter selection: 0 4.*, 1 6.*
+
+# Create pull request for current feature branch
+dtn -p
+```
+
+#### Notes
+
+- Package installations are always targeted to `src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj`
+- The `-p` command requires a clean git working tree
+- Version patterns (like `3.*`) are supported for package installation
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
