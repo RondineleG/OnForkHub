@@ -42,12 +42,14 @@ public class CliHandler(ILogger logger, IPackageInstaller packageInstaller)
                 return false;
             }
 
-            var version = "";
+            var version = string.Empty;
             if (args.Contains("-v"))
             {
                 var vIndex = Array.IndexOf(args, "-v") + 1;
                 if (vIndex < args.Length)
+                {
                     version = args[vIndex];
+                }
             }
 
             await packageInstaller.InstallPackageDirectAsync(args[pkgIndex], version);
