@@ -33,7 +33,14 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     {
         try
         {
-            _logger.Log(ELogLevel.Info, "Initializing Git Flow...");
+            _logger.Log(ELogLevel.Info, "Checking Git Flow configuration...");
+
+            var isConfigured = await IsGitFlowConfigured();
+            if (!isConfigured)
+            {
+                _logger.Log(ELogLevel.Info, "Git Flow not configured. Starting initialization...");
+                await InitializeGitFlow();
+            }
 
             await EnsureRequiredBranchesExistAsync();
             await ConfigureGitFlow();
@@ -96,7 +103,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             try
             {
                 await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}");
-                _logger.Log(ELogLevel.Info, $"Set {config.Key} to {config.Value}");
+                _logger.Log(ELogLevel.Debug, $"Set {config.Key} to {config.Value}");
             }
             catch (Exception ex)
             {
@@ -104,15 +111,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             }
         }
 
-        try
-        {
-            await _processRunner.RunAsync("git", "config --local gitflow.initialized true");
-            await _processRunner.RunAsync("git", "config --local gitflow.version 1.12.3");
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Warning, $"Git flow initialization warning: {ex.Message}");
-        }
+        await SetGitFlowVersion();
     }
 
     private async Task CreateBranch(string branchName)
@@ -155,6 +154,48 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         if (!branches.Contains("dev") && !IsFeatureBranch(currentBranch))
         {
             await CreateBranch("dev");
+        }
+    }
+
+    private async Task InitializeGitFlow()
+    {
+        try
+        {
+            await _processRunner.RunAsync("git", "flow init -f");
+            _logger.Log(ELogLevel.Info, "Git Flow initialized successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, "Failed to initialize Git Flow:");
+            _logger.Log(ELogLevel.Error, ex.Message);
+            throw;
+        }
+    }
+
+    private async Task<bool> IsGitFlowConfigured()
+    {
+        try
+        {
+            var result = await _processRunner.RunAsync("git", "config --local gitflow.initialized");
+            return !string.IsNullOrWhiteSpace(result);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async Task SetGitFlowVersion()
+    {
+        try
+        {
+            await _processRunner.RunAsync("git", "config --local gitflow.initialized true");
+            await _processRunner.RunAsync("git", "config --local gitflow.version 1.12.3");
+            _logger.Log(ELogLevel.Debug, "Git Flow version set successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Warning, $"Git Flow version setting warning: {ex.Message}");
         }
     }
 }

@@ -18,22 +18,27 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 return 1;
             }
 
+            await gitFlow.EnsureGitFlowConfiguredAsync();
+
             if (await cliHandler.HandlePackageCommand(args))
             {
                 return 0;
             }
 
-            await gitFlow.EnsureCleanWorkingTreeAsync();
-            await gitFlow.EnsureGitFlowConfiguredAsync();
-
             if (args.Contains("-p"))
             {
+                await gitFlow.EnsureCleanWorkingTreeAsync();
                 await prConfig.CreatePullRequestForGitFlowFinishAsync();
                 return 0;
             }
 
-            logger.Log(ELogLevel.Error, "Unknown command. Use -h for help.");
-            return 1;
+            if (args.Length > 0)
+            {
+                logger.Log(ELogLevel.Error, "Unknown command. Use -h for help.");
+                return 1;
+            }
+
+            return 0;
         }
         catch (Exception ex)
         {
