@@ -1,7 +1,3 @@
-using OnForkHub.Scripts.Enums;
-using OnForkHub.Scripts.Interfaces;
-using OnForkHub.Scripts.Models;
-
 namespace OnForkHub.Scripts.Git;
 
 public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHubClient
