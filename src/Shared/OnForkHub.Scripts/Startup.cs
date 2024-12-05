@@ -23,7 +23,7 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 return 0;
             }
 
-            if (args.Contains("-p"))
+            if (args.Contains("-p") || args.Contains("pr-create"))
             {
                 await gitFlow.EnsureCleanWorkingTreeAsync();
                 await gitFlow.EnsureGitFlowConfiguredAsync();
