@@ -32,7 +32,7 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 return 0;
             }
 
-            logger.Log(ELogLevel.Error, "Unknown command. Use -h for help.");
+            logger.Log(ELogLevel.Error, "Display available commands and examples. rund dtn -h for help.");
             return 1;
         }
         catch (Exception ex)
