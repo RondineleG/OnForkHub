@@ -167,7 +167,33 @@ dotnet build
 # Setup development certificates
 dotnet dev-certs https --trust
 ```
+### Dev Container setup
+- If you are using **Dev Container** extension for VS Code or Visual Studio, just reopen the folder inside the container
 
+- If you **aren't** using Dev Container extension:
+1.
+```
+./.devcontainer/devcontainer_setup.sh
+```
+*OR*
+```
+docker build -t on-fork-hub -f .devcontainer/Dockerfile .
+docker run --rm -it -v $(pwd):/app -w /app on-fork-hub bash
+```
+2.
+```
+# inside the container
+./.devcontainer/post_created_commands.sh
+```
+*OR*
+```
+dotnet dev-certs https --trust
+dotnet tool restore
+dotnet husky install
+dotnet restore
+dotnet build
+dotnet husky run
+```
 ### Development Workflow
 
 #### 1. Branch Management (Git Flow)
