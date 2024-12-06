@@ -33,10 +33,20 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     {
         try
         {
-            _logger.Log(ELogLevel.Info, "Initializing Git Flow...");
+            _logger.Log(ELogLevel.Info, "Checking Git Flow configuration...");
 
+            var workingDir = Environment.CurrentDirectory;
+            _logger.Log(ELogLevel.Debug, $"Working directory: {workingDir}");
+
+            if (!Directory.Exists(Path.Combine(workingDir, ".git")))
+            {
+                _logger.Log(ELogLevel.Info, "Initializing Git repository...");
+                await _processRunner.RunAsync("git", "init");
+            }
+
+            await RunGitFlowInit(workingDir);
+            await ConfigureGitFlowSettings(workingDir);
             await EnsureRequiredBranchesExistAsync();
-            await ConfigureGitFlow();
 
             _logger.Log(ELogLevel.Info, "Git Flow configuration completed successfully.");
         }
@@ -70,11 +80,13 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         return branchName.StartsWith("feature/", StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task ConfigureGitFlow()
+    private async Task ConfigureGitFlowSettings(string workingDir)
     {
+        _logger.Log(ELogLevel.Info, "Configuring Git Flow settings...");
+
         var configs = new Dictionary<string, string>
         {
-            { "gitflow.branch.master", "main" },
+            { "gitflow.branch.main", "main" },
             { "gitflow.branch.develop", "dev" },
             { "gitflow.prefix.feature", "feature/" },
             { "gitflow.prefix.bugfix", "bugfix/" },
@@ -95,8 +107,9 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         {
             try
             {
-                await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}");
-                _logger.Log(ELogLevel.Info, $"Set {config.Key} to {config.Value}");
+                var command = $"config --local {config.Key} {config.Value}";
+                await _processRunner.RunAsync("git", command, workingDir);
+                _logger.Log(ELogLevel.Debug, $"Set {config.Key} to {config.Value}");
             }
             catch (Exception ex)
             {
@@ -104,15 +117,8 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             }
         }
 
-        try
-        {
-            await _processRunner.RunAsync("git", "config --local gitflow.initialized true");
-            await _processRunner.RunAsync("git", "config --local gitflow.version 1.12.3");
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Warning, $"Git flow initialization warning: {ex.Message}");
-        }
+        await _processRunner.RunAsync("git", "config --local gitflow.initialized true", workingDir);
+        _logger.Log(ELogLevel.Info, "Git Flow settings configured successfully.");
     }
 
     private async Task CreateBranch(string branchName)
@@ -141,20 +147,130 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
 
     private async Task EnsureRequiredBranchesExistAsync()
     {
-        var currentBranch = (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
-        var branches = (await _processRunner.RunAsync("git", "branch"))
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(b => b.Trim('*', ' '))
-            .ToList();
-
-        if (!branches.Contains("main") && !IsFeatureBranch(currentBranch))
+        try
         {
-            await CreateBranch("main");
+            var currentBranch = await GetCurrentBranch();
+            var existingBranches = await GetExistingBranches();
+
+            if (!existingBranches.Contains("main") && !IsFeatureBranch(currentBranch))
+            {
+                await CreateBranch("main");
+            }
+
+            if (!existingBranches.Contains("dev") && !IsFeatureBranch(currentBranch))
+            {
+                await CreateBranch("dev");
+            }
+
+            _logger.Log(ELogLevel.Info, "Required branches verified.");
         }
-
-        if (!branches.Contains("dev") && !IsFeatureBranch(currentBranch))
+        catch (Exception ex)
         {
-            await CreateBranch("dev");
+            _logger.Log(ELogLevel.Error, $"Error ensuring required branches: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task<string> GetCurrentBranch()
+    {
+        return (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
+    }
+
+    private async Task<List<string>> GetExistingBranches()
+    {
+        var branchOutput = await _processRunner.RunAsync("git", "branch");
+        return branchOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(b => b.Trim('*', ' ')).ToList();
+    }
+
+    private async Task RunGitFlowInit(string workingDir)
+    {
+        _logger.Log(ELogLevel.Info, "Initializing Git Flow...");
+
+        try
+        {
+            await _processRunner.RunAsync("git", "flow init -f -d", workingDir);
+            _logger.Log(ELogLevel.Info, "Initial Git Flow initialization done.");
+
+            var branchConfigs = new Dictionary<string, string>
+            {
+                { "flow.branch.main", "main" },
+                { "flow.branch.develop", "dev" },
+                { "flow.prefix.feature", "feature/" },
+                { "flow.prefix.bugfix", "bugfix/" },
+                { "flow.prefix.release", "release/" },
+                { "flow.prefix.hotfix", "hotfix/" },
+                { "flow.prefix.support", "support/" },
+                { "flow.prefix.versiontag", "v" },
+            };
+
+            foreach (var config in branchConfigs)
+            {
+                await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}", workingDir);
+                _logger.Log(ELogLevel.Debug, $"Set {config.Key} to {config.Value}");
+            }
+
+            var behaviorConfigs = new Dictionary<string, string>
+            {
+                { "flow.feature.start.fetch", "true" },
+                { "flow.feature.finish.fetch", "true" },
+                { "flow.feature.finish", "false" },
+                { "flow.feature.no-ff", "true" },
+                { "flow.feature.no-merge", "true" },
+                { "flow.feature.keepbranch", "true" },
+                { "flow.path.hooks", ".husky" },
+                { "flow.initialized", "true" },
+            };
+
+            foreach (var config in behaviorConfigs)
+            {
+                await _processRunner.RunAsync("git", $"config --local {config.Key} {config.Value}", workingDir);
+                _logger.Log(ELogLevel.Debug, $"Set {config.Key} to {config.Value}");
+            }
+
+            var initCheck = await _processRunner.RunAsync("git", "flow version", workingDir);
+            _logger.Log(ELogLevel.Info, $"Git Flow initialized successfully. Version: {initCheck}");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Git Flow initialization failed: {ex.Message}");
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "flow init -f",
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = workingDir,
+                CreateNoWindow = true,
+            };
+
+            using var process = new Process { StartInfo = startInfo };
+            process.Start();
+
+            using (var writer = process.StandardInput)
+            {
+                await writer.WriteLineAsync("main");
+                await writer.WriteLineAsync("dev");
+                await writer.WriteLineAsync("feature/");
+                await writer.WriteLineAsync("bugfix/");
+                await writer.WriteLineAsync("release/");
+                await writer.WriteLineAsync("hotfix/");
+                await writer.WriteLineAsync("support/");
+                await writer.WriteLineAsync("v");
+            }
+
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+            {
+                _logger.Log(ELogLevel.Error, $"Alternative Git Flow initialization failed: {error}");
+                throw new GitOperationException($"Git Flow initialization failed after multiple attempts: {error}");
+            }
+
+            _logger.Log(ELogLevel.Info, "Git Flow initialized successfully using alternative method.");
         }
     }
 }

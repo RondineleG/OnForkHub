@@ -31,7 +31,7 @@ public static class Program
                     services.AddSingleton<IGitEditorService, GitEditorService>();
                     services.AddSingleton<IGitHubClient, GitHubClient>();
                     services.AddSingleton<IPackageInstaller, DependencyPackageInstaller>();
-                    services.AddSingleton<CliHandler>();
+                    services.AddSingleton<ICliHandler, CliHandler>();
 
                     var projectRoot = GetProjectRootPath();
                     services.AddSingleton(projectRoot);
