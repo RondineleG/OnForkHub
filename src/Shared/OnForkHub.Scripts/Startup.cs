@@ -18,7 +18,6 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 return 1;
             }
 
-            await gitFlow.EnsureCleanWorkingTreeAsync();
             await gitFlow.EnsureGitFlowConfiguredAsync();
 
             if (await cliHandler.HandlePackageCommand(args))
@@ -28,11 +27,12 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
 
             if (args.Contains("-p") || args.Contains("pr-create"))
             {
+                await gitFlow.EnsureCleanWorkingTreeAsync();
                 await prConfig.CreatePullRequestForGitFlowFinishAsync();
                 return 0;
             }
 
-            logger.Log(ELogLevel.Error, "Display available commands and examples. rund dtn -h for help.");
+            logger.Log(ELogLevel.Info, "Display available commands and examples. run dtn -h for help.");
             return 1;
         }
         catch (Exception ex)
