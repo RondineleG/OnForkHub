@@ -2,8 +2,8 @@ namespace OnForkHub.Core.Validations;
 
 public sealed class ValidationResult : IValidationResult
 {
-    private readonly List<ValidationErrorMessage> _errors = new();
-    private readonly Dictionary<string, object> _metadata = new();
+    private readonly List<ValidationErrorMessage> _errors = [];
+    private readonly Dictionary<string, object> _metadata = [];
 
     public bool IsValid => _errors.Count == 0;
     public bool HasError => !IsValid;

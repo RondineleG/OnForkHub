@@ -1,8 +1,6 @@
-using OnForkHub.Persistence.Contexts.Base;
-
 namespace OnForkHub.Persistence.Repositories;
 
-public class CategoryRepository(IEntityFrameworkDataContext context) : ICategoryRepository
+public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICategoryRepositoryEF
 {
     private const string EntityName = nameof(Category);
     private readonly IEntityFrameworkDataContext _context = context;
@@ -49,8 +47,6 @@ public class CategoryRepository(IEntityFrameworkDataContext context) : ICategory
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
         try
         {
             var category = await _context.Categories.FindAsync(id);
@@ -76,8 +72,6 @@ public class CategoryRepository(IEntityFrameworkDataContext context) : ICategory
 
     public async Task<RequestResult<Category>> GetByIdAsync(long id)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
         try
         {
             var category = await _context.Categories.FindAsync(id);

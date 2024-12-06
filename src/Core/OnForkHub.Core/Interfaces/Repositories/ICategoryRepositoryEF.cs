@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Interfaces.Repositories;
 
-public interface ICategoryRepository
+public interface ICategoryRepositoryEF
 {
     Task<RequestResult<Category>> CreateAsync(Category category);
 

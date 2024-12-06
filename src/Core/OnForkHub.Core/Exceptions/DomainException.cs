@@ -1,5 +1,3 @@
-using OnForkHub.Core.Interfaces.Validations;
-
 namespace OnForkHub.Core.Exceptions;
 
 public class DomainException(string message, string errorCode = "DOMAIN_ERROR") : CustomException(message, errorCode)
