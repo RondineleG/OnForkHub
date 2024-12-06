@@ -3,30 +3,15 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - main
-      - dev
-      - 'releases/*'
+    branches: [main, dev, 'releases/*']
 
 jobs:
   qodana:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: write
     steps:
       - uses: actions/checkout@v3
+      - uses: JetBrains/qodana-action@v2024.2
         with:
-          fetch-depth: 0
-          
-      - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2024.2
+          args: --baseline qodana.sarif.json
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_885251059 }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
