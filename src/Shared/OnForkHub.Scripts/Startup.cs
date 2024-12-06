@@ -6,7 +6,7 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
     {
         try
         {
-            if (args.Length == 0 || args.Contains("-h"))
+            if (args.Contains("-h"))
             {
                 cliHandler.ShowHelp();
                 return 0;
