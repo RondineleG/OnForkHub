@@ -18,6 +18,9 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 return 1;
             }
 
+            await gitFlow.EnsureCleanWorkingTreeAsync();
+            await gitFlow.EnsureGitFlowConfiguredAsync();
+
             if (await cliHandler.HandlePackageCommand(args))
             {
                 return 0;
@@ -25,8 +28,6 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
 
             if (args.Contains("-p") || args.Contains("pr-create"))
             {
-                await gitFlow.EnsureCleanWorkingTreeAsync();
-                await gitFlow.EnsureGitFlowConfiguredAsync();
                 await prConfig.CreatePullRequestForGitFlowFinishAsync();
                 return 0;
             }
