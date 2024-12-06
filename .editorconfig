@@ -241,6 +241,7 @@ dotnet_diagnostic.SA1602.severity = none
 dotnet_diagnostic.SA1601.severity = none
 dotnet_diagnostic.IDE1100.severity = none
 dotnet_diagnostic.SA1313.severity = none
+dotnet_diagnostic.SA1001.severity = none
 
 # Custom word list
 csharp_preferred_words = Invalido

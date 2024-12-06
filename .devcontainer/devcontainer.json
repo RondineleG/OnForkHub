@@ -1,0 +1,24 @@
+{
+  "name": "OnForkHub Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "editor.formatOnSave": true
+  },
+  "extensions": [
+    "ms-dotnettools.csdevkit",
+    "eamodio.gitlens",
+    "mhutchie.gitflow",
+    "csharpier.csharpier-vscode"
+  ],
+  "postCreateCommand": "bash .devcontainer/post_created_commands.sh",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/app,type=bind",
+    "source=${env:HOME}/.nuget/packages,target=/home/vscode/.nuget/packages,type=bind,consistency=cached",
+    "source=${env:HOME}/.npm,target=/home/vscode/.npm,type=bind,consistency=cached"
+  ],
+  "workspaceFolder": "/app",
+  "forwardPorts": [8000, 8001, 9000, 9001]
+}
