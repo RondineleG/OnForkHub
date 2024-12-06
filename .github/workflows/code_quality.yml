@@ -24,9 +24,8 @@ jobs:
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2024.2
         with:
-          pr-mode: true
-          args: --apply-fixes
-          push-fixes: pull-request
+          pr-mode: false
+          args: --apply-fixes 
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_885251059 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
