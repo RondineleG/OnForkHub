@@ -1,4 +1,5 @@
 namespace OnForkHub.Scripts;
+
 public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRequestConfiguration prConfig, ICliHandler cliHandler)
 {
     public async Task<int> RunAsync(string[] args)
