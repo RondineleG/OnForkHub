@@ -1,5 +1,3 @@
-using Microsoft.JSInterop;
-
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
