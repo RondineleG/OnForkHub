@@ -113,7 +113,7 @@ public class ValidationResultTests
     {
         var result = ValidationResult.Success();
 
-        Action action = () => result.ThrowIfInvalid();
+        var action = () => result.ThrowIfInvalid();
 
         action.Should().NotThrow<DomainException>();
     }
@@ -175,7 +175,7 @@ public class ValidationResultTests
         var errorMessage = "Validation error";
         var result = ValidationResult.Failure(errorMessage);
 
-        Action action = () => result.ThrowIfInvalid();
+        var action = () => result.ThrowIfInvalid();
 
         action.Should().Throw<DomainException>().WithMessage(errorMessage);
     }
@@ -214,7 +214,7 @@ public class ValidationResultTests
         var result = ValidationResult.Failure("Original error");
         var customMessage = "Custom error message";
 
-        Action action = () => result.ThrowIfInvalid(customMessage);
+        var action = () => result.ThrowIfInvalid(customMessage);
 
         action.Should().Throw<DomainException>().WithMessage(customMessage);
     }

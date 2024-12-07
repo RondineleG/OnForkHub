@@ -7,7 +7,7 @@ public class DomainExceptionTests
     [DisplayName("Should not throw DomainException when condition is false")]
     public void ShouldNotThrowDomainExceptionWhenConditionIsFalse()
     {
-        Action action = () => DomainException.ThrowErrorWhen(() => false, "Domain error");
+        var action = () => DomainException.ThrowErrorWhen(() => false, "Domain error");
 
         action.Should().NotThrow<DomainException>();
     }
@@ -19,7 +19,7 @@ public class DomainExceptionTests
     {
         var message = "Domain error";
 
-        Action action = () => DomainException.ThrowErrorWhen(() => true, message);
+        var action = () => DomainException.ThrowErrorWhen(() => true, message);
 
         action.Should().Throw<DomainException>().WithMessage(message);
     }
@@ -32,7 +32,7 @@ public class DomainExceptionTests
         var result1 = ValidationResult.Success();
         var result2 = ValidationResult.Success();
 
-        Action action = () => DomainException.ThrowWhenInvalid(result1, result2);
+        var action = () => DomainException.ThrowWhenInvalid(result1, result2);
 
         action.Should().NotThrow<DomainException>();
     }
@@ -45,7 +45,7 @@ public class DomainExceptionTests
         var result1 = ValidationResult.Failure("Error 1");
         var result2 = ValidationResult.Failure("Error 2");
 
-        Action action = () => DomainException.ThrowWhenInvalid(result1, result2);
+        var action = () => DomainException.ThrowWhenInvalid(result1, result2);
 
         action.Should().Throw<DomainException>().WithMessage("Error 1; Error 2");
     }
@@ -57,7 +57,7 @@ public class DomainExceptionTests
     {
         var result = ValidationResult.Failure("Single error");
 
-        Action action = () => DomainException.ThrowWhenInvalid(result);
+        var action = () => DomainException.ThrowWhenInvalid(result);
 
         action.Should().Throw<DomainException>().WithMessage("Single error");
     }

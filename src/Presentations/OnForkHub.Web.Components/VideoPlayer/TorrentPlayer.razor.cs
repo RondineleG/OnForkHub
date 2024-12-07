@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
@@ -22,6 +19,24 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback OnPlayVideo { get; set; }
 
     [Parameter] public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_moduleRef is not null)
+            {
+                await _moduleRef.InvokeVoidAsync("disposeTorrentPlayer", PlayerId);
+                await _moduleRef.DisposeAsync();
+            }
+
+            _objectRef?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error disposing torrent player: {ex.Message}");
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -62,23 +77,5 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
     public async Task OnTimeUpdate(float currentTime, float duration)
     {
         await OnVideoTimeUpdate.InvokeAsync((currentTime, duration));
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        try
-        {
-            if (_moduleRef is not null)
-            {
-                await _moduleRef.InvokeVoidAsync("disposeTorrentPlayer", PlayerId);
-                await _moduleRef.DisposeAsync();
-            }
-
-            _objectRef?.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error disposing torrent player: {ex.Message}");
-        }
     }
 }

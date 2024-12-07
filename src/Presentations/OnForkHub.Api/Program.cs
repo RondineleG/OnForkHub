@@ -1,6 +1,3 @@
-using Microsoft.OpenApi.Models;
-
-using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;
 using OnForkHub.Persistence.Repositories;
@@ -37,7 +34,7 @@ builder
 builder.Services.AddWebApi(typeof(Program));
 var configurationBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true);
+    .AddJsonFile("appSettings.json", true, true);
 IConfiguration configuration = configurationBuilder.Build();
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 
