@@ -1,3 +1,5 @@
+using Microsoft.JSInterop;
+
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
@@ -5,7 +7,7 @@ namespace OnForkHub.Web.Components.VideoPlayer;
 public interface IVideoPlayerJsInterop
 {
     Task Initialize(
-        string id, Microsoft.JSInterop.DotNetObjectReference<Player> objectRef,
+        string id, DotNetObjectReference<Player> objectRef,
         string magnetUri,
         bool captions,
         bool quality,

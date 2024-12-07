@@ -1,3 +1,5 @@
+using Microsoft.JSInterop;
+
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
@@ -6,7 +8,7 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
 {
     private IJSObjectReference? _moduleRef;
 
-    private Microsoft.JSInterop.DotNetObjectReference<TorrentPlayer>? _objectRef;
+    private DotNetObjectReference<TorrentPlayer>? _objectRef;
 
     [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
 
