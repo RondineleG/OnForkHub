@@ -1,4 +1,4 @@
-import { initTorrentPlayer, disposeTorrentPlayer } from './modules/torrent'
+import {disposeTorrentPlayer, initTorrentPlayer} from './modules/torrent'
 
 export {
     initTorrentPlayer,

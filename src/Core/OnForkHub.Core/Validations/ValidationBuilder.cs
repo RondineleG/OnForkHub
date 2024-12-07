@@ -20,6 +20,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} is required", _currentField);
         }
+
         return this;
     }
 
@@ -29,6 +30,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} cannot be empty", _currentField);
         }
+
         return this;
     }
 
@@ -38,6 +40,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} cannot be blank", _currentField);
         }
+
         return this;
     }
 
@@ -47,6 +50,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} deve ter no mínimo {length} caracteres", _currentField);
         }
+
         return this;
     }
 
@@ -56,6 +60,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} must have at most {length} characters", _currentField);
         }
+
         return this;
     }
 
@@ -65,6 +70,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} must have exactly {exactLength} characters", _currentField);
         }
+
         return this;
     }
 
@@ -75,6 +81,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} must be between {min} and {max}", _currentField);
         }
+
         return this;
     }
 
@@ -84,6 +91,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message ?? $"{_currentField} is not in the correct format", _currentField);
         }
+
         return this;
     }
 
@@ -93,6 +101,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message, _currentField);
         }
+
         return this;
     }
 
@@ -102,6 +111,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message, _currentField);
         }
+
         return this;
     }
 
@@ -117,6 +127,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message, _currentField);
         }
+
         return this;
     }
 
@@ -126,6 +137,7 @@ public class ValidationBuilder<T> : IValidationBuilder<T>
         {
             _result.AddError(message, _currentField);
         }
+
         return this;
     }
 

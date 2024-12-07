@@ -11,59 +11,6 @@ public sealed class ValidationResult : IValidationResult
     public IDictionary<string, object> Metadata => _metadata;
     public string ErrorMessage => string.Join("; ", _errors.Select(e => string.IsNullOrEmpty(e.Field) ? e.Message : $"{e.Field}: {e.Message}"));
 
-    public static implicit operator bool(ValidationResult? validation)
-    {
-        return validation?.IsValid ?? false;
-    }
-
-    public static ValidationResult operator &(ValidationResult left, ValidationResult right)
-    {
-        var result = left ?? right ?? Success();
-
-        if (left?.HasError == true)
-        {
-            result = left;
-        }
-        else if (left != null && right != null)
-        {
-            result.Merge(right);
-        }
-
-        return result;
-    }
-
-    public static ValidationResult operator |(ValidationResult left, ValidationResult right)
-    {
-        return left?.IsValid == true ? left : right ?? Success();
-    }
-
-    public static ValidationResult Success()
-    {
-        return new();
-    }
-
-    public static ValidationResult Failure(string message, string field = "", string? source = null)
-    {
-        var result = new ValidationResult();
-        result.AddError(message, field, source);
-        return result;
-    }
-
-    public static ValidationResult Combine(params ValidationResult[] results)
-    {
-        var combined = new ValidationResult();
-        foreach (var result in results.Where(r => r != null))
-        {
-            combined.Merge(result);
-        }
-        return combined;
-    }
-
-    public static ValidationResult Validate(Func<bool> predicate, string message, string field = "")
-    {
-        return predicate() ? Failure(message, field) : Success();
-    }
-
     public async Task<ValidationResult> ValidateAsync(Func<Task<bool>> predicate, string message, string field = "")
     {
         return await predicate() ? Failure(message, field) : Success();
@@ -82,6 +29,7 @@ public sealed class ValidationResult : IValidationResult
         {
             AddError(message, field);
         }
+
         return this;
     }
 
@@ -126,5 +74,59 @@ public sealed class ValidationResult : IValidationResult
     {
         ThrowIfInvalid();
         return this;
+    }
+
+    public static implicit operator bool(ValidationResult? validation)
+    {
+        return validation?.IsValid ?? false;
+    }
+
+    public static ValidationResult operator &(ValidationResult left, ValidationResult right)
+    {
+        var result = left ?? right ?? Success();
+
+        if (left?.HasError == true)
+        {
+            result = left;
+        }
+        else if (left != null && right != null)
+        {
+            result.Merge(right);
+        }
+
+        return result;
+    }
+
+    public static ValidationResult operator |(ValidationResult left, ValidationResult right)
+    {
+        return left?.IsValid == true ? left : right ?? Success();
+    }
+
+    public static ValidationResult Success()
+    {
+        return new ValidationResult();
+    }
+
+    public static ValidationResult Failure(string message, string field = "", string? source = null)
+    {
+        var result = new ValidationResult();
+        result.AddError(message, field, source);
+        return result;
+    }
+
+    public static ValidationResult Combine(params ValidationResult[] results)
+    {
+        var combined = new ValidationResult();
+        foreach (var result in results.Where(r => r != null))
+        {
+            combined.Merge(result);
+        }
+
+        return combined;
+    }
+
+    public static ValidationResult Validate(Func<bool> predicate, string message, string field = "")
+    {
+        return predicate() ? Failure(message, field) : Success();
     }
 }

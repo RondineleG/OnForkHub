@@ -1,7 +1,7 @@
 namespace OnForkHub.Core.ValueObjects;
 
 /// <summary>
-/// Documentation for Email class.
+///     Documentation for Email class.
 /// </summary>
 public partial class Email : ValueObject
 {

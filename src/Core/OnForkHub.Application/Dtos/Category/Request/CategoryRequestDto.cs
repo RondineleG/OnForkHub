@@ -20,6 +20,7 @@ public class CategoryRequestDto
         {
             return RequestResult<Core.Entities.Category>.WithError("Request cannot be null");
         }
+
         if (category is null)
         {
             return RequestResult<Core.Entities.Category>.WithError("Category not found");

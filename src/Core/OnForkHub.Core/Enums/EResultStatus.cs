@@ -1,7 +1,7 @@
 namespace OnForkHub.Core.Enums;
 
 /// <summary>
-/// Conditional statements.
+///     Conditional statements.
 /// </summary>
 public enum EResultStatus
 {
@@ -24,5 +24,5 @@ public enum EResultStatus
     EntityAlreadyExists,
 
     /// <summary>Entity Already Exists</summary>
-    NoContent,
+    NoContent
 }

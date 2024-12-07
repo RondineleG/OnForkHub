@@ -19,7 +19,7 @@ public class ValidationBuilderTest
     [DisplayName("Should add error when value is null")]
     public void NotNullShouldAddErrorWhenValueIsNull()
     {
-        var result = _builder.WithField("Name", null).NotNull("Name is required").Validate();
+        var result = _builder.WithField("Name").NotNull("Name is required").Validate();
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Be("Name: Name is required");
@@ -175,5 +175,7 @@ public class ValidationBuilderTest
         result.IsValid.Should().BeFalse();
     }
 
-    private class TestEntity : BaseEntity { }
+    private class TestEntity : BaseEntity
+    {
+    }
 }

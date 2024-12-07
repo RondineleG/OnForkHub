@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <PropertyGroup>
-    <RestoreAdditionalProjectSources>
-      https://api.nuget.org/v3/index.json;
-    </RestoreAdditionalProjectSources>
-    <NuGetRestoreTargets>$(NuGetRestoreTargets.Replace(';$(MSBuildProjectExtensionsPath)\NuGet.targets', ''))</NuGetRestoreTargets>
-  </PropertyGroup>
+    <PropertyGroup>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+        </RestoreAdditionalProjectSources>
+        <NuGetRestoreTargets>$(NuGetRestoreTargets.Replace(';$(MSBuildProjectExtensionsPath)\NuGet.targets', ''))</NuGetRestoreTargets>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <MSBuildLogVerbosity>detailed</MSBuildLogVerbosity>
-    <DotNetTestLogVerbosity>detailed</DotNetTestLogVerbosity>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <MSBuildLogVerbosity>detailed</MSBuildLogVerbosity>
+        <DotNetTestLogVerbosity>detailed</DotNetTestLogVerbosity>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Update="@(PackageReference)" PrivateAssets="all" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Update="@(PackageReference)" PrivateAssets="all"/>
+    </ItemGroup>
 </Project>

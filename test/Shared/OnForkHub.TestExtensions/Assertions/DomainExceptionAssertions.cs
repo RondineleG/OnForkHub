@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace OnForkHub.TestExtensions.Assertions;
 
 public static class DomainExceptionAssertions

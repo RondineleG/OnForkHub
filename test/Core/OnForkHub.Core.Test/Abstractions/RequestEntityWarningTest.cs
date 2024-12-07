@@ -65,7 +65,7 @@ public class RequestEntityWarningTests
         warning.Should().NotBeNull();
         warning!.Name.Should().Be("TestEntity");
 
-        if ((warning.Id is JsonElement idElement) && (idElement.ValueKind == JsonValueKind.Number))
+        if (warning.Id is JsonElement idElement && idElement.ValueKind == JsonValueKind.Number)
         {
             warning = warning with { Id = idElement.GetInt64() };
         }

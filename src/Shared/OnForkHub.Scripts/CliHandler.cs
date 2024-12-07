@@ -1,13 +1,8 @@
-using OnForkHub.Scripts.Enums;
-using OnForkHub.Scripts.Interfaces;
-
 namespace OnForkHub.Scripts;
 
 public sealed class CliHandler : ICliHandler
 {
     private const int CommandColumnWidth = 20;
-    private readonly ILogger _logger;
-    private readonly IPackageInstaller _packageInstaller;
 
     private readonly Dictionary<string, string> _commands =
         new()
@@ -15,8 +10,11 @@ public sealed class CliHandler : ICliHandler
             { "-h", "Show this help" },
             { "-i <pkg> [-v version]", "Install package directly" },
             { "-s [term]", "Search and install packages" },
-            { "-p", "Create pull request" },
+            { "-p", "Create pull request" }
         };
+
+    private readonly ILogger _logger;
+    private readonly IPackageInstaller _packageInstaller;
 
     public CliHandler(ILogger logger, IPackageInstaller packageInstaller)
     {
