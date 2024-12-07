@@ -6,13 +6,11 @@ public class EnumExtensionsTest
 {
     public enum ETestResultStatus
     {
-        [Description("Successful Result")]
-        Success,
+        [Description("Successful Result")] Success,
 
-        [Description("Has Validation Errors")]
-        HasValidation,
+        [Description("Has Validation Errors")] HasValidation,
 
-        NoDescription,
+        NoDescription
     }
 
     [Theory]

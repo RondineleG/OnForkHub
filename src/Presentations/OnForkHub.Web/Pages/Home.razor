@@ -48,18 +48,18 @@
             {
                 <VideoCard Video="item"
                            OnPlayCallBack="async () => await PlayVideo(item)"
-                           NowPlayingVideo="@nowPlayingVideo?.Title" />
+                           NowPlayingVideo="@nowPlayingVideo?.Title"/>
             }
         </div>
     </div>
 </div>
 
 @code {
-    private List<Video> videos = new();
+    private readonly List<Video> videos = new();
     private Video? nowPlayingVideo;
     private ElementReference videoPlayer;
     private IJSObjectReference? module;
-    private int currentIndex = 0;
+    private int currentIndex;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -113,11 +113,12 @@
 
     private void getMovies()
     {
-        videos.Add(new Video() { Title = "Skate Bros", Thumbnail = "SkateBros.png", Name = "SkateBros.mp4" });
-        videos.Add(new Video() { Title = "Before the Storm", Thumbnail = "CalmingWaves.png", Name = "CalmingWaves.mp4" });
-        videos.Add(new Video() { Title = "Mustang Sally", Thumbnail = "MustangSally.png", Name = "MustangSally.mp4" });
-        videos.Add(new Video() { Title = "The Sixth Element", Thumbnail = "TheSixthElement.png", Name = "TheSixthElement.mp4" });
-        videos.Add(new Video() { Title = "Cyber City 2045", Thumbnail = "Cyber2045.png", Name = "Cyber2045.mp4" });
-        videos.Add(new Video() { Title = "Zero Hour", Thumbnail = "DestinyZeroHour.png", Name = "DestinyZeroHour.mp4" });
+        videos.Add(new Video { Title = "Skate Bros", Thumbnail = "SkateBros.png", Name = "SkateBros.mp4" });
+        videos.Add(new Video { Title = "Before the Storm", Thumbnail = "CalmingWaves.png", Name = "CalmingWaves.mp4" });
+        videos.Add(new Video { Title = "Mustang Sally", Thumbnail = "MustangSally.png", Name = "MustangSally.mp4" });
+        videos.Add(new Video { Title = "The Sixth Element", Thumbnail = "TheSixthElement.png", Name = "TheSixthElement.mp4" });
+        videos.Add(new Video { Title = "Cyber City 2045", Thumbnail = "Cyber2045.png", Name = "Cyber2045.mp4" });
+        videos.Add(new Video { Title = "Zero Hour", Thumbnail = "DestinyZeroHour.png", Name = "DestinyZeroHour.mp4" });
     }
+
 }

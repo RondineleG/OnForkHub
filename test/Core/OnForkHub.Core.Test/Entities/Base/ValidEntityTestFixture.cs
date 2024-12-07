@@ -3,7 +3,8 @@ namespace OnForkHub.Core.Test.Entities.Base;
 public class ValidEntityTestFixture : BaseEntity
 {
     public ValidEntityTestFixture()
-        : base() { }
+    {
+    }
 
     public ValidEntityTestFixture(Id id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt)
@@ -23,6 +24,7 @@ public class ValidEntityTestFixture : BaseEntity
         {
             throw new DomainException("CreatedAt must be UTC");
         }
+
         Update();
     }
 

@@ -5,7 +5,8 @@
 <img src="docs/assets/logo.svg" width="400" alt="OnForkHub Logo"/>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/RondineleG/OnForkHub/pulls)
+[![Code Quality](https://github.com/RondineleG/OnForkHub/actions/workflows/code_quality.yml/badge.svg)](https://github.com/RondineleG/OnForkHub/actions/workflows/code_quality.yml)
 
 *A distributed video-sharing platform with hybrid P2P and CDN delivery*
 

@@ -5,7 +5,7 @@
              @onclick="playVideo">
             <div class="hc-content">
                 <picture>
-                    <img src="/Images/@Video.Thumbnail" alt="@Video.Title" />
+                    <img src="/Images/@Video.Thumbnail" alt="@Video.Title"/>
                 </picture>
                 <p class="text-center">
                     @Video.Title
@@ -26,18 +26,13 @@
 }
 
 @code {
-    [Parameter]
-    [EditorRequired]
-    public Video? Video { get; set; }
+    [Parameter] [EditorRequired] public Video? Video { get; set; }
 
-    [Parameter]
-    public string? NowPlayingVideo { get; set; }
+    [Parameter] public string? NowPlayingVideo { get; set; }
 
-    [Parameter]
-    public EventCallback OnPlayCallBack { get; set; }
+    [Parameter] public EventCallback OnPlayCallBack { get; set; }
 
-    [Parameter]
-    public EventCallback OnStopCallBack { get; set; }
+    [Parameter] public EventCallback OnStopCallBack { get; set; }
 
     private async Task playVideo()
     {

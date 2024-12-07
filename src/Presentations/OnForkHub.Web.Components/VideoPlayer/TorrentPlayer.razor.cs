@@ -1,31 +1,42 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
+using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
 
 public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
 {
-    [Inject]
-    protected IJSRuntime JSRuntime { get; set; } = default!;
-
-    [Parameter]
-    public string PlayerId { get; set; } = "torrent-player";
-
-    [Parameter]
-    [EditorRequired]
-    public string TorrentId { get; set; } = default!;
-
-    [Parameter]
-    public EventCallback OnEndedVideo { get; set; }
-
-    [Parameter]
-    public EventCallback OnPlayVideo { get; set; }
-
-    [Parameter]
-    public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
-
-    private DotNetObjectReference<TorrentPlayer>? _objectRef;
     private IJSObjectReference? _moduleRef;
+
+    private Microsoft.JSInterop.DotNetObjectReference<TorrentPlayer>? _objectRef;
+
+    [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+
+    [Parameter] public string PlayerId { get; set; } = "torrent-player";
+
+    [Parameter] [EditorRequired] public string TorrentId { get; set; } = default!;
+
+    [Parameter] public EventCallback OnEndedVideo { get; set; }
+
+    [Parameter] public EventCallback OnPlayVideo { get; set; }
+
+    [Parameter] public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_moduleRef is not null)
+            {
+                await _moduleRef.InvokeVoidAsync("disposeTorrentPlayer", PlayerId);
+                await _moduleRef.DisposeAsync();
+            }
+
+            _objectRef?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error disposing torrent player: {ex.Message}");
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -66,23 +77,5 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
     public async Task OnTimeUpdate(float currentTime, float duration)
     {
         await OnVideoTimeUpdate.InvokeAsync((currentTime, duration));
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        try
-        {
-            if (_moduleRef is not null)
-            {
-                await _moduleRef.InvokeVoidAsync("disposeTorrentPlayer", PlayerId);
-                await _moduleRef.DisposeAsync();
-            }
-
-            _objectRef?.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error disposing torrent player: {ex.Message}");
-        }
     }
 }

@@ -14,7 +14,7 @@ public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidati
 
     public Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validationService, isUpdate: true);
+        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validationService, true);
     }
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)

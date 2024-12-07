@@ -17,7 +17,7 @@
     </PropertyGroup>
 
     <Target Name="CreateNuGetFolder" BeforeTargets="GenerateNuspec">
-        <MakeDir Directories="$(PackageOutputPath)" />
+        <MakeDir Directories="$(PackageOutputPath)"/>
     </Target>
 
     <Target Name="InstallToolGlobal" AfterTargets="Pack">
@@ -25,11 +25,11 @@
             <NugetPackagePath>$(PackageOutputPath)\OnForkHub.Scripts.$(Version).nupkg</NugetPackagePath>
         </PropertyGroup>
 
-        <Exec Command="dotnet tool uninstall OnForkHub.Scripts -g" ContinueOnError="true" StandardOutputImportance="low" StandardErrorImportance="low" />
+        <Exec Command="dotnet tool uninstall OnForkHub.Scripts -g" ContinueOnError="true" StandardOutputImportance="low" StandardErrorImportance="low"/>
 
-        <Exec Command="dotnet tool install OnForkHub.Scripts -g --add-source &quot;$(PackageOutputPath)&quot;" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="dotnet tool install OnForkHub.Scripts -g --add-source &quot;$(PackageOutputPath)&quot;" StandardOutputImportance="high" StandardErrorImportance="high"/>
 
-        <Message Text="Tool successfully installed globally from $(NugetPackagePath)" Importance="high" />
+        <Message Text="Tool successfully installed globally from $(NugetPackagePath)" Importance="high"/>
     </Target>
 
     <Target Name="CheckGitStatus" BeforeTargets="Build">
@@ -37,26 +37,26 @@
               WorkingDirectory="$(MSBuildProjectDirectory)"
               ContinueOnError="true"
               IgnoreExitCode="true">
-            <Output TaskParameter="ExitCode" PropertyName="GitStatusExitCode" />
+            <Output TaskParameter="ExitCode" PropertyName="GitStatusExitCode"/>
         </Exec>
         <Message Condition="'$(GitStatusExitCode)' != '0'"
                  Text="Warning: Working tree contains unstaged or uncommitted changes."
-                 Importance="high" />
+                 Importance="high"/>
     </Target>
 
     <Target Name="RunScript" AfterTargets="InstallToolGlobal" Condition="'$(GitStatusExitCode)' == '0'">
-        <Message Text="Running script..." Importance="high" />
+        <Message Text="Running script..." Importance="high"/>
         <Exec Command="dotnet OnForkHub.Scripts.dll"
               WorkingDirectory="$(OutDir)"
               StandardOutputImportance="High"
               StandardErrorImportance="High">
-            <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
+            <Output TaskParameter="ExitCode" PropertyName="RunExitCode"/>
         </Exec>
         <Error Condition="'$(RunExitCode)' != '0'"
-               Text="RunScript failed with exit code $(RunExitCode). Check the logs for more details." />
+               Text="RunScript failed with exit code $(RunExitCode). Check the logs for more details."/>
     </Target>
 
     <ItemGroup>
-        <ProjectReference Include="..\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
+        <ProjectReference Include="..\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj"/>
     </ItemGroup>
 </Project>

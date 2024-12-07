@@ -208,7 +208,7 @@ public class BaseEntityTest
     public void ShouldThrowWhenEntityHasInvalidState()
     {
         var entity = new InvalidEntityTestFixture();
-        Action action = entity.ForceValidation;
+        var action = entity.ForceValidation;
 
         action.Should().Throw<DomainException>().WithMessage("Invalid entity state");
     }

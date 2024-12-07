@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;
 using OnForkHub.Persistence.Repositories;
@@ -12,22 +9,12 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc(
         "v1",
-        new OpenApiInfo
-        {
-            Version = "v1",
-            Title = "Minimal API - Version 1",
-            Description = "API version 1 documentation",
-        }
+        new OpenApiInfo { Version = "v1", Title = "Minimal API - Version 1", Description = "API version 1 documentation" }
     );
 
     options.SwaggerDoc(
         "v2",
-        new OpenApiInfo
-        {
-            Version = "v2",
-            Title = "Minimal API - Version 2",
-            Description = "API version 2 documentation",
-        }
+        new OpenApiInfo { Version = "v2", Title = "Minimal API - Version 2", Description = "API version 2 documentation" }
     );
 });
 
@@ -47,7 +34,7 @@ builder
 builder.Services.AddWebApi(typeof(Program));
 var configurationBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true);
+    .AddJsonFile("appSettings.json", true, true);
 IConfiguration configuration = configurationBuilder.Build();
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 
