@@ -3,8 +3,8 @@ namespace OnForkHub.Application.Test.Services;
 public class CategoryServiceTest
 {
     private readonly ICategoryRepositoryEF _categoryRepository;
-    private readonly IValidationService<Category> _validationService;
     private readonly CategoryService _categoryService;
+    private readonly IValidationService<Category> _validationService;
 
     public CategoryServiceTest()
     {
@@ -143,8 +143,7 @@ public class CategoryServiceTest
         var size = 10;
         var categories = new List<Category>
         {
-            Category.Create(Name.Create("Category 1"), "Description 1").Data!,
-            Category.Create(Name.Create("Category 2"), "Description 2").Data!,
+            Category.Create(Name.Create("Category 1"), "Description 1").Data!, Category.Create(Name.Create("Category 2"), "Description 2").Data!
         };
 
         _categoryRepository.GetAsync(page, size).Returns(RequestResult<IEnumerable<Category>>.Success(categories));

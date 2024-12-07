@@ -11,22 +11,26 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 cliHandler.ShowHelp();
                 return 0;
             }
+
             if (!await gitFlow.VerifyGitInstallationAsync())
             {
                 logger.Log(ELogLevel.Error, "Git not installed");
                 return 1;
             }
+
             await gitFlow.EnsureGitFlowConfiguredAsync();
             if (await cliHandler.HandlePackageCommand(args))
             {
                 return 0;
             }
+
             if (args.Contains("-p") || args.Contains("pr-create"))
             {
                 await gitFlow.EnsureCleanWorkingTreeAsync();
                 await prConfig.CreatePullRequestForGitFlowFinishAsync();
                 return 0;
             }
+
             logger.Log(ELogLevel.Info, "Display available commands and examples. run dtn -h for help.");
             return 1;
         }

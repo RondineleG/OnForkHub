@@ -9,13 +9,13 @@
         <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+        <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj"/>
     </ItemGroup>
     <Target Name="RunSharedScripts" AfterTargets="Build">
-        <Message Text="Running shared scripts..." Importance="high" />
+        <Message Text="Running shared scripts..." Importance="high"/>
         <Exec Command="echo Current Working Directory: %CD%" WorkingDirectory="$(MSBuildProjectDirectory)\.." StandardOutputImportance="High" StandardErrorImportance="High">
-            <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
+            <Output TaskParameter="ExitCode" PropertyName="RunExitCode"/>
         </Exec>
-        <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode). Check the logs for more details." />
+        <Error Condition="'$(RunExitCode)' != '0'" Text="RunSharedScripts failed with exit code $(RunExitCode). Check the logs for more details."/>
     </Target>
 </Project>

@@ -1,12 +1,13 @@
 using Microsoft.JSInterop;
 
+using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
+
 namespace OnForkHub.Web.Components.VideoPlayer;
 
 public interface IVideoPlayerJsInterop
 {
     Task Initialize(
-        string id,
-        DotNetObjectReference<Player> objectRef,
+        string id, Microsoft.JSInterop.DotNetObjectReference<Player> objectRef,
         string magnetUri,
         bool captions,
         bool quality,
@@ -33,8 +34,8 @@ public interface IVideoPlayerJsInterop
 
 public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
 {
-    private readonly Lazy<Task<IJSObjectReference>> moduleTask;
     private readonly Lazy<Task<IJSObjectReference>> mainTask;
+    private readonly Lazy<Task<IJSObjectReference>> moduleTask;
 
     public VideoPlayerJsInterop(IJSRuntime jsRuntime)
     {

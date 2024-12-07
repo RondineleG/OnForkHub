@@ -2,8 +2,8 @@ namespace OnForkHub.Persistence.Test.Repositories;
 
 public class CategoryRepositoryTest
 {
-    private readonly IEntityFrameworkDataContext _context;
     private readonly CategoryRepositoryEF _categoryRepository;
+    private readonly IEntityFrameworkDataContext _context;
 
     public CategoryRepositoryTest()
     {

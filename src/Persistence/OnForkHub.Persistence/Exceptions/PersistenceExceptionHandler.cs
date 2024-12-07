@@ -48,7 +48,7 @@ public static class PersistenceExceptionHandler
                 GetAffectedField(errorMessage)
             ),
 
-            _ => new DatabaseOperationException(operation, errorMessage),
+            _ => new DatabaseOperationException(operation, errorMessage)
         };
     }
 
@@ -58,6 +58,7 @@ public static class PersistenceExceptionHandler
         {
             exception = exception.InnerException;
         }
+
         return exception;
     }
 
@@ -76,6 +77,7 @@ public static class PersistenceExceptionHandler
         {
             return $"unknown field : {ex.Message}";
         }
+
         return $"unknown field : {errorMessage}";
     }
 }

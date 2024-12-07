@@ -32,12 +32,14 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
                 return;
             }
         }
+
         var packages = await SearchPackages(searchTerm);
         if (packages.Count == 0)
         {
             _logger.Log(ELogLevel.Warning, "No packages found.");
             return;
         }
+
         await ProcessPackageSelections(packages);
     }
 
@@ -61,6 +63,7 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
             packages.Add(package);
             _logger.Log(ELogLevel.Info, $"{i}: {package.Id} ({package.Version})");
         }
+
         return packages;
     }
 
@@ -72,6 +75,7 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         {
             return;
         }
+
         foreach (var selection in input.Split(','))
         {
             var parts = selection.Trim().Split(' ', 2);
@@ -80,6 +84,7 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
                 _logger.Log(ELogLevel.Error, $"Invalid selection: {selection}");
                 continue;
             }
+
             await InstallPackage(packages[index].Id, parts.Length > 1 ? parts[1] : string.Empty);
         }
     }
@@ -91,6 +96,7 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         {
             throw new FileNotFoundException($"Dependencies project not found: {projectPath}");
         }
+
         var versionArg = string.IsNullOrWhiteSpace(version) ? string.Empty : $"--version {version}";
         var command = $"add {projectPath} package {packageName} {versionArg}";
         _logger.Log(ELogLevel.Info, $"Installing {packageName} {version}...");

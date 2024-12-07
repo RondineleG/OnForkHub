@@ -5,10 +5,13 @@ public class User : BaseEntity
     private readonly List<Video> _videos = [];
 
     protected User(Id id, DateTime createdAt, DateTime? updatedAt = null)
-        : base(id, createdAt, updatedAt) { }
+        : base(id, createdAt, updatedAt)
+    {
+    }
 
     private User()
-        : base() { }
+    {
+    }
 
     public Email Email { get; private set; } = null!;
     public Name Name { get; private set; } = null!;
@@ -35,8 +38,7 @@ public class User : BaseEntity
         {
             var user = new User(id, createdAt, updatedAt)
             {
-                Name = name ?? throw new ArgumentNullException(nameof(name)),
-                Email = Email.Create(email),
+                Name = name ?? throw new ArgumentNullException(nameof(name)), Email = Email.Create(email)
             };
 
             user.ValidateEntityState();
