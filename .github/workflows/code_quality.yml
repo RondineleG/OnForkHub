@@ -28,7 +28,7 @@ jobs:
         with:
           args: --baseline,qodana.sarif.json --apply-fixes
           push-fixes: pull-request
-          fail-threshold: 20
+          fail-threshold: 3
           post-pr-comment: true
           use-caches: true
           cache-default-branch-only: true
