@@ -1,12 +1,11 @@
-using Microsoft.JSInterop;
+using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
 
 public interface IVideoPlayerJsInterop
 {
     Task Initialize(
-        string id,
-        DotNetObjectReference<Player> objectRef,
+        string id, Microsoft.JSInterop.DotNetObjectReference<Player> objectRef,
         string magnetUri,
         bool captions,
         bool quality,
@@ -33,14 +32,25 @@ public interface IVideoPlayerJsInterop
 
 public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
 {
-    private readonly Lazy<Task<IJSObjectReference>> moduleTask;
     private readonly Lazy<Task<IJSObjectReference>> mainTask;
+    private readonly Lazy<Task<IJSObjectReference>> moduleTask;
 
     public VideoPlayerJsInterop(IJSRuntime jsRuntime)
     {
-        moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask());
+        moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
+            jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask());
 
-        mainTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask());
+        mainTask = new Lazy<Task<IJSObjectReference>>(() =>
+            jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask());
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (moduleTask.IsValueCreated)
+        {
+            var module = await moduleTask.Value;
+            await module.DisposeAsync();
+        }
     }
 
     public async Task Initialize(
@@ -107,15 +117,6 @@ public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
                 downloadControl,
                 fullscreenControl
             );
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (moduleTask.IsValueCreated)
-        {
-            var module = await moduleTask.Value;
-            await module.DisposeAsync();
         }
     }
 }

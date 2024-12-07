@@ -1,13 +1,11 @@
-using System.Linq.Expressions;
-
 namespace OnForkHub.Core.Validations;
 
 public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntityValidator<T> validator) : IValidationService<T>
     where T : BaseEntity
 {
     private readonly List<IValidationRule<T>> _customRules = [];
-    private readonly List<Func<T, ValidationResult>> _validations = [];
     private readonly List<Action<ValidationErrorMessage>> _errorHandlers = [];
+    private readonly List<Func<T, ValidationResult>> _validations = [];
 
     public IEntityValidator<T> Validator { get; } = validator ?? throw new ArgumentNullException(nameof(validator));
 

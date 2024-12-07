@@ -1,6 +1,4 @@
 using OnForkHub.Api.Endpoints.Base;
-using OnForkHub.Core.Entities;
-using OnForkHub.Core.Interfaces.Repositories;
 
 namespace OnForkHub.Api.Endpoints.V2.Categories;
 
@@ -23,7 +21,7 @@ public class GetAllCategoriesEndpoint : BaseEndpoint<Category>, IEndpointAsync
                         try
                         {
                             var persons = await personRepository.GetAsync(1, 10);
-                            return (persons?.Data is null)
+                            return persons?.Data is null
                                 ? TypedResults.Ok(RequestResult<IEnumerable<Category>>.WithNoContent())
                                 : TypedResults.Ok(RequestResult<IEnumerable<Category>>.Success(persons.Data));
                         }
@@ -34,7 +32,7 @@ public class GetAllCategoriesEndpoint : BaseEndpoint<Category>, IEndpointAsync
                     }
                 )
                 .WithName("GetCategoriesV2")
-                .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
+                .Produces<IEnumerable<Category>>()
                 .Produces(StatusCodes.Status500InternalServerError)
                 .WithTags("Categories")
                 .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V2}" })

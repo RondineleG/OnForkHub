@@ -8,12 +8,12 @@ public class Url : ValueObject
         Validate();
     }
 
-    public string Value { get; private set; }
+    public string Value { get; }
 
     public static Url Create(string url)
     {
         DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(url.Trim()), UrlResources.UrlRequired);
-        var normalizedUrl = (url.EndsWith('/') && (url.Length > 1)) ? url.TrimEnd('/') : url;
+        var normalizedUrl = url.EndsWith('/') && url.Length > 1 ? url.TrimEnd('/') : url;
         var urlObj = new Url(normalizedUrl);
         urlObj.Validate();
         return urlObj;
@@ -25,7 +25,7 @@ public class Url : ValueObject
         DomainException.ThrowErrorWhen(() => !Uri.IsWellFormedUriString(Value, UriKind.Absolute), UrlResources.UrlInvalid);
 
         var uri = new Uri(Value, UriKind.Absolute);
-        DomainException.ThrowErrorWhen(() => (uri.Scheme != Uri.UriSchemeHttp) && (uri.Scheme != Uri.UriSchemeHttps), UrlResources.UrlInvalid);
+        DomainException.ThrowErrorWhen(() => uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps, UrlResources.UrlInvalid);
         validationResult.ThrowIfInvalid();
         return validationResult;
     }

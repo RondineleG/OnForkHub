@@ -27,16 +27,16 @@
             <LastGenOutput>EmailResources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
         <EmbeddedResource Update="Resources\Core\ValueObjects\IdResources.en.resx">
-          <LastGenOutput>IdResources.en.Designer.cs</LastGenOutput>
-          <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>IdResources.en.Designer.cs</LastGenOutput>
+            <Generator>PublicResXFileCodeGenerator</Generator>
         </EmbeddedResource>
         <EmbeddedResource Update="Resources\Core\ValueObjects\IdResources.pt-br.resx">
-          <LastGenOutput>IdResources.pt-br.Designer.cs</LastGenOutput>
-          <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>IdResources.pt-br.Designer.cs</LastGenOutput>
+            <Generator>PublicResXFileCodeGenerator</Generator>
         </EmbeddedResource>
         <EmbeddedResource Update="Resources\Core\ValueObjects\IdResources.resx">
-          <Generator>PublicResXFileCodeGenerator</Generator>
-          <LastGenOutput>IdResources.Designer.cs</LastGenOutput>
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>IdResources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
         <EmbeddedResource Update="Resources\Core\ValueObjects\NameResources.resx">
             <Generator>PublicResXFileCodeGenerator</Generator>
@@ -74,19 +74,19 @@
             <DependentUpon>EmailResources.resx</DependentUpon>
         </Compile>
         <Compile Update="Resources\Core\ValueObjects\IdResources.en.Designer.cs">
-          <DependentUpon>IdResources.en.resx</DependentUpon>
-          <DesignTime>True</DesignTime>
-          <AutoGen>True</AutoGen>
+            <DependentUpon>IdResources.en.resx</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
         </Compile>
         <Compile Update="Resources\Core\ValueObjects\IdResources.pt-br.Designer.cs">
-          <DependentUpon>IdResources.pt-br.resx</DependentUpon>
-          <DesignTime>True</DesignTime>
-          <AutoGen>True</AutoGen>
+            <DependentUpon>IdResources.pt-br.resx</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
         </Compile>
         <Compile Update="Resources\Core\ValueObjects\IdResources.Designer.cs">
-          <DesignTime>True</DesignTime>
-          <AutoGen>True</AutoGen>
-          <DependentUpon>IdResources.resx</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>IdResources.resx</DependentUpon>
         </Compile>
         <Compile Update="Resources\Core\ValueObjects\NameResources.Designer.cs">
             <DesignTime>True</DesignTime>

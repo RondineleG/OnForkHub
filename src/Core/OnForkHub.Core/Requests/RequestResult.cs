@@ -24,13 +24,13 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
 
     public string Message { get; set; } = string.Empty;
 
+    public ValidationResult ValidationResult { get; protected set; }
+
     public RequestEntityWarning? RequestEntityWarning { get; protected init; }
 
     public RequestError? RequestError { get; protected init; }
 
     public EResultStatus Status { get; set; }
-
-    public ValidationResult ValidationResult { get; protected set; }
 
     public IEnumerable<RequestValidation> Validations { get; protected init; } = [];
 
@@ -160,7 +160,7 @@ public class RequestResult : IRequestValidations, IRequestError, IRequestEntityW
             }
         }
 
-        if ((ValidationResult?.Errors != null) && (ValidationResult.Errors.Count != 0))
+        if (ValidationResult?.Errors != null && ValidationResult.Errors.Count != 0)
         {
             foreach (var validationError in ValidationResult.Errors)
             {

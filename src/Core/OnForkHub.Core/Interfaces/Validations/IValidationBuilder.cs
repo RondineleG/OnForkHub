@@ -9,8 +9,10 @@ public interface IValidationBuilder<T>
     IValidationBuilder<T> MinLength(int length, string? message = null);
     IValidationBuilder<T> MaxLength(int length, string? message = null);
     IValidationBuilder<T> Length(int exactLength, string? message = null);
+
     IValidationBuilder<T> Range<TRange>(TRange min, TRange max, string? message = null)
         where TRange : IComparable<TRange>;
+
     IValidationBuilder<T> Matches(string pattern, string? message = null);
     IValidationBuilder<T> Custom(Func<object?, bool> validation, string message);
     Task<IValidationBuilder<T>> CustomAsync(Func<object?, Task<bool>> validation, string message);

@@ -1,25 +1,24 @@
-﻿
-export function videoInitialize(elementId, component,
-    captions,
-    quality,
-    speed,
-    loop,
-    playLargeControl,
-    restartControl,
-    rewindControl,
-    playControl,
-    fastForwardControl,
-    progressControl,
-    currentTimeControl,
-    durationControl,
-    muteControl,
-    volumeControl,
-    captionsControl,
-    settingsControl,
-    pIPControl,
-    airplayControl,
-    downloadControl,
-    fullscreenControl) {
+﻿export function videoInitialize(elementId, component,
+                                captions,
+                                quality,
+                                speed,
+                                loop,
+                                playLargeControl,
+                                restartControl,
+                                rewindControl,
+                                playControl,
+                                fastForwardControl,
+                                progressControl,
+                                currentTimeControl,
+                                durationControl,
+                                muteControl,
+                                volumeControl,
+                                captionsControl,
+                                settingsControl,
+                                pIPControl,
+                                airplayControl,
+                                downloadControl,
+                                fullscreenControl) {
 
     var settingsArray = new Array();
     if (captions)
@@ -64,12 +63,12 @@ export function videoInitialize(elementId, component,
         controlsArray.push("download");
     if (fullscreenControl)
         controlsArray.push("fullscreen");
-    
+
     const player = new Plyr('#' + elementId, {
         settings: settingsArray,
         controls: controlsArray,
 
-        quality: { default: 576, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240, 200, 100, 50, 20] }
+        quality: {default: 576, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240, 200, 100, 50, 20]}
     });
     player.on('ended', async event => {
         await component.invokeMethodAsync('OnEnded');
@@ -81,5 +80,5 @@ export function videoInitialize(elementId, component,
     player.on('play', async event => {
         await component.invokeMethodAsync('OnPlay');
     });
-    
+
 }

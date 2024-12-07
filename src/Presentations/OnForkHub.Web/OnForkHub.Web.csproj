@@ -13,42 +13,42 @@
     </PropertyGroup>
 
     <Target Name="NpmInstall" BeforeTargets="Build" Condition=" !Exists('wwwroot\npm\node_modules') ">
-        <Message Importance="high" Text="Instalando pacotes NPM..." />
-        <Exec Command="npm install" WorkingDirectory="wwwroot\npm" />
+        <Message Importance="high" Text="Instalando pacotes NPM..."/>
+        <Exec Command="npm install" WorkingDirectory="wwwroot\npm"/>
     </Target>
 
     <ItemGroup>
-        <Content Remove="wwwroot\npm\**\node_modules\**" />
-        <None Remove="wwwroot\npm\**\node_modules\**" />
+        <Content Remove="wwwroot\npm\**\node_modules\**"/>
+        <None Remove="wwwroot\npm\**\node_modules\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Remove="wwwroot\npm\src\modules\torrent.ts" />
+        <Content Remove="wwwroot\npm\src\modules\torrent.ts"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove=".gitignore" />
+        <None Remove=".gitignore"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.*" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.*"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.*" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.*">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="wwwroot\Videos\" />
+        <Folder Include="wwwroot\Videos\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj" />
+        <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <TypeScriptCompile Include="wwwroot\npm\src\modules\torrent.ts" />
+        <TypeScriptCompile Include="wwwroot\npm\src\modules\torrent.ts"/>
     </ItemGroup>
 
 </Project>
