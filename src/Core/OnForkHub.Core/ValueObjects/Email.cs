@@ -14,7 +14,7 @@ public partial class Email : ValueObject
         _validationResult = validationResult;
     }
 
-    public string Value { get; private set; }
+    public string Value { get; }
 
     public static Email Create(string value)
     {

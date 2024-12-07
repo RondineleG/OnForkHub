@@ -33,7 +33,7 @@ public static class ValidationResultAssertions
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCount(expectedErrors.Length);
 
-        for (int i = 0; i < expectedErrors.Length; i++)
+        for (var i = 0; i < expectedErrors.Length; i++)
         {
             result.Errors.ElementAt(i).Field.Should().Be(expectedErrors[i].field);
             result.Errors.ElementAt(i).Message.Should().Be(expectedErrors[i].message);

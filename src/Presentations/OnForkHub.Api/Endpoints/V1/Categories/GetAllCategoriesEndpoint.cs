@@ -1,6 +1,3 @@
-using OnForkHub.Core.Entities;
-using OnForkHub.Core.Interfaces.Repositories;
-
 namespace OnForkHub.Api.Endpoints.V1.Categories;
 
 public class GetAllCategoriesEndpoint : IEndpoint
@@ -14,7 +11,7 @@ public class GetAllCategoriesEndpoint : IEndpoint
 
         app.MapGet(RouteV1, HandleGetPersonsAsync)
             .WithName("GetPersonsV1")
-            .Produces<IEnumerable<Category>>(StatusCodes.Status200OK)
+            .Produces<IEnumerable<Category>>()
             .Produces(StatusCodes.Status500InternalServerError)
             .WithTags("Categories")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })

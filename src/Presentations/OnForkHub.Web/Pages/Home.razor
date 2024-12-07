@@ -55,7 +55,7 @@
 </div>
 
 @code {
-    private List<Video> videos = new();
+    private readonly List<Video> videos = new();
     private Video? nowPlayingVideo;
     private ElementReference videoPlayer;
     private IJSObjectReference? module;

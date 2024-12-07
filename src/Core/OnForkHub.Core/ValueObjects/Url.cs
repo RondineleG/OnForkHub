@@ -8,7 +8,7 @@ public class Url : ValueObject
         Validate();
     }
 
-    public string Value { get; private set; }
+    public string Value { get; }
 
     public static Url Create(string url)
     {
