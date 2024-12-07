@@ -5,5 +5,5 @@ public enum ELogLevel
     Info,
     Error,
     Debug,
-    Warning,
+    Warning
 }

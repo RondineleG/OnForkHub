@@ -2,8 +2,8 @@ namespace OnForkHub.Application.Test.Validation;
 
 public class CategoryTestBuilder
 {
-    private Name _name = Name.Create("Test Name");
     private string _description = "Test Description";
+    private Name _name = Name.Create("Test Name");
 
     public CategoryTestBuilder WithName(Name name)
     {

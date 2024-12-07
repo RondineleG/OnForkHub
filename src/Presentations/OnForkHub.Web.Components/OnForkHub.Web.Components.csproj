@@ -12,20 +12,20 @@
     </PropertyGroup>
 
     <Target Name="NpmInstall" BeforeTargets="Build" Condition=" !Exists('wwwroot\npm\node_modules') ">
-        <Message Importance="high" Text="Instalando pacotes NPM..." />
-        <Exec Command="npm install" WorkingDirectory="wwwroot\npm" />
+        <Message Importance="high" Text="Instalando pacotes NPM..."/>
+        <Exec Command="npm install" WorkingDirectory="wwwroot\npm"/>
     </Target>
 
     <ItemGroup>
-        <Content Remove="wwwroot\npm\**\node_modules\**" />
-        <None Remove="wwwroot\npm\**\node_modules\**" />
+        <Content Remove="wwwroot\npm\**\node_modules\**"/>
+        <None Remove="wwwroot\npm\**\node_modules\**"/>
     </ItemGroup>
     <ItemGroup>
-        <SupportedPlatform Include="browser" />
+        <SupportedPlatform Include="browser"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.*"/>
     </ItemGroup>
 
 </Project>

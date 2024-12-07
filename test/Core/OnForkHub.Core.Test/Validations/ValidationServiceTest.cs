@@ -2,29 +2,9 @@ namespace OnForkHub.Core.Test.Validations;
 
 public class ValidationServiceTest
 {
-    public class TestEntity : BaseEntity
-    {
-        public string Name { get; set; } = string.Empty;
-    }
-
-    public class TestValidationService : ValidationService<TestEntity>
-    {
-        public TestValidationService(IValidationBuilder<TestEntity> builder, IEntityValidator<TestEntity> validator)
-            : base(builder, validator) { }
-
-        public ValidationResult ValidatePropertyPublic<TProperty>(
-            TestEntity entity,
-            Expression<Func<TestEntity, TProperty>> propertyExpression,
-            Action<IValidationBuilder<TestEntity>> validationAction
-        )
-        {
-            return ValidateProperty(entity, propertyExpression, validationAction);
-        }
-    }
-
     private readonly IValidationBuilder<TestEntity> _builder;
-    private readonly IEntityValidator<TestEntity> _validator;
     private readonly TestValidationService _service;
+    private readonly IEntityValidator<TestEntity> _validator;
 
     public ValidationServiceTest()
     {
@@ -159,5 +139,27 @@ public class ValidationServiceTest
         _service.Validate(entity);
 
         handlerCount.Should().Be(2);
+    }
+
+    public class TestEntity : BaseEntity
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class TestValidationService : ValidationService<TestEntity>
+    {
+        public TestValidationService(IValidationBuilder<TestEntity> builder, IEntityValidator<TestEntity> validator)
+            : base(builder, validator)
+        {
+        }
+
+        public ValidationResult ValidatePropertyPublic<TProperty>(
+            TestEntity entity,
+            Expression<Func<TestEntity, TProperty>> propertyExpression,
+            Action<IValidationBuilder<TestEntity>> validationAction
+        )
+        {
+            return ValidateProperty(entity, propertyExpression, validationAction);
+        }
     }
 }

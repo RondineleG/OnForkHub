@@ -2,13 +2,13 @@
     background-color: var(--cf-dark-color);
 }
 
-    .footerStyle a {
-        color: var(--cf-theme-200);
-    }
+.footerStyle a {
+    color: var(--cf-theme-200);
+}
 
-        .footerStyle a:hover {
-            color: var(--cf-theme-core);
-        }
+.footerStyle a:hover {
+    color: var(--cf-theme-core);
+}
 
 .bi {
     font-size: 1.5rem;

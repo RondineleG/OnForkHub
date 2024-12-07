@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
+        <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj"/>
     </ItemGroup>
 
 </Project>

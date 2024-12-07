@@ -13,8 +13,10 @@ public interface IValidationResult
     IValidationResult Merge(IValidationResult other);
     void ThrowIfInvalid(string? customMessage = null);
     Task ThrowIfInvalidAsync(string? customMessage = null);
+
     T? GetMetadata<T>(string key)
         where T : class;
+
     IValidationResult ThrowIfInvalidAndReturn();
     Task<ValidationResult> ValidateAsync(Func<Task<bool>> predicate, string message, string field = "");
 }

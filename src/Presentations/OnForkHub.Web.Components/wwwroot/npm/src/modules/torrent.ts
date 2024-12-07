@@ -1,11 +1,13 @@
 interface WebTorrentInstance {
     add(magnetUri: string, opts: any, callback: (torrent: Torrent) => void): void;
+
     destroy(): void;
 }
 
 interface TorrentFile {
     name: string;
     length: number;
+
     getBlobURL(callback: (err: string | Error | undefined, blobURL?: string) => void): void;
 }
 
@@ -22,7 +24,9 @@ interface Torrent {
     files: TorrentFile[];
     progress: number;
     downloadSpeed: number;
+
     on<K extends keyof TorrentEvents>(event: K, callback: TorrentEvents[K]): void;
+
     destroy(): void;
 }
 
@@ -187,7 +191,7 @@ export async function startDownload(
                     video.src = url;
                     video.style.display = 'block';
 
-                    // Remove loading UI quando o vídeo estiver pronto
+                    // Remove loading UI quando o vï¿½deo estiver pronto
                     const loadingUI = containerElement.querySelector('.d-flex');
                     if (loadingUI) {
                         containerElement.removeChild(loadingUI);

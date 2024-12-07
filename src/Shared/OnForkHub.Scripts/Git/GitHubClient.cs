@@ -2,15 +2,11 @@ namespace OnForkHub.Scripts.Git;
 
 public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHubClient
 {
-    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
+
     private readonly Dictionary<string, string> _requiredLabels =
-        new()
-        {
-            { "in-review", "#19034f" },
-            { "high", "#7a2102" },
-            { "large", "#010821" },
-        };
+        new() { { "in-review", "#19034f" }, { "high", "#7a2102" }, { "large", "#010821" } };
 
     public async Task EnsureLabelsExistAsync()
     {
@@ -52,9 +48,7 @@ public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHu
     {
         var command = new List<string>
         {
-            prNumber == null ? action : $"{action} {prNumber}",
-            $"--title \"{prInfo.Title}\"",
-            $"--body \"{prInfo.Body}\"",
+            prNumber == null ? action : $"{action} {prNumber}", $"--title \"{prInfo.Title}\"", $"--body \"{prInfo.Body}\""
         };
 
         if (action == "pr create")

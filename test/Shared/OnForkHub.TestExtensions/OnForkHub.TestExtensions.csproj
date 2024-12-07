@@ -8,18 +8,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="Extensions\**" />
-        <Compile Remove="Fixtures\**" />
-        <EmbeddedResource Remove="Extensions\**" />
-        <EmbeddedResource Remove="Fixtures\**" />
-        <None Remove="Extensions\**" />
-        <None Remove="Fixtures\**" />
+        <Compile Remove="Extensions\**"/>
+        <Compile Remove="Fixtures\**"/>
+        <EmbeddedResource Remove="Extensions\**"/>
+        <EmbeddedResource Remove="Fixtures\**"/>
+        <None Remove="Extensions\**"/>
+        <None Remove="Fixtures\**"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-        <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
-        <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
+        <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj"/>
+        <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj"/>
+        <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj"/>
     </ItemGroup>
 
 </Project>

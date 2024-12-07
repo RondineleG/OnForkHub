@@ -11,15 +11,15 @@ class ExemploHandler {
         this.init();
     }
 
-    private init() {
-        this.updateDisplay();
-        this.element.addEventListener('click', () => this.increment());
-    }
-
     increment() {
         this.count++;
         this.updateDisplay();
         console.log('Exemplo incrementado para:', this.count);
+    }
+
+    private init() {
+        this.updateDisplay();
+        this.element.addEventListener('click', () => this.increment());
     }
 
     private updateDisplay() {

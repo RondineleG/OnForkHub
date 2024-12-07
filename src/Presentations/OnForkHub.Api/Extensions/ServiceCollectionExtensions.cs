@@ -1,6 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using MoreLinq.Extensions;
-
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
@@ -28,7 +25,7 @@ public static class ServiceCollectionExtensions
             .ForEach(x =>
                 services.Add(
                     new ServiceDescriptor(
-                        x.GetInterfaces().First(y => y.IsGenericType ? (y.GetGenericTypeDefinition() == interfaceType) : (y == interfaceType)),
+                        x.GetInterfaces().First(y => y.IsGenericType ? y.GetGenericTypeDefinition() == interfaceType : y == interfaceType),
                         x,
                         lifetime
                     )
@@ -39,7 +36,7 @@ public static class ServiceCollectionExtensions
     public static bool DoesImplementInterfaceType(this Type type, Type interfaceType)
     {
         return !type.IsAbstract
-            && type.IsClass
-            && type.GetInterfaces().ToList().Exists(y => y.IsGenericType ? (y.GetGenericTypeDefinition() == interfaceType) : (y == interfaceType));
+               && type.IsClass
+               && type.GetInterfaces().ToList().Exists(y => y.IsGenericType ? y.GetGenericTypeDefinition() == interfaceType : y == interfaceType);
     }
 }

@@ -12,25 +12,25 @@
 
     <!--API-->
     <ItemGroup>
-        <PackageReference Include="Asp.Versioning.Http.Client" Version="8.*" />
-        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.*" />
-        <PackageReference Include="morelinq" Version="4.*" />
-        <PackageReference Include="Serilog" Version="4.*" />
-        <PackageReference Include="Serilog.Sinks.File" Version="6.*" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
+        <PackageReference Include="Asp.Versioning.Http.Client" Version="8.*"/>
+        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.*"/>
+        <PackageReference Include="morelinq" Version="4.*"/>
+        <PackageReference Include="Serilog" Version="4.*"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="6.*"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="7.*"/>
     </ItemGroup>
 
 
     <!--Dependencies for ui projects-->
     <ItemGroup>
-        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.*" />
-        <PackageReference Include="MudBlazor" Version="7.*" />
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.*"/>
+        <PackageReference Include="MudBlazor" Version="7.*"/>
     </ItemGroup>
 
     <!--Dependencies for persitence projects-->
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.*"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.*">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -39,18 +39,18 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.*"/>
     </ItemGroup>
 
     <!--Dependencies for test projects-->
     <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="7.*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.*" />
-        <PackageReference Include="NSubstitute" Version="5.*" />
+        <PackageReference Include="FluentAssertions" Version="7.*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.*"/>
+        <PackageReference Include="NSubstitute" Version="5.*"/>
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="..\..\..\stylecop.json" />
+        <AdditionalFiles Include="..\..\..\stylecop.json"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.*">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -58,9 +58,9 @@
 
     <!--Dependencies for OnForkHub.Scripts-->
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.*"/>
     </ItemGroup>
 
 </Project>

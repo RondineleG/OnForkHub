@@ -1,13 +1,13 @@
 <HeadContent>
-    <link rel="stylesheet" href="/_content/OnForkHub.Web.Components/plyr.css" />
+    <link rel="stylesheet" href="/_content/OnForkHub.Web.Components/plyr.css"/>
 </HeadContent>
- @if (Sources != null)
+@if (Sources != null)
 {
     <video controls poster="@Poster" @attributes="InputAttributes">
 
         @foreach (var source in Sources)
         {
-            <source src="@source.Src" type="@source.Type" />
+            <source src="@source.Src" type="@source.Type"/>
         }
 
         @if (Tracks != null)
@@ -16,11 +16,11 @@
             {
                 if (track.IsDefault)
                 {
-                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang" default />
+                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang" default/>
                 }
                 else
                 {
-                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang" />
+                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang"/>
                 }
             }
         }

@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using OnForkHub.Api.Extensions;
-
-namespace OnForkHub.Api.Configuration;
+﻿namespace OnForkHub.Api.Configuration;
 
 [ExcludeFromCodeCoverage]
 public static class WebApiConfiguration
@@ -22,6 +19,7 @@ public static class WebApiConfiguration
             {
                 webApi.Register(app);
             }
+
             var asyncWebApis = scopedProvider.GetServices<IEndpointAsync>();
             await Task.WhenAll(asyncWebApis.Select(x => x.RegisterAsync(app)));
         }

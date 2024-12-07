@@ -28,10 +28,10 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
             await ForcePushFeatureBranchWithRetryAsync(branchName);
 
             var prInfo = new PullRequestInfo(
-                Title: $"feat({GetFeatureName(branchName)}): Merge {branchName} into {DevBranch}",
-                Body: GeneratePullRequestBody(branchName),
-                BaseBranch: DevBranch,
-                SourceBranch: branchName
+                $"feat({GetFeatureName(branchName)}): Merge {branchName} into {DevBranch}",
+                GeneratePullRequestBody(branchName),
+                DevBranch,
+                branchName
             );
 
             await CreateOrUpdatePullRequestAsync(prInfo);
@@ -49,20 +49,20 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
     private static string GeneratePullRequestBody(string branchName)
     {
         return $"""
-            ## Description
-            Automatically generated PR for merging branch `{branchName}` into `{DevBranch}`.
+                ## Description
+                Automatically generated PR for merging branch `{branchName}` into `{DevBranch}`.
 
-            ## Changes
-            - Implementation of {GetFeatureName(branchName)}
+                ## Changes
+                - Implementation of {GetFeatureName(branchName)}
 
-            ## Testing
-            - [ ] Unit Tests
-            - [ ] Integration Tests
-            - [ ] Manual Testing
+                ## Testing
+                - [ ] Unit Tests
+                - [ ] Integration Tests
+                - [ ] Manual Testing
 
-            ## Notes
-            Please review and provide feedback.
-            """;
+                ## Notes
+                Please review and provide feedback.
+                """;
     }
 
     private static string GetFeatureName(string branchName)
@@ -135,6 +135,7 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
                 {
                     throw new GitOperationException($"Failed to push branch {branchName} after {MaxRetries} attempts", ex);
                 }
+
                 _logger.Log(ELogLevel.Warning, $"Push attempt {attempts} failed, retrying...");
                 await Task.Delay(1000 * attempts);
             }

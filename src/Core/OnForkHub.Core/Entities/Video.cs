@@ -5,7 +5,9 @@ public class Video : BaseEntity
     private readonly List<Category> _categories = [];
 
     public Video(Id id, DateTime createdAt, DateTime? updatedAt = null)
-        : base(id, createdAt, updatedAt) { }
+        : base(id, createdAt, updatedAt)
+    {
+    }
 
     protected Video() { }
 
@@ -24,7 +26,7 @@ public class Video : BaseEntity
                 Title = Title.Create(title),
                 Description = description ?? throw new ArgumentNullException(nameof(description)),
                 Url = Url.Create(url),
-                UserId = userId,
+                UserId = userId
             };
 
             video.ValidateEntityState();
@@ -53,7 +55,7 @@ public class Video : BaseEntity
                 Title = Title.Create(title),
                 Description = description ?? throw new ArgumentNullException(nameof(description)),
                 Url = Url.Create(url),
-                UserId = userId,
+                UserId = userId
             };
 
             video.ValidateEntityState();

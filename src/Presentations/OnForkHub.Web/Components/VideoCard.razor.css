@@ -39,12 +39,12 @@
     transition: 0.35s;
 }
 
-    .hc-card .hc-content p {
-        font-size: .9rem;
-        font-family: var(--cf-title-font);
-        letter-spacing: 1px;
-        margin-top: .5em;
-    }
+.hc-card .hc-content p {
+    font-size: .9rem;
+    font-family: var(--cf-title-font);
+    letter-spacing: 1px;
+    margin-top: .5em;
+}
 
 .hc-content {
     position: relative;

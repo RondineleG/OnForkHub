@@ -1,5 +1,5 @@
-import { resolve } from 'path'
-import { defineConfig, BuildOptions, ResolveOptions } from 'vite'
+import {resolve} from 'path'
+import {BuildOptions, defineConfig, ResolveOptions} from 'vite'
 
 export default defineConfig({
     build: {
