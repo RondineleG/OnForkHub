@@ -1,3 +1,5 @@
 namespace OnForkHub.Core.Interfaces.Repositories;
 
-public interface ICategoryRepositoryComos { }
+public interface ICategoryRepositoryComos
+{
+}

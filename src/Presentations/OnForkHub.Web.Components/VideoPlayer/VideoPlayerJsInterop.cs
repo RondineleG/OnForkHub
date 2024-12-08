@@ -6,7 +6,7 @@ public interface IVideoPlayerJsInterop
 {
     Task Initialize(
         string id,
-        Microsoft.JSInterop.DotNetObjectReference<Player> objectRef,
+        DotNetObjectReference<Player> objectRef,
         string magnetUri,
         bool captions,
         bool quality,
@@ -45,15 +45,6 @@ public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
         mainTask = new Lazy<Task<IJSObjectReference>>(
             () => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask()
         );
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (moduleTask.IsValueCreated)
-        {
-            var module = await moduleTask.Value;
-            await module.DisposeAsync();
-        }
     }
 
     public async Task Initialize(
@@ -120,6 +111,15 @@ public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
                 downloadControl,
                 fullscreenControl
             );
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (moduleTask.IsValueCreated)
+        {
+            var module = await moduleTask.Value;
+            await module.DisposeAsync();
         }
     }
 }

@@ -16,7 +16,7 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
             { "gb", "branch" },
             { "gr", "remote -v" },
             { "gd", "diff" },
-            { "gl", "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short" },
+            { "gl", "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short" }
         };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -140,7 +140,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {{
                     "Documents",
                     "PowerShell",
                     "Microsoft.PowerShell_profile.ps1"
-                ),
+                )
             };
 
             foreach (var psProfilePath in profilePaths)
