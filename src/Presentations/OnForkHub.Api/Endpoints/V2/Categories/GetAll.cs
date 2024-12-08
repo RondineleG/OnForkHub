@@ -1,8 +1,6 @@
-using OnForkHub.Api.Endpoints.Base;
-
 namespace OnForkHub.Api.Endpoints.V2.Categories;
 
-public class GetAllCategoriesEndpoint : BaseEndpoint<Category>, IEndpointAsync
+public class GetAll : BaseEndpoint<Category>, IEndpointAsync
 {
     private const int V2 = 2;
 

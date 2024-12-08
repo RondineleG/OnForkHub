@@ -149,9 +149,7 @@ public class ValidationServiceTest
     public class TestValidationService : ValidationService<TestEntity>
     {
         public TestValidationService(IValidationBuilder<TestEntity> builder, IEntityValidator<TestEntity> validator)
-            : base(builder, validator)
-        {
-        }
+            : base(builder, validator) { }
 
         public ValidationResult ValidatePropertyPublic<TProperty>(
             TestEntity entity,

@@ -8,17 +8,24 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
 
     private Microsoft.JSInterop.DotNetObjectReference<TorrentPlayer>? _objectRef;
 
-    [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject]
+    protected IJSRuntime JSRuntime { get; set; } = default!;
 
-    [Parameter] public string PlayerId { get; set; } = "torrent-player";
+    [Parameter]
+    public string PlayerId { get; set; } = "torrent-player";
 
-    [Parameter] [EditorRequired] public string TorrentId { get; set; } = default!;
+    [Parameter]
+    [EditorRequired]
+    public string TorrentId { get; set; } = default!;
 
-    [Parameter] public EventCallback OnEndedVideo { get; set; }
+    [Parameter]
+    public EventCallback OnEndedVideo { get; set; }
 
-    [Parameter] public EventCallback OnPlayVideo { get; set; }
+    [Parameter]
+    public EventCallback OnPlayVideo { get; set; }
 
-    [Parameter] public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
+    [Parameter]
+    public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
 
     public async ValueTask DisposeAsync()
     {
