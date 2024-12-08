@@ -85,7 +85,7 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
         }
     }
 
-    public async Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size)
+    public async Task<RequestResult<IEnumerable<Category>>> GetAllAsync(int page, int size)
     {
         try
         {

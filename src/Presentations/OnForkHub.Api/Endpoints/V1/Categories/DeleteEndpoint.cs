@@ -31,7 +31,7 @@ public class DeleteEndpoint : IEndpoint
     {
         try
         {
-            var persons = await personRepository.GetAsync(1, 10);
+            var persons = await personRepository.GetAllAsync(1, 10);
             return Results.Ok(persons);
         }
         catch (Exception ex)

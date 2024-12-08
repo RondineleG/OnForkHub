@@ -147,13 +147,13 @@ public class CategoryServiceTest
             Category.Create(Name.Create("Category 2"), "Description 2").Data!,
         };
 
-        _categoryRepository.GetAsync(page, size).Returns(RequestResult<IEnumerable<Category>>.Success(categories));
+        _categoryRepository.GetAllAsync(page, size).Returns(RequestResult<IEnumerable<Category>>.Success(categories));
 
-        var result = await _categoryService.GetAsync(page, size);
+        var result = await _categoryService.GetAllAsync(page, size);
 
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().BeEquivalentTo(categories);
-        await _categoryRepository.Received(1).GetAsync(page, size);
+        await _categoryRepository.Received(1).GetAllAsync(page, size);
     }
 
     [Fact]
