@@ -1,7 +1,3 @@
-using OnForkHub.Persistence.Contexts;
-using OnForkHub.Persistence.Contexts.Base;
-using OnForkHub.Persistence.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
