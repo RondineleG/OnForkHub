@@ -1,6 +1,8 @@
+using OnForkHub.Core.Interfaces.Repositories.Base;
+
 namespace OnForkHub.Persistence.Repositories;
 
-public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context) : ICategoryRepositoryComos
+public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context) : IBaseRepository<Category>, ICategoryRepositoryComos
 {
     private const string EntityName = nameof(Category);
     private readonly ICosmosContainerContext<Category> _context = context;
@@ -72,7 +74,7 @@ public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context)
         }
     }
 
-    public async Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size)
+    public async Task<RequestResult<IEnumerable<Category>>> GetAllAsync(int page, int size)
     {
         try
         {

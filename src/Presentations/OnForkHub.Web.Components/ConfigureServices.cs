@@ -1,5 +1,3 @@
-using OnForkHub.Web.Components.VideoPlayer;
-
 namespace OnForkHub.Web.Components;
 
 public static class ConfigureServices
