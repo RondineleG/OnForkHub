@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace OnForkHub.Core.Validations;
 
 public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntityValidator<T> validator) : IValidationService<T>

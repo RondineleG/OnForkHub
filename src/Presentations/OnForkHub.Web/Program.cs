@@ -1,4 +1,4 @@
-using OnForkHub.Web;
+using OnForkHub.Web.Components;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
