@@ -49,20 +49,20 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
     private static string GeneratePullRequestBody(string branchName)
     {
         return $"""
-            ## Description
-            Automatically generated PR for merging branch `{branchName}` into `{DevBranch}`.
+                ## Description
+                Automatically generated PR for merging branch `{branchName}` into `{DevBranch}`.
 
-            ## Changes
-            - Implementation of {GetFeatureName(branchName)}
+                ## Changes
+                - Implementation of {GetFeatureName(branchName)}
 
-            ## Testing
-            - [ ] Unit Tests
-            - [ ] Integration Tests
-            - [ ] Manual Testing
+                ## Testing
+                - [ ] Unit Tests
+                - [ ] Integration Tests
+                - [ ] Manual Testing
 
-            ## Notes
-            Please review and provide feedback.
-            """;
+                ## Notes
+                Please review and provide feedback.
+                """;
     }
 
     private static string GetFeatureName(string branchName)

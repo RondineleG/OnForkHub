@@ -24,5 +24,5 @@ public enum EResultStatus
     EntityAlreadyExists,
 
     /// <summary>Entity Already Exists</summary>
-    NoContent,
+    NoContent
 }
