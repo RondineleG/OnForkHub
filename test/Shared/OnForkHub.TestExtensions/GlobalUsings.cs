@@ -1,3 +1,5 @@
+global using System.Globalization;
+
 global using FluentAssertions;
 global using FluentAssertions.Specialized;
 

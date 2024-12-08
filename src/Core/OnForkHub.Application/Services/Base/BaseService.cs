@@ -1,6 +1,3 @@
-using OnForkHub.Core.Entities.Base;
-using OnForkHub.Core.Interfaces.Validations;
-
 namespace OnForkHub.Application.Services.Base;
 
 public abstract class BaseService

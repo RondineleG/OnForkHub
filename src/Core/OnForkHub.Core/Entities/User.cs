@@ -9,9 +9,7 @@ public class User : BaseEntity
     {
     }
 
-    private User()
-    {
-    }
+    private User() { }
 
     public Email Email { get; private set; } = null!;
     public Name Name { get; private set; } = null!;

@@ -7,9 +7,7 @@ public class Category : BaseEntity
     {
     }
 
-    private Category()
-    {
-    }
+    private Category() { }
 
     public Name Name { get; private set; } = null!;
     public string Description { get; private set; } = string.Empty;

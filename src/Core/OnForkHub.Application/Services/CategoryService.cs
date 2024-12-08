@@ -1,5 +1,3 @@
-using OnForkHub.Core.Interfaces.Validations;
-
 namespace OnForkHub.Application.Services;
 
 public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidationService<Category> validationService) : BaseService, ICategoryService
@@ -36,8 +34,8 @@ public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidati
         });
     }
 
-    public Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size)
+    public Task<RequestResult<IEnumerable<Category>>> GetAllAsync(int page, int size)
     {
-        return ExecuteAsync(async () => await _categoryRepository.GetAsync(page, size));
+        return ExecuteAsync(async () => await _categoryRepository.GetAllAsync(page, size));
     }
 }

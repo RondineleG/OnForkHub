@@ -1,8 +1,6 @@
-using OnForkHub.Api.Endpoints.Base;
-
 namespace OnForkHub.Api.Endpoints.V2.Categories;
 
-public class GetAllCategoriesEndpoint : BaseEndpoint<Category>, IEndpointAsync
+public class GetAll : BaseEndpoint<Category>, IEndpointAsync
 {
     private const int V2 = 2;
 
@@ -20,7 +18,7 @@ public class GetAllCategoriesEndpoint : BaseEndpoint<Category>, IEndpointAsync
                     {
                         try
                         {
-                            var persons = await personRepository.GetAsync(1, 10);
+                            var persons = await personRepository.GetAllAsync(1, 10);
                             return persons?.Data is null
                                 ? TypedResults.Ok(RequestResult<IEnumerable<Category>>.WithNoContent())
                                 : TypedResults.Ok(RequestResult<IEnumerable<Category>>.Success(persons.Data));

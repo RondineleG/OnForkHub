@@ -1,7 +1,3 @@
-using OnForkHub.Persistence.Contexts;
-using OnForkHub.Persistence.Contexts.Base;
-using OnForkHub.Persistence.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -32,9 +28,7 @@ builder
     });
 
 builder.Services.AddWebApi(typeof(Program));
-var configurationBuilder = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appSettings.json", true, true);
+var configurationBuilder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appSettings.json", true, true);
 IConfiguration configuration = configurationBuilder.Build();
 var connectionString = configuration.GetConnectionString("DefaultConnection");
 

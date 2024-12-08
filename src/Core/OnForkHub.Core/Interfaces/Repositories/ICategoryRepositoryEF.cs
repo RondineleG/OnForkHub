@@ -10,5 +10,5 @@ public interface ICategoryRepositoryEF
 
     Task<RequestResult<Category>> GetByIdAsync(long id);
 
-    Task<RequestResult<IEnumerable<Category>>> GetAsync(int page, int size);
+    Task<RequestResult<IEnumerable<Category>>> GetAllAsync(int page, int size);
 }
