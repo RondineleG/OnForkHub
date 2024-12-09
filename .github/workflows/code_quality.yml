@@ -1,44 +1,61 @@
-name: Qodana
+name: Qodana Analysis
+
 on:
   workflow_dispatch:
   pull_request:
   push:
-    branches: 
-      - main 
+    branches:
+      - main
       - dev
-      - 'release/*' 
+      - 'release/*'
       - 'feature/*'
       - 'hotfix/*'
+      - 'bugfix/*'
+
+
 jobs:
   qodana:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: write
-      security-events: write  
+    strategy:
+      matrix:
+        linter:
+          - dotnet
+          - js
+          - sql
+        version: '2024.2'
+
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      
-      - name: 'Qodana Scan'
+
+      - name: Run Qodana
         uses: JetBrains/qodana-action@v2024.2
         with:
-          args: --baseline,qodana.sarif.json --apply-fixes
-          push-fixes: pull-request
-          fail-threshold: 3
-          post-pr-comment: true
-          use-caches: true
-          cache-default-branch-only: true
+          args: |
+            --baseline,qodana.sarif.json
+            --apply-fixes
+            --fail-threshold=3
+          linter: jetbrains/qodana-${{ matrix.linter }}:${{ matrix.version }}
           upload-result: true
-          artifact-name: qodana-results
+          artifact-name: qodana-${{ matrix.linter }}-results
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1403575179 }}
-          QODANA_ENDPOINT: 'https://qodana.cloud'
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - uses: github/codeql-action/upload-sarif@v2
+
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: qodana-html-${{ matrix.linter }}
+          path: .qodana/results/report.html
+
+      - name: Annotate Code with Qodana
+        if: always()
+        uses: JetBrains/qodana-action@v2024.2
+        with:
+          use-annotations: true
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
