@@ -243,6 +243,8 @@ dotnet_diagnostic.IDE1100.severity = none
 dotnet_diagnostic.SA1313.severity = none
 dotnet_diagnostic.SA1001.severity = none
 dotnet_diagnostic.SA1201.severity = none
+dotnet_diagnostic.SA1413.severity = none
+
 
 
 # Custom word list
