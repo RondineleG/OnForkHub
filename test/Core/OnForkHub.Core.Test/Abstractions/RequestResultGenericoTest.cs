@@ -9,7 +9,13 @@ public class GenericRequestResultTests
     [DisplayName("Should add entity errors in generic RequestResult")]
     public void ShouldAddEntityErrorsInGenericRequestResult()
     {
-        var entityErrors = new Dictionary<string, List<string>> { { "TestEntity", new List<string> { "Entity error 1", "Entity error 2" } } };
+        var entityErrors = new Dictionary<string, List<string>>
+        {
+            {
+                "TestEntity",
+                new List<string> { "Entity error 1", "Entity error 2" }
+            },
+        };
 
         var result = RequestResult<string>.WithError(entityErrors);
 

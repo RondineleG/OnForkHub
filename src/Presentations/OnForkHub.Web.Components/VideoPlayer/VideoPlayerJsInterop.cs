@@ -5,9 +5,8 @@ namespace OnForkHub.Web.Components.VideoPlayer;
 public interface IVideoPlayerJsInterop
 {
     Task Initialize(
-
-        string id, DotNetObjectReference<Player> objectRef,
-
+        string id,
+        DotNetObjectReference<Player> objectRef,
         string magnetUri,
         bool captions,
         bool quality,
