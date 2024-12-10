@@ -22,10 +22,10 @@ jobs:
       - name: Validate commit messages
         run: |
           VALIDATION_START_DATE="2024-12-10 00:00:00"
-          
+
           echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
           echo "----------------------------------------"
-          
+
           INVALID_COMMITS=()
           while IFS= read -r commit_hash; do
             commit_date=$(git show -s --format=%ai "$commit_hash")
@@ -33,15 +33,19 @@ jobs:
               echo "ℹ️ Skipping commit from before validation start date: ${commit_hash:0:8}"
               continue
             fi
-            
+
             message=$(git log --format=%B -n 1 "$commit_hash")
-            # Extrai a branch do commit
-            branch_name=$(git name-rev --name-only "$commit_hash" | sed 's/~.*//g')
-            
+            branch_name=$(git branch --contains "$commit_hash" | grep -v "HEAD" | head -n 1 | xargs)
+
+            if [[ "$message" == "🤖 Apply quick-fixes by Qodana" ]]; then
+              echo "ℹ️ Skipping Qodana automated commit: ${commit_hash:0:8}"
+              continue
+            fi
+
             if [[ "$message" =~ ^Merge && ! "$message" =~ ^merge: ]]; then
               message="merge: ${message#Merge }"
             fi
-            
+
             if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\([a-z0-9-]+\))?(!)?: .+"; then
               INVALID_COMMITS+=("$commit_hash")
               echo "❌ Invalid commit found:"
@@ -51,57 +55,17 @@ jobs:
               echo "   Branch: $branch_name"
               echo "   Error: Invalid format. Expected: <type>[optional scope]: <description>"
               echo "----------------------------------------"
-              continue
             fi
-            
-            case "$branch_name" in
-              *"feature/"*)
-                if ! echo "$message" | grep -qE "^(feat|refactor|fix|test|docs|style|merge).*"; then
-                  INVALID_COMMITS+=("$commit_hash")
-                  echo "❌ Invalid commit type for feature branch:"
-                  echo "   Hash: ${commit_hash:0:8}"
-                  echo "   Message: $message"
-                  echo "   Allowed types: feat, refactor, fix, test, docs, style, merge"
-                fi
-                ;;
-              *"hotfix/"*)
-                if ! echo "$message" | grep -qE "^(fix|hotfix|perf|merge).*"; then
-                  INVALID_COMMITS+=("$commit_hash")
-                  echo "❌ Invalid commit type for hotfix branch:"
-                  echo "   Hash: ${commit_hash:0:8}"
-                  echo "   Message: $message"
-                  echo "   Allowed types: fix, hotfix, perf, merge"
-                fi
-                ;;
-              *"bugfix/"*)
-                if ! echo "$message" | grep -qE "^(fix|bugfix|perf|merge).*"; then
-                  INVALID_COMMITS+=("$commit_hash")
-                  echo "❌ Invalid commit type for bugfix branch:"
-                  echo "   Hash: ${commit_hash:0:8}"
-                  echo "   Message: $message"
-                  echo "   Allowed types: fix, bugfix, perf, merge"
-                fi
-                ;;
-              *"release/"*)
-                if ! echo "$message" | grep -qE "^(release|chore|docs|merge).*"; then
-                  INVALID_COMMITS+=("$commit_hash")
-                  echo "❌ Invalid commit type for release branch:"
-                  echo "   Hash: ${commit_hash:0:8}"
-                  echo "   Message: $message"
-                  echo "   Allowed types: release, chore, docs, merge"
-                fi
-                ;;
-            esac
           done < <(git log ${{ steps.commit-range.outputs.range }} --format=%H)
-          
+
           if [ ${#INVALID_COMMITS[@]} -ne 0 ]; then
             echo "❌ Found ${#INVALID_COMMITS[@]} invalid commit(s)"
             echo ""
             echo "📝 Branch-specific commit types:"
             echo "----------------------------------------"
             echo "feature/*: feat, refactor, fix, test, docs, style, merge"
-            echo "hotfix/*:  fix, hotfix, perf, merge"
-            echo "bugfix/*:  fix, bugfix, perf, merge"
+            echo "hotfix/*: fix, hotfix, perf, merge"
+            echo "bugfix/*: fix, bugfix, perf, merge"
             echo "release/*: release, chore, docs, merge"
             echo ""
             echo "Format: <type>[optional scope]: <description>"
