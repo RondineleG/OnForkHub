@@ -21,17 +21,19 @@ jobs:
 
       - name: Validate commit messages
         run: |
-          VALIDATION_START_DATE="2024-12-10 00:00:00"
+          VALIDATION_START_DATE="2024-12-10 00:00:00 UTC"
           
           echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
+          echo "ℹ️ Validating only commits made after: $VALIDATION_START_DATE"
           echo "----------------------------------------"
           
           INVALID_COMMITS=()
           while IFS= read -r commit_hash; do
-            commit_date=$(git show -s --format=%ai "$commit_hash")
-            # Pula commits anteriores à data de início da validação
-            if [[ "$commit_date" < "$VALIDATION_START_DATE" ]]; then
-              echo "ℹ️ Skipping commit from before validation start date: ${commit_hash:0:8}"
+            # Obtém a data do commit em UTC para comparação consistente
+            commit_date=$(git show -s --format=%aI "$commit_hash" | xargs -I{} date -d {} --utc '+%Y-%m-%d %H:%M:%S UTC')
+            
+            if [[ "$(date -d "$commit_date" +%s)" -lt "$(date -d "$VALIDATION_START_DATE" +%s)" ]]; then
+              echo "ℹ️ Skipping legacy commit from ${commit_date}: ${commit_hash:0:8}"
               continue
             fi
             
@@ -79,5 +81,5 @@ jobs:
             echo "- merge    → Merge commits"
             exit 1
           else
-            echo "✅ All commit messages are valid!"
+            echo "✅ All new commit messages are valid!"
           fi
