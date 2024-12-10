@@ -21,24 +21,22 @@ jobs:
 
       - name: Validate commit messages
         run: |
-          VALIDATION_START_DATE="2024-12-10 00:00:00 UTC"
+          VALIDATION_START_DATE="2024-12-10 00:00:00"
           
           echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
-          echo "ℹ️ Validating only commits made after: $VALIDATION_START_DATE"
           echo "----------------------------------------"
           
           INVALID_COMMITS=()
           while IFS= read -r commit_hash; do
-            # Obtém a data do commit em UTC para comparação consistente
-            commit_date=$(git show -s --format=%aI "$commit_hash" | xargs -I{} date -d {} --utc '+%Y-%m-%d %H:%M:%S UTC')
-            
-            if [[ "$(date -d "$commit_date" +%s)" -lt "$(date -d "$VALIDATION_START_DATE" +%s)" ]]; then
-              echo "ℹ️ Skipping legacy commit from ${commit_date}: ${commit_hash:0:8}"
+            commit_date=$(git show -s --format=%ai "$commit_hash")
+            if [[ "$commit_date" < "$VALIDATION_START_DATE" ]]; then
+              echo "ℹ️ Skipping commit from before validation start date: ${commit_hash:0:8}"
               continue
             fi
             
             message=$(git log --format=%B -n 1 "$commit_hash")
-            branch_name=$(git branch --contains "$commit_hash" | grep -v "HEAD" | head -n 1 | xargs)
+            # Extrai a branch do commit
+            branch_name=$(git name-rev --name-only "$commit_hash" | sed 's/~.*//g')
             
             if [[ "$message" =~ ^Merge && ! "$message" =~ ^merge: ]]; then
               message="merge: ${message#Merge }"
@@ -53,14 +51,59 @@ jobs:
               echo "   Branch: $branch_name"
               echo "   Error: Invalid format. Expected: <type>[optional scope]: <description>"
               echo "----------------------------------------"
+              continue
             fi
+            
+            case "$branch_name" in
+              *"feature/"*)
+                if ! echo "$message" | grep -qE "^(feat|refactor|fix|test|docs|style|merge).*"; then
+                  INVALID_COMMITS+=("$commit_hash")
+                  echo "❌ Invalid commit type for feature branch:"
+                  echo "   Hash: ${commit_hash:0:8}"
+                  echo "   Message: $message"
+                  echo "   Allowed types: feat, refactor, fix, test, docs, style, merge"
+                fi
+                ;;
+              *"hotfix/"*)
+                if ! echo "$message" | grep -qE "^(fix|hotfix|perf|merge).*"; then
+                  INVALID_COMMITS+=("$commit_hash")
+                  echo "❌ Invalid commit type for hotfix branch:"
+                  echo "   Hash: ${commit_hash:0:8}"
+                  echo "   Message: $message"
+                  echo "   Allowed types: fix, hotfix, perf, merge"
+                fi
+                ;;
+              *"bugfix/"*)
+                if ! echo "$message" | grep -qE "^(fix|bugfix|perf|merge).*"; then
+                  INVALID_COMMITS+=("$commit_hash")
+                  echo "❌ Invalid commit type for bugfix branch:"
+                  echo "   Hash: ${commit_hash:0:8}"
+                  echo "   Message: $message"
+                  echo "   Allowed types: fix, bugfix, perf, merge"
+                fi
+                ;;
+              *"release/"*)
+                if ! echo "$message" | grep -qE "^(release|chore|docs|merge).*"; then
+                  INVALID_COMMITS+=("$commit_hash")
+                  echo "❌ Invalid commit type for release branch:"
+                  echo "   Hash: ${commit_hash:0:8}"
+                  echo "   Message: $message"
+                  echo "   Allowed types: release, chore, docs, merge"
+                fi
+                ;;
+            esac
           done < <(git log ${{ steps.commit-range.outputs.range }} --format=%H)
           
           if [ ${#INVALID_COMMITS[@]} -ne 0 ]; then
             echo "❌ Found ${#INVALID_COMMITS[@]} invalid commit(s)"
             echo ""
-            echo "📝 Commit Message Format Guide:"
+            echo "📝 Branch-specific commit types:"
             echo "----------------------------------------"
+            echo "feature/*: feat, refactor, fix, test, docs, style, merge"
+            echo "hotfix/*:  fix, hotfix, perf, merge"
+            echo "bugfix/*:  fix, bugfix, perf, merge"
+            echo "release/*: release, chore, docs, merge"
+            echo ""
             echo "Format: <type>[optional scope]: <description>"
             echo ""
             echo "Examples:"
@@ -68,18 +111,7 @@ jobs:
             echo "✅ feat: add new user authentication"
             echo "✅ docs(api): update endpoint documentation"
             echo "✅ merge: branch 'feature/xyz' into main"
-            echo ""
-            echo "Common Types:"
-            echo "- feat     → New feature"
-            echo "- fix      → Bug fix"
-            echo "- docs     → Documentation changes"
-            echo "- style    → Code style changes"
-            echo "- refactor → Code refactoring"
-            echo "- perf     → Performance improvements"
-            echo "- test     → Test updates"
-            echo "- chore    → Maintenance tasks"
-            echo "- merge    → Merge commits"
             exit 1
           else
-            echo "✅ All new commit messages are valid!"
+            echo "✅ All commit messages are valid!"
           fi
