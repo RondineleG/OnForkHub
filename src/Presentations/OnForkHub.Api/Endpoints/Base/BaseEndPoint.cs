@@ -55,11 +55,6 @@ public abstract class BaseEndpoint<TEntity>
             LogOperationCancelled(logger, useCase.GetType().Name, null);
             return Results.StatusCode(499);
         }
-        catch (Exception ex)
-        {
-            LogUseCaseError(logger, useCase.GetType().Name, ex.Message, ex);
-            return Results.Problem(title: "Internal Server Error", detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-        }
     }
 
     protected static async Task<IResult> HandleCreateUseCase<TRequest, TResponse>(
