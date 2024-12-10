@@ -1,5 +1,4 @@
-name: Protect Main and Dev Branches
-
+name: Protect Branches
 on:
   push:
     branches:
@@ -7,14 +6,21 @@ on:
       - dev
 
 jobs:
-  block-direct-push:
-    name: Block Direct Push to Main/Dev
+  check-branch:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - name: Block Push to Protected Branches
+      - name: Check if push is from PR merge
+        if: github.event.head_commit.message != null && startsWith(github.event.head_commit.message, 'merge:')
         run: |
-          echo "❌ Direct push to protected branches is not allowed!"
-          echo "Please create a Pull Request to update these branches."
-          exit 1
+          echo "✅ Merge commit detected, allowing the push"
+          exit 0
+
+      - name: Block direct push
+        if: ${{ !github.event.pull_request }}
+        run: |
+          # Se não for um merge commit e não for um PR, bloqueia
+          if [[ "${{ github.event.head_commit.message }}" != *"merge:"* ]]; then
+            echo "❌ Direct push to protected branches is not allowed!"
+            echo "Please create a Pull Request to update these branches."
+            exit 1
+          fi
