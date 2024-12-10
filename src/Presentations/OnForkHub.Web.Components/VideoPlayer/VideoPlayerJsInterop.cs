@@ -47,6 +47,15 @@ public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
         );
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (moduleTask.IsValueCreated)
+        {
+            var module = await moduleTask.Value;
+            await module.DisposeAsync();
+        }
+    }
+
     public async Task Initialize(
         string id,
         DotNetObjectReference<Player> objectRef,
@@ -111,15 +120,6 @@ public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
                 downloadControl,
                 fullscreenControl
             );
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (moduleTask.IsValueCreated)
-        {
-            var module = await moduleTask.Value;
-            await module.DisposeAsync();
         }
     }
 }

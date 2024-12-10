@@ -27,13 +27,7 @@ public sealed class ValidationErrorMessage
     public override string ToString()
     {
         return JsonSerializer.Serialize(
-            new
-            {
-                Field,
-                Message,
-                Timestamp,
-                Source,
-            }
+            new { Field, Message, Timestamp, Source }
         );
     }
 }
