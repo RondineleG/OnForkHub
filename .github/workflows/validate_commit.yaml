@@ -2,6 +2,7 @@ name: Validate Commit Messages
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - main
@@ -15,8 +16,12 @@ jobs:
   validate-commits:
     name: Validate Commit Messages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Validate Commit Messages
         run: |

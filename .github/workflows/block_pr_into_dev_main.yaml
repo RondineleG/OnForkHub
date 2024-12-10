@@ -10,6 +10,8 @@ jobs:
   block-direct-push:
     name: Block Direct Push to Main/Dev
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Block Push to Protected Branches
         run: |

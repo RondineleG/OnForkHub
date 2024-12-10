@@ -2,6 +2,7 @@ name: Allow Only Dev-to-Main Merges
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
