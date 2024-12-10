@@ -1,0 +1,47 @@
+name: Validate Commit Messages
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+      - 'release/*'
+      - 'feature/*'
+      - 'hotfix/*'
+
+jobs:
+  validate-commits:
+    name: Validate Commit Messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate Commit Messages
+        run: |
+          git log --format=%s ${{ github.event.before }}..${{ github.sha }} > commit_messages.txt
+
+          cat << 'EOF' > validate_commit.sh
+          #!/bin/bash
+
+          commit_pattern="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([a-z0-9-]+\\))?(!)?: .+"
+
+          while IFS= read -r commit_message; do
+              if ! echo "$commit_message" | grep -qE "$commit_pattern"; then
+                  echo "❌ Invalid commit message: '$commit_message'"
+                  echo ""
+                  echo "Commit messages must follow the Conventional Commits format."
+                  echo "  <type>[optional scope]: <description>"
+                  echo ""
+                  echo "Examples:"
+                  echo "  feat: add new feature"
+                  echo "  fix(ui): resolve button alignment"
+                  exit 1
+              fi
+          done < commit_messages.txt
+
+          echo "✅ All commit messages are valid."
+          EOF
+
+          chmod +x validate_commit.sh
+          ./validate_commit.sh
