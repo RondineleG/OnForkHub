@@ -1,6 +1,6 @@
 namespace OnForkHub.Api.Endpoints.V1.Categories;
 
-public class GetAllCategoriesEndpoint : IEndpoint
+public class DeleteEndpoint : IEndpoint
 {
     private const string RouteV1 = "/api/v1/category";
     private const int V1 = 1;
@@ -31,7 +31,7 @@ public class GetAllCategoriesEndpoint : IEndpoint
     {
         try
         {
-            var persons = await personRepository.GetAsync(1, 10);
+            var persons = await personRepository.GetAllAsync(1, 10);
             return Results.Ok(persons);
         }
         catch (Exception ex)

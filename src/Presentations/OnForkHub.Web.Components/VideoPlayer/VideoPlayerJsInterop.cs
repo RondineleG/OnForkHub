@@ -1,5 +1,3 @@
-using Microsoft.JSInterop;
-
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
@@ -7,7 +5,8 @@ namespace OnForkHub.Web.Components.VideoPlayer;
 public interface IVideoPlayerJsInterop
 {
     Task Initialize(
-        string id, DotNetObjectReference<Player> objectRef,
+        string id,
+        DotNetObjectReference<Player> objectRef,
         string magnetUri,
         bool captions,
         bool quality,
@@ -39,20 +38,13 @@ public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
 
     public VideoPlayerJsInterop(IJSRuntime jsRuntime)
     {
-        moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
-            jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask());
+        moduleTask = new Lazy<Task<IJSObjectReference>>(
+            () => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
+        );
 
-        mainTask = new Lazy<Task<IJSObjectReference>>(() =>
-            jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask());
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (moduleTask.IsValueCreated)
-        {
-            var module = await moduleTask.Value;
-            await module.DisposeAsync();
-        }
+        mainTask = new Lazy<Task<IJSObjectReference>>(
+            () => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask()
+        );
     }
 
     public async Task Initialize(
@@ -119,6 +111,15 @@ public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
                 downloadControl,
                 fullscreenControl
             );
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (moduleTask.IsValueCreated)
+        {
+            var module = await moduleTask.Value;
+            await module.DisposeAsync();
         }
     }
 }
