@@ -1,58 +1,90 @@
 name: Validate Commit Messages
-
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-  push:
-    branches:
-      - main
-      - dev
-      - 'release/*'
-      - 'feature/*'
-      - 'hotfix/*'
-      - 'bugfix/*'
+on: [push, pull_request]
 
 jobs:
   validate-commits:
     name: Validate Commit Messages
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Validate Commit Messages
+      - name: Get commit range
+        id: commit-range
         run: |
-          if git log --format=%s ${{ github.event.before }}..${{ github.sha }} > commit_messages.txt 2>/dev/null; then
-              echo "Commit range found. Proceeding with validation."
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "range=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
           else
-              echo "⚠️ No valid commit range found. Skipping validation."
-              exit 0
+            echo "range=${{ github.event.before }}..${{ github.event.after }}" >> $GITHUB_OUTPUT
           fi
 
-          cat << 'EOF' > validate_commit.sh
-          #!/bin/bash
-
-          commit_pattern="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\([a-z0-9-]+\\))?(!)?: .+"
-
-          while IFS= read -r commit_message; do
-              if ! echo "$commit_message" | grep -qE "$commit_pattern"; then
-                  echo "❌ Invalid commit message: '$commit_message'"
-                  echo ""
-                  echo "Commit messages must follow the Conventional Commits format."
-                  echo "  <type>[optional scope]: <description>"
-                  echo ""
-                  echo "Examples:"
-                  echo "  feat: add new feature"
-                  echo "  fix(ui): resolve button alignment"
-                  exit 1
-              fi
-          done < commit_messages.txt
-
-          echo "✅ All commit messages are valid."
-          EOF
-
-          chmod +x validate_commit.sh
-          ./validate_commit.sh
+      - name: Validate commit messages
+        run: |
+          echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
+          echo "----------------------------------------"
+          
+          INVALID_COMMITS=()
+          while IFS= read -r commit_hash; do
+            message=$(git log --format=%B -n 1 "$commit_hash")
+            branch_name=$(git branch --contains "$commit_hash" | grep -v "HEAD" | head -n 1 | xargs)
+            
+            # Skip merge commits
+            if [[ "$message" == "Merge"* ]]; then
+              echo "ℹ️ Skipping merge commit: $commit_hash"
+              continue
+            fi
+            
+            # Validate commit message format
+            if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?(!)?: .+"; then
+              INVALID_COMMITS+=("$commit_hash")
+              echo "❌ Invalid commit found:"
+              echo "   Hash: ${commit_hash:0:8}"
+              echo "   Message: $message"
+              echo "   Branch: $branch_name"
+              echo "   Error: Invalid format. Expected: <type>[optional scope]: <description>"
+              echo "----------------------------------------"
+              
+              # Branch-specific validations
+              case "$branch_name" in
+                *"feature/"*)
+                  echo "   👉 On feature branches, commit types must be: feat, refactor, fix, test, docs, or style"
+                  ;;
+                *"hotfix/"*)
+                  echo "   👉 On hotfix branches, commit types must be: fix, hotfix, or perf"
+                  ;;
+                *"bugfix/"*)
+                  echo "   👉 On bugfix branches, commit types must be: fix, hotfix, or perf"
+                  ;;
+                *"release/"*)
+                  echo "   👉 On release branches, commit types must be: release, chore, or docs"
+                  ;;
+              esac
+            fi
+          done < <(git log ${{ steps.commit-range.outputs.range }} --format=%H)
+          
+          if [ ${#INVALID_COMMITS[@]} -ne 0 ]; then
+            echo "❌ Found ${#INVALID_COMMITS[@]} invalid commit(s)"
+            echo ""
+            echo "📝 Commit Message Format Guide:"
+            echo "----------------------------------------"
+            echo "Format: <type>[optional scope]: <description>"
+            echo ""
+            echo "Examples:"
+            echo "✅ fix(validation): correct commit message parser"
+            echo "✅ feat: add new user authentication"
+            echo "✅ docs(api): update endpoint documentation"
+            echo ""
+            echo "Common Types:"
+            echo "- feat     → New feature"
+            echo "- fix      → Bug fix"
+            echo "- docs     → Documentation changes"
+            echo "- style    → Code style changes"
+            echo "- refactor → Code refactoring"
+            echo "- perf     → Performance improvements"
+            echo "- test     → Test updates"
+            echo "- chore    → Maintenance tasks"
+            exit 1
+          else
+            echo "✅ All commit messages are valid!"
+          fi
