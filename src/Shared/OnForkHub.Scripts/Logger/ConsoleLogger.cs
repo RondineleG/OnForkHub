@@ -10,7 +10,7 @@ public class ConsoleLogger : ILogger
             ELogLevel.Error => "[ERROR]",
             ELogLevel.Debug => "[DEBUG]",
             ELogLevel.Warning => "[WARNING]",
-            _ => "[INFO]",
+            _ => "[INFO]"
         };
         Console.WriteLine($"{prefix} {message}");
     }
