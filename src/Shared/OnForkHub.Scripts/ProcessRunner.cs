@@ -10,7 +10,10 @@ public class ProcessRunner(ILogger logger) : IProcessRunner
 
         var processInfo = new ProcessStartInfo(fileName, arguments)
         {
-            RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
         };
 
         if (!string.IsNullOrEmpty(workingDirectory))

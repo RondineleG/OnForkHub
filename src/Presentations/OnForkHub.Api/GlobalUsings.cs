@@ -1,15 +1,11 @@
 global using System.Diagnostics.CodeAnalysis;
 global using System.Text.Json;
-
 global using Asp.Versioning;
 global using Asp.Versioning.Builder;
-
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.OpenApi.Models;
-
 global using MoreLinq;
-
 global using OnForkHub.Api.Configuration;
 global using OnForkHub.Api.Endpoints.Base;
 global using OnForkHub.Api.Extensions;
