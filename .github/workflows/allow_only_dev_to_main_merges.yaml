@@ -1,0 +1,20 @@
+name: Allow Only Dev-to-Main Merges
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-branch:
+    name: Validate Source Branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Source Branch
+        run: |
+          SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}
+          if [ "$SOURCE_BRANCH" != "dev" ]; then
+              echo "❌ Only pull requests from 'dev' are allowed to 'main'."
+              exit 1
+          fi
+          echo "✅ Pull request is valid."
