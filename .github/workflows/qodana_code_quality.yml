@@ -22,50 +22,34 @@ jobs:
       contents: read
       security-events: write
       pull-requests: write
-    strategy:
-      matrix:
-        linter:
-          - dotnet
-          - js
-          - sql
-        version:
-          - 2024.2
-      fail-fast: false
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Run Qodana
-        uses: JetBrains/qodana-action@v2024.2
-        with:
-          args: |
-            --baseline,qodana.sarif.json
-            --apply-fixes
-            --fail-threshold=3
-          linter: jetbrains/qodana-${{ matrix.linter }}:${{ matrix.version }}
-          upload-result: true
-          artifact-name: qodana-${{ matrix.linter }}-results
+      - name: Run Qodana Scan
+        uses: JetBrains/qodana-action@v2023.3
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1403575179 }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: --baseline,qodana.sarif.json --apply-fixes --fail-threshold=3
+          results-dir: ${{ runner.temp }}/qodana/results
+          upload-result: true
+          pr-mode: true
+          use-annotations: true
 
       - name: Upload HTML Report
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: qodana-html-${{ matrix.linter }}
-          path: .qodana/results/report.html
-
-      - name: Annotate Code with Qodana
-        if: always()
-        uses: JetBrains/qodana-action@v2024.2
-        with:
-          use-annotations: true
+          name: qodana-report
+          path: ${{ runner.temp }}/qodana/results/report/**
+          if-no-files-found: warn
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
+          wait-for-processing: true
