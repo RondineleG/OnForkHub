@@ -21,7 +21,7 @@ jobs:
 
       - name: Validate commit messages
         run: |
-          VALIDATION_START_DATE="2024-10-11"
+          VALIDATION_START_DATE="2024-12-10 00:00:00"
           
           echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
           echo "----------------------------------------"
