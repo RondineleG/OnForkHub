@@ -22,7 +22,6 @@ jobs:
           - dotnet
           - js
           - sql
-        version: '2024.2'
 
     steps:
       - uses: actions/checkout@v3
@@ -40,7 +39,7 @@ jobs:
           upload-result: true
           artifact-name: qodana-${{ matrix.linter }}-results
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1403575179 }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload HTML Report
