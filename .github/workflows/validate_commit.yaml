@@ -9,6 +9,7 @@ on:
       - 'release/*'
       - 'feature/*'
       - 'hotfix/*'
+      - 'bugfix/*'
 
 jobs:
   validate-commits:
@@ -19,7 +20,12 @@ jobs:
 
       - name: Validate Commit Messages
         run: |
-          git log --format=%s ${{ github.event.before }}..${{ github.sha }} > commit_messages.txt
+          if git log --format=%s ${{ github.event.before }}..${{ github.sha }} > commit_messages.txt 2>/dev/null; then
+              echo "Commit range found. Proceeding with validation."
+          else
+              echo "⚠️ No valid commit range found. Skipping validation."
+              exit 0
+          fi
 
           cat << 'EOF' > validate_commit.sh
           #!/bin/bash
