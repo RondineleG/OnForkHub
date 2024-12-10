@@ -29,14 +29,11 @@ jobs:
             message=$(git log --format=%B -n 1 "$commit_hash")
             branch_name=$(git branch --contains "$commit_hash" | grep -v "HEAD" | head -n 1 | xargs)
             
-            # Skip merge commits
-            if [[ "$message" == "Merge"* ]]; then
-              echo "ℹ️ Skipping merge commit: $commit_hash"
-              continue
+            if [[ "$message" =~ ^Merge && ! "$message" =~ ^merge: ]]; then
+              message="merge: ${message#Merge }"
             fi
             
-            # Validate commit message format
-            if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?(!)?: .+"; then
+            if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\([a-z0-9-]+\))?(!)?: .+"; then
               INVALID_COMMITS+=("$commit_hash")
               echo "❌ Invalid commit found:"
               echo "   Hash: ${commit_hash:0:8}"
@@ -44,22 +41,6 @@ jobs:
               echo "   Branch: $branch_name"
               echo "   Error: Invalid format. Expected: <type>[optional scope]: <description>"
               echo "----------------------------------------"
-              
-              # Branch-specific validations
-              case "$branch_name" in
-                *"feature/"*)
-                  echo "   👉 On feature branches, commit types must be: feat, refactor, fix, test, docs, or style"
-                  ;;
-                *"hotfix/"*)
-                  echo "   👉 On hotfix branches, commit types must be: fix, hotfix, or perf"
-                  ;;
-                *"bugfix/"*)
-                  echo "   👉 On bugfix branches, commit types must be: fix, hotfix, or perf"
-                  ;;
-                *"release/"*)
-                  echo "   👉 On release branches, commit types must be: release, chore, or docs"
-                  ;;
-              esac
             fi
           done < <(git log ${{ steps.commit-range.outputs.range }} --format=%H)
           
@@ -74,6 +55,7 @@ jobs:
             echo "✅ fix(validation): correct commit message parser"
             echo "✅ feat: add new user authentication"
             echo "✅ docs(api): update endpoint documentation"
+            echo "✅ merge: branch 'feature/xyz' into main"
             echo ""
             echo "Common Types:"
             echo "- feat     → New feature"
@@ -84,6 +66,7 @@ jobs:
             echo "- perf     → Performance improvements"
             echo "- test     → Test updates"
             echo "- chore    → Maintenance tasks"
+            echo "- merge    → Merge commits"
             exit 1
           else
             echo "✅ All commit messages are valid!"
