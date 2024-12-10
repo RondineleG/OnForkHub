@@ -11,7 +11,8 @@ on:
       - 'feature/*'
       - 'hotfix/*'
       - 'bugfix/*'
-
+    branches-ignore:
+      - 'automation/*'
 
 jobs:
   qodana:
@@ -22,6 +23,8 @@ jobs:
           - dotnet
           - js
           - sql
+        version:
+          - 2024.2
 
     steps:
       - uses: actions/checkout@v3
