@@ -21,11 +21,20 @@ jobs:
 
       - name: Validate commit messages
         run: |
+          VALIDATION_START_DATE="2024-10-11"
+          
           echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
           echo "----------------------------------------"
           
           INVALID_COMMITS=()
           while IFS= read -r commit_hash; do
+            commit_date=$(git show -s --format=%ai "$commit_hash")
+            # Pula commits anteriores à data de início da validação
+            if [[ "$commit_date" < "$VALIDATION_START_DATE" ]]; then
+              echo "ℹ️ Skipping commit from before validation start date: ${commit_hash:0:8}"
+              continue
+            fi
+            
             message=$(git log --format=%B -n 1 "$commit_hash")
             branch_name=$(git branch --contains "$commit_hash" | grep -v "HEAD" | head -n 1 | xargs)
             
@@ -37,6 +46,7 @@ jobs:
               INVALID_COMMITS+=("$commit_hash")
               echo "❌ Invalid commit found:"
               echo "   Hash: ${commit_hash:0:8}"
+              echo "   Date: $commit_date"
               echo "   Message: $message"
               echo "   Branch: $branch_name"
               echo "   Error: Invalid format. Expected: <type>[optional scope]: <description>"
