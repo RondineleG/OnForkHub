@@ -1,0 +1,71 @@
+name: Notify Telegram on Pull Request Events
+
+on:
+  pull_request:
+    types: [opened, edited, closed, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_target:
+    types: [opened, edited, closed, reopened]
+
+jobs:
+  notify-telegram:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Telegram Notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          EVENT_TYPE="${{ github.event_name }}"
+          EVENT_ACTION="${{ github.event.action }}"
+          REPO_NAME="${{ github.repository }}"
+          
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          PR_DESCRIPTION="${{ github.event.pull_request.body }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+
+          if [[ "$EVENT_TYPE" == "pull_request" ]]; then
+            PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+            PR_BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+
+            MESSAGE="Pull Request Event in ${REPO_NAME}:
+            *Action:* ${EVENT_ACTION}
+            *Title:* ${PR_TITLE}
+            *Description:* ${PR_DESCRIPTION}
+            *Author:* ${PR_AUTHOR}
+            *Branch:* ${PR_BRANCH} → ${PR_BASE_BRANCH}
+            [View PR](${PR_URL})"
+
+          elif [[ "$EVENT_TYPE" == "pull_request_review" ]]; then
+            REVIEW_STATE="${{ github.event.review.state }}"
+            REVIEW_BODY="${{ github.event.review.body }}"
+
+            MESSAGE="Pull Request Review in ${REPO_NAME}:
+            *Action:* ${EVENT_ACTION}
+            *PR Title:* ${PR_TITLE}
+            *PR Author:* ${PR_AUTHOR}
+            *Review By:* ${REVIEW_AUTHOR}
+            *Review State:* ${REVIEW_STATE}
+            *Review Comment:* ${REVIEW_BODY}
+            [View PR](${PR_URL})"
+
+          elif [[ "$EVENT_TYPE" == "pull_request_target" ]]; then
+            PR_BRANCH="${{ github.event.pull_request.head.ref }}"
+            PR_BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+
+            MESSAGE="Pull Request Target Event in ${REPO_NAME}:
+            *Action:* ${EVENT_ACTION}
+            *Title:* ${PR_TITLE}
+            *Description:* ${PR_DESCRIPTION}
+            *Author:* ${PR_AUTHOR}
+            *Branch:* ${PR_BRANCH} → ${PR_BASE_BRANCH}
+            [View PR](${PR_URL})"
+          fi
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode="Markdown" \
+            -d text="$MESSAGE"
