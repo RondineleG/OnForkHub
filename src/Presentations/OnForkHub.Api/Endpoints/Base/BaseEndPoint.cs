@@ -79,7 +79,13 @@ public abstract class BaseEndpoint<TEntity>
 
             if (result.Status == EResultStatus.Success && result is RequestResult<TResponse> typedResult)
             {
-                var response = new { data = typedResult.Data, message = result.Message, date = result.Date, id = result.Id };
+                var response = new
+                {
+                    data = typedResult.Data,
+                    message = result.Message,
+                    date = result.Date,
+                    id = result.Id,
+                };
 
                 var resourceId = typedResult.Data?.GetType().GetProperty("Id")?.GetValue(typedResult.Data)?.ToString();
                 var route = $"/{typeof(TEntity).Name.ToLowerInvariant()}/{resourceId ?? result.Id}";
@@ -134,7 +140,7 @@ public abstract class BaseEndpoint<TEntity>
             validationErrors = result.ValidationResult?.Errors,
             message = result.Message,
             date = result.Date,
-            id = result.Id
+            id = result.Id,
         };
 
         return result.Status switch
@@ -145,7 +151,7 @@ public abstract class BaseEndpoint<TEntity>
             EResultStatus.HasValidation => Results.UnprocessableEntity(response),
             EResultStatus.EntityAlreadyExists => Results.Conflict(response),
             EResultStatus.HasError or EResultStatus.EntityHasError => Results.BadRequest(response),
-            _ => Results.BadRequest(response)
+            _ => Results.BadRequest(response),
         };
     }
 }

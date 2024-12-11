@@ -1,6 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+"$(dirname "$0")/commit-msg-qodana" "$1" || exit $?
+
 commit_message=$(cat "$1")
 current_branch=$(git symbolic-ref --short HEAD)
 
@@ -80,6 +82,8 @@ if ! echo "$commit_message" | grep -qE "$valid_types"; then
             ;;
         bugfix/*)
             echo "  - fix:      ➡️ For bug fixes"
+            echo "  - bugfix:   ➡️ For bug fixes"
+            echo "  - perf:     ➡️ For performance improvements"
             echo "  - merge:    ➡️ For merge commits"
             ;;
         release/*)
