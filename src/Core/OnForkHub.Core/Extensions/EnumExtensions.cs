@@ -24,7 +24,7 @@ public static class EnumExtensions
                 fields,
                 field =>
                     field.GetCustomAttribute<DescriptionAttribute>()?.Description.Equals(trimmedDescription, StringComparison.OrdinalIgnoreCase)
-                    == true
+                        == true
                     || field.Name.Equals(trimmedDescription, StringComparison.OrdinalIgnoreCase)
             )
             ?.GetValue(null);

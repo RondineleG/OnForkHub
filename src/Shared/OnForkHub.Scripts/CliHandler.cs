@@ -10,7 +10,7 @@ public sealed class CliHandler : ICliHandler
             { "-h", "Show this help" },
             { "-i <pkg> [-v version]", "Install package directly" },
             { "-s [term]", "Search and install packages" },
-            { "-p", "Create pull request" }
+            { "-p", "Create pull request" },
         };
 
     private readonly ILogger _logger;

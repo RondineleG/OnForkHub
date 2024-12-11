@@ -64,7 +64,7 @@ public static class Program
     private static bool IsProjectRoot(DirectoryInfo directory)
     {
         return Directory.Exists(Path.Combine(directory.FullName, ".git"))
-               || File.Exists(Path.Combine(directory.FullName, ".gitignore"))
-               || directory.EnumerateFiles("*.sln").Any();
+            || File.Exists(Path.Combine(directory.FullName, ".gitignore"))
+            || directory.EnumerateFiles("*.sln").Any();
     }
 }
