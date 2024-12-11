@@ -36,14 +36,20 @@ jobs:
           PR_NUMBER=${{ github.event.pull_request.number }}
           SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}
           if [[ -n "$PR_NUMBER" ]]; then
-            FIXES_BRANCH="fix/qodana-fixes-pr-${PR_NUMBER}"
+            FIXES_BRANCH="fix/qodana/pr-${PR_NUMBER}"
           else
             TIMESTAMP=$(date +%Y%m%d%H%M%S)
-            FIXES_BRANCH="fix/qodana-fixes-${TIMESTAMP}"
+            FIXES_BRANCH="fix/qodana/${TIMESTAMP}"
           fi
           echo "FIXES_BRANCH=${FIXES_BRANCH}" >> $GITHUB_ENV
           echo "SOURCE_BRANCH=${SOURCE_BRANCH}" >> $GITHUB_ENV
       
+      - name: Run CSharpier for Formatting
+        run: |
+          dotnet tool install --global csharpier || echo "CSharpier already installed"
+          export PATH="$PATH:/home/runner/.dotnet/tools"
+          csharpier .
+
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2024.2
         with:
@@ -60,24 +66,13 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1403575179 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
           
-      - name: Create Standard Commit for Qodana Fixes
+      - name: Commit and Push Qodana Fixes
         if: steps.qodana.outputs.has-fixes == 'true'
         run: |
           git checkout $SOURCE_BRANCH
           git checkout -b $FIXES_BRANCH
-          
-          git add .         
-              
-    
-          git commit -m "fix(qodana): apply automatic code quality fixes
-
-          Applied automated fixes from Qodana code quality scan
-          - Standardized code formatting
-          - Fixed potential issues
-          - Improved code quality metrics"
-          
-               
-     
+          git add .
+          git commit -m "fix(qodana): Apply automated code quality fixes"
           git push origin $FIXES_BRANCH
           
       - name: Create Pull Request for Fixes
@@ -85,7 +80,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: "fix(qodana): apply code quality improvements"
+          title: "fix(qodana): Apply code quality improvements"
           body: |
             🤖 Automated PR created by Qodana
             
@@ -103,4 +98,3 @@ jobs:
       - uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
-
