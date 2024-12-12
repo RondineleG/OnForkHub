@@ -35,6 +35,7 @@ public class VideoPlayerJsInterop(IJSRuntime jsRuntime) : IAsyncDisposable, IVid
 {
     private readonly Lazy<Task<IJSObjectReference>> mainTask =
         new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask());
+
     private readonly Lazy<Task<IJSObjectReference>> moduleTask =
         new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask());
 
