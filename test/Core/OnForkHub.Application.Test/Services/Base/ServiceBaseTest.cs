@@ -72,7 +72,7 @@ public class ServiceBaseTest
         }
     }
 
-    private class TestEntity
+    private sealed class TestEntity
     {
         public string Name { get; set; } = string.Empty;
     }

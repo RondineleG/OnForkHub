@@ -1,0 +1,19 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+commit_message=$(cat "$1")
+current_branch=$(git symbolic-ref --short HEAD)
+
+if echo "$current_branch" | grep -qE "^fix/qodana-fixes"; then
+    if ! echo "$commit_message" | grep -qE "^fix\(qodana\): "; then
+        echo "fix(qodana): $commit_message" > "$1"
+        echo "✅ Commit message automatically formatted for Qodana fix"
+    fi
+    
+    if ! echo "$(cat "$1")" | grep -qE "^fix\(qodana\): "; then
+        echo "❌ Invalid commit message for Qodana fixes branch!"
+        echo "Commit message must start with 'fix(qodana): '"
+        exit 1
+    fi
+fi
+exit 0

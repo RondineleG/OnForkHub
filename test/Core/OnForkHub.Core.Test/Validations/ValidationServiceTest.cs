@@ -146,13 +146,9 @@ public class ValidationServiceTest
         public string Name { get; set; } = string.Empty;
     }
 
-    public class TestValidationService : ValidationService<TestEntity>
+    public class TestValidationService(IValidationBuilder<TestEntity> builder, IEntityValidator<TestEntity> validator)
+        : ValidationService<TestEntity>(builder, validator)
     {
-        public TestValidationService(IValidationBuilder<TestEntity> builder, IEntityValidator<TestEntity> validator)
-            : base(builder, validator)
-        {
-        }
-
         public ValidationResult ValidatePropertyPublic<TProperty>(
             TestEntity entity,
             Expression<Func<TestEntity, TProperty>> propertyExpression,

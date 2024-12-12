@@ -5,7 +5,8 @@ namespace OnForkHub.Web.Components.VideoPlayer;
 public interface IVideoPlayerJsInterop
 {
     Task Initialize(
-        string id, Microsoft.JSInterop.DotNetObjectReference<Player> objectRef,
+        string id,
+        DotNetObjectReference<Player> objectRef,
         string magnetUri,
         bool captions,
         bool quality,
@@ -30,19 +31,12 @@ public interface IVideoPlayerJsInterop
     );
 }
 
-public class VideoPlayerJsInterop : IAsyncDisposable, IVideoPlayerJsInterop
+public class VideoPlayerJsInterop(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInterop
 {
-    private readonly Lazy<Task<IJSObjectReference>> mainTask;
-    private readonly Lazy<Task<IJSObjectReference>> moduleTask;
-
-    public VideoPlayerJsInterop(IJSRuntime jsRuntime)
-    {
-        moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
-            jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask());
-
-        mainTask = new Lazy<Task<IJSObjectReference>>(() =>
-            jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask());
-    }
+    private readonly Lazy<Task<IJSObjectReference>> mainTask =
+        new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask());
+    private readonly Lazy<Task<IJSObjectReference>> moduleTask =
+        new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask());
 
     public async ValueTask DisposeAsync()
     {

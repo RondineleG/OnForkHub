@@ -4,7 +4,7 @@ namespace OnForkHub.Core.Test.Abstractions;
 
 public class RequestResultTest
 {
-    private static readonly string[] expected = ["General error 1", "General error 2"];
+    private static readonly string[] Expected = ["General error 1", "General error 2"];
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -64,7 +64,7 @@ public class RequestResultTest
 
         result.Status.Should().Be(EResultStatus.HasError);
         result.GeneralErrors.Should().HaveCount(2);
-        result.GeneralErrors.Should().Contain(expected);
+        result.GeneralErrors.Should().Contain(Expected);
     }
 
     [Fact]

@@ -6,19 +6,26 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
 {
     private IJSObjectReference? _moduleRef;
 
-    private Microsoft.JSInterop.DotNetObjectReference<TorrentPlayer>? _objectRef;
+    private DotNetObjectReference<TorrentPlayer>? _objectRef;
 
-    [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject]
+    protected IJSRuntime JSRuntime { get; set; } = default!;
 
-    [Parameter] public string PlayerId { get; set; } = "torrent-player";
+    [Parameter]
+    public string PlayerId { get; set; } = "torrent-player";
 
-    [Parameter] [EditorRequired] public string TorrentId { get; set; } = default!;
+    [Parameter]
+    [EditorRequired]
+    public string TorrentId { get; set; } = default!;
 
-    [Parameter] public EventCallback OnEndedVideo { get; set; }
+    [Parameter]
+    public EventCallback OnEndedVideo { get; set; }
 
-    [Parameter] public EventCallback OnPlayVideo { get; set; }
+    [Parameter]
+    public EventCallback OnPlayVideo { get; set; }
 
-    [Parameter] public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
+    [Parameter]
+    public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
 
     public async ValueTask DisposeAsync()
     {
@@ -51,7 +58,7 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
             {
                 _moduleRef = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/js/main.min.js");
 
-                await _moduleRef.InvokeVoidAsync("initTorrentPlayer", new object[] { PlayerId, _objectRef, TorrentId });
+                await _moduleRef.InvokeVoidAsync("initTorrentPlayer", [PlayerId, _objectRef, TorrentId]);
             }
             catch (Exception ex)
             {

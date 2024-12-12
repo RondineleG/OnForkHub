@@ -35,7 +35,7 @@ public class IdTest
     [InlineData(" ")]
     [Trait("Category", "Unit")]
     [DisplayName("Should throw DomainException when converting invalid string to Id")]
-    public void ShouldThrowDomainExceptionWhenConvertingInvalidStringToId(string value)
+    public void ShouldThrowDomainExceptionWhenConvertingInvalidStringToId(string? value)
     {
         var action = () =>
         {

@@ -12,19 +12,33 @@ echo "----------------------------------"
 
 echo "🎨 Checking C# file formatting with CSharpier..."
 if dotnet csharpier . --check; then
-    echo "✅ All files are properly formatted."
+    echo "${GREEN}✅ All files are properly formatted.${RESET}"
 else
-    echo "❌ Some files need formatting. Formatting now..."
+    echo "${RED}❌ Some files need formatting. Formatting now...${RESET}"
     dotnet csharpier .
-    echo "✅ Files formatted successfully. Adding to commit..."
+    echo "${GREEN}✅ Files formatted successfully. Adding to commit...${RESET}"
     git add .
 fi
 
-echo "🛠️ Running format check on staged files..."
-dotnet husky run --name dotnet-format-csharpier || {
-    echo "❌ Format checks failed. Please fix the issues and try again."
-    exit 1
-}
+echo "🛠️ Verifying code style with 'dotnet format style --severity info'..."
+if dotnet format style --severity info --verify-no-changes; then
+    echo "${GREEN}✅ Code style verification passed.${RESET}"
+else
+    echo "${RED}❌ Code style issues found. Formatting now...${RESET}"
+    dotnet format style --severity info
+    echo "${GREEN}✅ Code style issues fixed. Adding to commit...${RESET}"
+    git add .
+fi
+
+echo "🔍 Running analyzers with 'dotnet format analyzers --severity info'..."
+if dotnet format analyzers --severity info --verify-no-changes; then
+    echo "${GREEN}✅ Analyzer checks passed.${RESET}"
+else
+    echo "${RED}❌ Analyzer issues found. Fixing now...${RESET}"
+    dotnet format analyzers --severity info
+    echo "${GREEN}✅ Analyzer issues fixed. Adding to commit...${RESET}"
+    git add .
+fi
 
 echo "----------------------------------"
-echo "✅ Pre-commit checks completed successfully."
+echo "${GREEN}✅ Pre-commit checks completed successfully.${RESET}"
