@@ -26,7 +26,7 @@ public class ValidEntityTestFixture : BaseEntity
         Update();
     }
 
-    public void ExecuteException()
+    public static void ExecuteException()
     {
         throw new DomainException("Invalid entity state");
     }

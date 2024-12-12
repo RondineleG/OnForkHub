@@ -58,7 +58,7 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
             {
                 _moduleRef = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/js/main.min.js");
 
-                await _moduleRef.InvokeVoidAsync("initTorrentPlayer", new object[] { PlayerId, _objectRef, TorrentId });
+                await _moduleRef.InvokeVoidAsync("initTorrentPlayer", [PlayerId, _objectRef, TorrentId]);
             }
             catch (Exception ex)
             {

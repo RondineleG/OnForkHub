@@ -30,7 +30,7 @@ public class ValidationBuilderTest
     [DisplayName("Should add error when string is empty or null")]
     [InlineData("")]
     [InlineData(null)]
-    public void NotEmptyShouldAddErrorWhenStringIsEmpty(string value)
+    public void NotEmptyShouldAddErrorWhenStringIsEmpty(string? value)
     {
         var result = _builder.WithField("Name", value).NotEmpty().Validate();
 
@@ -175,5 +175,5 @@ public class ValidationBuilderTest
         result.IsValid.Should().BeFalse();
     }
 
-    private class TestEntity : BaseEntity { }
+    private sealed class TestEntity : BaseEntity { }
 }

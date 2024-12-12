@@ -1,6 +1,6 @@
 namespace OnForkHub.Scripts;
 
-public sealed class CliHandler : ICliHandler
+public sealed class CliHandler(ILogger logger, IPackageInstaller packageInstaller) : ICliHandler
 {
     private const int CommandColumnWidth = 20;
 
@@ -13,14 +13,8 @@ public sealed class CliHandler : ICliHandler
             { "-p", "Create pull request" },
         };
 
-    private readonly ILogger _logger;
-    private readonly IPackageInstaller _packageInstaller;
-
-    public CliHandler(ILogger logger, IPackageInstaller packageInstaller)
-    {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _packageInstaller = packageInstaller ?? throw new ArgumentNullException(nameof(packageInstaller));
-    }
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IPackageInstaller _packageInstaller = packageInstaller ?? throw new ArgumentNullException(nameof(packageInstaller));
 
     public void ShowHelp()
     {
@@ -29,7 +23,7 @@ public sealed class CliHandler : ICliHandler
 
         foreach (var cmd in _commands)
         {
-            var formattedCommand = $"  {cmd.Key.PadRight(CommandColumnWidth)} {cmd.Value}";
+            var formattedCommand = $"  {cmd.Key, -CommandColumnWidth} {cmd.Value}";
             _logger.Log(ELogLevel.Info, formattedCommand);
         }
 
@@ -53,17 +47,7 @@ public sealed class CliHandler : ICliHandler
             return true;
         }
 
-        if (args.Contains("-i"))
-        {
-            return await HandleDirectInstall(args);
-        }
-
-        if (args.Contains("-s"))
-        {
-            return await HandleSearch(args);
-        }
-
-        return false;
+        return args.Contains("-i") ? await HandleDirectInstall(args) : args.Contains("-s") && await HandleSearch(args);
     }
 
     private async Task<bool> HandleDirectInstall(string[] args)

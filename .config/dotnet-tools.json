@@ -14,8 +14,13 @@
       "commands": [
         "dotnet-csharpier"
       ],
-      "args": [ "csharpier", "${staged}" ],
-      "include": [ "**/*.cs","**/*.css","**/*.js","**/*.razor","**/*.sql" ],
+      "rollForward": false
+    },
+    "dotnet-format": {
+      "version": "5.1.250801",
+      "commands": [
+        "dotnet-format"
+      ],
       "rollForward": false
     }
   }
