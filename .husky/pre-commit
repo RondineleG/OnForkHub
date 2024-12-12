@@ -10,26 +10,6 @@ RESET=$(tput sgr0)
 echo "🚀 Preparing to commit changes..."
 echo "----------------------------------"
 
-echo "🛠️ Verifying code style with 'dotnet format style'..."
-if dotnet format style --verify-no-changes; then
-    echo "${GREEN}✅ Code style verification passed.${RESET}"
-else
-    echo "${RED}❌ Code style issues found. Formatting now...${RESET}"
-    dotnet format style
-    echo "${GREEN}✅ Code style issues fixed. Adding to commit...${RESET}"
-    git add .
-fi
-
-echo "🔍 Running analyzers with 'dotnet format analyzers'..."
-if dotnet format analyzers --verify-no-changes; then
-    echo "${GREEN}✅ Analyzer checks passed.${RESET}"
-else
-    echo "${RED}❌ Analyzer issues found. Fixing now...${RESET}"
-    dotnet format analyzers
-    echo "${GREEN}✅ Analyzer issues fixed. Adding to commit...${RESET}"
-    git add .
-fi
-
 echo "🎨 Checking C# file formatting with CSharpier..."
 if dotnet csharpier . --check; then
     echo "${GREEN}✅ All files are properly formatted.${RESET}"
@@ -37,6 +17,26 @@ else
     echo "${RED}❌ Some files need formatting. Formatting now...${RESET}"
     dotnet csharpier .
     echo "${GREEN}✅ Files formatted successfully. Adding to commit...${RESET}"
+    git add .
+fi
+
+echo "🛠️ Verifying code style with 'dotnet format style --severity info'..."
+if dotnet format style --severity info --verify-no-changes; then
+    echo "${GREEN}✅ Code style verification passed.${RESET}"
+else
+    echo "${RED}❌ Code style issues found. Formatting now...${RESET}"
+    dotnet format style --severity info
+    echo "${GREEN}✅ Code style issues fixed. Adding to commit...${RESET}"
+    git add .
+fi
+
+echo "🔍 Running analyzers with 'dotnet format analyzers --severity info'..."
+if dotnet format analyzers --severity info --verify-no-changes; then
+    echo "${GREEN}✅ Analyzer checks passed.${RESET}"
+else
+    echo "${RED}❌ Analyzer issues found. Fixing now...${RESET}"
+    dotnet format analyzers --severity info
+    echo "${GREEN}✅ Analyzer issues fixed. Adding to commit...${RESET}"
     git add .
 fi
 
