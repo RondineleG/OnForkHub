@@ -3,10 +3,10 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches: 
-      - main 
+    branches:
+      - main
       - dev
-      - 'release/*' 
+      - 'release/*'
       - 'feature/*'
       - 'hotfix/*'
       - 'bugfix/*'
@@ -18,32 +18,38 @@ jobs:
       contents: write
       pull-requests: write
       checks: write
-      security-events: write  
+      security-events: write
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      
+
       - name: Configure Git
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-      
+
       - name: Set Branch Name for Qodana Fixes
         id: branch-name
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}
+
+          BRANCH_TYPE=$(echo $SOURCE_BRANCH | cut -d'/' -f1)
+
           if [[ -n "$PR_NUMBER" ]]; then
-            FIXES_BRANCH="fix/qodana-fixes-pr-${PR_NUMBER}"
+            FIXES_BRANCH="${BRANCH_TYPE}/qodana-${PR_NUMBER}"
           else
-            TIMESTAMP=$(date +%Y%m%d%H%M%S)
-            FIXES_BRANCH="fix/qodana-fixes-${TIMESTAMP}"
+                     
+         
+            FIXES_BRANCH="fix/qodana-$(date +%Y%m%d%H%M%S)"
           fi
+
           echo "FIXES_BRANCH=${FIXES_BRANCH}" >> $GITHUB_ENV
           echo "SOURCE_BRANCH=${SOURCE_BRANCH}" >> $GITHUB_ENV
-      
+          echo "BRANCH_TYPE=${BRANCH_TYPE}" >> $GITHUB_ENV
+
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2024.2
         with:
@@ -59,48 +65,62 @@ jobs:
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1403575179 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
-          
-      - name: Create Standard Commit for Qodana Fixes
+
+      - name: Create Standardized Commit for Qodana Fixes
         if: steps.qodana.outputs.has-fixes == 'true'
         run: |
           git checkout $SOURCE_BRANCH
           git checkout -b $FIXES_BRANCH
-          
-          git add .         
+          git add .
+
+                 
+       
+          COMMIT_TYPE="fix"
+          case "$BRANCH_TYPE" in
+            "feature")
+              COMMIT_TYPE="fix"
+              ;;
+            "hotfix")
+              COMMIT_TYPE="hotfix"
+              ;;
+            "bugfix")
+              COMMIT_TYPE="bugfix"
+              ;;
+            "release")
+              COMMIT_TYPE="chore"
+              ;;
+          esac
+
               
     
-          git commit -m "fix(qodana): apply automatic code quality fixes
+          git commit -m "${COMMIT_TYPE}(qodana): apply automatic code quality fixes
 
-          Applied automated fixes from Qodana code quality scan
           - Standardized code formatting
           - Fixed potential issues
           - Improved code quality metrics"
-          
-               
-     
+
           git push origin $FIXES_BRANCH
-          
+
       - name: Create Pull Request for Fixes
         if: steps.qodana.outputs.has-fixes == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: "fix(qodana): apply code quality improvements"
+          title: "${{ env.BRANCH_TYPE }}(qodana): apply code quality improvements"
           body: |
             🤖 Automated PR created by Qodana
-            
+
             This PR includes automated fixes for code quality issues identified by Qodana:
-            
+
             - Applied code style improvements
             - Fixed potential issues
             - Enhanced code quality
-            
+
             Please review the changes and merge if appropriate.
           branch: ${{ env.FIXES_BRANCH }}
           base: ${{ env.SOURCE_BRANCH }}
           labels: qodana,automated-pr,code-quality
-          
+
       - uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
-
