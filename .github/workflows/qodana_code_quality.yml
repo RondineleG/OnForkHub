@@ -22,21 +22,22 @@ jobs:
       security-events: write
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Setup .NET Environment
+      - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
 
       - name: Install and Run CSharpier
         run: |
-          dotnet tool install -g csharpier
-          dotnet csharpier .
+          dotnet new tool-manifest
+          dotnet tool install csharpier
+          dotnet tool restore
+          dotnet dotnet-csharpier .
           if [[ -n "$(git status --porcelain)" ]]; then
             git config --global user.name "GitHub Actions"
             git config --global user.email "actions@github.com"
