@@ -2,153 +2,57 @@ name: GitHub Events Telegram Notifier
 
 on:
   pull_request:
-    types: 
-      - opened
-      - closed
-      - edited
-      - ready_for_review
-      - review_requested
-      - reopened
-      - assigned
-      - unassigned
-      - labeled
-      - unlabeled
-  pull_request_review:
-    types:
-      - submitted
-      - edited
-      - dismissed
-  pull_request_review_comment:
-    types:
-      - created
-      - edited
-      - deleted
+    types: [opened, closed, edited]
   issues:
-    types:
-      - opened
-      - closed
-      - reopened
-      - assigned
-      - unassigned
-      - labeled
-      - unlabeled
-      - edited
-      - deleted
-      - transferred
-      - pinned
-      - unpinned
-      - locked
-      - unlocked
-  issue_comment:
-    types:
-      - created
-      - edited
-      - deleted
-  watch:
-    types: [started]
-  fork:
-  star:
-    types: [created, deleted]
+    types: [opened, closed]
   push:
-    branches: 
+    branches:
       - main
       - dev
-  discussion:
-    types:
-      - created
-      - edited
-      - deleted
-      - transferred
-      - pinned
-      - unpinned
-      - labeled
-      - unlabeled
-      - locked
-      - unlocked
+      - 'release/*'
+      - 'feature/*'
+      - 'hotfix/*'
+      - 'bugfix/*'
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Telegram notification
+      - name: Debug Event
+        env:
+          EVENT_CONTEXT: ${{ toJson(github.event) }}
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Event context: $EVENT_CONTEXT"
+
+      - name: Test Simple Message
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: markdown
           message: |
-            🔔 *New GitHub Event*
+            🔔 *Test Notification*
+            Repository: ${{ github.repository }}
+            Event: ${{ github.event_name }}
+            Actor: ${{ github.actor }}
+
+      - name: Send Full Notification
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          message: |
+            🔔 *GitHub Event Notification*
             
             📂 *Repository:* ${{ github.repository }}
             👤 *Actor:* ${{ github.actor }}
+            📝 *Event Type:* ${{ github.event_name }}
             
-            # Pull Request Events
-            ${{ github.event_name == 'pull_request' && format('🔄 *Event:* Pull Request {0}
-            🏷 *Title:* {1}
-            📝 *Action:* {2}
-            🔗 [View Pull Request]({3})',
-              github.event.pull_request.number,
-              github.event.pull_request.title,
-              github.event.action,
-              github.event.pull_request.html_url
-            ) || '' }}
-
-            # Issue Events
-            ${{ github.event_name == 'issues' && format('📌 *Event:* Issue {0}
-            🏷 *Title:* {1}
-            📝 *Action:* {2}
-            🔗 [View Issue]({3})',
-              github.event.issue.number,
-              github.event.issue.title,
-              github.event.action,
-              github.event.issue.html_url
-            ) || '' }}
-
-            # Comment Events
-            ${{ github.event_name == 'issue_comment' && format('💭 *Event:* New Comment
-            💬 *On:* {0} #{1}
-            📝 *Action:* {2}
-            🔗 [View Comment]({3})',
-              contains(github.event.issue.html_url, '/pull/') && 'Pull Request' || 'Issue',
-              github.event.issue.number,
-              github.event.action,
-              github.event.comment.html_url
-            ) || '' }}
-
-            # Star Events
-            ${{ github.event_name == 'star' && format('⭐ *Event:* Repository {0}
-            👤 *By:* {1}',
-              github.event.action == 'created' && 'Starred' || 'Unstarred',
-              github.event.sender.login
-            ) || '' }}
-
-            # Fork Events
-            ${{ github.event_name == 'fork' && format('🔱 *Event:* Repository Forked
-            👤 *By:* {0}
-            🔗 [View Fork]({1})',
-              github.event.forkee.owner.login,
-              github.event.forkee.html_url
-            ) || '' }}
-
-            # Push Events
-            ${{ github.event_name == 'push' && format('📦 *Event:* New Push
-            🌿 *Branch:* {0}
-            📝 *Commits:* {1}
-            🔗 [View Commits]({2})',
-              github.ref_name,
-              github.event.commits.length,
-              format('{0}/commit/{1}', github.event.repository.html_url, github.event.after)
-            ) || '' }}
-
-            # Discussion Events
-            ${{ github.event_name == 'discussion' && format('💡 *Event:* Discussion {0}
-            🏷 *Title:* {1}
-            📝 *Action:* {2}
-            🔗 [View Discussion]({3})',
-              github.event.discussion.number,
-              github.event.discussion.title,
-              github.event.action,
-              github.event.discussion.html_url
-            ) || '' }}
-
-            ⌚ _Time: ${{ github.event.pull_request.updated_at || github.event.issue.updated_at || github.event.comment.updated_at || github.event.head_commit.timestamp }}_
+            ${{ github.event_name == 'pull_request' && format('*Pull Request #{0}:* {1}', github.event.pull_request.number, github.event.pull_request.title) || '' }}
+            ${{ github.event_name == 'issues' && format('*Issue #{0}:* {1}', github.event.issue.number, github.event.issue.title) || '' }}
+            ${{ github.event_name == 'push' && format('*Push to {0}:* {1} commit(s)', github.ref_name, github.event.commits.length) || '' }}
