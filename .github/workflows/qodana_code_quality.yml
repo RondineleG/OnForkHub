@@ -27,108 +27,96 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+
       - name: Setup .NET Environment
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.0.x'
-    
+
       - name: Configure Git
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-            
-      
+      - name: Validate Commit Messages
+        id: validate-commits
+        run: |
+          echo "🔍 Validating commit messages..."
+          INVALID_COMMITS=()
+          RANGE="${{ github.event.before }}..${{ github.event.after }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          fi
+
+          while IFS= read -r commit_hash; do
+            message=$(git log --format=%B -n 1 "$commit_hash")
+            if [[ "$message" =~ ^Merge ]]; then
+              continue
+            fi
+            if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\([a-z0-9-]+\))?(!)?: .+"; then
+              INVALID_COMMITS+=("$commit_hash")
+              echo "❌ Invalid commit: $commit_hash"
+              echo "   Message: $message"
+              echo "----------------------------------------"
+            fi
+          done < <(git log $RANGE --format=%H)
+
+          if [ ${#INVALID_COMMITS[@]} -ne 0 ]; then
+            echo "❌ Found ${#INVALID_COMMITS[@]} invalid commit(s)"
+            exit 1
+          else
+            echo "✅ All commit messages are valid!"
+          fi
+
       - name: Define Fix Branch Name
         id: branch-name
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
-          SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}
-          BRANCH_TYPE=$(echo "$SOURCE_BRANCH" | cut -d'/' -f1)
-          
-          if [[ -n "$PR_NUMBER" ]]; then
-            FIXES_BRANCH="${BRANCH_TYPE}/qodana-${PR_NUMBER}"
-          else
-            FIXES_BRANCH="fix/qodana-$(date +%Y%m%d%H%M%S)"
-          fi
+          FIXES_BRANCH="bugfix/qodana-${PR_NUMBER}"
           echo "FIXES_BRANCH=${FIXES_BRANCH}" >> $GITHUB_ENV
-          echo "SOURCE_BRANCH=${SOURCE_BRANCH}" >> $GITHUB_ENV
 
-            
-      
       - name: Run Qodana Analysis
         uses: JetBrains/qodana-action@v2024.2
         with:
           args: --baseline,qodana.sarif.json --apply-fixes
           push-fixes: pull-request
-          fail-threshold: 3
-          post-pr-comment: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           use-caches: true
           cache-default-branch-only: true
           upload-result: true
           artifact-name: qodana-results
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1403575179 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
 
-            
-      
       - name: Apply Fixes and Format Code
-        if: steps.qodana.outputs.has-fixes == 'true'
         run: |
-          git checkout $SOURCE_BRANCH
           git checkout -b $FIXES_BRANCH
-    
           dotnet tool install -g csharpier
           dotnet csharpier .
-
           git add .
           if [[ -z "$(git status --porcelain)" ]]; then
-            echo "No changes to commit."
             exit 0
           fi
-          
-                 
-       
-          case "$BRANCH_TYPE" in
-            "feature") COMMIT_TYPE="fix" ;;
-            "hotfix") COMMIT_TYPE="hotfix" ;;
-            "bugfix") COMMIT_TYPE="bugfix" ;;
-            "release") COMMIT_TYPE="chore" ;;
-            *) COMMIT_TYPE="fix" ;;
-          esac
-          git commit -m "${COMMIT_TYPE}(qodana): apply code quality fixes
-
-          - Applied Qodana suggested fixes
-          - Formatted code with CSharpier
-          - Improved code quality"
+          git commit -m "bugfix(qodana): apply automated code fixes"
           git push origin $FIXES_BRANCH
 
-             
-       
       - name: Create Pull Request
-        if: steps.qodana.outputs.has-fixes == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: "${{ env.BRANCH_TYPE }}(qodana): apply code quality improvements"
+          title: "bugfix(qodana): 🤖 apply automated code quality improvements"
           body: |
-            🤖 Automated PR created by Qodana
-            
             This PR includes:
-            - Qodana automated fixes
-            - CSharpier code formatting
+            - Automated fixes applied by Qodana
             - Code quality improvements
             
             Please review the changes and merge if appropriate.
           branch: ${{ env.FIXES_BRANCH }}
-          base: ${{ env.SOURCE_BRANCH }}
+          base: ${{ github.event.pull_request.head.ref }}
           labels: qodana,automated-pr,code-quality
 
-          
-    
-      - name: Upload Qodana SARIF
+      - name: Upload SARIF Results
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
