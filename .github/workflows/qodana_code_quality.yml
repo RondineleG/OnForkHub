@@ -104,7 +104,7 @@ jobs:
               const newPr = await github.rest.pulls.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: `🔍 Code quality fixes for PR #${prNumber}`,
+                title: `fix: 🔍 Code quality fixes for PR #${prNumber}`,
                 body: `This PR contains automated code quality fixes for PR #${prNumber}.
                 
                 Changes include:
