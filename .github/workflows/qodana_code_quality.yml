@@ -1,4 +1,4 @@
-name: Qodana Code Analysis and Branch Management
+name: Code Analysis and SDK Management
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - dev
 
 jobs:
-  qodana-analysis:
+  format-and-analyze:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,16 +19,43 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Setup .NET
+
+      # Removendo global.json existente
+      - name: Remove global.json if exists
+        run: rm -f global.json
+        continue-on-error: true
+          
+      # Configurando .NET 9
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '9.0.x'
+            
+      # Criando novo global.json com versão mais recente
+      - name: Create global.json
+        run: |
+          dotnet new globaljson --sdk-version 9.0.100 --force
+          cat global.json
           
-      - name: Restore tools
-        run: dotnet tool restore
+      - name: Verify .NET installation
+        run: |
+          dotnet --version
+          dotnet --info
+        
+      - name: Create tools manifest
+        run: |
+          dotnet new tool-manifest --force
+          
+      - name: Install tools
+        run: |
+          dotnet tool install --local Husky
+          dotnet tool install --local CSharpier
+          dotnet tool install --local dotnet-format
+          
+      - name: Verify tools installation
+        run: dotnet tool list
 
-      - name: Create Qodana branch
+      - name: Create analysis branch
         if: github.event_name == 'pull_request'
         run: |
           PR_NUMBER="${{ github.event.pull_request.number }}"
@@ -49,15 +76,15 @@ jobs:
         run: |
           git diff --exit-code || echo "has_changes=true" >> $GITHUB_OUTPUT
 
-      - name: Commit formatting changes
+      - name: Commit changes
         if: steps.git-check.outputs.has_changes == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
-          git commit -m "style: apply qodana fixes for PR #${{ github.event.pull_request.number }}"
+          git commit -m "style: apply code fixes for PR #${{ github.event.pull_request.number }}"
           
-      - name: Push Qodana branch
+      - name: Push branch
         if: steps.git-check.outputs.has_changes == 'true' && github.event_name == 'pull_request'
         uses: ad-m/github-push-action@master
         with:
@@ -77,26 +104,28 @@ jobs:
               const newPr = await github.rest.pulls.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: `🔍 [Qodana] Code quality fixes for PR #${prNumber}`,
-                body: `This PR contains automated code quality fixes from Qodana for PR #${prNumber}.
+                title: `🔍 Code quality fixes for PR #${prNumber}`,
+                body: `This PR contains automated code quality fixes for PR #${prNumber}.
                 
                 Changes include:
-                - Code formatting
-                - Style improvements
+                - Code formatting with CSharpier
+                - Style improvements with dotnet format
                 - Best practices applications
                 
-                These changes are automated to help maintain code quality standards.`,
+                These changes are automated to help maintain code quality standards.
+                
+                > Using .NET 9.0 for all formatting and analysis tools.`,
                 head: branchName,
                 base: context.payload.pull_request.head.ref,
                 maintainer_can_modify: true
               });
               
-              // Add labels to the new PR
+              // Add labels
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: newPr.data.number,
-                labels: ['qodana', 'automated-pr']
+                labels: ['automated-fixes', 'code-quality']
               });
               
               // Add comment to original PR
@@ -104,7 +133,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: prNumber,
-                body: `🤖 I've created PR #${newPr.data.number} with Qodana code quality improvements. Please review and merge it if the changes look good!`
+                body: `🤖 I've created PR #${newPr.data.number} with code quality improvements using .NET 9.0 tools. Please review and merge if the changes look good!`
               });
             } catch (error) {
               console.log('Error creating PR:', error);
@@ -118,14 +147,14 @@ jobs:
           script: |
             const labels = [
               {
-                name: 'qodana',
-                color: '7057ff',
-                description: 'Qodana code quality improvements'
+                name: 'automated-fixes',
+                color: '0e8a16',
+                description: 'Automated code fixes'
               },
               {
-                name: 'automated-pr',
-                color: '0e8a16',
-                description: 'Automated pull request'
+                name: 'code-quality',
+                color: '7057ff',
+                description: 'Code quality improvements'
               }
             ];
             
