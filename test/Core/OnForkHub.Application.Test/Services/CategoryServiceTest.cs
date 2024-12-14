@@ -143,7 +143,8 @@ public class CategoryServiceTest
         var size = 10;
         var categories = new List<Category>
         {
-            Category.Create(Name.Create("Category 1"), "Description 1").Data!, Category.Create(Name.Create("Category 2"), "Description 2").Data!
+            Category.Create(Name.Create("Category 1"), "Description 1").Data!,
+            Category.Create(Name.Create("Category 2"), "Description 2").Data!,
         };
 
         _categoryRepository.GetAllAsync(page, size).Returns(RequestResult<IEnumerable<Category>>.Success(categories));

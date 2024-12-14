@@ -2,22 +2,21 @@ namespace OnForkHub.Scripts.Git;
 
 public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner processRunner) : IGitAliasConfiguration
 {
-    private readonly Dictionary<string, string> _aliasCommands =
-        new()
-        {
-            { "gs", "status -sb" },
-            { "gc", "commit -ev" },
-            { "ga", "add --all" },
-            { "gt", "log --graph --oneline --decorate" },
-            { "gps", "push" },
-            { "gpl", "pull" },
-            { "gf", "fetch" },
-            { "gco", "checkout" },
-            { "gb", "branch" },
-            { "gr", "remote -v" },
-            { "gd", "diff" },
-            { "gl", "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short" }
-        };
+    private readonly Dictionary<string, string> _aliasCommands = new()
+    {
+        { "gs", "status -sb" },
+        { "gc", "commit -ev" },
+        { "ga", "add --all" },
+        { "gt", "log --graph --oneline --decorate" },
+        { "gps", "push" },
+        { "gpl", "pull" },
+        { "gf", "fetch" },
+        { "gco", "checkout" },
+        { "gb", "branch" },
+        { "gr", "remote -v" },
+        { "gd", "diff" },
+        { "gl", "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short" },
+    };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -140,7 +139,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {{
                     "Documents",
                     "PowerShell",
                     "Microsoft.PowerShell_profile.ps1"
-                )
+                ),
             };
 
             foreach (var psProfilePath in profilePaths)

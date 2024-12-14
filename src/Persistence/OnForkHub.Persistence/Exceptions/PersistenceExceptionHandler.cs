@@ -48,7 +48,7 @@ public static class PersistenceExceptionHandler
                 GetAffectedField(errorMessage)
             ),
 
-            _ => new DatabaseOperationException(operation, errorMessage)
+            _ => new DatabaseOperationException(operation, errorMessage),
         };
     }
 

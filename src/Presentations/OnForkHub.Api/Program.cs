@@ -5,12 +5,22 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc(
         "v1",
-        new OpenApiInfo { Version = "v1", Title = "Minimal API - Version 1", Description = "API version 1 documentation" }
+        new OpenApiInfo
+        {
+            Version = "v1",
+            Title = "Minimal API - Version 1",
+            Description = "API version 1 documentation",
+        }
     );
 
     options.SwaggerDoc(
         "v2",
-        new OpenApiInfo { Version = "v2", Title = "Minimal API - Version 2", Description = "API version 2 documentation" }
+        new OpenApiInfo
+        {
+            Version = "v2",
+            Title = "Minimal API - Version 2",
+            Description = "API version 2 documentation",
+        }
     );
 });
 

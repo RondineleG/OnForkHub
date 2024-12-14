@@ -3,9 +3,7 @@ namespace OnForkHub.Core.Entities;
 public class Category : BaseEntity
 {
     protected Category(Id id, DateTime createdAt, DateTime? updatedAt = null)
-        : base(id, createdAt, updatedAt)
-    {
-    }
+        : base(id, createdAt, updatedAt) { }
 
     private Category() { }
 

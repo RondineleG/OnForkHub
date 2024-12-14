@@ -100,7 +100,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             { "gitflow.feature.no-ff", "true" },
             { "gitflow.feature.no-merge", "true" },
             { "gitflow.feature.keepbranch", "true" },
-            { "gitflow.path.hooks", ".husky" }
+            { "gitflow.path.hooks", ".husky" },
         };
 
         foreach (var config in configs)
@@ -200,7 +200,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
                 { "flow.prefix.release", "release/" },
                 { "flow.prefix.hotfix", "hotfix/" },
                 { "flow.prefix.support", "support/" },
-                { "flow.prefix.versiontag", "v" }
+                { "flow.prefix.versiontag", "v" },
             };
 
             foreach (var config in branchConfigs)
@@ -218,7 +218,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
                 { "flow.feature.no-merge", "true" },
                 { "flow.feature.keepbranch", "true" },
                 { "flow.path.hooks", ".husky" },
-                { "flow.initialized", "true" }
+                { "flow.initialized", "true" },
             };
 
             foreach (var config in behaviorConfigs)
@@ -243,7 +243,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 WorkingDirectory = workingDir,
-                CreateNoWindow = true
+                CreateNoWindow = true,
             };
 
             using var process = new Process { StartInfo = startInfo };

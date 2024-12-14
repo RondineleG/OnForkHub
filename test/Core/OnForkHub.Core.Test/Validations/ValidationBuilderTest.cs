@@ -175,7 +175,5 @@ public class ValidationBuilderTest
         result.IsValid.Should().BeFalse();
     }
 
-    private sealed class TestEntity : BaseEntity
-    {
-    }
+    private sealed class TestEntity : BaseEntity { }
 }
