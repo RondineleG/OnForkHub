@@ -7,7 +7,7 @@ on:
     branches:
       - main
       - dev
-      - 'release/*'
+      - 'release/*' 
       - 'feature/*'
       - 'hotfix/*'
       - 'bugfix/*'
@@ -33,53 +33,39 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Configure Git
+      - name: Install and Run CSharpier
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-
-      - name: Validate Commit Messages
-        id: validate-commits
-        run: |
-          echo "🔍 Validating commit messages..."
-          INVALID_COMMITS=()
-          RANGE="${{ github.event.before }}..${{ github.event.after }}"
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          dotnet tool install -g csharpier
+          dotnet csharpier .
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            
+            PR_NUMBER=${{ github.event.pull_request.number }}
+            FORMAT_BRANCH="bugfix/formatting-${PR_NUMBER}"
+            
+            git checkout -b $FORMAT_BRANCH
+            git add .
+            git commit -m "style: apply code formatting"
+            git push origin $FORMAT_BRANCH
+            
+            gh pr create \
+              --title "style: apply code formatting" \
+              --body "Automated PR to fix code formatting using CSharpier" \
+              --base ${{ github.event.pull_request.head.ref }} \
+              --head $FORMAT_BRANCH \
+              --label "formatting,automated-pr"
           fi
-
-          while IFS= read -r commit_hash; do
-            message=$(git log --format=%B -n 1 "$commit_hash")
-            if [[ "$message" =~ ^Merge ]]; then
-              continue
-            fi
-            if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\([a-z0-9-]+\))?(!)?: .+"; then
-              INVALID_COMMITS+=("$commit_hash")
-              echo "❌ Invalid commit: $commit_hash"
-              echo "   Message: $message"
-              echo "----------------------------------------"
-            fi
-          done < <(git log $RANGE --format=%H)
-
-          if [ ${#INVALID_COMMITS[@]} -ne 0 ]; then
-            echo "❌ Found ${#INVALID_COMMITS[@]} invalid commit(s)"
-            exit 1
-          else
-            echo "✅ All commit messages are valid!"
-          fi
-
-      - name: Define Fix Branch Name
-        id: branch-name
-        run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          FIXES_BRANCH="bugfix/qodana-${PR_NUMBER}"
-          echo "FIXES_BRANCH=${FIXES_BRANCH}" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Qodana Analysis
         uses: JetBrains/qodana-action@v2024.2
         with:
-          args: --baseline,qodana.sarif.json --apply-fixes
-          push-fixes: pull-request
+          args: --apply-fixes
+          push-fixes: branch
+          pr-mode: false
+          branch-name: bugfix/qodana-${{ github.event.pull_request.number }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           use-caches: true
           cache-default-branch-only: true
@@ -89,34 +75,6 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_1403575179 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
 
-      - name: Apply Fixes and Format Code
-        run: |
-          git checkout -b $FIXES_BRANCH
-          dotnet tool install -g csharpier
-          dotnet csharpier .
-          git add .
-          if [[ -z "$(git status --porcelain)" ]]; then
-            exit 0
-          fi
-          git commit -m "bugfix(qodana): apply automated code fixes"
-          git push origin $FIXES_BRANCH
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "bugfix(qodana): 🤖 apply automated code quality improvements"
-          body: |
-            This PR includes:
-            - Automated fixes applied by Qodana
-            - Code quality improvements
-            
-            Please review the changes and merge if appropriate.
-          branch: ${{ env.FIXES_BRANCH }}
-          base: ${{ github.event.pull_request.head.ref }}
-          labels: qodana,automated-pr,code-quality
-
-      - name: Upload SARIF Results
-        uses: github/codeql-action/upload-sarif@v2
+      - uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
