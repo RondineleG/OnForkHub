@@ -4,14 +4,13 @@ public sealed class CliHandler(ILogger logger, IPackageInstaller packageInstalle
 {
     private const int CommandColumnWidth = 20;
 
-    private readonly Dictionary<string, string> _commands =
-        new()
-        {
-            { "-h", "Show this help" },
-            { "-i <pkg> [-v version]", "Install package directly" },
-            { "-s [term]", "Search and install packages" },
-            { "-p", "Create pull request" },
-        };
+    private readonly Dictionary<string, string> _commands = new()
+    {
+        { "-h", "Show this help" },
+        { "-i <pkg> [-v version]", "Install package directly" },
+        { "-s [term]", "Search and install packages" },
+        { "-p", "Create pull request" },
+    };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IPackageInstaller _packageInstaller = packageInstaller ?? throw new ArgumentNullException(nameof(packageInstaller));
@@ -23,7 +22,7 @@ public sealed class CliHandler(ILogger logger, IPackageInstaller packageInstalle
 
         foreach (var cmd in _commands)
         {
-            var formattedCommand = $"  {cmd.Key, -CommandColumnWidth} {cmd.Value}";
+            var formattedCommand = $"  {cmd.Key,-CommandColumnWidth} {cmd.Value}";
             _logger.Log(ELogLevel.Info, formattedCommand);
         }
 

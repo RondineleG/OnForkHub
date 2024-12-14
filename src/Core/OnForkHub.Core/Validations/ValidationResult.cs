@@ -50,6 +50,11 @@ public sealed class ValidationResult : IValidationResult
         return result;
     }
 
+    public static ValidationResult operator |(ValidationResult left, ValidationResult right)
+    {
+        return left?.IsValid == true ? left : right ?? Success();
+    }
+
     public static ValidationResult Success()
     {
         return new ValidationResult();
@@ -123,10 +128,5 @@ public sealed class ValidationResult : IValidationResult
     public async Task<ValidationResult> ValidateAsync(Func<Task<bool>> predicate, string message, string field = "")
     {
         return await predicate() ? Failure(message, field) : Success();
-    }
-
-    public static ValidationResult operator |(ValidationResult left, ValidationResult right)
-    {
-        return left?.IsValid == true ? left : right ?? Success();
     }
 }

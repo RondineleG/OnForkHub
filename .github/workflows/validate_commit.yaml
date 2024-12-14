@@ -21,7 +21,7 @@ jobs:
 
       - name: Validate commit messages
         run: |
-          VALIDATION_START_DATE="2024-12-10 00:00:00"
+          VALIDATION_START_DATE="2024-14-10 12:30:00"
 
           echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
           echo "----------------------------------------"
@@ -37,15 +37,24 @@ jobs:
             message=$(git log --format=%B -n 1 "$commit_hash")
             branch_name=$(git branch --contains "$commit_hash" | grep -v "HEAD" | head -n 1 | xargs)
 
+            # Skip automated commits
             if [[ "$message" == "🤖 Apply quick-fixes by Qodana" ]]; then
               echo "ℹ️ Skipping Qodana automated commit: ${commit_hash:0:8}"
               continue
             fi
 
+            # Skip PR merge commits
+            if [[ "$message" =~ ^(Feature|Hotfix|Bugfix|Release)/.*\(#[0-9]+\)$ ]]; then
+              echo "ℹ️ Skipping PR merge commit: ${commit_hash:0:8}"
+              continue
+            fi
+
+            # Handle regular merge commits
             if [[ "$message" =~ ^Merge && ! "$message" =~ ^merge: ]]; then
               message="merge: ${message#Merge }"
             fi
 
+            # Validate commit message format
             if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\([a-z0-9-]+\))?(!)?: .+"; then
               INVALID_COMMITS+=("$commit_hash")
               echo "❌ Invalid commit found:"
