@@ -31,16 +31,39 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Event
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          EVENT_CONTEXT: ${{ toJson(github.event) }}
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Action: ${{ github.event.action }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Checking Telegram credentials..."
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+            echo "Bot token is set"
+          else
+            echo "Bot token is missing!"
+          fi
+          if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            echo "Chat ID is set"
+          else
+            echo "Chat ID is missing!"
+          fi
+
       - name: Send Telegram notification
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: markdown
+          disable_web_page_preview: true
+          disable_notification: false
           message: |
             🔔 *New GitHub Activity*
             
-            *Repository:* [${{ github.repository }}](${{ github.repository_url }})
+            *Repository:* [${{ github.repository }}](https://github.com/${{ github.repository }})
+            *Event:* `${{ github.event_name }}`
             
             ${{ if (github.event_name == 'pull_request') }}
             🔄 *Pull Request #${{ github.event.pull_request.number }}*
@@ -48,12 +71,6 @@ jobs:
             └ *Status:* ${{ github.event.action }}
             └ *Author:* [${{ github.event.pull_request.user.login }}](${{ github.event.pull_request.user.html_url }})
             └ [View Pull Request](${{ github.event.pull_request.html_url }})
-            
-            ${{ if (github.event.pull_request.body) }}
-            ```
-            ${{ github.event.pull_request.body }}
-            ```
-            ${{ endif }}
             ${{ endif }}
             
             ${{ if (github.event_name == 'issues') }}
@@ -67,18 +84,12 @@ jobs:
             ${{ if (github.event_name == 'push') }}
             📦 *New Push*
             └ *Branch:* `${{ github.ref_name }}`
-            └ *Commits:* ${{ github.event.commits.length }}
             └ *Author:* [${{ github.event.pusher.name }}](https://github.com/${{ github.event.pusher.name }})
             └ [View Changes](${{ github.event.repository.html_url }}/commit/${{ github.event.after }})
-            
-            *Latest Commit:*
-            ```
-            ${{ github.event.head_commit.message }}
-            ```
             ${{ endif }}
             
             ${{ if (github.event_name == 'star') }}
-            ⭐ *Repository ${{ github.event.action == 'created' && 'Starred' || 'Unstarred' }}*
+            ⭐ *Repository Starred*
             └ *By:* [${{ github.event.sender.login }}](${{ github.event.sender.html_url }})
             ${{ endif }}
             
@@ -89,13 +100,9 @@ jobs:
             ${{ endif }}
             
             ${{ if (github.event_name == 'issue_comment') }}
-            💭 *New Comment on ${{ contains(github.event.issue.html_url, '/pull/') && 'Pull Request' || 'Issue' }} #${{ github.event.issue.number }}*
+            💭 *New Comment on Issue #${{ github.event.issue.number }}*
             └ *Author:* [${{ github.event.comment.user.login }}](${{ github.event.comment.user.html_url }})
             └ [View Comment](${{ github.event.comment.html_url }})
-            
-            ```
-            ${{ github.event.comment.body }}
-            ```
             ${{ endif }}
             
-            ⏰ _${{ github.event.pull_request.updated_at || github.event.issue.updated_at || github.event.comment.updated_at || github.event.head_commit.timestamp }}_
+            ⏰ _${{ github.event.repository.updated_at }}_
