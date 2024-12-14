@@ -32,10 +32,8 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Install and Run CSharpier
+      - name: Format Code with CSharpier
         run: |
-          dotnet new tool-manifest
-          dotnet tool install csharpier
           dotnet tool restore
           dotnet dotnet-csharpier .
           if [[ -n "$(git status --porcelain)" ]]; then
