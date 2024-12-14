@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Api.Configuration;
+namespace OnForkHub.Api.Configuration;
 
 [ExcludeFromCodeCoverage]
 public static class WebApiConfiguration
