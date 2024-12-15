@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Get current UTC time
         id: current-time
-        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y %H:%M:%S UTC')"
+        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
@@ -36,13 +36,17 @@ jobs:
           disable_web_page_preview: true
           message: |
             🔔 *GitHub Notification*
-            *Repository:* [${{ github.repository }}](${{ github.event.repository.html_url }})
-            ${{ (github.event_name == 'fork') && '
-            🔱 *New Fork Created*
-            ├ Repository: ' || '' }}${{ (github.event_name == 'fork') && github.repository || '' }}
-            ${{ (github.event_name == 'fork') && '├ Forked by: ' || '' }}${{ (github.event_name == 'fork') && github.actor || '' }}
-            ${{ (github.event_name == 'fork') && '└ Fork URL: ' || '' }}${{ (github.event_name == 'fork') && github.event.forkee.html_url || '' }}
-
+            *Repository:* [${{ github.repository }}](https://github.com/${{ github.repository }})
+            
+            ${{ github.event_name == 'fork' && format('🔱 *New Fork Created*
+            ├ Repository: {0}
+            ├ Forked by: {1}
+            └ Fork URL: {2}',
+              github.repository,
+              github.actor,
+              github.event.forkee.html_url
+            ) || '' }}
+            
             ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
             ├ Branch Source: `{1}`
             ├ Branch Target: `{2}`
@@ -58,7 +62,7 @@ jobs:
               github.event.action,
               github.event.pull_request.html_url
             ) || '' }}
-
+            
             ${{ github.event_name == 'push' && format('📝 *Push*
             ├ Branch: `{0}`
             ├ Author: [{1}](https://github.com/{1})
@@ -69,9 +73,9 @@ jobs:
               github.event.pusher.name,
               github.event.commits.length,
               github.event.head_commit.message,
-              format('{0}/commit/{1}', github.event.repository.html_url, github.event.after)
+              format('{0}/commit/{1}', github.event.repository.html_url, github.sha)
             ) || '' }}
-
+            
             ${{ github.event_name == 'issues' && format('📝 *Issue #{0}*
             ├ Title: {1}
             ├ Status: {2}
@@ -83,7 +87,7 @@ jobs:
               github.event.issue.user.login,
               github.event.issue.html_url
             ) || '' }}
-
+            
             ${{ github.event_name == 'issue_comment' && format('💭 *Comment on {0} #{1}*
             ├ Author: [{2}](https://github.com/{2})
             ├ Content: {3}
@@ -94,11 +98,11 @@ jobs:
               github.event.comment.body,
               github.event.comment.html_url
             ) || '' }}
-
+            
             ${{ github.event_name == 'watch' && format('⭐ *Repository Starred*
             └ By: [{0}]({1})',
               github.event.sender.login,
               github.event.sender.html_url
             ) || '' }}
-
-            ⏰ ${{ steps.current-time.outputs.time }}</antArtifact>
+            
+            ⏰ ${{ steps.current-time.outputs.time }}
