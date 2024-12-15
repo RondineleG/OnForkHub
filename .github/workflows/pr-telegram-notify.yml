@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Get current UTC time
         id: current-time
-        run: echo "::set-output name=time::$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y')"
 
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
@@ -40,20 +40,22 @@ jobs:
           message: |
             📣 *GitHub Activity Notification*
             
-            🏢 *Project:* [${{ github.repository }}](https://github.com/${{ github.repository }})
-            
             ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
             └ *Title:* {1}
             └ *Status:* {2}
-            └ *Author:* [{3}]({4})
-            └ *Base Branch:* `{5}`
-            └ [View PR]({6})', 
+            └ *Developer:* [{3}]({4})
+            └ *Target Branch:* `{5}`
+            └ *Branch:* `{6}`
+            └ *Total Commits:* {7}
+            └ [View PR]({8})', 
             github.event.pull_request.number,
             github.event.pull_request.title,
             github.event.action,
             github.event.pull_request.user.login,
             github.event.pull_request.user.html_url,
             github.event.pull_request.base.ref,
+            github.event.pull_request.head.ref,
+            github.event.pull_request.commits,
             github.event.pull_request.html_url) || '' }}
             
             ${{ github.event_name == 'push' && format('📦 *Code Push Details*
@@ -94,4 +96,4 @@ jobs:
             github.event.issue.user.html_url,
             github.event.issue.html_url) || '' }}
             
-            ⏰ *Timestamp:* _${{ steps.current-time.outputs.time }}_
+            ⏰ _${{ steps.current-time.outputs.time }}_
