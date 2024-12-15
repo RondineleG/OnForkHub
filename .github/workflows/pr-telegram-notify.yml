@@ -41,39 +41,38 @@ jobs:
             📣 *GitHub Activity Notification*
             [${{ github.repository }}](https://github.com/${{ github.repository }})
             
-            ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
-            └ *Title:* {1}
-            └ *Status:* {2}
-            └ *Developer:* [{3}]({4})
-            └ *Branch:* `{5}` → `{6}`
-            └ *Labels:* {7}
-            └ [View PR]({8})
-
-            *Description:*
-            ```
-            {9}
-            ```', 
+            ${{ github.event_name == 'pull_request' && format('🔄 *{0} #{1}*
+            └ *Title:* {2}
+            └ *Status:* {3}
+            └ *Source Branch:* `{4}`
+            └ *Target Branch:* `{5}`
+            └ *Developer:* [{6}]({7}) wants to merge {8} commits
+            └ *Labels:* {9}
+            └ [View PR]({10})', 
+            github.event.pull_request.head.ref,
             github.event.pull_request.number,
             github.event.pull_request.title,
-            github.event.action,
-            github.event.pull_request.user.login,
-            github.event.pull_request.user.html_url,
+            github.event.pull_request.state,
             github.event.pull_request.head.ref,
             github.event.pull_request.base.ref,
+            github.event.pull_request.user.login,
+            github.event.pull_request.user.html_url,
+            github.event.pull_request.commits,
             join(github.event.pull_request.labels.*.name, ', '),
-            github.event.pull_request.html_url,
-            github.event.pull_request.body || 'No description provided') || '' }}
+            github.event.pull_request.html_url) || '' }}
             
             ${{ github.event_name == 'push' && format('📦 *Code Push Details*
-            └ *Branch:* `{0}`
-            └ *Developer:* [{1}](https://github.com/{1})
-            └ [View Changes]({2}/commit/{3})
+            └ *Source Branch:* `{0}`
+            └ *Target Branch:* `{1}`
+            └ *Developer:* [{2}](https://github.com/{2})
+            └ [View Changes]({3}/commit/{4})
 
             *Latest Commit Message:*
             ```
-            {4}
+            {5}
             ```', 
             github.ref_name,
+            github.base_ref || 'main',
             github.event.pusher.name,
             github.event.repository.html_url,
             github.event.after,
@@ -84,19 +83,13 @@ jobs:
             └ *Status:* {2}
             └ *Created by:* [{3}]({4})
             └ *Labels:* {5}
-            └ [View Issue]({6})
-
-            *Description:*
-            ```
-            {7}
-            ```', 
+            └ [View Issue]({6})', 
             github.event.issue.number,
             github.event.issue.title,
             github.event.action,
             github.event.issue.user.login,
             github.event.issue.user.html_url,
             join(github.event.issue.labels.*.name, ', '),
-            github.event.issue.html_url,
-            github.event.issue.body || 'No description provided') || '' }}
+            github.event.issue.html_url) || '' }}
             
             ⏰ _${{ steps.current-time.outputs.time }}_
