@@ -26,6 +26,10 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Get current UTC time
+        id: current-time
+        run: echo "::set-output name=time::$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
         with:
@@ -34,10 +38,9 @@ jobs:
           format: markdown
           disable_web_page_preview: true
           message: |
-            🔔 *GitHub Notification*
+            📣 *GitHub Activity Notification*
             
-            *Repository:* [${{ github.repository }}](https://github.com/${{ github.repository }})
-            *Branch:* `${{ github.ref_name }}`
+            🏢 *Project:* [${{ github.repository }}](https://github.com/${{ github.repository }})
             
             ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
             └ *Title:* {1}
@@ -53,13 +56,13 @@ jobs:
             github.event.pull_request.base.ref,
             github.event.pull_request.html_url) || '' }}
             
-            ${{ github.event_name == 'push' && format('📦 *New Push*
+            ${{ github.event_name == 'push' && format('📦 *Code Push Details*
             └ *Branch:* `{0}`
-            └ *Author:* [{1}](https://github.com/{1})
-            └ *Commits:* {2}
+            └ *Developer:* [{1}](https://github.com/{1})
+            └ *Total Commits:* {2}
             └ [View Changes]({3}/commit/{4})
 
-            *Latest Commit Details:*
+            *Latest Commit Message:*
             ```
             {5}
             ```', 
@@ -70,8 +73,8 @@ jobs:
             github.event.after,
             github.event.head_commit.message) || '' }}
             
-            ${{ github.event_name == 'fork' && format('🔱 *Repository Forked*
-            └ *By:* [{0}]({1})
+            ${{ github.event_name == 'fork' && format('🔱 *New Repository Fork*
+            └ *Created by:* [{0}]({1})
             └ *Fork Name:* {2}
             └ [View Fork]({3})', 
             github.event.forkee.owner.login,
@@ -79,10 +82,10 @@ jobs:
             github.event.forkee.full_name,
             github.event.forkee.html_url) || '' }}
             
-            ${{ github.event_name == 'issues' && format('📌 *Issue #{0}*
+            ${{ github.event_name == 'issues' && format('📌 *Issue Activity #{0}*
             └ *Title:* {1}
-            └ *Status:* {2}
-            └ *Author:* [{3}]({4})
+            └ *Action:* {2}
+            └ *Created by:* [{3}]({4})
             └ [View Issue]({5})', 
             github.event.issue.number,
             github.event.issue.title,
@@ -91,4 +94,4 @@ jobs:
             github.event.issue.user.html_url,
             github.event.issue.html_url) || '' }}
             
-            ⏰ _${{ github.event.repository.updated_at }}_
+            ⏰ *Timestamp:* _${{ steps.current-time.outputs.time }}_
