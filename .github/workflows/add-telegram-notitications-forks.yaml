@@ -2,18 +2,14 @@ name: Enhanced PR Telegram Notification
 
 on:
   pull_request:
-    types: [opened, closed, edited, ready_for_review, review_requested, reopened, assigned, unassigned, labeled, unlabeled]
-  pull_request_review:
-    types: [submitted, edited, dismissed]
-  pull_request_review_comment:
-    types: [created, edited, deleted]
+    types: [opened, closed, edited, reopened]  # Eventos essenciais de PR
   issues:
-    types: [opened, closed, reopened, assigned, unassigned, labeled, unlabeled, edited, deleted, transferred, pinned, unpinned, locked, unlocked]
+    types: [opened, closed, reopened, edited]  # Eventos essenciais de issues
   issue_comment:
-    types: [created, edited, deleted]
-  fork:
+    types: [created, edited, deleted]  # Comentários em PRs e issues
+  fork:  # Quando alguém faz fork
   push:
-    branches:
+    branches:  # Push em branches principais
       - main
       - dev
       - 'release/**'
@@ -21,7 +17,7 @@ on:
       - 'hotfix/**'
       - 'bugfix/**'
   watch:
-    types: [started]
+    types: [started]  # Quando alguém dá estrela
 
 jobs:
   notify:
@@ -49,17 +45,13 @@ jobs:
             ├─ Title: {3}
             ├─ Author: [{4}](https://github.com/{4})
             ├─ Status: {5}
-            ├─ Labels: {6}
-            ├─ Assignees: {7}
-            └─ [View Pull Request]({8})',
+            └─ [View Pull Request]({6})',
               github.event.pull_request.number,
               github.event.pull_request.head.ref,
               github.event.pull_request.base.ref,
               github.event.pull_request.title,
               github.event.pull_request.user.login,
               github.event.action,
-              join(github.event.pull_request.labels.*.name, ', ') || 'No labels',
-              join(github.event.pull_request.assignees.*.login, ', ') || 'No assignees',
               github.event.pull_request.html_url
             ) || '' }}
 
@@ -83,30 +75,24 @@ jobs:
             ├─ Title: {1}
             ├─ Status: {2}
             ├─ Author: [{3}](https://github.com/{3})
-            ├─ Labels: {4}
-            ├─ Assignees: {5}
-            └─ [View Issue]({6})',
+            └─ [View Issue]({4})',
               github.event.issue.number,
               github.event.issue.title,
               github.event.action,
               github.event.issue.user.login,
-              join(github.event.issue.labels.*.name, ', ') || 'No labels',
-              join(github.event.issue.assignees.*.login, ', ') || 'No assignees',
               github.event.issue.html_url
             ) || '' }}
 
             ${{ github.event_name == 'issue_comment' && format('💭 *New Comment on {0} #{1}*
             ├─ Author: [{2}](https://github.com/{2})
-            ├─ Action: {3}
             ├─ Comment:
             ```
-            {4}
+            {3}
             ```
-            └─ [View Comment]({5})',
+            └─ [View Comment]({4})',
               contains(github.event.issue.html_url, '/pull/') && 'Pull Request' || 'Issue',
               github.event.issue.number,
               github.event.comment.user.login,
-              github.event.action,
               github.event.comment.body,
               github.event.comment.html_url
             ) || '' }}
