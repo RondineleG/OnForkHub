@@ -59,12 +59,15 @@ jobs:
             
             ${{ github.event_name == 'push' && format('*Push to* `{0}`
             ↳ By: [{1}](https://github.com/{1})
-            ↳ [View Commit]({2})
+            ↳ [View Changes]({2}/commit/{3})
+            ↳ [Pull Request #{4}]({2}/pull/{4})
 
-            {3}', 
+            {5}', 
             github.ref_name,
             github.event.pusher.name,
-            format('{0}/commit/{1}', github.event.repository.html_url, github.event.after),
+            github.event.repository.html_url,
+            github.event.after,
+            replace(github.event.head_commit.message, '.*Part of #([0-9]+).*', '$1'),
             github.event.head_commit.message) || '' }}
             
             ${{ github.event_name == 'issues' && format('*Issue #{0}: {1}*
