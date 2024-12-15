@@ -51,11 +51,19 @@ jobs:
             
             ${{ github.event_name == 'push' && format('📦 *New Push*
             └ *Branch:* `{0}`
-            └ *Author:* {1}
-            └ *Commits:* {2}', 
+            └ *Author:* [{1}](https://github.com/{1})
+            └ *Commits:* {2}
+            └ [View Changes]({3})
+
+            *Last Commit:*
+            ```
+            {4}
+            ```', 
             github.ref_name,
             github.event.pusher.name,
-            github.event.commits.length) || '' }}
+            github.event.commits.length,
+            format('{0}/commit/{1}', github.event.repository.html_url, github.event.after),
+            github.event.head_commit.message) || '' }}
             
             ${{ github.event_name == 'fork' && format('🔱 *Repository Forked*
             └ *By:* [{0}]({1})', 
