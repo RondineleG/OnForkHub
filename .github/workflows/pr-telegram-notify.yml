@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Get current UTC time
         id: current-time
-        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y')"
+        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y %H:%M:%S UTC')"
 
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
@@ -39,61 +39,71 @@ jobs:
           disable_web_page_preview: true
           message: |
             📣 *GitHub Activity Notification*
+            [${{ github.repository }}](https://github.com/${{ github.repository }})
             
             ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
             └ *Title:* {1}
             └ *Status:* {2}
             └ *Developer:* [{3}]({4})
-            └ *Target Branch:* `{5}`
-            └ *Branch:* `{6}`
+            └ *Source Branch:* `{5}`
+            └ *Target Branch:* `{6}`
             └ *Total Commits:* {7}
-            └ [View PR]({8})', 
+            └ *Labels:* {8}
+            └ [View PR]({9})
+
+            *Description:*
+            ```
+            {10}
+            ```', 
             github.event.pull_request.number,
             github.event.pull_request.title,
             github.event.action,
             github.event.pull_request.user.login,
             github.event.pull_request.user.html_url,
-            github.event.pull_request.base.ref,
             github.event.pull_request.head.ref,
+            github.event.pull_request.base.ref,
             github.event.pull_request.commits,
-            github.event.pull_request.html_url) || '' }}
+            join(github.event.pull_request.labels.*.name, ', '),
+            github.event.pull_request.html_url,
+            github.event.pull_request.body || 'No description provided') || '' }}
             
             ${{ github.event_name == 'push' && format('📦 *Code Push Details*
-            └ *Branch:* `{0}`
-            └ *Developer:* [{1}](https://github.com/{1})
-            └ *Total Commits:* {2}
-            └ [View Changes]({3}/commit/{4})
+            └ *Source Branch:* `{0}`
+            └ *Target Branch:* `{1}`
+            └ *Developer:* [{2}](https://github.com/{2})
+            └ *Total Commits:* {3}
+            └ [View Changes]({4}/commit/{5})
 
             *Latest Commit Message:*
             ```
-            {5}
+            {6}
             ```', 
-            github.ref_name,
+            github.event.ref,
+            github.event.base_ref || github.event.ref,
             github.event.pusher.name,
             github.event.commits.length,
             github.event.repository.html_url,
             github.event.after,
             github.event.head_commit.message) || '' }}
             
-            ${{ github.event_name == 'fork' && format('🔱 *New Repository Fork*
-            └ *Created by:* [{0}]({1})
-            └ *Fork Name:* {2}
-            └ [View Fork]({3})', 
-            github.event.forkee.owner.login,
-            github.event.forkee.owner.html_url,
-            github.event.forkee.full_name,
-            github.event.forkee.html_url) || '' }}
-            
-            ${{ github.event_name == 'issues' && format('📌 *Issue Activity #{0}*
+            ${{ github.event_name == 'issues' && format('📌 *Issue #{0}*
             └ *Title:* {1}
-            └ *Action:* {2}
+            └ *Status:* {2}
             └ *Created by:* [{3}]({4})
-            └ [View Issue]({5})', 
+            └ *Labels:* {5}
+            └ [View Issue]({6})
+
+            *Description:*
+            ```
+            {7}
+            ```', 
             github.event.issue.number,
             github.event.issue.title,
             github.event.action,
             github.event.issue.user.login,
             github.event.issue.user.html_url,
-            github.event.issue.html_url) || '' }}
+            join(github.event.issue.labels.*.name, ', '),
+            github.event.issue.html_url,
+            github.event.issue.body || 'No description provided') || '' }}
             
             ⏰ _${{ steps.current-time.outputs.time }}_
