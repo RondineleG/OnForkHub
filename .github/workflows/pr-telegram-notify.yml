@@ -3,23 +3,6 @@ name: PR Telegram Notification
 on:
   pull_request:
     types: [opened, closed, edited, ready_for_review, review_requested, reopened]
-  pull_request_review:
-    types: [submitted, edited, dismissed]
-  pull_request_review_comment:
-    types: [created, edited, deleted]
-  issues:
-    types: [opened, closed, reopened, edited]
-  issue_comment:
-    types: [created, edited, deleted]
-  fork:
-  push:
-    branches:
-      - main
-      - dev
-      - 'release/**'
-      - 'feature/**'
-      - 'hotfix/**'
-      - 'bugfix/**'
   workflow_dispatch:
 
 jobs:
@@ -28,7 +11,36 @@ jobs:
     steps:
       - name: Get current UTC time
         id: current-time
-        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y %H:%M:%S UTC')"
+        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_ENV
+
+      - name: Prepare Telegram Notification Message
+        id: prepare-message
+        run: |
+          # Dados do Pull Request
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+          PR_TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          PR_AUTHOR_URL="${{ github.event.pull_request.user.html_url }}"
+          LAST_COMMIT_MESSAGE="${{ github.event.pull_request.head.commit.message }}"
+          LAST_COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          REPO_URL="${{ github.event.repository.html_url }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+
+          # Construção da Mensagem
+          MESSAGE="🔔 *GitHub Notification*\n\n"
+          MESSAGE+="📝 *Pull Request*\n"
+          MESSAGE+="├─ *Branch Source:* \`${PR_SOURCE_BRANCH}\`\n"
+          MESSAGE+="├─ *Branch Target:* \`${PR_TARGET_BRANCH}\`\n"
+          MESSAGE+="├─ *Author:* [${PR_AUTHOR}](${PR_AUTHOR_URL})\n"
+          MESSAGE+="└─ *Last Commit:*\n\n"
+          MESSAGE+="\`${LAST_COMMIT_MESSAGE}\`\n\n"
+          MESSAGE+="└─ [View Commit](${REPO_URL}/commit/${LAST_COMMIT_SHA})\n"
+          MESSAGE+="└─ [View Pull Request](${PR_URL})\n\n"
+          MESSAGE+="⏰ _${{ env.time }}_"
+
+          echo "message=$MESSAGE" >> $GITHUB_ENV
 
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
@@ -37,46 +49,4 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: markdown
           disable_web_page_preview: true
-          message: |
-            🔔 GitHub Notification
-
-            ${{ github.event_name == 'pull_request' && format('📝 Pull Request
-            ├─ Branch Soucer: {0}
-            ├─ Branch Target: {1}
-            ├─ Author: {2} (https://github.com/{2})
-            └─ Last Commit:
-            {3}
-            └─ View Commit ({4}/commit/{5})
-            └─ View Pull Request ({4}/pull/{6})', 
-            github.event.pull_request.head.ref,
-            github.event.pull_request.base.ref,
-            github.event.pull_request.user.login,
-            github.event.pull_request.title,
-            github.event.repository.html_url,
-            github.event.pull_request.head.sha,
-            github.event.pull_request.number) || '' }}
-
-            ${{ github.event_name == 'push' && format('📝 Push
-            ├─ Branch: {0}
-            ├─ Author: {1} (https://github.com/{1})
-            └─ Last Commit:
-            {2}
-            └─ View Commit ({3}/commit/{4})', 
-            github.ref_name,
-            github.event.pusher.name,
-            github.event.head_commit.message,
-            github.event.repository.html_url,
-            github.event.after) || '' }}
-
-            ${{ github.event_name == 'issues' && format('📝 Issue #{0}
-            ├─ Title: {1}
-            ├─ Status: {2}
-            ├─ Author: {3} (https://github.com/{3})
-            └─ View Issue ({4})', 
-            github.event.issue.number,
-            github.event.issue.title,
-            github.event.action,
-            github.event.issue.user.login,
-            github.event.issue.html_url) || '' }}
-
-            ⏰ ${{ steps.current-time.outputs.time }}
+          message: ${{ env.message }}
