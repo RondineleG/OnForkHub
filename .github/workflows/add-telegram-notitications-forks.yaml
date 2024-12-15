@@ -37,6 +37,13 @@ jobs:
           message: |
             🔔 *GitHub Notification*
             *Repository:* [${{ github.repository }}](${{ github.event.repository.html_url }})
+            
+            ${{ if eq github.event_name 'fork' }}
+            🔱 *New Fork Created*
+            ├ Repository: ${{ github.repository }}
+            ├ Forked by: ${{ github.actor }}
+            └ Fork URL: ${{ github.event.forkee.html_url }}
+            ${{ end }}
 
             ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
             ├ Branch Source: `{1}`
@@ -95,13 +102,5 @@ jobs:
               github.event.sender.login,
               github.event.sender.html_url
             ) || '' }}
-
-            ${{ github.event_name == 'fork' && format('🔱 *Repository Forked*
-            ├ By: [{0}]({1})
-            └ URL: [View Fork]({2})',
-              github.actor,
-              format('{0}/{1}', github.server_url, github.actor),
-              github.event.forkee.html_url
-            ) || '' }}
-
-            ⏰ ${{ steps.current-time.outputs.time }}
+            
+            ⏰ ${{ steps.current-time.outputs.time }}</antArtifact>
