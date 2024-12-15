@@ -1,122 +1,85 @@
-name: GitHub Events Telegram Notifier
+name: PR Telegram Notification
 
 on:
   pull_request:
-    types: [opened, closed, edited, ready_for_review, review_requested, reopened, assigned, unassigned, labeled, unlabeled]
+    types: [opened, closed, edited, ready_for_review, review_requested, reopened]
   pull_request_review:
     types: [submitted, edited, dismissed]
   pull_request_review_comment:
     types: [created, edited, deleted]
   issues:
-    types: [opened, closed, reopened, assigned, unassigned, labeled, unlabeled, edited, deleted, transferred, pinned, unpinned, locked, unlocked]
+    types: [opened, closed, reopened, edited]
   issue_comment:
     types: [created, edited, deleted]
-  watch:
-    types: [started]
   fork:
-  star:
-    types: [created, deleted]
   push:
     branches:
       - main
       - dev
-      - 'release/*'
-      - 'feature/*'
-      - 'hotfix/*'
-      - 'bugfix/*'
-  discussion:
-    types: [created, edited, deleted, transferred, pinned, unpinned, labeled, unlabeled, locked, unlocked]
+      - 'release/**'
+      - 'feature/**'
+      - 'hotfix/**'
+      - 'bugfix/**'
+  workflow_dispatch:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Telegram notification
+      - name: Get current UTC time
+        id: current-time
+        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y %H:%M:%S UTC')"
+
+      - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: markdown
+          disable_web_page_preview: true
           message: |
-            🔔 *New Activity on GitHub*
-            
-            *Repository:* [${{ github.repository }}](${{ github.event.repository.html_url }})
-            
-            ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
-            └ *Title:* {1}
-            └ *Status:* {2}
-            └ *Author:* [{3}]({4})
-            └ [View Pull Request]({5})
-            
-            {6}',
-              github.event.pull_request.number,
-              github.event.pull_request.title,
-              github.event.action,
-              github.event.pull_request.user.login,
-              github.event.pull_request.user.html_url,
-              github.event.pull_request.html_url,
-              github.event.pull_request.body ? format('```\n{0}\n```', github.event.pull_request.body) : ''
-            ) || '' }}
-            
-            ${{ github.event_name == 'issues' && format('📌 *Issue #{0}*
-            └ *Title:* {1}
-            └ *Status:* {2}
-            └ *Author:* [{3}]({4})
-            └ [View Issue]({5})',
-              github.event.issue.number,
-              github.event.issue.title,
-              github.event.action,
-              github.event.issue.user.login,
-              github.event.issue.user.html_url,
-              github.event.issue.html_url
-            ) || '' }}
-            
-            ${{ github.event_name == 'push' && format('📦 *New Push*
-            └ *Branch:* `{0}`
-            └ *Commits:* {1}
-            └ *Author:* [{2}]({3})
-            └ [View Changes]({4})
-            
-            *Latest Commit:*
-            ```
-            {5}
-            ```',
-              github.ref_name,
-              github.event.commits.length,
-              github.event.pusher.name,
-              format('https://github.com/{0}', github.event.pusher.name),
-              format('{0}/commit/{1}', github.event.repository.html_url, github.event.after),
-              github.event.head_commit.message
-            ) || '' }}
-            
-            ${{ github.event_name == 'star' && format('⭐ *Repository {0}*
-            └ *By:* [{1}]({2})',
-              github.event.action == 'created' && 'Starred' || 'Unstarred',
-              github.event.sender.login,
-              github.event.sender.html_url
-            ) || '' }}
-            
-            ${{ github.event_name == 'fork' && format('🔱 *Repository Forked*
-            └ *By:* [{0}]({1})
-            └ [View Fork]({2})',
-              github.event.forkee.owner.login,
-              github.event.forkee.owner.html_url,
-              github.event.forkee.html_url
-            ) || '' }}
-            
-            ${{ github.event_name == 'issue_comment' && format('💭 *New Comment on {0} #{1}*
-            └ *Author:* [{2}]({3})
-            └ [View Comment]({4})
-            
-            ```
-            {5}
-            ```',
-              contains(github.event.issue.html_url, '/pull/') && 'Pull Request' || 'Issue',
-              github.event.issue.number,
-              github.event.comment.user.login,
-              github.event.comment.user.html_url,
-              github.event.comment.html_url,
-              github.event.comment.body
-            ) || '' }}
-            
-            ⏰ _${{ github.event.pull_request.updated_at || github.event.issue.updated_at || github.event.comment.updated_at || github.event.head_commit.timestamp }}_
+            🔔 GitHub Notification
+
+            ${{ github.event_name == 'pull_request' && format('📝 Pull Request
+            ├─ Branch Soucer: {0}
+            ├─ Branch Target: {1}
+            ├─ Author: [{2}](https://github.com/{2})
+            └─ Last Commit:
+            {3}
+            └─ [View Commit](https://github.com/{7}/{8}/commit/{5})
+            └─ [View Pull Request](https://github.com/{7}/{8}/pull/{6})', 
+            github.event.pull_request.head.ref,
+            github.event.pull_request.base.ref,
+            github.event.pull_request.user.login,
+            github.event.pull_request.title,
+            github.event.repository.html_url,
+            github.event.pull_request.head.sha,
+            github.event.pull_request.number,
+            github.repository_owner,
+            github.event.repository.name) || '' }}
+
+            ${{ github.event_name == 'push' && format('📝 Push
+            ├─ Branch: {0}
+            ├─ Author: [{1}](https://github.com/{1})
+            └─ Last Commit:
+            {2}
+            └─ [View Commit](https://github.com/{4}/{5}/commit/{3})', 
+            github.ref_name,
+            github.event.pusher.name,
+            github.event.head_commit.message,
+            github.event.after,
+            github.repository_owner,
+            github.event.repository.name) || '' }}
+
+            ${{ github.event_name == 'issues' && format('📝 Issue #{0}
+            ├─ Title: {1}
+            ├─ Status: {2}
+            ├─ Author: [{3}](https://github.com/{3})
+            └─ [View Issue]({4})', 
+            github.event.issue.number,
+            github.event.issue.title,
+            github.event.action,
+            github.event.issue.user.login,
+            github.event.issue.html_url) || '' }}
+
+            ⏰ ${{ steps.current-time.outputs.time }}
