@@ -45,15 +45,13 @@ jobs:
             └ *Title:* {1}
             └ *Status:* {2}
             └ *Developer:* [{3}]({4})
-            └ *Source Branch:* `{5}`
-            └ *Target Branch:* `{6}`
-            └ *Total Commits:* {7}
-            └ *Labels:* {8}
-            └ [View PR]({9})
+            └ *Branch:* `{5}` → `{6}`
+            └ *Labels:* {7}
+            └ [View PR]({8})
 
             *Description:*
             ```
-            {10}
+            {9}
             ```', 
             github.event.pull_request.number,
             github.event.pull_request.title,
@@ -62,26 +60,21 @@ jobs:
             github.event.pull_request.user.html_url,
             github.event.pull_request.head.ref,
             github.event.pull_request.base.ref,
-            github.event.pull_request.commits,
             join(github.event.pull_request.labels.*.name, ', '),
             github.event.pull_request.html_url,
             github.event.pull_request.body || 'No description provided') || '' }}
             
             ${{ github.event_name == 'push' && format('📦 *Code Push Details*
-            └ *Source Branch:* `{0}`
-            └ *Target Branch:* `{1}`
-            └ *Developer:* [{2}](https://github.com/{2})
-            └ *Total Commits:* {3}
-            └ [View Changes]({4}/commit/{5})
+            └ *Branch:* `{0}`
+            └ *Developer:* [{1}](https://github.com/{1})
+            └ [View Changes]({2}/commit/{3})
 
             *Latest Commit Message:*
             ```
-            {6}
+            {4}
             ```', 
-            github.event.ref,
-            github.event.base_ref || github.event.ref,
+            github.ref_name,
             github.event.pusher.name,
-            github.event.commits.length,
             github.event.repository.html_url,
             github.event.after,
             github.event.head_commit.message) || '' }}
