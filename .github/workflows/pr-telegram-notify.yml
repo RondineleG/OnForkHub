@@ -7,11 +7,6 @@ on:
     types: [submitted, edited, dismissed]
   pull_request_review_comment:
     types: [created, edited, deleted]
-  issues:
-    types: [opened, closed, reopened, edited]
-  issue_comment:
-    types: [created, edited, deleted]
-  fork:
   push:
     branches:
       - main
@@ -28,7 +23,53 @@ jobs:
     steps:
       - name: Get current UTC time
         id: current-time
-        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y %H:%M:%S UTC')"
+        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_ENV
+
+      - name: Prepare Telegram Notification Message
+        id: prepare-message
+        run: |
+          MESSAGE=""
+          
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_STATE="${{ github.event.pull_request.state }}"
+            SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+            TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
+            AUTHOR="${{ github.event.pull_request.user.login }}"
+            AUTHOR_URL="${{ github.event.pull_request.user.html_url }}"
+            LAST_COMMIT="${{ github.event.pull_request.head.sha }}"
+            REPO_URL="${{ github.event.repository.html_url }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            
+            MESSAGE="🔔 *GitHub Notification*\n\n"
+            MESSAGE+="📝 *Pull Request*\n"
+            MESSAGE+="├─ *Branch Source:* \`${SOURCE_BRANCH}\`\n"
+            MESSAGE+="├─ *Branch Target:* \`${TARGET_BRANCH}\`\n"
+            MESSAGE+="├─ *Author:* [${AUTHOR}](${AUTHOR_URL})\n"
+            MESSAGE+="└─ *Last Commit:*\n"
+            MESSAGE+="\`${{ github.event.pull_request.head.commit.message }}\`\n"
+            MESSAGE+="└─ [View Commit](${REPO_URL}/commit/${LAST_COMMIT})\n"
+            MESSAGE+="└─ [View Pull Request](${PR_URL})\n"
+            MESSAGE+="\n⏰ _${{ env.time }}_"
+          
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            BRANCH="${{ github.ref_name }}"
+            AUTHOR="${{ github.event.pusher.name }}"
+            LAST_COMMIT="${{ github.event.after }}"
+            REPO_URL="${{ github.event.repository.html_url }}"
+            COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+            
+            MESSAGE="🔔 *GitHub Notification*\n\n"
+            MESSAGE+="📝 *New Changes*\n"
+            MESSAGE+="├─ *Branch:* \`${BRANCH}\`\n"
+            MESSAGE+="├─ *Author:* [${AUTHOR}](${REPO_URL})\n"
+            MESSAGE+="└─ [View Commit](${REPO_URL}/commit/${LAST_COMMIT})\n"
+            MESSAGE+="\n\`\`\`\n${COMMIT_MESSAGE}\n\`\`\`\n"
+            MESSAGE+="\n⏰ _${{ env.time }}_"
+          fi
+
+          echo "message=$MESSAGE" >> $GITHUB_ENV
 
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
@@ -37,50 +78,4 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           format: markdown
           disable_web_page_preview: true
-          message: |
-            🔔 *GitHub Update*
-            
-            ${{ github.event_name == 'pull_request' && format('📥 *Pull Request #{0}*
-            ├─ *Title:* {1}
-            ├─ *Status:* {2}
-            ├─ *Branch:* `{3}` → `{4}`
-            ├─ *Author:* [{5}]({6})
-            ├─ *Commits:* {7}
-            └─ [View PR]({8})', 
-            github.event.pull_request.number,
-            github.event.pull_request.title,
-            github.event.pull_request.state,
-            github.event.pull_request.head.ref,
-            github.event.pull_request.base.ref,
-            github.event.pull_request.user.login,
-            github.event.pull_request.user.html_url,
-            github.event.pull_request.commits,
-            github.event.pull_request.html_url) || '' }}
-            
-            ${{ github.event_name == 'push' && format('📝 *New Changes*
-            ├─ *Branch:* `{0}`
-            ├─ *Author:* [{1}](https://github.com/{1})
-            └─ [View Commit]({2}/commit/{3})
-
-            ```
-            {4}
-            ```', 
-            github.ref_name,
-            github.event.pusher.name,
-            github.event.repository.html_url,
-            github.event.after,
-            github.event.head_commit.message) || '' }}
-            
-            ${{ github.event_name == 'issues' && format('🎯 *Issue #{0}*
-            ├─ *Title:* {1}
-            ├─ *Status:* {2}
-            ├─ *Author:* [{3}]({4})
-            └─ [View Issue]({5})', 
-            github.event.issue.number,
-            github.event.issue.title,
-            github.event.action,
-            github.event.issue.user.login,
-            github.event.issue.user.html_url,
-            github.event.issue.html_url) || '' }}
-            
-            ⏰ _${{ steps.current-time.outputs.time }}_
+          message: ${{ env.message }}
