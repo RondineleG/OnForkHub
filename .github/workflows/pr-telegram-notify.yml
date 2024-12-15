@@ -45,9 +45,7 @@ jobs:
             └ *Author:* [{3}]({4})
             └ *Base Branch:* `{5}`
             └ *Labels:* {6}
-            └ [View PR]({7})
-
-            {8}', 
+            └ [View PR]({7})', 
             github.event.pull_request.number,
             github.event.pull_request.title,
             github.event.action,
@@ -55,26 +53,23 @@ jobs:
             github.event.pull_request.user.html_url,
             github.event.pull_request.base.ref,
             join(github.event.pull_request.labels.*.name, ', '),
-            github.event.pull_request.html_url,
-            github.event.pull_request.body) || '' }}
+            github.event.pull_request.html_url) || '' }}
             
             ${{ github.event_name == 'push' && format('📦 *New Push*
             └ *Branch:* `{0}`
             └ *Author:* [{1}](https://github.com/{1})
             └ *Commits:* {2}
-            └ *Changed Files:* {3} files
-            └ [View Changes]({4})
+            └ [View Changes]({3})
 
             *Latest Commit Details:*
             ```
-            {5}
+            {4}
             ```
             
-            *Commit Hash:* `{6}`', 
+            *Commit Hash:* `{5}`', 
             github.ref_name,
             github.event.pusher.name,
             github.event.commits.length,
-            github.event.commits[0].modified.length + github.event.commits[0].added.length + github.event.commits[0].removed.length,
             format('{0}/commit/{1}', github.event.repository.html_url, github.event.after),
             github.event.head_commit.message,
             github.event.after.substring(0, 7)) || '' }}
@@ -93,16 +88,13 @@ jobs:
             └ *Status:* {2}
             └ *Author:* [{3}]({4})
             └ *Labels:* {5}
-            └ [View Issue]({6})
-
-            {7}', 
+            └ [View Issue]({6})', 
             github.event.issue.number,
             github.event.issue.title,
             github.event.action,
             github.event.issue.user.login,
             github.event.issue.user.html_url,
             join(github.event.issue.labels.*.name, ', '),
-            github.event.issue.html_url,
-            github.event.issue.body) || '' }}
+            github.event.issue.html_url) || '' }}
             
             ⏰ _${{ github.event.repository.updated_at }}_
