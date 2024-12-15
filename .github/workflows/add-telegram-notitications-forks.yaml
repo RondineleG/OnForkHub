@@ -27,6 +27,47 @@ jobs:
         id: current-time
         run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
+      - name: Prepare Message
+        id: prepare-message
+        run: |
+          if [[ "${{ github.event_name }}" == "fork" ]]; then
+            echo "event_message=🔱 *New Fork Created*
+            ├ Repository: ${{ github.repository }}
+            ├ Forked by: ${{ github.actor }}
+            └ Fork URL: ${{ github.event.forkee.html_url }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "event_message=🔄 *Pull Request #${{ github.event.pull_request.number }}*
+            ├ Branch Source: \`${{ github.event.pull_request.head.ref }}\`
+            ├ Branch Target: \`${{ github.event.pull_request.base.ref }}\`
+            ├ Title: ${{ github.event.pull_request.title }}
+            ├ Author: [${{ github.event.pull_request.user.login }}](https://github.com/${{ github.event.pull_request.user.login }})
+            ├ Status: ${{ github.event.action }}
+            └ URL: [View PR](${{ github.event.pull_request.html_url }})" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "event_message=📝 *Push*
+            ├ Branch: \`${{ github.ref_name }}\`
+            ├ Author: [${{ github.event.pusher.name }}](https://github.com/${{ github.event.pusher.name }})
+            ├ Commits: ${{ github.event.commits.length }}
+            ├ Message: ${{ github.event.head_commit.message }}
+            └ URL: [View Changes](${{ github.event.repository.html_url }}/commit/${{ github.sha }})" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "issues" ]]; then
+            echo "event_message=📝 *Issue #${{ github.event.issue.number }}*
+            ├ Title: ${{ github.event.issue.title }}
+            ├ Status: ${{ github.event.action }}
+            ├ Author: [${{ github.event.issue.user.login }}](https://github.com/${{ github.event.issue.user.login }})
+            └ URL: [View Issue](${{ github.event.issue.html_url }})" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            echo "event_message=💭 *Comment on Issue #${{ github.event.issue.number }}*
+            ├ Author: [${{ github.event.comment.user.login }}](https://github.com/${{ github.event.comment.user.login }})
+            ├ Content: ${{ github.event.comment.body }}
+            └ URL: [View Comment](${{ github.event.comment.html_url }})" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "watch" ]]; then
+            echo "event_message=⭐ *Repository Starred*
+            └ By: [${{ github.event.sender.login }}](${{ github.event.sender.html_url }})" >> $GITHUB_OUTPUT
+          else
+            echo "event_message=*Event:* ${{ github.event_name }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
         with:
@@ -37,72 +78,8 @@ jobs:
           message: |
             🔔 *GitHub Notification*
             *Repository:* [${{ github.repository }}](https://github.com/${{ github.repository }})
+            *Event Type:* ${{ github.event_name }}
             
-            ${{ github.event_name == 'fork' && format('🔱 *New Fork Created*
-            ├ Repository: {0}
-            ├ Forked by: {1}
-            └ Fork URL: {2}',
-              github.repository,
-              github.actor,
-              github.event.forkee.html_url
-            ) || '' }}
-            
-            ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
-            ├ Branch Source: `{1}`
-            ├ Branch Target: `{2}`
-            ├ Title: {3}
-            ├ Author: [{4}](https://github.com/{4})
-            ├ Status: {5}
-            └ URL: [View PR]({6})',
-              github.event.pull_request.number,
-              github.event.pull_request.head.ref,
-              github.event.pull_request.base.ref,
-              github.event.pull_request.title,
-              github.event.pull_request.user.login,
-              github.event.action,
-              github.event.pull_request.html_url
-            ) || '' }}
-            
-            ${{ github.event_name == 'push' && format('📝 *Push*
-            ├ Branch: `{0}`
-            ├ Author: [{1}](https://github.com/{1})
-            ├ Commits: {2}
-            ├ Message: {3}
-            └ URL: [View Changes]({4})',
-              github.ref_name,
-              github.event.pusher.name,
-              github.event.commits.length,
-              github.event.head_commit.message,
-              format('{0}/commit/{1}', github.event.repository.html_url, github.sha)
-            ) || '' }}
-            
-            ${{ github.event_name == 'issues' && format('📝 *Issue #{0}*
-            ├ Title: {1}
-            ├ Status: {2}
-            ├ Author: [{3}](https://github.com/{3})
-            └ URL: [View Issue]({4})',
-              github.event.issue.number,
-              github.event.issue.title,
-              github.event.action,
-              github.event.issue.user.login,
-              github.event.issue.html_url
-            ) || '' }}
-            
-            ${{ github.event_name == 'issue_comment' && format('💭 *Comment on {0} #{1}*
-            ├ Author: [{2}](https://github.com/{2})
-            ├ Content: {3}
-            └ URL: [View Comment]({4})',
-              contains(github.event.issue.html_url, '/pull/') && 'PR' || 'Issue',
-              github.event.issue.number,
-              github.event.comment.user.login,
-              github.event.comment.body,
-              github.event.comment.html_url
-            ) || '' }}
-            
-            ${{ github.event_name == 'watch' && format('⭐ *Repository Starred*
-            └ By: [{0}]({1})',
-              github.event.sender.login,
-              github.event.sender.html_url
-            ) || '' }}
+            ${{ steps.prepare-message.outputs.event_message }}
             
             ⏰ ${{ steps.current-time.outputs.time }}
