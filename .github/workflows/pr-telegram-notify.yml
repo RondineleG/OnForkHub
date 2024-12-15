@@ -62,17 +62,15 @@ jobs:
             github.event.pull_request.html_url) || '' }}
             
             ${{ github.event_name == 'push' && format('📦 *Code Push Details*
-            └ *Source Branch:* `{0}`
-            └ *Target Branch:* `{1}`
-            └ *Developer:* [{2}](https://github.com/{2})
-            └ [View Changes]({3}/commit/{4})
+            └ *Branch:* `{0}`
+            └ *Developer:* [{1}](https://github.com/{1})
+            └ [View Changes]({2}/commit/{3})
 
             *Latest Commit Message:*
             ```
-            {5}
+            {4}
             ```', 
             github.ref_name,
-            github.base_ref || 'main',
             github.event.pusher.name,
             github.event.repository.html_url,
             github.event.after,
