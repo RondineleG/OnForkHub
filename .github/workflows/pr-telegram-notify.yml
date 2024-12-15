@@ -38,15 +38,18 @@ jobs:
           format: markdown
           disable_web_page_preview: true
           message: |
-            🔔 *GitHub Activity*
+            📣 *GitHub Activity Notification*
+            [${{ github.repository }}](https://github.com/${{ github.repository }})
             
-            ${{ github.event_name == 'pull_request' && format('*PR #{0}: {1}*
-            ↳ Status: {2}
-            ↳ Branch: `{3}` → `{4}`
-            ↳ By: [{5}]({6})
-            ↳ Commits: {7}
-            ↳ Labels: {8}
-            ↳ [View PR]({9})', 
+            ${{ github.event_name == 'pull_request' && format('🔄 *{0} #{1}*
+            └ *Title:* {2}
+            └ *Status:* {3}
+            └ *Source Branch:* `{4}`
+            └ *Target Branch:* `{5}`
+            └ *Developer:* [{6}]({7}) wants to merge {8} commits
+            └ *Labels:* {9}
+            └ [View PR]({10})', 
+            github.event.pull_request.head.ref,
             github.event.pull_request.number,
             github.event.pull_request.title,
             github.event.pull_request.state,
@@ -58,22 +61,27 @@ jobs:
             join(github.event.pull_request.labels.*.name, ', '),
             github.event.pull_request.html_url) || '' }}
             
-            ${{ github.event_name == 'push' && format('*Push to* `{0}`
-            ↳ By: [{1}](https://github.com/{1})
-            ↳ [View Changes]({2}/commit/{3})
+            ${{ github.event_name == 'push' && format('📦 *Code Push Details*
+            └ *Branch:* `{0}`
+            └ *Developer:* [{1}](https://github.com/{1})
+            └ [View Changes]({2}/commit/{3})
 
-            {4}', 
+            *Latest Commit Message:*
+            ```
+            {4}
+            ```', 
             github.ref_name,
             github.event.pusher.name,
             github.event.repository.html_url,
             github.event.after,
             github.event.head_commit.message) || '' }}
             
-            ${{ github.event_name == 'issues' && format('*Issue #{0}: {1}*
-            ↳ Status: {2}
-            ↳ By: [{3}]({4})
-            ↳ Labels: {5}
-            ↳ [View Issue]({6})', 
+            ${{ github.event_name == 'issues' && format('📌 *Issue #{0}*
+            └ *Title:* {1}
+            └ *Status:* {2}
+            └ *Created by:* [{3}]({4})
+            └ *Labels:* {5}
+            └ [View Issue]({6})', 
             github.event.issue.number,
             github.event.issue.title,
             github.event.action,
