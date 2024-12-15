@@ -47,14 +47,14 @@ jobs:
             └─ Last Commit:
             {3}
             └─ [View Commit]({4}/commit/{5})
-            └─ [View Pull Request]({6})', 
+            └─ [View Pull Request]({4}/pull/{6})', 
             github.event.pull_request.head.ref,
             github.event.pull_request.base.ref,
             github.event.pull_request.user.login,
             github.event.pull_request.title,
             github.event.repository.html_url,
             github.event.pull_request.head.sha,
-            github.event.pull_request.html_url) || '' }}
+            github.event.pull_request.number) || '' }}
 
             ${{ github.event_name == 'push' && format('📝 Push
             ├─ Branch: {0}
