@@ -23,6 +23,9 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Event
+        run: echo "${{ toJson(github.event) }}"
+        
       - name: Get current UTC time
         id: current-time
         run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
@@ -68,7 +71,7 @@ jobs:
             "fork")
               echo "message=Repository Forked
               By: ${{ github.actor }}
-              URL: ${{ github.event.forkee.html_url }}" >> $GITHUB_OUTPUT
+              URL: ${{ github.event.forkee.html_url || github.event.repository.html_url }}" >> $GITHUB_OUTPUT
               ;;
             *)
               echo "message=Event: ${{ github.event_name }}
@@ -88,4 +91,4 @@ jobs:
             *GitHub Notification*
             Repository: ${{ github.repository }}
             ${{ steps.event-message.outputs.message }}
-            Time: ${{ steps.current-time.outputs.time }} I 
+            Time: ${{ steps.current-time.outputs.time }}
