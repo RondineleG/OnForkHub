@@ -41,13 +41,13 @@ jobs:
             🔔 GitHub Notification
 
             ${{ github.event_name == 'pull_request' && format('📝 Pull Request
-            ├─ Branch Source: {0}
+            ├─ Branch Soucer: {0}
             ├─ Branch Target: {1}
-            ├─ Author: [{2}](https://github.com/{2})
+            ├─ Author: {2} (https://github.com/{2})
             └─ Last Commit:
             {3}
-            └─ [View Commit]({4}/commit/{5})
-            └─ [View Pull Request]({4}/pull/{6})', 
+            └─ View Commit ({4}/commit/{5})
+            └─ View Pull Request ({4}/pull/{6})', 
             github.event.pull_request.head.ref,
             github.event.pull_request.base.ref,
             github.event.pull_request.user.login,
@@ -58,10 +58,10 @@ jobs:
 
             ${{ github.event_name == 'push' && format('📝 Push
             ├─ Branch: {0}
-            ├─ Author: [{1}](https://github.com/{1})
+            ├─ Author: {1} (https://github.com/{1})
             └─ Last Commit:
             {2}
-            └─ [View Commit]({3}/commit/{4})', 
+            └─ View Commit ({3}/commit/{4})', 
             github.ref_name,
             github.event.pusher.name,
             github.event.head_commit.message,
@@ -71,8 +71,8 @@ jobs:
             ${{ github.event_name == 'issues' && format('📝 Issue #{0}
             ├─ Title: {1}
             ├─ Status: {2}
-            ├─ Author: [{3}](https://github.com/{3})
-            └─ [View Issue]({4})', 
+            ├─ Author: {3} (https://github.com/{3})
+            └─ View Issue ({4})', 
             github.event.issue.number,
             github.event.issue.title,
             github.event.action,
