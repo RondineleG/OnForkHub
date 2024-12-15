@@ -1,0 +1,128 @@
+name: Enhanced PR Telegram Notification
+
+on:
+  pull_request:
+    types: [opened, closed, edited, ready_for_review, review_requested, reopened, assigned, unassigned, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  issues:
+    types: [opened, closed, reopened, assigned, unassigned, labeled, unlabeled, edited, deleted, transferred, pinned, unpinned, locked, unlocked]
+  issue_comment:
+    types: [created, edited, deleted]
+  fork:
+  push:
+    branches:
+      - main
+      - dev
+      - 'release/**'
+      - 'feature/**'
+      - 'hotfix/**'
+      - 'bugfix/**'
+  watch:
+    types: [started]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get current UTC time
+        id: current-time
+        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y %H:%M:%S UTC')"
+
+      - name: Send Telegram Notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          disable_web_page_preview: true
+          message: |
+            🔔 *GitHub Notification*
+            
+            *Repository:* [${{ github.repository }}](${{ github.event.repository.html_url }})
+
+            ${{ github.event_name == 'pull_request' && format('🔄 *Pull Request #{0}*
+            ├─ Branch Source: `{1}`
+            ├─ Branch Target: `{2}`
+            ├─ Title: {3}
+            ├─ Author: [{4}](https://github.com/{4})
+            ├─ Status: {5}
+            ├─ Labels: {6}
+            ├─ Assignees: {7}
+            └─ [View Pull Request]({8})',
+              github.event.pull_request.number,
+              github.event.pull_request.head.ref,
+              github.event.pull_request.base.ref,
+              github.event.pull_request.title,
+              github.event.pull_request.user.login,
+              github.event.action,
+              join(github.event.pull_request.labels.*.name, ', ') || 'No labels',
+              join(github.event.pull_request.assignees.*.login, ', ') || 'No assignees',
+              github.event.pull_request.html_url
+            ) || '' }}
+
+            ${{ github.event_name == 'push' && format('📝 *Push Event*
+            ├─ Branch: `{0}`
+            ├─ Author: [{1}](https://github.com/{1})
+            ├─ Commits: {2}
+            ├─ Last Commit Message:
+            ```
+            {3}
+            ```
+            └─ [View Changes]({4})',
+              github.ref_name,
+              github.event.pusher.name,
+              github.event.commits.length,
+              github.event.head_commit.message,
+              format('{0}/commit/{1}', github.event.repository.html_url, github.event.after)
+            ) || '' }}
+
+            ${{ github.event_name == 'issues' && format('📝 *Issue #{0}*
+            ├─ Title: {1}
+            ├─ Status: {2}
+            ├─ Author: [{3}](https://github.com/{3})
+            ├─ Labels: {4}
+            ├─ Assignees: {5}
+            └─ [View Issue]({6})',
+              github.event.issue.number,
+              github.event.issue.title,
+              github.event.action,
+              github.event.issue.user.login,
+              join(github.event.issue.labels.*.name, ', ') || 'No labels',
+              join(github.event.issue.assignees.*.login, ', ') || 'No assignees',
+              github.event.issue.html_url
+            ) || '' }}
+
+            ${{ github.event_name == 'issue_comment' && format('💭 *New Comment on {0} #{1}*
+            ├─ Author: [{2}](https://github.com/{2})
+            ├─ Action: {3}
+            ├─ Comment:
+            ```
+            {4}
+            ```
+            └─ [View Comment]({5})',
+              contains(github.event.issue.html_url, '/pull/') && 'Pull Request' || 'Issue',
+              github.event.issue.number,
+              github.event.comment.user.login,
+              github.event.action,
+              github.event.comment.body,
+              github.event.comment.html_url
+            ) || '' }}
+
+            ${{ github.event_name == 'watch' && format('⭐ *Repository Starred*
+            └─ By: [{0}]({1})',
+              github.event.sender.login,
+              github.event.sender.html_url
+            ) || '' }}
+
+            ${{ github.event_name == 'fork' && format('🔱 *Repository Forked*
+            ├─ By: [{0}]({1})
+            └─ [View Fork]({2})',
+              github.event.forkee.owner.login,
+              github.event.forkee.owner.html_url,
+              github.event.forkee.html_url
+            ) || '' }}
+
+            ⏰ ${{ steps.current-time.outputs.time }}
