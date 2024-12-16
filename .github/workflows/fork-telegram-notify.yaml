@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Debug Event
         run: echo "${{ toJson(github.event) }}"
-        
+
       - name: Get current UTC time
         id: current-time
         run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
