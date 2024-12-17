@@ -1,0 +1,48 @@
+name: Build and Deploy to Self-hosted Coolify
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/Presentations/OnForkHub.Api/**'
+      - 'src/Presentations/OnForkHub.Web/**'
+      - 'docker-compose.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Configurar SSH
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+          if_key_exists: replace
+          
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H 104.254.247.213 >> ~/.ssh/known_hosts
+      
+      # Copiar arquivos para a VPS
+      - name: Copy files to VPS
+        run: |
+          ssh root@104.254.247.213 'mkdir -p /root/onforkhub'
+          scp docker-compose.yml root@104.254.247.213:/root/onforkhub/
+          scp -r src root@104.254.247.213:/root/onforkhub/
+          scp Directory.Build.props root@104.254.247.213:/root/onforkhub/
+          
+      # Deploy via SSH
+      - name: Deploy to Coolify
+        run: |
+          ssh root@104.254.247.213 'bash -s' << 'ENDSSH'
+            cd /root/onforkhub
+            docker-compose down
+            docker image prune -f
+            docker-compose build --no-cache
+            docker-compose up -d
+            docker image prune -f
+          ENDSSH
