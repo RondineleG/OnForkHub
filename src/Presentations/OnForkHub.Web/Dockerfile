@@ -7,7 +7,6 @@ EXPOSE 8001
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["OnForkHub.sln", "."] 
 COPY ["stylecop.json", "."] 
 COPY ["Directory.Build.props", "."]
 COPY ["src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj", "src/Presentations/OnForkHub.Web/"]
