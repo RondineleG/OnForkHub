@@ -5,7 +5,7 @@
 <img src="docs/assets/logo.svg" width="400" alt="OnForkHub Logo"/>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Issues Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]([https://github.com/RondineleG/OnForkHub/pulls](https://github.com/RondineleG/OnForkHub/issues))
+[![Issues Welcome](https://img.shields.io/badge/Issues-welcome-brightgreen.svg)](https://github.com/RondineleG/OnForkHub/issues)
 [![Code Analysis](https://github.com/RondineleG/OnForkHub/actions/workflows/qodana-code-quality.yml/badge.svg)](https://github.com/RondineleG/OnForkHub/actions/workflows/qodana-code-quality.yml)
 [![Validate Commit Messages](https://github.com/RondineleG/OnForkHub/actions/workflows/validate-commit.yaml/badge.svg)](https://github.com/RondineleG/OnForkHub/actions/workflows/validate-commit.yaml)
 
