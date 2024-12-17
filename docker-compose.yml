@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: src/Presentations/OnForkHub.Api/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_UID: 1000
+    container_name: onforkhub-api
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:9000;https://+:9001
+    networks:
+      - onforkhub-network
+
+  web:
+    build:
+      context: .
+      dockerfile: src/Presentations/OnForkHub.Web/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_UID: 1000
+    container_name: onforkhub-web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8000;https://+:8001
+    depends_on:
+      - api
+    networks:
+      - onforkhub-network
+
+networks:
+  onforkhub-network:
+    name: onforkhub-network
