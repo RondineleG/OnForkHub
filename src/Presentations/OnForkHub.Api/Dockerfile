@@ -7,6 +7,9 @@ EXPOSE 9001
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["OnForkHub.sln", "."] 
+COPY ["stylecop.json", "."]   
+COPY ["OnForkHub.sln", "."] 
 COPY ["Directory.Build.props", "."]
 COPY ["src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj", "src/Presentations/OnForkHub.Api/"]
 COPY ["src/Core/OnForkHub.Application/OnForkHub.Application.csproj", "src/Core/OnForkHub.Application/"]
