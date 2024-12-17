@@ -8,11 +8,18 @@
         <NoWarn>$(NoWarn);1591</NoWarn>
         <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
         <LangVersion>latest</LangVersion>
+        <UserSecretsId>40a7ca1a-6a59-48a7-a884-674b6a58a756</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <DockerfileContext>..\..\..</DockerfileContext>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\OnForkHub.Application\OnForkHub.Application.csproj"/>
-        <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj"/>
+      <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Core\OnForkHub.Application\OnForkHub.Application.csproj" />
+        <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
     </ItemGroup>
 
 </Project>
