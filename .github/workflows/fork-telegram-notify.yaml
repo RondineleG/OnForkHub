@@ -1,4 +1,4 @@
-name: Fork Notification
+name: Fork Telegram Notification
 
 on: 
   fork
@@ -42,7 +42,7 @@ jobs:
             "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -H "Content-Type: application/json" \
             -d '{
-              "chat_id": "-1002405520335",
+              "chat_id": ${{ secrets.TELEGRAM_CHAT_ID }},
               "text": "'"$MESSAGE"'",
               "parse_mode": "Markdown",
               "disable_web_page_preview": true
