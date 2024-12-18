@@ -9,11 +9,54 @@ on:
       - 'src/Presentations/OnForkHub.Web/**'
       - 'docker-compose.yml'
 
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE_NAME: ${{ github.repository }}-api
+  WEB_IMAGE_NAME: ${{ github.repository }}-web
+
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+     
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: src/Presentations/OnForkHub.Api/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+     
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: src/Presentations/OnForkHub.Web/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
@@ -22,35 +65,50 @@ jobs:
           if_key_exists: replace
       - name: Adding Known Hosts
         run: ssh-keyscan -H 104.254.247.213 >> ~/.ssh/known_hosts
-      - name: Prepare VPS environment
+    
+      - name: Create production docker-compose
         run: |
-          ssh root@104.254.247.213 'bash -s' << 'ENDSSH'
-            if ! command -v docker-compose &> /dev/null; then
-              apt update
-              apt install -y docker-compose
-            fi
-            mkdir -p /root/onforkhub
-          ENDSSH
-     
-      - name: Copy files to VPS
-        run: |
-          scp docker-compose.yml root@104.254.247.213:/root/onforkhub/
-          scp -r src root@104.254.247.213:/root/onforkhub/
-          scp Directory.Build.props root@104.254.247.213:/root/onforkhub/
-         
-      - name: Deploy to Coolify
+          cat << EOF > docker-compose.prod.yml
+          version: '3.8'
+          services:
+            api:
+              image: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+              container_name: onforkhub-api
+              ports:
+                - "9000:9000"
+                - "9001:9001"
+              environment:
+                - ASPNETCORE_ENVIRONMENT=Production
+                - ASPNETCORE_URLS=http://+:9000;https://+:9001
+              networks:
+                - onforkhub-network
+            web:
+              image: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
+              container_name: onforkhub-web
+              ports:
+                - "8000:8000"
+                - "8001:8001"
+              environment:
+                - ASPNETCORE_ENVIRONMENT=Production
+                - ASPNETCORE_URLS=http://+:8000;https://+:8001
+              depends_on:
+                - api
+              networks:
+                - onforkhub-network
+          networks:
+            onforkhub-network:
+              name: onforkhub-network
+          EOF
+          
+          scp docker-compose.prod.yml root@104.254.247.213:/root/onforkhub/
+      
+      - name: Deploy to VPS
         run: |
           ssh root@104.254.247.213 'bash -s' << 'ENDSSH'
             cd /root/onforkhub
-            docker-compose down || true
-            docker image prune -f
-            echo "Building containers..."
-            docker-compose build --no-cache
-            echo "Starting containers..."
-            docker-compose up -d
-            echo "Checking container status..."
-            docker-compose ps
-            echo "Initial container logs:"
-            docker-compose logs
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml up -d
             docker image prune -f
           ENDSSH
