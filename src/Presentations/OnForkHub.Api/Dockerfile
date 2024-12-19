@@ -1,11 +1,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
 WORKDIR /app
-EXPOSE 9000
-EXPOSE 9001
+EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Directory.Build.props", "."]
 COPY ["src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj", "src/Presentations/OnForkHub.Api/"]
@@ -17,11 +14,10 @@ COPY ["src/Persistence/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src
 RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .
 WORKDIR "/src/src/Presentations/OnForkHub.Api"
-RUN dotnet build "./OnForkHub.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./OnForkHub.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./OnForkHub.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./OnForkHub.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
