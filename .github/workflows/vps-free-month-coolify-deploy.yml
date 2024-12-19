@@ -11,8 +11,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  API_IMAGE_NAME: ${{ github.repository }}-api
-  WEB_IMAGE_NAME: ${{ github.repository }}-web
+  API_IMAGE_NAME: ${{ github.repository_owner }}/onforkhub-api
+  WEB_IMAGE_NAME: ${{ github.repository_owner }}/onforkhub-web
 
 jobs:
   build-and-push:
@@ -24,12 +24,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Convert repository name to lowercase
+        run: |
+          echo "API_IMAGE_NAME=$(echo ${{ env.API_IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "WEB_IMAGE_NAME=$(echo ${{ env.WEB_IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
      
@@ -63,6 +69,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: unnecessary
           if_key_exists: replace
+
       - name: Adding Known Hosts
         run: ssh-keyscan -H 104.254.247.213 >> ~/.ssh/known_hosts
     
