@@ -13,6 +13,11 @@ COPY ["src/Core/OnForkHub.Application/OnForkHub.Application.csproj", "src/Core/O
 COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/"]
 COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
 COPY ["src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj", "src/Shared/OnForkHub.Dependencies/"]
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm@latest && \
+    apt-get clean
 RUN dotnet restore "./src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj"
 COPY . .
 WORKDIR "/src/src/Presentations/OnForkHub.Web"
