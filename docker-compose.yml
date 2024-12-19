@@ -10,10 +10,11 @@ services:
     container_name: onforkhub-api
     restart: unless-stopped
     ports:
-      - "9000:80" 
+      - "0.0.0.0:9000:80"  
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_HOSTFILTERING_ALLOWEDHOSTS=*
     networks:
       - onforkhub-network
 
@@ -27,10 +28,11 @@ services:
     container_name: onforkhub-web
     restart: unless-stopped
     ports:
-      - "3000:80"  
+      - "0.0.0.0:3000:80"  
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_HOSTFILTERING_ALLOWEDHOSTS=*
     depends_on:
       - api
     networks:
