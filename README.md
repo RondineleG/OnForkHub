@@ -131,15 +131,37 @@ dotnet husky run
 
 #### 1. Branch Management (Git Flow)
 
+We follow Git Flow with kebab-case naming convention for all branches (using lowercase letters and hyphens).
+ This ensures:
+
+- Better readability in URLs and command line
+- Compatibility across different operating systems
+- Consistency with Git Flow conventions
+- Avoidance of case-sensitivity issues
+
 ```bash
+# Branch Types and Naming Convention
+main        # Production branch
+dev         # Development branch
+feature/    # New features (e.g., feature/add-user-auth)
+hotfix/     # Production fixes (e.g., hotfix/fix-login-bug)
+release/    # Release preparation (e.g., release/v1.2.0)
+bugfix/     # Non-urgent fixes (e.g., bugfix/improve-error-handling)
+
 # Start new feature
-git flow feature start FeatureName
+git flow feature start add-user-auth
 
 # Publish feature
-git flow feature publish FeatureName
+git flow feature publish add-user-auth
 
 # Complete feature and create an automatic Pull Request
-git flow feature finish FeatureName
+git flow feature finish add-user-auth
+
+# Start hotfix
+git flow hotfix start fix-login-bug
+
+# Start release
+git flow release start v1.2.0
 ```
 
 #### 2. Commit Standards
