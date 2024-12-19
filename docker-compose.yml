@@ -29,11 +29,11 @@ services:
     container_name: onforkhub-web
     restart: unless-stopped
     ports:
-      - "8000:8000"
-      - "8001:8001"
+      - "3000:3000"
+      - "3001:3001"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8000;https://+:8001
+      - ASPNETCORE_URLS=http://+:3000;https://+:3001
     depends_on:
       - api
     networks:
