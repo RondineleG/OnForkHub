@@ -1,5 +1,4 @@
 name: PR Telegram Notification
-
 on:
   pull_request:
     types: [opened, closed, edited, ready_for_review, review_requested, reopened]
@@ -28,7 +27,7 @@ jobs:
     steps:
       - name: Get current UTC time
         id: current-time
-        run: echo "::set-output name=time::$(date -u '+%d/%m/%Y %H:%M:%S UTC')"
+        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
       - name: Send Telegram Notification
         uses: appleboy/telegram-action@master
@@ -38,16 +37,18 @@ jobs:
           format: markdown
           disable_web_page_preview: true
           message: |
-            🔔 GitHub Notification
+            🔔 *GitHub Notification*
 
-            ${{ github.event_name == 'pull_request' && format('📝 Pull Request
-            ├─ Branch Soucer: {0}
-            ├─ Branch Target: {1}
-            ├─ Author: [{2}](https://github.com/{2})
-            └─ Last Commit:
+            ${{ github.event_name == 'pull_request' && format('*📝 Pull Request*
+            Branch Source: `{0}`
+            Branch Target: `{1}`
+            Author: [{2}](https://github.com/{2})
+            
+            *Last Commit:*
             {3}
-            └─ [View Commit](https://github.com/{7}/{8}/commit/{5})
-            └─ [View Pull Request](https://github.com/{7}/{8}/pull/{6})', 
+            
+            [View Commit](https://github.com/{7}/{8}/commit/{5})
+            [View Pull Request](https://github.com/{7}/{8}/pull/{6})', 
             github.event.pull_request.head.ref,
             github.event.pull_request.base.ref,
             github.event.pull_request.user.login,
@@ -57,25 +58,28 @@ jobs:
             github.event.pull_request.number,
             github.repository_owner,
             github.event.repository.name) || '' }}
-
-            ${{ github.event_name == 'push' && format('📝 Push
-            ├─ Branch: {0}
-            ├─ Author: [{1}](https://github.com/{1})
-            └─ Last Commit:
+            
+            ${{ github.event_name == 'push' && format('*📝 Push*
+            Branch: `{0}`
+            Author: [{1}](https://github.com/{1})
+            
+            *Last Commit:*
             {2}
-            └─ [View Commit](https://github.com/{4}/{5}/commit/{3})', 
+            
+            [View Commit](https://github.com/{4}/{5}/commit/{3})', 
             github.ref_name,
             github.event.pusher.name,
             github.event.head_commit.message,
             github.event.after,
             github.repository_owner,
             github.event.repository.name) || '' }}
-
-            ${{ github.event_name == 'issues' && format('📝 Issue #{0}
-            ├─ Title: {1}
-            ├─ Status: {2}
-            ├─ Author: [{3}](https://github.com/{3})
-            └─ [View Issue]({4})', 
+            
+            ${{ github.event_name == 'issues' && format('*📝 Issue #{0}*
+            Title: `{1}`
+            Status: `{2}`
+            Author: [{3}](https://github.com/{3})
+            
+            [View Issue]({4})', 
             github.event.issue.number,
             github.event.issue.title,
             github.event.action,
