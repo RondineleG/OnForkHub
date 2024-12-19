@@ -1,6 +1,7 @@
 name: Build and Deploy to VPS
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -8,6 +9,7 @@ on:
       - 'src/Presentations/OnForkHub.Api/**'
       - 'src/Presentations/OnForkHub.Web/**'
       - 'docker-compose.yml'
+      - '.github/workflows/**'
 
 env:
   REGISTRY: ghcr.io
