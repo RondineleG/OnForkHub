@@ -1,4 +1,4 @@
-name: Build and Deploy to Self-hosted Coolify
+name: Build and Deploy to VPS
 
 on:
   push:
@@ -11,34 +11,34 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  API_IMAGE_NAME: ${{ github.repository_owner }}/onforkhub-api
-  WEB_IMAGE_NAME: ${{ github.repository_owner }}/onforkhub-web
+  API_IMAGE_NAME: onforkhub-api
+  WEB_IMAGE_NAME: onforkhub-web
+  DOCKER_BUILDKIT: 1
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Convert repository name to lowercase
-        run: |
-          echo "API_IMAGE_NAME=$(echo ${{ env.API_IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-          echo "WEB_IMAGE_NAME=$(echo ${{ env.WEB_IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-      
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-     
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set lowercase repository owner
+        run: |
+          echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
@@ -46,11 +46,11 @@ jobs:
           file: src/Presentations/OnForkHub.Api/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-     
+
       - name: Build and push Web image
         uses: docker/build-push-action@v5
         with:
@@ -58,29 +58,34 @@ jobs:
           file: src/Presentations/OnForkHub.Web/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: unnecessary
-          if_key_exists: replace
-
-      - name: Adding Known Hosts
-        run: ssh-keyscan -H 104.254.247.213 >> ~/.ssh/known_hosts
-    
-      - name: Create production docker-compose
+      - name: Deploy to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          cat << EOF > docker-compose.prod.yml
+          # Setup SSH
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
+          # Create deployment directory
+          ssh $SSH_USERNAME@$SSH_HOST 'mkdir -p ~/onforkhub'
+
+          # Create docker-compose.yml
+          cat > docker-compose.prod.yml << 'EOF'
           version: '3.8'
           services:
             api:
-              image: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+              image: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
               container_name: onforkhub-api
+              restart: unless-stopped
               ports:
                 - "9000:9000"
                 - "9001:9001"
@@ -89,9 +94,11 @@ jobs:
                 - ASPNETCORE_URLS=http://+:9000;https://+:9001
               networks:
                 - onforkhub-network
+
             web:
-              image: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
+              image: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
               container_name: onforkhub-web
+              restart: unless-stopped
               ports:
                 - "8000:8000"
                 - "8001:8001"
@@ -102,20 +109,19 @@ jobs:
                 - api
               networks:
                 - onforkhub-network
+
           networks:
             onforkhub-network:
               name: onforkhub-network
           EOF
-          
-          scp docker-compose.prod.yml root@104.254.247.213:/root/onforkhub/
-      
-      - name: Deploy to VPS
-        run: |
-          ssh root@104.254.247.213 'bash -s' << 'ENDSSH'
-            cd /root/onforkhub
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker-compose -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.prod.yml down
-            docker-compose -f docker-compose.prod.yml up -d
-            docker image prune -f
-          ENDSSH
+
+          # Copy docker-compose file to VPS
+          scp docker-compose.prod.yml $SSH_USERNAME@$SSH_HOST:~/onforkhub/
+
+          # Deploy on VPS
+          ssh $SSH_USERNAME@$SSH_HOST 'cd ~/onforkhub && \
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin && \
+            docker-compose -f docker-compose.prod.yml pull && \
+            docker-compose -f docker-compose.prod.yml down && \
+            docker-compose -f docker-compose.prod.yml up -d && \
+            docker image prune -f'
