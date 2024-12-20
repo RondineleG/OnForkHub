@@ -29,7 +29,7 @@ public class GetAll : BaseEndpoint<Category>, IEndpointAsync
                         }
                     }
                 )
-                .WithName("GetCategoriesV2")
+                .WithName("GetAllCategoriesV2")
                 .Produces<IEnumerable<Category>>()
                 .Produces(StatusCodes.Status500InternalServerError)
                 .WithTags("Categories")
