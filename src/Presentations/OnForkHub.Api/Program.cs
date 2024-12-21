@@ -1,3 +1,5 @@
+using OnForkHub.Application.UseCases.Categories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -38,6 +40,7 @@ builder
     });
 
 builder.Services.AddWebApi(typeof(Program));
+builder.Services.AddUseCases(typeof(GetAllCategoriesUseCase).Assembly);
 var configurationBuilder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appSettings.json", true, true);
 IConfiguration configuration = configurationBuilder.Build();
 var connectionString = configuration.GetConnectionString("DefaultConnection");
