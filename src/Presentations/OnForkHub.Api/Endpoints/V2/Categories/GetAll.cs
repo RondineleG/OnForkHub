@@ -8,18 +8,21 @@ public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnum
     private static readonly string Route = GetVersionedRoute(V2);
     private readonly ILogger<GetAll> _logger = logger;
     private readonly IUseCase<PaginationRequestDto, IEnumerable<Category>> _useCase = useCase;
+
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
         var apiVersionSet = CreateApiVersionSet(app, V2);
 
         ConfigureEndpoint(
-            app.MapGet(
-                Route,
-                async (CancellationToken cancellationToken) =>
-                {
-                    var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
-                    return await HandleUseCase(_useCase, _logger, request);
-                }))
+                app.MapGet(
+                    Route,
+                    async (CancellationToken cancellationToken) =>
+                    {
+                        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+                        return await HandleUseCase(_useCase, _logger, request);
+                    }
+                )
+            )
             .WithName("GetAllCategoriesV2")
             .WithApiVersionSet(apiVersionSet)
             .MapToApiVersion(V2)
