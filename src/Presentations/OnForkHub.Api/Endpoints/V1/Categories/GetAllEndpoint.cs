@@ -10,7 +10,7 @@ public class GetAllEndpoint : IEndpoint
         var apiVersionSet = CreateApiVersionSet(app);
 
         app.MapGet(RouteV1, HandleGetPersonsAsync)
-            .WithName("GetPersonsV1")
+            .WithName("GetAllCategoryV1")
             .Produces<IEnumerable<Category>>()
             .Produces(StatusCodes.Status500InternalServerError)
             .WithTags("Categories")

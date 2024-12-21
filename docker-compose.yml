@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   api:
     build:
@@ -11,11 +10,11 @@ services:
     container_name: onforkhub-api
     restart: unless-stopped
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "0.0.0.0:9000:80"  
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:9000;https://+:9001
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_HOSTFILTERING_ALLOWEDHOSTS=*
     networks:
       - onforkhub-network
 
@@ -29,11 +28,11 @@ services:
     container_name: onforkhub-web
     restart: unless-stopped
     ports:
-      - "3000:3000"
-      - "3001:3001"
+      - "0.0.0.0:3000:80"  
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:3000;https://+:3001
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_HOSTFILTERING_ALLOWEDHOSTS=*
     depends_on:
       - api
     networks:
@@ -42,3 +41,4 @@ services:
 networks:
   onforkhub-network:
     name: onforkhub-network
+    external: true
