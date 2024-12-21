@@ -14,10 +14,7 @@ public abstract class BaseEndpoint<TEntity>
 
     protected static ApiVersionSet CreateApiVersionSet(WebApplication app, int version)
     {
-        return app.NewApiVersionSet()
-            .HasApiVersion(new ApiVersion(version))
-            .ReportApiVersions()
-            .Build();
+        return app.NewApiVersionSet().HasApiVersion(new ApiVersion(version)).ReportApiVersions().Build();
     }
 
     protected static string GetVersionedRoute(int version, string? customRoute = null)
@@ -29,7 +26,8 @@ public abstract class BaseEndpoint<TEntity>
     protected static async Task<IResult> HandleCreateUseCase<TRequest, TResponse>(
         IUseCase<TRequest, TResponse> useCase,
         ILogger logger,
-        TRequest request)
+        TRequest request
+    )
     {
         ArgumentNullException.ThrowIfNull(useCase);
         ArgumentNullException.ThrowIfNull(logger);
@@ -63,10 +61,7 @@ public abstract class BaseEndpoint<TEntity>
         }
     }
 
-    protected static async Task<IResult> HandleDeleteUseCase<TRequest>(
-        IUseCase<TRequest, bool> useCase,
-        ILogger logger,
-        TRequest request)
+    protected static async Task<IResult> HandleDeleteUseCase<TRequest>(IUseCase<TRequest, bool> useCase, ILogger logger, TRequest request)
     {
         ArgumentNullException.ThrowIfNull(useCase);
         ArgumentNullException.ThrowIfNull(logger);
@@ -84,10 +79,7 @@ public abstract class BaseEndpoint<TEntity>
         }
     }
 
-    protected static async Task<IResult> HandleUseCase<TRequest, TResponse>(
-        IUseCase<TRequest, TResponse> useCase,
-        ILogger logger,
-        TRequest request)
+    protected static async Task<IResult> HandleUseCase<TRequest, TResponse>(IUseCase<TRequest, TResponse> useCase, ILogger logger, TRequest request)
     {
         ArgumentNullException.ThrowIfNull(useCase);
         ArgumentNullException.ThrowIfNull(logger);
