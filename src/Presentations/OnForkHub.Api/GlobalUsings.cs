@@ -21,4 +21,5 @@ global using OnForkHub.Persistence.Contexts.Base;
 global using OnForkHub.Persistence.Repositories;
 
 global using System.Diagnostics.CodeAnalysis;
+global using System.Reflection;
 global using System.Text.Json;
