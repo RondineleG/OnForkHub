@@ -66,6 +66,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); //Only dev publish test
 await app.RegisterWebApisAsync();
 await app.RunAsync();
