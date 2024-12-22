@@ -4,10 +4,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.ListenAnyIP(9000, listenOptions =>
-    {
-        listenOptions.UseHttps();
-    });
+    serverOptions.ListenAnyIP(
+        9000,
+        listenOptions =>
+        {
+            listenOptions.UseHttps();
+        }
+    );
     serverOptions.ListenAnyIP(9001);
 });
 
