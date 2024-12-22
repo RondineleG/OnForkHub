@@ -26,6 +26,9 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
+RUN dotnet dev-certs https --clean && \
+    dotnet dev-certs https --trust
+    
 ENV COMPlus_GCConserveMemory=9 \
     COMPlus_HeapHardLimit=500000000 \
     DOTNET_GCHeapHardLimit=500000000 \
