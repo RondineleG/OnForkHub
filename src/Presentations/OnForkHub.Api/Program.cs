@@ -2,6 +2,15 @@ using OnForkHub.Application.UseCases.Categories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(9000, listenOptions =>
+    {
+        listenOptions.UseHttps();
+    });
+    serverOptions.ListenAnyIP(9001);
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
