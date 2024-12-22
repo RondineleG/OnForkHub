@@ -3,7 +3,7 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl libnss3-tools && rm -rf /var/lib/apt/lists/*
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
@@ -32,16 +32,15 @@ WORKDIR /app
 
 COPY --from=publish /app/publish .
 
-ENV ASPNETCORE_ENVIRONMENT=Development \
-    DOTNET_USE_POLLING_FILE_WATCHER=1 \
-    ASPNETCORE_URLS=https://+:443;http://+:80
-
 RUN dotnet dev-certs https --clean && \
     dotnet dev-certs https --trust && \
     mkdir -p /https && \
     dotnet dev-certs https -ep /https/aspnetapp.pfx -p password
 
-ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx \
+ENV ASPNETCORE_ENVIRONMENT=Development \
+    DOTNET_USE_POLLING_FILE_WATCHER=1 \
+    ASPNETCORE_URLS=https://+:443;http://+:80 \
+    ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx \
     ASPNETCORE_Kestrel__Certificates__Default__Password=password
 
 ENTRYPOINT ["dotnet", "OnForkHub.Api.dll"]
