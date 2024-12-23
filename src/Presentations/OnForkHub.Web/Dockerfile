@@ -4,6 +4,7 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
 RUN apt-get update && apt-get install -y curl && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
@@ -16,8 +17,12 @@ COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/
 COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
 COPY ["src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj", "src/Shared/OnForkHub.Dependencies/"]
 
-RUN dotnet restore "src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj"
+WORKDIR "/src/src/Presentations/OnForkHub.Web"
+RUN dotnet restore
+
+WORKDIR /src
 COPY . .
+
 WORKDIR "/src/src/Presentations/OnForkHub.Web"
 RUN dotnet build "OnForkHub.Web.csproj" -c Release
 RUN dotnet publish "OnForkHub.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
@@ -25,5 +30,11 @@ RUN dotnet publish "OnForkHub.Web.csproj" -c Release -o /app/publish /p:UseAppHo
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-RUN ls -la /app
+
+RUN ls -la
+
+ENV ASPNETCORE_ENVIRONMENT=Development \
+    ASPNETCORE_URLS=http://+:80 \
+    ASPNETCORE_HOSTFILTERING_ALLOWEDHOSTS=*
+
 ENTRYPOINT ["dotnet", "OnForkHub.Web.dll"]
