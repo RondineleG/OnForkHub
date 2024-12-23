@@ -15,7 +15,9 @@ COPY ["src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj", "src/Presentations
 COPY ["src/Presentations/OnForkHub.Web.Components/OnForkHub.Web.Components.csproj", "src/Presentations/OnForkHub.Web.Components/"]
 
 RUN dotnet restore "./src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj"
+
 COPY . .
+
 WORKDIR "/src/src/Presentations/OnForkHub.Web"
 RUN npm install --prefix wwwroot/npm
 RUN dotnet build "./OnForkHub.Web.csproj" -c Debug -o /app/build
