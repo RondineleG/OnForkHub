@@ -17,8 +17,8 @@ COPY ["src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj", "src/Presentations
 
 RUN dotnet restore "./src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj"
 COPY . .
-RUN dotnet build "./OnForkHub.Web.csproj" -c Release -o /app/build
-RUN dotnet publish "./OnForkHub.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet build "./src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj" -c Release -o /app/build
+RUN dotnet publish "./src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
