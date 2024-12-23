@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y curl && \
     apt-get install -y nodejs && \
     npm install -g npm@latest
 
+COPY ["global.json", "."]
 COPY ["Directory.Build.props", "."]
 COPY ["src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj", "src/Presentations/OnForkHub.Web/"]
 COPY ["src/Presentations/OnForkHub.Web.Components/OnForkHub.Web.Components.csproj", "src/Presentations/OnForkHub.Web.Components/"]
@@ -18,7 +19,6 @@ RUN dotnet nuget locals all --clear
 RUN dotnet restore "src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj" --verbosity detailed
 
 COPY . .
-
 WORKDIR "/src/src/Presentations/OnForkHub.Web"
 RUN npm install --prefix wwwroot/npm
 RUN dotnet publish "OnForkHub.Web.csproj" -c Debug -o /app/publish /p:UseAppHost=false --verbosity detailed
