@@ -17,24 +17,27 @@ COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/
 COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
 COPY ["src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj", "src/Shared/OnForkHub.Dependencies/"]
 
-WORKDIR "/src/src/Presentations/OnForkHub.Web"
-RUN dotnet restore
+RUN dotnet restore "src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj"
 
-WORKDIR /src
 COPY . .
 
+RUN ls -la /src/src/Presentations/OnForkHub.Web
+
 WORKDIR "/src/src/Presentations/OnForkHub.Web"
-RUN dotnet build "OnForkHub.Web.csproj" -c Release
-RUN dotnet publish "OnForkHub.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet build "OnForkHub.Web.csproj" -c Release --no-restore -v d
+RUN dotnet publish "OnForkHub.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false -v d
+
+RUN ls -la /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-RUN ls -la
+RUN ls -la /app && \
+    echo "Content of app directory:" && \
+    find /app -type f -name "*.dll" -exec ls -la {} \;
 
 ENV ASPNETCORE_ENVIRONMENT=Development \
-    ASPNETCORE_URLS=http://+:80 \
-    ASPNETCORE_HOSTFILTERING_ALLOWEDHOSTS=*
+    DOTNET_URLS=http://+:80
 
 ENTRYPOINT ["dotnet", "OnForkHub.Web.dll"]
