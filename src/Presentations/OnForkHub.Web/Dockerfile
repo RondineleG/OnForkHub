@@ -13,8 +13,6 @@ RUN apt-get update && apt-get install -y curl && \
 
 COPY ["src/", "src/"]
 COPY ["Directory.Build.props", "."]
-COPY ["global.json", "."]
-COPY ["nuget.config", "."]
 
 RUN dotnet restore "./src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj"
 COPY . .
