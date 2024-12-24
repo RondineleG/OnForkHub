@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen(options =>
         new OpenApiInfo
         {
             Version = "v1",
-            Title = "Minimal API - Version 1",
+            Title = "OnForkHub API - Version 1",
             Description = "API version 1 documentation",
         }
     );
@@ -25,7 +25,7 @@ builder.Services.AddSwaggerGen(options =>
         new OpenApiInfo
         {
             Version = "v2",
-            Title = "Minimal API - Version 2",
+            Title = "OnForkHub API - Version 2",
             Description = "API version 2 documentation",
         }
     );
@@ -60,8 +60,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minimal API V1");
-        c.SwaggerEndpoint("/swagger/v2/swagger.json", "Minimal API V2");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnForkHub API V1");
+        c.SwaggerEndpoint("/swagger/v2/swagger.json", "OnForkHub API V2");
     });
 }
 
