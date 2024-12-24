@@ -7,7 +7,6 @@ export function playVideo(fileName, videoElement) {
     }
 }
 
-// Gestos de swipe para mobile
 let touchstartX = 0;
 let touchendX = 0;
 let isVideoContainer = false;

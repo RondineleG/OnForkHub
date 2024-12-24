@@ -13,22 +13,26 @@
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
-    <Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('wwwroot/npm/node_modules')">
-        <Message Importance="high" Text="Running NpmInstall target..."/>
-        <Exec Command="npm install" WorkingDirectory="wwwroot/npm" />
-        <Message Importance="high" Text="Npm packages installed."/>
-        <Exec Command="npm run build" WorkingDirectory="wwwroot/npm" />
-        <Message Importance="high" Text="Npm build completed."/>
+    <Target Name="NpmInstall" BeforeTargets="Build">
+        <Message Importance="high" Text="Checking NpmInstall target execution..." />
+        <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmInstallExitCode" />
+        </Exec>
+        <Message Importance="high" Text="npm install exit code: $(NpmInstallExitCode)" />
+        <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmBuildExitCode" />
+        </Exec>
+        <Message Importance="high" Text="npm build exit code: $(NpmBuildExitCode)" />
     </Target>
 
-    <ItemGroup>
-        <Content Remove="wwwroot/npm/**/node_modules/**"/>
-        <None Remove="wwwroot/npm/**/node_modules/**"/>
+    <ItemGroup Condition="'$(Configuration)' != 'Docker'">
+        <Content Remove="wwwroot/npm/**/node_modules/**" />
+        <None Remove="wwwroot/npm/**/node_modules/**" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.*"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.*" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.*" PrivateAssets="all" />
         <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.*">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,14 +41,15 @@
 
     <ItemGroup>
         <Folder Include="wwwroot/Videos/" />
+        <Folder Include="wwwroot/npm" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj"/>
+        <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <TypeScriptCompile Include="wwwroot/npm/src/modules/torrent.ts"/>
+        <TypeScriptCompile Include="wwwroot/npm/src/modules/torrent.ts" />
     </ItemGroup>
 
 </Project>
