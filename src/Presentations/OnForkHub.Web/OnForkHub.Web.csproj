@@ -14,18 +14,19 @@
     </PropertyGroup>
 
     <Target Name="NpmInstall" BeforeTargets="Build">
-        <Message Importance="high" Text="Checking NpmInstall target execution..." />
-        <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="NpmInstallExitCode" />
+        <Message Importance="high" Text="Checking NpmInstall target execution..."/>
+        <Exec Command="npm install" WorkingDirectory="wwwroot/npm" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmInstallExitCode"/>
         </Exec>
-        <Message Importance="high" Text="npm install exit code: $(NpmInstallExitCode)" />
-        <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="NpmBuildExitCode" />
+        <Message Importance="high" Text="npm install exit code: $(NpmInstallExitCode)"/>
+        <Exec Command="npm run build" WorkingDirectory="wwwroot/npm" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmBuildExitCode"/>
         </Exec>
-        <Message Importance="high" Text="npm build exit code: $(NpmBuildExitCode)" />
+        <Message Importance="high" Text="npm build exit code: $(NpmBuildExitCode)"/>
     </Target>
 
-    <ItemGroup Condition="'$(Configuration)' != 'Docker'">
+
+    <ItemGroup>
         <Content Remove="wwwroot/npm/**/node_modules/**" />
         <None Remove="wwwroot/npm/**/node_modules/**" />
     </ItemGroup>
