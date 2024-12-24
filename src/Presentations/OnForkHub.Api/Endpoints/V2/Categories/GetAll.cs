@@ -1,5 +1,3 @@
-using OnForkHub.Application.Dtos.Base;
-
 namespace OnForkHub.Api.Endpoints.V2.Categories;
 
 public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase) : BaseEndpoint<Category>, IEndpointAsync
