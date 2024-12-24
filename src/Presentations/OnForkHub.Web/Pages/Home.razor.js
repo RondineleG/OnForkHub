@@ -1,11 +1,17 @@
 export function playVideo(fileName, videoElement) {
     if (videoElement) {
+        console.log("Setting video source to:", `/Videos/${fileName}`);
         videoElement.src = `/Videos/${fileName}`;
         videoElement.volume = 0.1;
         videoElement.load();
-        return videoElement.play();
+        return videoElement.play().catch(error => {
+            console.error("Error playing video:", error);
+        });
+    } else {
+        console.error("Video element is not defined.");
     }
 }
+
 
 let touchstartX = 0;
 let touchendX = 0;

@@ -22,7 +22,10 @@
                        id="videoPlayer"
                        class="shorts-video"
                        poster="/images/videoPoster.png">
+                    <source src="/Videos/SkateBros.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
                 </video>
+
             </div>
 
             <button class="nav-button next-button" @onclick="NextVideo">
@@ -95,13 +98,21 @@
 
     private async Task PlayVideo(Video video)
     {
-        if (module is not null)
+        if (module is not null && videoPlayer.Context != null)
         {
             nowPlayingVideo = video;
-            await module.InvokeVoidAsync("playVideo", video.Name, videoPlayer);
-            StateHasChanged();
+            try
+            {
+                await module.InvokeVoidAsync("playVideo", video.Name, videoPlayer);
+                StateHasChanged();
+            }
+            catch (JSException ex)
+            {
+                Console.Error.WriteLine($"Error playing video: {ex.Message}");
+            }
         }
     }
+
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
