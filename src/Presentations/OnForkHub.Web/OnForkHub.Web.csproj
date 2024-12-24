@@ -13,22 +13,17 @@
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
-    <Target Name="NpmInstall" BeforeTargets="Build" Condition=" !Exists('wwwroot\npm\node_modules') ">
-        <Message Importance="high" Text="Instalando pacotes NPM..."/>
-        <Exec Command="npm install" WorkingDirectory="wwwroot\npm"/>
+    <Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('wwwroot/npm/node_modules')">
+        <Message Importance="high" Text="Running NpmInstall target..."/>
+        <Exec Command="npm install" WorkingDirectory="wwwroot/npm" />
+        <Message Importance="high" Text="Npm packages installed."/>
+        <Exec Command="npm run build" WorkingDirectory="wwwroot/npm" />
+        <Message Importance="high" Text="Npm build completed."/>
     </Target>
 
     <ItemGroup>
-        <Content Remove="wwwroot\npm\**\node_modules\**"/>
-        <None Remove="wwwroot\npm\**\node_modules\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Remove="wwwroot\npm\src\modules\torrent.ts"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove=".gitignore"/>
+        <Content Remove="wwwroot/npm/**/node_modules/**"/>
+        <None Remove="wwwroot/npm/**/node_modules/**"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -41,7 +36,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="wwwroot\Videos\"/>
+        <Folder Include="wwwroot/Videos/" />
     </ItemGroup>
 
     <ItemGroup>
@@ -49,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <TypeScriptCompile Include="wwwroot\npm\src\modules\torrent.ts"/>
+        <TypeScriptCompile Include="wwwroot/npm/src/modules/torrent.ts"/>
     </ItemGroup>
 
 </Project>
