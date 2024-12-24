@@ -1,34 +1,33 @@
+
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 80
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-
-RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g npm@latest
-
-COPY ["global.json", "."]
 COPY ["Directory.Build.props", "."]
-COPY ["src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj", "src/Presentations/OnForkHub.Web/"]
-COPY ["src/Presentations/OnForkHub.Web.Components/OnForkHub.Web.Components.csproj", "src/Presentations/OnForkHub.Web.Components/"]
+COPY ["src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj", "src/Presentations/OnForkHub.Api/"]
+COPY ["src/Core/OnForkHub.Application/OnForkHub.Application.csproj", "src/Core/OnForkHub.Application/"]
+COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/"]
+COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
+COPY ["src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj", "src/Shared/OnForkHub.Dependencies/"]
+COPY ["src/Persistence/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src/Persistence/OnForkHub.Persistence/"]
 
-RUN dotnet nuget locals all --clear
-RUN dotnet restore "src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj" --verbosity detailed
-
+RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .
-WORKDIR "/src/src/Presentations/OnForkHub.Web"
-RUN npm install --prefix wwwroot/npm
-RUN dotnet publish "OnForkHub.Web.csproj" -c Debug -o /app/publish /p:UseAppHost=false --verbosity detailed
+WORKDIR "/src/src/Presentations/OnForkHub.Api"
+RUN dotnet build "./OnForkHub.Api.csproj" -c Debug -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "./OnForkHub.Api.csproj" -c Debug -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=publish /app/publish .
 
 ENV ASPNETCORE_ENVIRONMENT=Development \
     DOTNET_USE_POLLING_FILE_WATCHER=1 \
     ASPNETCORE_URLS=http://+:80
 
-ENTRYPOINT ["dotnet", "OnForkHub.Web.dll"]
+ENTRYPOINT ["dotnet", "OnForkHub.Api.dll"]
