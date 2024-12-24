@@ -1,4 +1,4 @@
-@page "/torrent-player"
+@page "/"
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
@@ -157,7 +157,7 @@
                 status = "Loading WebTorrent...";
                 await InvokeAsync(StateHasChanged);
 
-                module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/main.min.js");
+                module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/main.min.js");
                 await module.InvokeVoidAsync("initTorrentPlayer", progressElement);
 
                 isInitialized = true;
