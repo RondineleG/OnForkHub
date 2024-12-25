@@ -1,9 +1,9 @@
-@page "/torrent-player"
+@page "/"
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
 <div class="video-container mt-4">
-    <h3>Torrent Video Player</h3>
+    <h3>Torrent Video Player (Very Slowe to loading margnet uri torrent more than 5min)</h3>
 
     @if (!string.IsNullOrEmpty(error))
     {
@@ -157,7 +157,7 @@
                 status = "Loading WebTorrent...";
                 await InvokeAsync(StateHasChanged);
 
-                module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/main.min.js");
+                module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/main.min.js");
                 await module.InvokeVoidAsync("initTorrentPlayer", progressElement);
 
                 isInitialized = true;

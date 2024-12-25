@@ -9,7 +9,7 @@
         }
     },
     "profiles": {
-        "https": {
+        "OnForkHub": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,

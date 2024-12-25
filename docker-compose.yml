@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: src/Presentations/OnForkHub.Api/Dockerfile
+      dockerfile: .docker/Dockerfile.OnForkHub.Api
       args:
         BUILD_CONFIGURATION: Release
         APP_UID: 1000
@@ -21,7 +21,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: src/Presentations/OnForkHub.Web/Dockerfile
+      dockerfile: .docker/Dockerfile.OnForkHub.Web
       args:
         BUILD_CONFIGURATION: Release
         APP_UID: 1000

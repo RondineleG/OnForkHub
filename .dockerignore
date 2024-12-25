@@ -28,3 +28,6 @@ README.md
 !.git/config
 !.git/packed-refs
 !.git/refs/heads/**
+
+!src/Presentations/OnForkHub.Web/wwwroot/npm
+!src/Presentations/OnForkHub.Web.Components/wwwroot/npm
