@@ -10,6 +10,7 @@ global using MoreLinq;
 global using OnForkHub.Api.Configuration;
 global using OnForkHub.Api.Endpoints.Base;
 global using OnForkHub.Api.Extensions;
+global using OnForkHub.Application.Dtos.Base;
 global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Entities.Base;
 global using OnForkHub.Core.Enums;
