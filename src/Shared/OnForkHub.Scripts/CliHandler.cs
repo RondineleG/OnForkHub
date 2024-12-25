@@ -22,7 +22,7 @@ public sealed class CliHandler(ILogger logger, IPackageInstaller packageInstalle
 
         foreach (var cmd in _commands)
         {
-            var formattedCommand = $"  {cmd.Key, -CommandColumnWidth} {cmd.Value}";
+            var formattedCommand = $"  {cmd.Key,-CommandColumnWidth} {cmd.Value}";
             _logger.Log(ELogLevel.Info, formattedCommand);
         }
 
