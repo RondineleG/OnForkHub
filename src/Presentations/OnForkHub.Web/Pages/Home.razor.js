@@ -1,13 +1,18 @@
 export function playVideo(fileName, videoElement) {
     if (videoElement) {
+        console.log("Setting video source to:", `/Videos/${fileName}`);
         videoElement.src = `/Videos/${fileName}`;
         videoElement.volume = 0.1;
         videoElement.load();
-        return videoElement.play();
+        return videoElement.play().catch(error => {
+            console.error("Error playing video:", error);
+        });
+    } else {
+        console.error("Video element is not defined.");
     }
 }
 
-// Gestos de swipe para mobile
+
 let touchstartX = 0;
 let touchendX = 0;
 let isVideoContainer = false;

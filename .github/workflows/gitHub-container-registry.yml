@@ -9,7 +9,6 @@ on:
       - 'src/Presentations/OnForkHub.Api/**'
       - 'src/Presentations/OnForkHub.Web/**'
       - 'docker-compose.yml'
-      - 'docker-compose.api.yml'
       - '.github/workflows/**'
 
 env:
@@ -46,7 +45,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: src/Presentations/OnForkHub.Api/Dockerfile
+          file: .docker/Dockerfile.OnForkHub.Api
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
@@ -58,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: src/Presentations/OnForkHub.Web/Dockerfile
+          file: .docker/Dockerfile.OnForkHub.Web
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
