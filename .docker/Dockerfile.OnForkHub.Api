@@ -1,3 +1,4 @@
+
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 80
@@ -15,10 +16,10 @@ COPY ["src/Persistence/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src
 RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .
 WORKDIR "/src/src/Presentations/OnForkHub.Api"
-RUN dotnet build "./OnForkHub.Api.csproj" -c Release -o /app/build
+RUN dotnet build "./OnForkHub.Api.csproj" -c Debug -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "./OnForkHub.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./OnForkHub.Api.csproj" -c Debug -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

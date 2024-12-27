@@ -12,21 +12,33 @@
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
-    <Target Name="NpmInstall" BeforeTargets="Build" Condition=" !Exists('wwwroot\npm\node_modules') ">
-        <Message Importance="high" Text="Instalando pacotes NPM..."/>
-        <Exec Command="npm install" WorkingDirectory="wwwroot\npm"/>
+    <Target Name="NpmInstall" BeforeTargets="Build">
+        <Message Importance="high" Text="Checking NpmInstall target execution..." />
+        <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmInstallExitCode" />
+        </Exec>
+        <Message Importance="high" Text="npm install exit code: $(NpmInstallExitCode)" />
+        <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="NpmBuildExitCode" />
+        </Exec>
+        <Message Importance="high" Text="npm build exit code: $(NpmBuildExitCode)" />
     </Target>
 
     <ItemGroup>
-        <Content Remove="wwwroot\npm\**\node_modules\**"/>
-        <None Remove="wwwroot\npm\**\node_modules\**"/>
+        <Folder Include="wwwroot/npm" />
     </ItemGroup>
-    <ItemGroup>
-        <SupportedPlatform Include="browser"/>
+
+    <ItemGroup Condition="'$(Configuration)' != 'Docker'">
+        <Content Remove="wwwroot/npm/**/node_modules/**" />
+        <None Remove="wwwroot/npm/**/node_modules/**" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.*"/>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.*" />
     </ItemGroup>
 
 </Project>

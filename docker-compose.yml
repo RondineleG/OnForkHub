@@ -3,14 +3,14 @@ services:
   api:
     build:
       context: .
-      dockerfile: src/Presentations/OnForkHub.Api/Dockerfile
+      dockerfile: .docker/Dockerfile.OnForkHub.Api
       args:
         BUILD_CONFIGURATION: Release
         APP_UID: 1000
     container_name: onforkhub-api
     restart: unless-stopped
     ports:
-      - "0.0.0.0:9000:80"  
+      - "0.0.0.0:9000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
@@ -21,14 +21,14 @@ services:
   web:
     build:
       context: .
-      dockerfile: src/Presentations/OnForkHub.Web/Dockerfile
+      dockerfile: .docker/Dockerfile.OnForkHub.Web
       args:
         BUILD_CONFIGURATION: Release
         APP_UID: 1000
     container_name: onforkhub-web
     restart: unless-stopped
     ports:
-      - "0.0.0.0:3000:80"  
+      - "0.0.0.0:3000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
