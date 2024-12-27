@@ -13,7 +13,6 @@ COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/
 COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
 COPY ["src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj", "src/Shared/OnForkHub.Dependencies/"]
 COPY ["src/Persistence/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src/Persistence/OnForkHub.Persistence/"]
-
 RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .
 WORKDIR "/src/src/Presentations/OnForkHub.Api"
@@ -25,9 +24,9 @@ RUN dotnet publish "./OnForkHub.Api.csproj" -c Debug -o /app/publish /p:UseAppHo
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-ENV ASPNETCORE_ENVIRONMENT=Development \
-    DOTNET_USE_POLLING_FILE_WATCHER=1 \
+ENV COMPlus_GCConserveMemory=9 \
+    COMPlus_HeapHardLimit=500000000 \
+    DOTNET_GCHeapHardLimit=500000000 \
+    ASPNETCORE_ENVIRONMENT=Production \
     ASPNETCORE_URLS=http://+:80
-
 ENTRYPOINT ["dotnet", "OnForkHub.Api.dll"]
