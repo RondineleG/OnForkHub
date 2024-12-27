@@ -5,11 +5,6 @@ on:
   push:
     branches:
       - dev
-    paths:
-      - 'src/Presentations/OnForkHub.Api/**'
-      - 'src/Presentations/OnForkHub.Web/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/**'
 
 env:
   REGISTRY: ghcr.io
@@ -38,8 +33,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set lowercase repository owner
-        run: |
-          echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Build and push API image
         uses: docker/build-push-action@v5
