@@ -7,20 +7,14 @@ RUN apt-get update && \
     apt-get install -y nodejs && \
     npm install -g npm@latest
 
-# Copy project files first
 COPY ["src/Presentations/OnForkHub.Web.Components/OnForkHub.Web.Components.csproj", "src/Presentations/OnForkHub.Web.Components/"]
 COPY ["src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj", "src/Presentations/OnForkHub.Web/"]
 
-# Restore packages
 RUN dotnet restore "src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj"
 
-# Copy everything else
 COPY . .
 
-# Build and publish
 WORKDIR "/src/src/Presentations/OnForkHub.Web"
-RUN ls -la
-RUN pwd
 RUN dotnet publish "OnForkHub.Web.csproj" -c Release -o /app/publish -v detailed
 
 FROM nginx:alpine AS final
@@ -28,32 +22,8 @@ WORKDIR /usr/share/nginx/html
 
 COPY --from=build /app/publish/wwwroot .
 
-# Create nginx.conf using a more reliable method
-RUN printf '%s\n' \
-    'events {' \
-    '    worker_connections 1024;' \
-    '}' \
-    '' \
-    'http {' \
-    '    include /etc/nginx/mime.types;' \
-    '    default_type application/octet-stream;' \
-    '' \
-    '    server {' \
-    '        listen 80;' \
-    '        server_name localhost;' \
-    '        root /usr/share/nginx/html;' \
-    '        index index.html;' \
-    '' \
-    '        location / {' \
-    '            try_files $uri $uri/ /index.html;' \
-    '        }' \
-    '' \
-    '        location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {' \
-    '            expires max;' \
-    '            log_not_found off;' \
-    '        }' \
-    '    }' \
-    '}' > /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]
