@@ -7,10 +7,6 @@ echo "Stopping services with orphan removal..."
 docker compose -f services.yml down --remove-orphans
 docker compose -f proxy.yml down --remove-orphans
 
-# Force removal of the reverse-proxy container specifically
-echo "Removing reverse-proxy container..."
-docker rm -f reverse-proxy 2>/dev/null || true
-
 # Stop and remove all containers
 echo "Stopping and removing all containers..."
 docker ps -aq | xargs -r docker stop
@@ -37,12 +33,13 @@ sleep 2
 
 # Create a new network
 echo "Creating new network..."
-docker network create my-network
+docker network create onforkhub-network
 
-# Start the services with --remove-orphans
+# Start all services including proxy
 echo "Starting services..."
-docker compose -f proxy.yml up -d --remove-orphans
-docker compose -f services.yml up -d --remove-orphans
+docker compose -f proxy.yml up -d
+sleep 2  # Add small delay to ensure proxy is up
+docker compose -f services.yml up -d
 
 echo "Checking container status..."
 docker ps
