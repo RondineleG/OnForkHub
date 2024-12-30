@@ -1,47 +1,38 @@
 #!/bin/bash
 
-echo "Starting complete cleanup..."
+echo "Starting development environment setup..."
 
-# Stop all services with --remove-orphans
-echo "Stopping services with orphan removal..."
-docker compose -f services.yml down --remove-orphans
-docker compose -f proxy.yml down --remove-orphans
+mkdir -p logs/nginx logs/onforkhub-api logs/onforkhub-web
 
-# Stop and remove all containers
-echo "Stopping and removing all containers..."
-docker ps -aq | xargs -r docker stop
-docker ps -aq | xargs -r docker rm -f
+check_disk_space() {
+    local space=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
+    if [ "$space" -gt 85 ]; then
+        echo "WARNING: Disk space is above 85% ($space%)"
+        echo "Running cleanup..."
+        ./docker-cleanup.sh
+    fi
+}
 
-# Remove all images
-echo "Removing images..."
-docker images -q | xargs -r docker rmi -f
+check_disk_space
 
-# Remove all networks
-echo "Removing networks..."
-docker network prune -f
+echo "Stopping existing services..."
+docker compose down --remove-orphans
 
-# Remove unused volumes
-echo "Removing volumes..."
-docker volume prune -f
+echo "Pruning unused Docker resources..."
+docker system prune -f
 
-# Remove everything that is "hanging"
-echo "Cleaning up system..."
-docker system prune -f --volumes
+echo "Starting all services..."
+docker compose up -d
 
-# Wait a moment to ensure everything is cleaned up
-sleep 2
-
-# Create a new network
-echo "Creating new network..."
-docker network create onforkhub-network
-
-# Start all services including proxy
-echo "Starting services..."
-docker compose -f proxy.yml up -d
-sleep 2  # Add small delay to ensure proxy is up
-docker compose -f services.yml up -d
+echo "Waiting for services to start..."
+sleep 3
 
 echo "Checking container status..."
 docker ps
 
-echo "Process completed!"
+echo "Checking container logs..."
+docker logs onforkhub-api --tail 10
+docker logs onforkhub-web --tail 10
+docker logs reverse-proxy --tail 10
+
+echo "Development environment is ready!"
