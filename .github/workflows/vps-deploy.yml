@@ -1,0 +1,48 @@
+name: Deploy to VPS
+
+on:
+  workflow_run:
+    workflows: ["Build Docker Images"]
+    types:
+      - completed
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create SSH directory
+        run: mkdir -p ~/.ssh
+
+      - name: Install SSH Key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create remote directory
+        run: ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'mkdir -p ~/onforkhub-deploy'
+
+      - name: Copy deployment files
+        run: |
+          scp -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'chmod +x ~/onforkhub-deploy/*.sh'
+
+      - name: Login to GitHub Container Registry on VPS
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+          'echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin'
+
+      - name: Deploy
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+          'cd ~/onforkhub-deploy && ./start-services.sh'
+
+      - name: Check deployment
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker ps'
