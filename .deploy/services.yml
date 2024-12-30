@@ -1,0 +1,26 @@
+services:
+  api:
+    image: ghcr.io/rondineleg/onforkhub-api:latest
+    container_name: api
+    expose:
+      - 80
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_HTTPS_REDIRECTION_ENABLED=false
+    networks:
+      - my-network
+
+  web:
+    image: ghcr.io/rondineleg/onforkhub-web:latest
+    container_name: web
+    depends_on:
+      - api
+    expose:
+      - 80
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    external: true
