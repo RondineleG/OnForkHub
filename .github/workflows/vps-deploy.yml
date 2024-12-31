@@ -1,11 +1,12 @@
 name: Deploy to VPS
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:  
   workflow_run:
     workflows: ["Build Docker Images"] 
     types:
       - completed
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -14,25 +15,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup SSH
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
+          eval $(ssh-agent -s)
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          chmod 700 ~/.ssh
+          echo "$SSH_HOST" >> ~/.ssh/known_hosts
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Copy .deploy files to VPS and execute
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          scp -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
+          # Teste de conexão SSH
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'echo "SSH connection successful"'
           
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} '
+          # Copiar arquivos
+          scp -o StrictHostKeyChecking=no -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
+          
+          # Dar permissão e executar
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} '
             cd ~/onforkhub-deploy && \
             chmod +x *.sh && \
             ./start-services.sh
           '
+
       - name: Verify deployment
         run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker ps'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker ps'
