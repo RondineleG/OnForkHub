@@ -1,79 +1,38 @@
 name: Deploy to VPS
 
 on:
+  workflow_dispatch: 
   workflow_run:
-    workflows: ["Build Docker Images"]
+    workflows: ["Build Docker Images"] 
     types:
       - completed
-    branches:
-      - dev
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     
     steps:
       - uses: actions/checkout@v4
       
-      - name: Configure SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Setup SSH
         run: |
-          eval $(ssh-agent -s)
-          ssh-add - <<< "$SSH_KEY"
           mkdir -p ~/.ssh
-          ssh-keyscan -t rsa $SSH_HOST >> ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy
+      - name: Copy .deploy files to VPS and execute
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          IMAGE_TAG: ${{ github.sha }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          ssh $SSH_USER@$SSH_HOST "mkdir -p ~/onforkhub"
+          scp -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
           
-          cat > docker-compose.yml << EOF
-          version: '3.8'
-          services:
-            api:
-              image: ghcr.io/rondineleg/onforkhub-api:${IMAGE_TAG}
-              container_name: onforkhub-api
-              restart: unless-stopped
-              ports:
-                - "9000:9000"
-              environment:
-                - ASPNETCORE_ENVIRONMENT=Production
-                - ASPNETCORE_URLS=http://+:9000
-              networks:
-                - onforkhub-network
-
-            web:
-              image: ghcr.io/rondineleg/onforkhub-web:${IMAGE_TAG}
-              container_name: onforkhub-web
-              restart: unless-stopped
-              ports:
-                - "80:80"
-              environment:
-                - ASPNETCORE_ENVIRONMENT=Production
-                - ASPNETCORE_URLS=http://+:80
-              depends_on:
-                - api
-              networks:
-                - onforkhub-network
-
-          networks:
-            onforkhub-network:
-              name: onforkhub-network
-          EOF
-
-          scp docker-compose.yml $SSH_USER@$SSH_HOST:~/onforkhub/
-          
-          ssh $SSH_USER@$SSH_HOST "cd ~/onforkhub && \
-            echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin && \
-            docker-compose down --volumes --remove-orphans && \
-            docker-compose pull && \
-            docker-compose up -d && \
-            docker image prune -f"
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} '
+            cd ~/onforkhub-deploy && \
+            chmod +x *.sh && \
+            ./start-services.sh
+          '
+      - name: Verify deployment
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker ps'
