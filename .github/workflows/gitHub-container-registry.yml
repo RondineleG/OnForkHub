@@ -1,134 +1,132 @@
 name: Build and Deploy
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - dev
+ workflow_dispatch:
+ push:
+   branches:
+     - dev
 env:
-  REGISTRY: ghcr.io
-  API_IMAGE_NAME: onforkhub-api
-  WEB_IMAGE_NAME: onforkhub-web
-  DOCKER_BUILDKIT: 1
+ REGISTRY: ghcr.io
+ API_IMAGE_NAME: onforkhub-api
+ WEB_IMAGE_NAME: onforkhub-web
+ DOCKER_BUILDKIT: 1
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      actions: write
-    outputs:
-      image_tag: ${{ github.sha }}
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Set lowercase repository owner
-        run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-      
-      - name: Build and push API image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: .docker/Dockerfile.OnForkHub.Api
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      
-      - name: Build and push Web image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: .docker/Dockerfile.OnForkHub.Web
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+ build:
+   runs-on: ubuntu-latest
+   permissions:
+     contents: read
+     packages: write
+     actions: write
+   outputs:
+     image_tag: ${{ github.sha }}
+   
+   steps:
+     - uses: actions/checkout@v4
+     
+     - name: Set up Docker Buildx
+       uses: docker/setup-buildx-action@v3
+     
+     - name: Login to GitHub Container Registry
+       uses: docker/login-action@v3
+       with:
+         registry: ${{ env.REGISTRY }}
+         username: ${{ github.actor }}
+         password: ${{ secrets.GITHUB_TOKEN }}
+     
+     - name: Set lowercase repository owner
+       run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+     
+     - name: Build and push API image
+       uses: docker/build-push-action@v5
+       with:
+         context: .
+         file: .docker/Dockerfile.OnForkHub.Api
+         push: true
+         tags: |
+           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
+           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:latest
+         cache-from: type=gha
+         cache-to: type=gha,mode=max
+     
+     - name: Build and push Web image
+       uses: docker/build-push-action@v5
+       with:
+         context: .
+         file: .docker/Dockerfile.OnForkHub.Web
+         push: true
+         tags: |
+           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
+           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:latest
+         cache-from: type=gha
+         cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
+ deploy:
+   needs: build
+   runs-on: ubuntu-latest
+   
+   steps:
+     - uses: actions/checkout@v4
 
-      - name: Prepare VPS
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script_stop: true
-          script: |
-            # Parar serviços se existirem
-            if [ -d "~/onforkhub-deploy" ]; then
-              cd ~/onforkhub-deploy
-              if [ -f "docker-compose.yml" ]; then
-                docker compose down --remove-orphans
-              fi
-              if [ -f "docker-cleanup.sh" ]; then
-                chmod +x docker-cleanup.sh
-                ./docker-cleanup.sh
-              fi
-            fi
-            
-            # Limpar diretório existente preservando logs
-            mkdir -p ~/onforkhub-deploy/logs
-            cd ~/onforkhub-deploy
-            find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
-            
-            # Login no GitHub Container Registry
-            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+     - name: Check SSH connection
+       uses: appleboy/ssh-action@v1.0.0
+       with:
+         host: ${{ secrets.SSH_HOST }}
+         username: ${{ secrets.SSH_USERNAME }}
+         key: ${{ secrets.SSH_PRIVATE_KEY }}
+         timeout: 60s
+         command_timeout: 20m
+         script: echo "SSH connection test successful"
 
-      - name: Copy deployment files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: ".deploy/*"
-          target: "~/onforkhub-deploy"
-          strip_components: 1
+     - name: Prepare VPS
+       if: success()
+       uses: appleboy/ssh-action@v1.0.0
+       with:
+         host: ${{ secrets.SSH_HOST }}
+         username: ${{ secrets.SSH_USERNAME }}
+         key: ${{ secrets.SSH_PRIVATE_KEY }}
+         timeout: 60s
+         command_timeout: 20m
+         script: |
+           mkdir -p ~/onforkhub-deploy/logs
+           cd ~/onforkhub-deploy || exit 1
+           docker compose down --remove-orphans || true
+           find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
+           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Execute deployment
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/onforkhub-deploy
-            chmod +x *.sh
-            ./start-services.sh
+     - name: Copy deployment files
+       if: success()
+       uses: appleboy/scp-action@v0.1.7
+       with:
+         host: ${{ secrets.SSH_HOST }}
+         username: ${{ secrets.SSH_USERNAME }}
+         key: ${{ secrets.SSH_PRIVATE_KEY }}
+         source: ".deploy/*"
+         target: "~/onforkhub-deploy"
+         strip_components: 1
+         timeout: 60s
 
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/onforkhub-deploy
-            docker ps
-            echo "=== API Logs ==="
-            docker logs onforkhub-api --tail 10 2>&1
-            echo "=== Web Logs ==="
-            docker logs onforkhub-web --tail 10 2>&1
-            echo "=== Nginx Logs ==="
-            docker logs reverse-proxy --tail 10 2>&1
+     - name: Execute deployment
+       if: success()
+       uses: appleboy/ssh-action@v1.0.0
+       with:
+         host: ${{ secrets.SSH_HOST }}
+         username: ${{ secrets.SSH_USERNAME }}
+         key: ${{ secrets.SSH_PRIVATE_KEY }}
+         timeout: 60s
+         command_timeout: 20m
+         script: |
+           cd ~/onforkhub-deploy
+           chmod +x *.sh
+           ./start-services.sh
+
+     - name: Verify deployment
+       if: success()
+       uses: appleboy/ssh-action@v1.0.0
+       with:
+         host: ${{ secrets.SSH_HOST }}
+         username: ${{ secrets.SSH_USERNAME }}
+         key: ${{ secrets.SSH_PRIVATE_KEY }}
+         timeout: 60s
+         script: |
+           docker ps
