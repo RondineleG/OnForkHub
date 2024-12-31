@@ -16,20 +16,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Deploy to VPS
+      - name: Configure SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          eval $(ssh-agent -s)
+          ssh-add - <<< "$SSH_KEY"
+          mkdir -p ~/.ssh
+          ssh-keyscan -t rsa $SSH_HOST >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          eval $(ssh-agent -s)
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-          
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "$SSH_HOST" >> ~/.ssh/known_hosts
+          ssh $SSH_USER@$SSH_HOST "mkdir -p ~/onforkhub"
           
           cat > docker-compose.yml << EOF
           version: '3.8'
@@ -51,10 +55,10 @@ jobs:
               container_name: onforkhub-web
               restart: unless-stopped
               ports:
-                - "8000:8000"
+                - "80:80"
               environment:
                 - ASPNETCORE_ENVIRONMENT=Production
-                - ASPNETCORE_URLS=http://+:8000
+                - ASPNETCORE_URLS=http://+:80
               depends_on:
                 - api
               networks:
@@ -65,8 +69,9 @@ jobs:
               name: onforkhub-network
           EOF
 
-          scp docker-compose.yml $SSH_USERNAME@$SSH_HOST:~/onforkhub/
-          ssh $SSH_USERNAME@$SSH_HOST "cd ~/onforkhub && \
+          scp docker-compose.yml $SSH_USER@$SSH_HOST:~/onforkhub/
+          
+          ssh $SSH_USER@$SSH_HOST "cd ~/onforkhub && \
             echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin && \
             docker-compose down --volumes --remove-orphans && \
             docker-compose pull && \
