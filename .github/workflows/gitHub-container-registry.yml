@@ -68,57 +68,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to VPS
+      - name: Prepare VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            # Parar serviços se existirem
+            if [ -d "~/onforkhub-deploy" ]; then
+              cd ~/onforkhub-deploy
+              if [ -f "docker-compose.yml" ]; then
+                docker compose down --remove-orphans
+              fi
+              if [ -f "docker-cleanup.sh" ]; then
+                chmod +x docker-cleanup.sh
+                ./docker-cleanup.sh
+              fi
+            fi
+            
+            # Limpar diretório existente preservando logs
+            mkdir -p ~/onforkhub-deploy/logs
+            cd ~/onforkhub-deploy
+            find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
+            
+            # Login no GitHub Container Registry
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Copy deployment files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ".deploy/*"
+          target: "~/onforkhub-deploy"
+          strip_components: 1
+
+      - name: Execute deployment
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            mkdir -p ~/onforkhub
-            
-            # Criar docker-compose.yml
-            cat > ~/onforkhub/docker-compose.yml << 'EOF'
-            version: '3.8'
-            services:
-              api:
-                image: ghcr.io/rondineleg/onforkhub-api:${{ needs.build.outputs.image_tag }}
-                container_name: onforkhub-api
-                restart: unless-stopped
-                ports:
-                  - "9000:9000"
-                environment:
-                  - ASPNETCORE_ENVIRONMENT=Production
-                  - ASPNETCORE_URLS=http://+:9000
-                networks:
-                  - onforkhub-network
-              web:
-                image: ghcr.io/rondineleg/onforkhub-web:${{ needs.build.outputs.image_tag }}
-                container_name: onforkhub-web
-                restart: unless-stopped
-                ports:
-                  - "80:80"
-                environment:
-                  - ASPNETCORE_ENVIRONMENT=Production
-                  - ASPNETCORE_URLS=http://+:80
-                depends_on:
-                  - api
-                networks:
-                  - onforkhub-network
-            networks:
-              onforkhub-network:
-                name: onforkhub-network
-            EOF
-            
-            # Login no GitHub Container Registry
-            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Deploy
-            cd ~/onforkhub
-            docker-compose down --volumes --remove-orphans
-            docker-compose pull
-            docker-compose up -d
-            docker image prune -f
+            cd ~/onforkhub-deploy
+            chmod +x *.sh
+            ./start-services.sh
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.0
@@ -126,4 +123,12 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: docker ps
+          script: |
+            cd ~/onforkhub-deploy
+            docker ps
+            echo "=== API Logs ==="
+            docker logs onforkhub-api --tail 10 2>&1
+            echo "=== Web Logs ==="
+            docker logs onforkhub-web --tail 10 2>&1
+            echo "=== Nginx Logs ==="
+            docker logs reverse-proxy --tail 10 2>&1
