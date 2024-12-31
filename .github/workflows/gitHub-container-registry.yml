@@ -1,4 +1,5 @@
-name: Build Docker Images
+name: Build and Deploy
+
 on:
   workflow_dispatch:
   push:
@@ -66,63 +67,63 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Configure SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          eval $(ssh-agent -s)
-          ssh-add - <<< "$SSH_KEY"
-          mkdir -p ~/.ssh
-          ssh-keyscan -t rsa $SSH_HOST >> ~/.ssh/known_hosts
 
-      - name: Deploy
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
-        run: |
-          ssh $SSH_USER@$SSH_HOST "mkdir -p ~/onforkhub"
-          
-          cat > docker-compose.yml << EOF
-          version: '3.8'
-          services:
-            api:
-              image: ghcr.io/rondineleg/onforkhub-api:${IMAGE_TAG}
-              container_name: onforkhub-api
-              restart: unless-stopped
-              ports:
-                - "9000:9000"
-              environment:
-                - ASPNETCORE_ENVIRONMENT=Production
-                - ASPNETCORE_URLS=http://+:9000
-              networks:
-                - onforkhub-network
-            web:
-              image: ghcr.io/rondineleg/onforkhub-web:${IMAGE_TAG}
-              container_name: onforkhub-web
-              restart: unless-stopped
-              ports:
-                - "80:80"
-              environment:
-                - ASPNETCORE_ENVIRONMENT=Production
-                - ASPNETCORE_URLS=http://+:80
-              depends_on:
-                - api
-              networks:
-                - onforkhub-network
-          networks:
-            onforkhub-network:
-              name: onforkhub-network
-          EOF
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ~/onforkhub
+            
+            # Criar docker-compose.yml
+            cat > ~/onforkhub/docker-compose.yml << 'EOF'
+            version: '3.8'
+            services:
+              api:
+                image: ghcr.io/rondineleg/onforkhub-api:${{ needs.build.outputs.image_tag }}
+                container_name: onforkhub-api
+                restart: unless-stopped
+                ports:
+                  - "9000:9000"
+                environment:
+                  - ASPNETCORE_ENVIRONMENT=Production
+                  - ASPNETCORE_URLS=http://+:9000
+                networks:
+                  - onforkhub-network
+              web:
+                image: ghcr.io/rondineleg/onforkhub-web:${{ needs.build.outputs.image_tag }}
+                container_name: onforkhub-web
+                restart: unless-stopped
+                ports:
+                  - "80:80"
+                environment:
+                  - ASPNETCORE_ENVIRONMENT=Production
+                  - ASPNETCORE_URLS=http://+:80
+                depends_on:
+                  - api
+                networks:
+                  - onforkhub-network
+            networks:
+              onforkhub-network:
+                name: onforkhub-network
+            EOF
+            
+            # Login no GitHub Container Registry
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Deploy
+            cd ~/onforkhub
+            docker-compose down --volumes --remove-orphans
+            docker-compose pull
+            docker-compose up -d
+            docker image prune -f
 
-          scp docker-compose.yml $SSH_USER@$SSH_HOST:~/onforkhub/
-          
-          ssh $SSH_USER@$SSH_HOST "cd ~/onforkhub && \
-            echo $GITHUB_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin && \
-            docker-compose down --volumes --remove-orphans && \
-            docker-compose pull && \
-            docker-compose up -d && \
-            docker image prune -f"
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: docker ps
