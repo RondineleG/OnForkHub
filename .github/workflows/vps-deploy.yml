@@ -1,7 +1,7 @@
 name: Deploy to VPS
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
   workflow_run:
     workflows: ["Build Docker Images"] 
     types:
@@ -15,33 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      - name: Install SSH Key
         run: |
-          eval $(ssh-agent -s)
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "$SSH_HOST" >> ~/.ssh/known_hosts
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "StrictHostKeyChecking no" > ~/.ssh/config
 
-      - name: Copy .deploy files to VPS and execute
+      - name: Deploy with rsync
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          # Teste de conexão SSH
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'echo "SSH connection successful"'
+          # Teste da conexão SSH
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'echo "Connected successfully"'
           
-          # Copiar arquivos
-          scp -o StrictHostKeyChecking=no -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
-          
-          # Dar permissão e executar
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} '
+          # Copiar arquivos e executar
+          scp -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} '
             cd ~/onforkhub-deploy && \
             chmod +x *.sh && \
             ./start-services.sh
@@ -49,4 +39,4 @@ jobs:
 
       - name: Verify deployment
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker ps'
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker ps'
