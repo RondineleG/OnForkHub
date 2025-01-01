@@ -1,16 +1,13 @@
-name: Manual Deploy to VPS
+name: Deploy to VPS (Manual)
 
-on:
-  workflow_dispatch:
+on: workflow_dispatch
 
 jobs:
   deploy:
-    name: Deploy to VPS
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-        
+      
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -24,7 +21,7 @@ jobs:
             find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Copy deployment files
+      - name: Copy files
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -44,16 +41,3 @@ jobs:
             cd ~/onforkhub-deploy
             chmod +x *.sh
             ./start-services.sh
-
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker ps
-            echo "Container logs:"
-            docker logs onforkhub-api --tail 10
-            docker logs onforkhub-web --tail 10
-            docker logs reverse-proxy --tail 10
