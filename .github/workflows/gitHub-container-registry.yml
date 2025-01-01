@@ -77,6 +77,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          timeout: '60s'
+          command_timeout: '20m'
+          skip_verify: true
           script: |
             mkdir -p ~/onforkhub-deploy/logs
             cd ~/onforkhub-deploy
@@ -93,6 +97,8 @@ jobs:
           source: ".deploy/*"
           target: "~/onforkhub-deploy"
           strip_components: 1
+          timeout: '60s'
+          skip_verify: true
 
       - name: Start services
         uses: appleboy/ssh-action@v1.0.0
@@ -100,6 +106,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: '60s'
+          command_timeout: '20m'
+          skip_verify: true
           script: |
             cd ~/onforkhub-deploy
             chmod +x *.sh
