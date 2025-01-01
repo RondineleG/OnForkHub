@@ -1,19 +1,11 @@
-name: Deploy to VPS (Manual)
-run-name: Manual VPS Deploy by @${{ github.actor }}
-
-on:
-  workflow_dispatch:
-
+name: Deploy
+on: workflow_dispatch
 jobs:
   deploy:
-    name: VPS Deployment
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to VPS
+      - uses: actions/checkout@v4
+      - name: Deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -25,7 +17,7 @@ jobs:
             docker compose down --remove-orphans
             rm -rf ./*
 
-      - name: Copy Files
+      - name: Copy
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -35,7 +27,7 @@ jobs:
           target: "~/onforkhub-deploy"
           strip_components: 1
 
-      - name: Start Services
+      - name: Start
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
