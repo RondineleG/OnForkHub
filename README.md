@@ -364,12 +364,13 @@ dotnet nuget locals all --clear
 dotnet build --no-incremental
 ```
 
-## 📜 License
-
-Copyright © 2024 OnForkHub - Released under the [MIT License](LICENSE).
-
 ## 📬 Support
 
 - 📧 Email: rondineleg@gmail.com
 - 💬 Telegram: [Join Our Server](https://t.me/OnForkHub)
 - 🐛 Issues: [GitHub Issues](https://github.com/RondineleG/OnForkHub/issues)
+
+## 📜 License
+
+Copyright © 2024 OnForkHub - Released under the [MIT License](LICENSE).
+
