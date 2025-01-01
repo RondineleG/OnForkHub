@@ -12,6 +12,10 @@ on:
         options:
           - development
           - production
+    branches:
+      - dev
+      - main
+      - feature/*
 
 env:
   REGISTRY: ghcr.io
