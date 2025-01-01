@@ -1,23 +1,24 @@
 name: Manual Deploy to VPS
 
-on:
+on: 
   workflow_dispatch:
     inputs:
-      deploy_type:
+      deployType:
         description: 'Deploy'
+        type: choice
         required: true
         default: 'full'
-        type: choice
         options:
-          - full
-          - restart
+        - full
+        - restart
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     
     steps:
       - uses: actions/checkout@v4
