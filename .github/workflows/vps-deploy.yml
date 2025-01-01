@@ -1,7 +1,7 @@
 name: Deploy to VPS
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:  # Execução manual
   workflow_run:
     workflows: ["Build Docker Images"]
     types:
@@ -10,11 +10,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: write
+      
     steps:
       - uses: actions/checkout@v4
-
+        
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -29,7 +32,6 @@ jobs:
             cd ~/onforkhub-deploy
             docker compose down --remove-orphans || true
             find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
-            
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Copy deployment files
