@@ -1,23 +1,11 @@
 name: Manual Deploy to VPS
 
-on: 
+on:
   workflow_dispatch:
-    inputs:
-      deployType:
-        description: 'Deploy'
-        type: choice
-        required: true
-        default: 'full'
-        options:
-        - full
-        - restart
-
-permissions:
-  contents: read
-  packages: write
 
 jobs:
   deploy:
+    name: Deploy to VPS
     runs-on: ubuntu-latest
     
     steps:
@@ -29,9 +17,6 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script_stop: true
-          timeout: 60s
-          command_timeout: 20m
           script: |
             mkdir -p ~/onforkhub-deploy/logs
             cd ~/onforkhub-deploy
@@ -48,7 +33,6 @@ jobs:
           source: ".deploy/*"
           target: "~/onforkhub-deploy"
           strip_components: 1
-          timeout: 60s
 
       - name: Start services
         uses: appleboy/ssh-action@v1.0.0
@@ -68,7 +52,6 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/onforkhub-deploy
             docker ps
             echo "Container logs:"
             docker logs onforkhub-api --tail 10
