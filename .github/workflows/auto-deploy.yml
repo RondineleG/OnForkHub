@@ -1,16 +1,17 @@
-name: Deploy to VPS
+name: Auto Deploy to VPS
 
 on:
-  workflow_dispatch:  # Execução manual
   workflow_run:
     workflows: ["Build Docker Images"]
     types:
       - completed
+    branches:
+      - dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
       packages: write
@@ -35,7 +36,6 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Copy deployment files
-        if: success()
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -47,7 +47,6 @@ jobs:
           timeout: 60s
 
       - name: Start services
-        if: success()
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -59,7 +58,6 @@ jobs:
             ./start-services.sh
 
       - name: Verify deployment
-        if: success()
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
