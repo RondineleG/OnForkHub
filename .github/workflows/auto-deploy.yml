@@ -2,11 +2,9 @@ name: Auto Deploy to VPS
 
 on:
   workflow_run:
-    workflows: ["Build Docker Images"]
-    types:
-      - completed
-    branches:
-      - dev
+    workflows: ["gitHub-container-registry.yml"]
+    types: [completed]
+    branches: [dev]
 
 jobs:
   deploy:
@@ -15,9 +13,11 @@ jobs:
     permissions:
       contents: read
       packages: write
-      
+    
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: dev
         
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
