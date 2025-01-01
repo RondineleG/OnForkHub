@@ -1,6 +1,3 @@
-using OnForkHub.Application.Dtos.Category.Request;
-using OnForkHub.Core.ValueObjects;
-
 namespace OnForkHub.Application.UseCases.Categories;
 
 public class CreateCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF, IEntityValidator<Category> validator)
