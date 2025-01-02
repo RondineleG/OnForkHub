@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build Docker Images
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -64,45 +64,3 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy to VPS
-        run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
-            mkdir -p ~/onforkhub-deploy/logs
-            cd ~/onforkhub-deploy
-            docker compose down --remove-orphans || true
-            find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
-            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          "
-
-      - name: Copy files
-        run: |
-          scp -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
-
-      - name: Start services
-        run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
-            cd ~/onforkhub-deploy
-            chmod +x *.sh
-            ./start-services.sh
-            
-            echo 'Checking deployment status...'
-            docker ps
-            echo 'Container logs:'
-            docker logs onforkhub-api --tail 10
-            docker logs onforkhub-web --tail 10
-            docker logs reverse-proxy --tail 10
-          "
