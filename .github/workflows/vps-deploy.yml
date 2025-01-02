@@ -1,9 +1,7 @@
 name: VPS Deploy
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -22,7 +20,7 @@ jobs:
           target: "~/onforkhub-deploy"
           strip_components: 1
 
-      - name: Run setup on VPS
+      - name: Run setup on VPS with latest image
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -31,4 +29,7 @@ jobs:
           script: |
             cd ~/onforkhub-deploy
             chmod +x *.sh
+            ./docker-cleanup.sh
+            docker pull ghcr.io/rondineleg/onforkhub-api:latest
+            docker pull ghcr.io/rondineleg/onforkhub-web:latest
             ./start-services.sh
