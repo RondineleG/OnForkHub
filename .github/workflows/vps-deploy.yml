@@ -2,7 +2,15 @@ name: VPS Deploy
 
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - dev
+    paths:
+      - 'src/Presentations/OnForkHub.Api/**'
+      - 'src/Presentations/OnForkHub.Web/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/**
+      
 jobs:
   deploy:
     runs-on: ubuntu-latest
