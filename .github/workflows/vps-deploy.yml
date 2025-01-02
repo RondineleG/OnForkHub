@@ -5,11 +5,6 @@ on:
   push:
     branches:
       - dev
-    paths:
-      - 'src/Presentations/OnForkHub.Api/**'
-      - 'src/Presentations/OnForkHub.Web/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/**
       
 jobs:
   deploy:
