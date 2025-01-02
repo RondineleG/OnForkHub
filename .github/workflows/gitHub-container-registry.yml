@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build and Deploy Docker Images
 
 on:
   workflow_dispatch:
@@ -10,7 +10,6 @@ on:
       - 'src/Presentations/OnForkHub.Web/**'
       - 'docker-compose.yml'
       - '.github/workflows/**'
-      - '.deploy/**'
 
 env:
   REGISTRY: ghcr.io
@@ -19,20 +18,21 @@ env:
   DOCKER_BUILDKIT: 1
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: dev
 
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+
+      # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Login to GitHub Container Registry
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -40,10 +40,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Set lowercase repository owner
       - name: Set lowercase repository owner
         run: |
           echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      # Build and push API image
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
@@ -56,6 +58,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Build and push Web image
       - name: Build and push Web image
         uses: docker/build-push-action@v5
         with:
@@ -68,49 +71,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      # Set up SSH authentication
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.1
         with:
-          ref: dev
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Setup SSH
+      # Deploy to remote server
+      - name: Deploy application
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy to VPS
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-        run: |
-          ssh $SSH_USER@$SSH_HOST "
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             mkdir -p ~/onforkhub-deploy/logs
             cd ~/onforkhub-deploy
             docker compose down --remove-orphans || true
             find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
-            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          "
-
-      - name: Copy files
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-        run: |
-          scp -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
-
-      - name: Start services
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-        run: |
-          ssh $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy
-            chmod +x *.sh
-            ./start-services.sh
-            docker ps
+            echo '${{ secrets.DOCKER_PASSWORD }}' | docker login ghcr.io -u RondineleG --password-stdin
+            docker compose up -d
           "
