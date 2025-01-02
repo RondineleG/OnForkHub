@@ -1,10 +1,11 @@
 name: VPS Deploy
+
 on:
-  workflow_dispatch:
+  workflow_dispatch:  
   workflow_run:
-    workflows: ["Build Docker Images"]
-    types:
-      - completed
+    workflows: ["Build Docker Images"]  
+    types: [completed]
+    branches: [dev] 
 
 jobs:
   deploy:
@@ -14,25 +15,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Install SSH key
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Add known hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Copy files to VPS
-        run: |
-          scp -i ~/.ssh/deploy_key -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
-
-      - name: Deploy to VPS
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} '
+          scp -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+          ssh $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x *.sh &&
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
             ./docker-cleanup.sh &&
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
-            docker pull ghcr.io/rondineleg/onforkhub-api:latest &&
-            docker pull ghcr.io/rondineleg/onforkhub-web:latest &&
             ./start-services.sh
-          '
+          "
