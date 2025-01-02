@@ -1,22 +1,19 @@
-name: Manual Workflow
-on: workflow_dispatch
+name: VPS Deploy
+
+on:
+  push:
+    tags:
+      - '*'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            mkdir -p ~/onforkhub-deploy/logs
-            cd ~/onforkhub-deploy
-            docker compose down --remove-orphans
-            rm -rf ./*
 
-      - uses: appleboy/scp-action@v0.1.7
+      - name: Copy files to VPS
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
@@ -25,7 +22,8 @@ jobs:
           target: "~/onforkhub-deploy"
           strip_components: 1
 
-      - uses: appleboy/ssh-action@v1.0.0
+      - name: Run setup on VPS
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}

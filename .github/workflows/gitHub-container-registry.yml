@@ -1,4 +1,4 @@
-name: Build and Deploy Docker Images
+name: Build Docker Images
 
 on:
   workflow_dispatch:
@@ -18,21 +18,18 @@ env:
   DOCKER_BUILDKIT: 1
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-      # Checkout the repository
       - uses: actions/checkout@v4
 
-      # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Login to GitHub Container Registry
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -40,12 +37,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Set lowercase repository owner
       - name: Set lowercase repository owner
         run: |
           echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      # Build and push API image
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
@@ -58,7 +53,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Build and push Web image
       - name: Build and push Web image
         uses: docker/build-push-action@v5
         with:
@@ -70,21 +64,3 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      # Set up SSH authentication
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      # Deploy to remote server
-      - name: Deploy application
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-            mkdir -p ~/onforkhub-deploy/logs
-            cd ~/onforkhub-deploy
-            docker compose down --remove-orphans || true
-            find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
-            echo '${{ secrets.DOCKER_PASSWORD }}' | docker login ghcr.io -u RondineleG --password-stdin
-            docker compose up -d
-          "
