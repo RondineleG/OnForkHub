@@ -1,0 +1,90 @@
+services:
+  reverse-proxy:
+    image: nginx:alpine
+    container_name: reverse-proxy
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 9000:9000
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+    volumes:
+      - ./custom.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./logs/nginx:/var/log/nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+    networks:
+      - onforkhub-network
+
+  onforkhub-api:
+    image: ghcr.io/rondineleg/onforkhub-api:latest
+    container_name: onforkhub-api
+    expose:
+      - 80
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_HTTPS_REDIRECTION_ENABLED=false
+      - COMPlus_GCConserveMemory=1
+      - COMPlus_HeapHardLimit=500000000
+      - DOTNET_GCHeapHardLimit=500000000
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+          cpus: '0.5'
+        reservations:
+          memory: 100M
+          cpus: '0.1'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+    volumes:
+      - ./logs/api:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - onforkhub-network
+
+  onforkhub-web:
+    image: ghcr.io/rondineleg/onforkhub-web:latest
+    container_name: onforkhub-web
+    depends_on:
+      - onforkhub-api
+    expose:
+      - 80
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+          cpus: '0.4'
+        reservations:
+          memory: 50M
+          cpus: '0.1'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+    volumes:
+      - ./logs/web:/app/logs
+    networks:
+      - onforkhub-network
+
+networks:
+  onforkhub-network:
+    name: onforkhub-network

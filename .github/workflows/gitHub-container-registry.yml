@@ -2,6 +2,16 @@ name: Build Docker Images
 
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - main
+          - feature/implement-category-crud-api-endpoints
   push:
     branches:
       - dev
@@ -23,9 +33,11 @@ jobs:
     permissions:
       contents: read
       packages: write
-
+    
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'dev' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -64,3 +76,42 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'dev' }}
+      
+      - name: Install SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "Criando chave SSH..."
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "Adicionando known hosts..."
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "Verificando arquivo da chave..."
+          ls -l ~/.ssh/deploy_key
+          echo "Testando conexão SSH..."
+          ssh -v -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "echo 'Teste de conexão'"
+      
+      - name: Deploy
+        if: success()
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          echo "Copiando arquivos..."
+          scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+          
+          echo "Executando deploy..."
+          ssh -v -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            cd ~/onforkhub-deploy &&
+            chmod +x *.sh &&
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
+            ./docker-cleanup.sh &&
+            ./start-services.sh
+          "
