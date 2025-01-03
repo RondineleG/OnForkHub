@@ -88,17 +88,27 @@ jobs:
       - name: Install SSH Key
         run: |
           mkdir -p ~/.ssh
+          echo "Criando chave SSH..."
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          echo "Adicionando known hosts..."
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "Verificando arquivo da chave..."
+          ls -l ~/.ssh/deploy_key
+          echo "Testando conexão SSH..."
+          ssh -v -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "echo 'Teste de conexão'"
       
       - name: Deploy
+        if: success()
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          scp -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+          echo "Copiando arquivos..."
+          scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+          
+          echo "Executando deploy..."
+          ssh -v -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x *.sh &&
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
