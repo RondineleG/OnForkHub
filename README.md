@@ -64,7 +64,32 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
   - Git Flow
   - CSharpier
 
-## 🚀 Getting Started
+  ## 🚀 Deployment Guide
+### VPS Specifications
+The project has been successfully deployed and tested on a minimal VPS configuration:
+- **Type**: Virtual Machine
+- **Size**: VPS 1/1/10
+- **CPU**: 1 vCore
+- **RAM**: 1 GB
+- **Storage**: 10 GB NVMe SSD
+
+### Public Access
+Development  environment  deployment is available at:
+- **Frontend**: http://209.46.125.85/
+- **API Documentation**: http://209.46.125.85:9000/swagger/index.html
+
+### Docker Setup
+The deployment uses Docker with a reverse proxy configuration:
+- Frontend accessible on port 80
+- API accessible on port 9000
+
+#### Configuration Files
+- `proxy.yml`: Nginx reverse proxy setup
+- `custom.conf`: Nginx configuration
+- `services.yml`: Application services configuration
+
+
+## 🚀 Starting to develop
 
 ### First-Time Setup
 
@@ -339,12 +364,13 @@ dotnet nuget locals all --clear
 dotnet build --no-incremental
 ```
 
-## 📜 License
-
-Copyright © 2024 OnForkHub - Released under the [MIT License](LICENSE).
-
 ## 📬 Support
 
 - 📧 Email: rondineleg@gmail.com
 - 💬 Telegram: [Join Our Server](https://t.me/OnForkHub)
 - 🐛 Issues: [GitHub Issues](https://github.com/RondineleG/OnForkHub/issues)
+
+## 📜 License
+
+Copyright © 2024 OnForkHub - Released under the [MIT License](LICENSE).
+

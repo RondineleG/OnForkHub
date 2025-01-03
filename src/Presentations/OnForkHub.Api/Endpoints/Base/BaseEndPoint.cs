@@ -61,11 +61,14 @@ public abstract class BaseEndpoint<TEntity>
         }
     }
 
-    protected static async Task<IResult> HandleDeleteUseCase<TRequest>(IUseCase<TRequest, bool> useCase, ILogger logger, TRequest request)
+    protected static async Task<IResult> HandleDeleteUseCase<TRequest, TResponse>(
+        IUseCase<TRequest, TResponse> useCase,
+        ILogger logger,
+        TRequest request
+    )
     {
         ArgumentNullException.ThrowIfNull(useCase);
         ArgumentNullException.ThrowIfNull(logger);
-
         try
         {
             EndpointLogMessages.LogExecutingUseCase(logger, useCase.GetType().Name, JsonSerializer.Serialize(request), null);
