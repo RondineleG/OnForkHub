@@ -1,11 +1,21 @@
 name: VPS Deploy
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - main
+          - feature/implement-category-crud-api-endpoints
   workflow_run:
-    workflows: ["Build Docker Images"]  
+    workflows: ["Build Docker Images"]
     types: [completed]
-    branches: [dev] 
+    branches: [dev]
 
 jobs:
   deploy:
@@ -14,6 +24,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'dev' }}
       
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
