@@ -1,90 +1,126 @@
 services:
-  reverse-proxy:
-    image: nginx:alpine
-    container_name: reverse-proxy
-    restart: unless-stopped
-    ports:
-      - 80:80
-      - 9000:9000
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-          cpus: '0.2'
-    volumes:
-      - ./custom.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./logs/nginx:/var/log/nginx
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "20m"
-        max-file: "5"
-    networks:
-      - onforkhub-network
+ reverse-proxy:
+   image: nginx:alpine
+   container_name: reverse-proxy
+   restart: unless-stopped
+   ports:
+     - 80:80
+     - 9000:9000
+     - 8081:8081
+   deploy:
+     resources:
+       limits:
+         memory: 100M
+         cpus: '0.1'
+   volumes:
+     - ./custom.conf:/etc/nginx/conf.d/default.conf:ro
+     - ./logs/nginx:/var/log/nginx
+   logging:
+     driver: "json-file"
+     options:
+       max-size: "20m"
+       max-file: "5"
+   networks:
+     - onforkhub-network
 
-  onforkhub-api:
-    image: ghcr.io/rondineleg/onforkhub-api:latest
-    container_name: onforkhub-api
-    expose:
-      - 80
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - ASPNETCORE_HTTPS_REDIRECTION_ENABLED=false
-      - COMPlus_GCConserveMemory=1
-      - COMPlus_HeapHardLimit=500000000
-      - DOTNET_GCHeapHardLimit=500000000
-    deploy:
-      resources:
-        limits:
-          memory: 500M
-          cpus: '0.5'
-        reservations:
-          memory: 100M
-          cpus: '0.1'
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "20m"
-        max-file: "5"
-    volumes:
-      - ./logs/api:/app/logs
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - onforkhub-network
+ cosmosdb:
+   image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+   container_name: cosmosdb
+   restart: unless-stopped
+   ports:
+     - "8081:8081"
+     - "10251:10251"
+     - "10252:10252"
+     - "10253:10253"
+     - "10254:10254"
+   environment:
+     - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10
+     - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+     - AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE=209.46.125.85
+   deploy:
+     resources:
+       limits:
+         memory: 200M
+         cpus: '0.2'
+   volumes:
+     - cosmosdb_data:/cosmos/data
+   logging:
+     driver: "json-file"
+     options:
+       max-size: "20m"
+       max-file: "5"
+   networks:
+     - onforkhub-network
 
-  onforkhub-web:
-    image: ghcr.io/rondineleg/onforkhub-web:latest
-    container_name: onforkhub-web
-    depends_on:
-      - onforkhub-api
-    expose:
-      - 80
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    deploy:
-      resources:
-        limits:
-          memory: 400M
-          cpus: '0.4'
-        reservations:
-          memory: 50M
-          cpus: '0.1'
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "20m"
-        max-file: "5"
-    volumes:
-      - ./logs/web:/app/logs
-    networks:
-      - onforkhub-network
+ onforkhub-api:
+   image: ghcr.io/rondineleg/onforkhub-api:latest
+   container_name: onforkhub-api
+   depends_on:
+     - cosmosdb
+   expose:
+     - 80
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_URLS=http://+:80
+     - ASPNETCORE_HTTPS_REDIRECTION_ENABLED=false
+     - COMPlus_GCConserveMemory=1
+     - COMPlus_HeapHardLimit=300000000
+     - DOTNET_GCHeapHardLimit=300000000
+     - ConnectionStrings__CosmosDB=AccountEndpoint=https://cosmosdb:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==
+   deploy:
+     resources:
+       limits:
+         memory: 400M
+         cpus: '0.4'
+       reservations:
+         memory: 100M
+         cpus: '0.1'
+   logging:
+     driver: "json-file"
+     options:
+       max-size: "20m"
+       max-file: "5"
+   volumes:
+     - ./logs/api:/app/logs
+   healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+     interval: 30s
+     timeout: 10s
+     retries: 3
+   networks:
+     - onforkhub-network
+
+ onforkhub-web:
+   image: ghcr.io/rondineleg/onforkhub-web:latest
+   container_name: onforkhub-web
+   depends_on:
+     - onforkhub-api
+   expose:
+     - 80
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_URLS=http://+:80
+   deploy:
+     resources:
+       limits:
+         memory: 300M
+         cpus: '0.3'
+       reservations:
+         memory: 50M
+         cpus: '0.1'
+   logging:
+     driver: "json-file"
+     options:
+       max-size: "20m"
+       max-file: "5"
+   volumes:
+     - ./logs/web:/app/logs
+   networks:
+     - onforkhub-network
 
 networks:
-  onforkhub-network:
-    name: onforkhub-network
+ onforkhub-network:
+   name: onforkhub-network
+
+volumes:
+ cosmosdb_data:

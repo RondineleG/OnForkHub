@@ -16,6 +16,7 @@ global using OnForkHub.Core.Entities.Base;
 global using OnForkHub.Core.Enums;
 global using OnForkHub.Core.Interfaces.Repositories;
 global using OnForkHub.Core.Interfaces.UseCases;
+global using OnForkHub.Core.Interfaces.Validations;
 global using OnForkHub.Core.Requests;
 global using OnForkHub.Persistence.Contexts;
 global using OnForkHub.Persistence.Contexts.Base;

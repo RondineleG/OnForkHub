@@ -1,5 +1,3 @@
-using OnForkHub.Core.Interfaces.Validations;
-
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
@@ -51,10 +49,12 @@ public static class RegistrationServicesExtensions
                 && type.IsClass
                 && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IUseCase<,>))
             );
+
         foreach (var type in useCaseTypes)
         {
             var implementedInterface = type.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IUseCase<,>));
             services.Add(new ServiceDescriptor(implementedInterface, type, ServiceLifetime.Scoped));
+            Console.WriteLine($"Registered UseCase: {type.Name} -> {implementedInterface}");
         }
         return services;
     }

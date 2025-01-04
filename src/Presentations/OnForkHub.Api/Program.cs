@@ -1,4 +1,3 @@
-using OnForkHub.Application.UseCases.Categories;
 using OnForkHub.Core.Validations.Categories;
 
 var builder = WebApplication.CreateBuilder(args);
