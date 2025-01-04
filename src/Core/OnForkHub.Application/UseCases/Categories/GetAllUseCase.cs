@@ -1,6 +1,6 @@
 namespace OnForkHub.Application.UseCases.Categories;
 
-public class GetAllCategoriesUseCase(ICategoryRepositoryEF categoryService) : IUseCase<PaginationRequestDto, IEnumerable<Category>>
+public class GetAllUseCase(ICategoryRepositoryEF categoryService) : IUseCase<PaginationRequestDto, IEnumerable<Category>>
 {
     private readonly ICategoryRepositoryEF _categoryRepositoryEF = categoryService;
 
