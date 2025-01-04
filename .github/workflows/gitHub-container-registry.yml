@@ -33,7 +33,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch || 'dev' }}
-      
+
       - name: Install SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -97,7 +97,7 @@ jobs:
           ls -l ~/.ssh/deploy_key
           echo "Testando conexão SSH..."
           ssh -v -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "echo 'Teste de conexão'"
-      
+
       - name: Deploy
         if: success()
         env:
@@ -106,12 +106,12 @@ jobs:
         run: |
           echo "Copiando arquivos..."
           scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
-          
+
           echo "Executando deploy..."
           ssh -v -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x *.sh &&
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
-            ./docker-cleanup.sh &&
+            ./cleanup-services.sh &&
             ./start-services.sh
           "
