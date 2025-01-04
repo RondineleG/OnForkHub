@@ -13,10 +13,6 @@ function cleanup_compose_file() {
     fi
 }
 
-# Stop services defined in configuration files
-cleanup_compose_file "services.yml"
-cleanup_compose_file "proxy.yml"
-
 echo "Removing reverse-proxy container..."
 docker rm -f reverse-proxy 2>/dev/null || echo "No reverse-proxy container found."
 
