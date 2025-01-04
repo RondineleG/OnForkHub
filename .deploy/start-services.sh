@@ -9,7 +9,7 @@ check_disk_space() {
     if [ "$space" -gt 85 ]; then
         echo "WARNING: Disk space is above 85% ($space%)"
         echo "Running cleanup..."
-        ./docker-cleanup.sh
+        ./cleanup-services.sh
     fi
 }
 
