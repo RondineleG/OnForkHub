@@ -45,7 +45,6 @@ builder
     });
 
 builder.Services.AddWebApi(typeof(Program));
-builder.Services.AddUseCases(typeof(GetAllCategoriesUseCase).Assembly);
 var configurationBuilder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appSettings.json", true, true);
 IConfiguration configuration = configurationBuilder.Build();
 var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -53,6 +52,8 @@ var connectionString = configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
 builder.Services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
+builder.Services.AddUseCases(typeof(GetAllUseCase).Assembly);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
