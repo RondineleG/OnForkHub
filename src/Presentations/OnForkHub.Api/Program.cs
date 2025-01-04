@@ -1,12 +1,7 @@
 using OnForkHub.Application.UseCases.Categories;
+using OnForkHub.Core.Validations.Categories;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(80);
-});
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -52,7 +47,8 @@ var connectionString = configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
 builder.Services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
-builder.Services.AddUseCases(typeof(GetAllUseCase).Assembly);
+builder.Services.AddValidators(typeof(CategoryValidator).Assembly);
+builder.Services.AddUseCases(typeof(GetAllCategoriesUseCase).Assembly);
 
 var app = builder.Build();
 
