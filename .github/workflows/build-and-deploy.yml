@@ -95,16 +95,16 @@ jobs:
          scp -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
 
      - name: Deploy Services
-       env:
-         SSH_USER: ${{ secrets.SSH_USERNAME }}
-         SSH_HOST: ${{ secrets.SSH_HOST }}
-       run: |
-         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-           cd ~/onforkhub-deploy &&
-           chmod +x *.sh &&
-           ./cleanup-services.sh &&
-           ./start-services.sh '${{ secrets.GITHUB_TOKEN }}' '${{ github.actor }}'
-         "
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            cd ~/onforkhub-deploy &&
+            chmod +x *.sh &&
+            ./cleanup-services.sh &&
+            ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
+          "
 
      - name: Verify Deployment
        if: success()
