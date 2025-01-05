@@ -2,21 +2,10 @@
 
 echo "Starting complete cleanup..."
 
-# Check for existence of Docker Compose configuration files
-function cleanup_compose_file() {
-    local file=$1
-    if [ -f "$file" ]; then
-        echo "Stopping services defined in $file..."
-        docker compose -f "$file" down --remove-orphans 2>/dev/null || true
-    else
-        echo "Warning: $file not found, skipping..."
-    fi
-}
+echo "Stopping all containers..."
+docker compose down --remove-orphans
 
-echo "Removing reverse-proxy container..."
-docker rm -f reverse-proxy 2>/dev/null || echo "No reverse-proxy container found."
-
-echo "Stopping and removing all containers..."
+echo "Removing all containers..."
 docker ps -aq | xargs -r docker stop
 docker ps -aq | xargs -r docker rm -f
 
