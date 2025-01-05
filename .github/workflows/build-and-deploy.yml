@@ -11,19 +11,10 @@ on:
        options:
          - dev
          - main
-         - feature/*
-         - hotfix/*
-         - bugfix/*
-
  push:
    branches:
      - dev
-   paths:
-     - 'src/Presentations/OnForkHub.Api/**'
-     - 'src/Presentations/OnForkHub.Web/**'
-     - 'docker-compose.yml'
-     - '.github/workflows/**'
-
+     - main
 env:
  REGISTRY: ghcr.io
  API_IMAGE_NAME: onforkhub-api
@@ -95,31 +86,24 @@ jobs:
          chmod 600 ~/.ssh/deploy_key
          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-     - name: Check Dependencies
+     - name: Copy Files to VPS
        env:
          SSH_USER: ${{ secrets.SSH_USERNAME }}
          SSH_HOST: ${{ secrets.SSH_HOST }}
        run: |
-         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-           if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
-             chmod +x ~/onforkhub-deploy/install-services.sh
-             ~/onforkhub-deploy/install-services.sh
-           fi
-           docker --version && docker compose version
-         "
-
-     - name: Deploy
-       env:
-         SSH_USER: ${{ secrets.SSH_USERNAME }}
-         SSH_HOST: ${{ secrets.SSH_HOST }}
-       run: |
+         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "mkdir -p ~/onforkhub-deploy"
          scp -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+
+     - name: Deploy Services
+       env:
+         SSH_USER: ${{ secrets.SSH_USERNAME }}
+         SSH_HOST: ${{ secrets.SSH_HOST }}
+       run: |
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            cd ~/onforkhub-deploy &&
            chmod +x *.sh &&
-           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
            ./cleanup-services.sh &&
-           ./start-services.sh
+           ./start-services.sh '${{ secrets.GITHUB_TOKEN }}' '${{ github.actor }}'
          "
 
      - name: Verify Deployment
@@ -130,8 +114,12 @@ jobs:
        run: |
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            cd ~/onforkhub-deploy &&
+           echo 'Container Status:' &&
            docker ps &&
+           echo 'API Logs:' &&
            docker logs onforkhub-api --tail 10 &&
+           echo 'Web Logs:' &&
            docker logs onforkhub-web --tail 10 &&
+           echo 'Proxy Logs:' &&
            docker logs reverse-proxy --tail 10
          "
