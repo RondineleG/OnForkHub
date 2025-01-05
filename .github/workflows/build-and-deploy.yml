@@ -121,9 +121,8 @@ jobs:
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            cd ~/onforkhub-deploy &&
            chmod +x *.sh &&
-           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
            ./cleanup-services.sh &&
-           ./start-services.sh
+           ./start-services.sh '${{ secrets.GITHUB_TOKEN }}' '${{ github.actor }}'
          "
 
      - name: Verify Deployment
@@ -135,7 +134,10 @@ jobs:
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            cd ~/onforkhub-deploy &&
            docker ps &&
+           echo 'API Logs:' &&
            docker logs onforkhub-api --tail 10 &&
+           echo 'Web Logs:' &&
            docker logs onforkhub-web --tail 10 &&
+           echo 'Proxy Logs:' &&
            docker logs reverse-proxy --tail 10
          "
