@@ -1,143 +1,143 @@
-name: Build and Deploy to VPS
-
+name: Manual Deploy
 on:
- workflow_dispatch:
-   inputs:
-     branch:
-       description: 'Branch to deploy'
-       required: true
-       default: 'dev'
-       type: choice
-       options:
-         - dev
-         - main
-         - feature/implement-category-crud-api-endpoints
- push:
-   branches:
-     - dev
-   paths:
-     - 'src/Presentations/OnForkHub.Api/**'
-     - 'src/Presentations/OnForkHub.Web/**'
-     - 'docker-compose.yml'
-     - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - main
+          - feature/*
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - dev
 
 env:
- REGISTRY: ghcr.io
- API_IMAGE_NAME: onforkhub-api
- WEB_IMAGE_NAME: onforkhub-web
- DOCKER_BUILDKIT: 1
+  REGISTRY: ghcr.io
+  API_IMAGE_NAME: onforkhub-api
+  WEB_IMAGE_NAME: onforkhub-web
+  DOCKER_BUILDKIT: 1
 
 jobs:
- build:
-   runs-on: ubuntu-latest
-   permissions:
-     contents: read
-     packages: write
+  deploy:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ~/onforkhub-deploy/logs
+            cd ~/onforkhub-deploy
+            docker compose down --remove-orphans || true
+            find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-   steps:
-     - uses: actions/checkout@v4
-       with:
-         ref: ${{ github.event.inputs.branch || 'dev' }}
+      - name: Copy deployment files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ".deploy/*"
+          target: "~/onforkhub-deploy"
+          strip_components: 1
 
-     - name: Set up Docker Buildx
-       uses: docker/setup-buildx-action@v3
+      - name: Start services
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/onforkhub-deploy
+            chmod +x *.sh
+            ./start-services.shname: Manual Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - main
+          - feature/*
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - dev
 
-     - name: Login to GitHub Container Registry
-       uses: docker/login-action@v3
-       with:
-         registry: ${{ env.REGISTRY }}
-         username: ${{ github.actor }}
-         password: ${{ secrets.GITHUB_TOKEN }}
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE_NAME: onforkhub-api
+  WEB_IMAGE_NAME: onforkhub-web
+  DOCKER_BUILDKIT: 1
 
-     - name: Set lowercase repository owner
-       run: |
-         echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+jobs:
+  deploy:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ~/onforkhub-deploy/logs
+            cd ~/onforkhub-deploy
+            docker compose down --remove-orphans || true
+            find . -maxdepth 1 ! -name 'logs' ! -name '.' ! -name '..' -exec rm -rf {} +
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-     - name: Build and push API image
-       uses: docker/build-push-action@v5
-       with:
-         context: .
-         file: .docker/Dockerfile.OnForkHub.Api
-         push: true
-         tags: |
-           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:${{ github.sha }}
-           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:latest
-         cache-from: type=gha
-         cache-to: type=gha,mode=max
+      - name: Copy deployment files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ".deploy/*"
+          target: "~/onforkhub-deploy"
+          strip_components: 1
 
-     - name: Build and push Web image
-       uses: docker/build-push-action@v5
-       with:
-         context: .
-         file: .docker/Dockerfile.OnForkHub.Web
-         push: true
-         tags: |
-           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:${{ github.sha }}
-           ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.WEB_IMAGE_NAME }}:latest
-         cache-from: type=gha
-         cache-to: type=gha,mode=max
-
- deploy:
-   needs: build
-   runs-on: ubuntu-latest
-   steps:
-     - uses: actions/checkout@v4
-       with:
-         ref: ${{ github.event.inputs.branch || 'dev' }}
-
-     - name: Install SSH Key
-       run: |
-         mkdir -p ~/.ssh
-         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-         chmod 600 ~/.ssh/deploy_key
-         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-     - name: Copy Files to VPS
-       env:
-         SSH_USER: ${{ secrets.SSH_USERNAME }}
-         SSH_HOST: ${{ secrets.SSH_HOST }}
-       run: |
-         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "mkdir -p ~/onforkhub-deploy"
-         scp -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
-
-     - name: Check and Install Dependencies
-       env:
-         SSH_USER: ${{ secrets.SSH_USERNAME }}
-         SSH_HOST: ${{ secrets.SSH_HOST }}
-       run: |
-         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-           cd ~/onforkhub-deploy &&
-           chmod +x install-services.sh &&
-           if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
-             sudo ./install-services.sh
-           fi
-         "
-
-     - name: Deploy Services
-       env:
-         SSH_USER: ${{ secrets.SSH_USERNAME }}
-         SSH_HOST: ${{ secrets.SSH_HOST }}
-       run: |
-         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-           cd ~/onforkhub-deploy &&
-           chmod +x *.sh &&
-           ./cleanup-services.sh &&
-           ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ secrets.USERNAME_GITHUB }}'
-         "
-
-     - name: Verify Deployment
-       if: success()
-       env:
-         SSH_USER: ${{ secrets.SSH_USERNAME }}
-         SSH_HOST: ${{ secrets.SSH_HOST }}
-       run: |
-         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-           cd ~/onforkhub-deploy &&
-           docker ps &&
-           echo 'API Logs:' &&
-           docker logs onforkhub-api --tail 10 &&
-           echo 'Web Logs:' &&
-           docker logs onforkhub-web --tail 10 &&
-           echo 'Proxy Logs:' &&
-           docker logs reverse-proxy --tail 10
-         "
+      - name: Start services
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/onforkhub-deploy
+            chmod +x *.sh
+            ./start-services.sh
