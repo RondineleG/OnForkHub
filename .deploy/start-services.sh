@@ -24,7 +24,13 @@ check_disk_space() {
 check_disk_space
 
 echo "Logging into GitHub Container Registry..."
-echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$USERNAME_GITHUB" --password-stdin
+ 
+ if ! gh auth status &>/dev/null; then
+    echo "Using gh CLI for authentication..."
+    echo $GITHUB_TOKEN | gh auth login --with-token
+fi
+
+ echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
 
 echo "Stopping existing services..."
 docker compose down --remove-orphans
