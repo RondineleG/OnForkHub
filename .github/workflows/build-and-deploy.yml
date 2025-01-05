@@ -122,7 +122,7 @@ jobs:
            cd ~/onforkhub-deploy &&
            chmod +x *.sh &&
            ./cleanup-services.sh &&
-           ./start-services.sh '${{ secrets.GITHUB_TOKEN }}' '${{ github.actor }}'
+           ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ secrets.USERNAME_GITHUB }}'
          "
 
      - name: Verify Deployment
