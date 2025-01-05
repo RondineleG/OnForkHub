@@ -92,25 +92,32 @@ jobs:
          chmod 600 ~/.ssh/deploy_key
          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-     - name: Check Dependencies
+     - name: Copy Files to VPS
+       env:
+         SSH_USER: ${{ secrets.SSH_USERNAME }}
+         SSH_HOST: ${{ secrets.SSH_HOST }}
+       run: |
+         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "mkdir -p ~/onforkhub-deploy"
+         scp -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+
+     - name: Check and Install Dependencies
        env:
          SSH_USER: ${{ secrets.SSH_USERNAME }}
          SSH_HOST: ${{ secrets.SSH_HOST }}
        run: |
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+           cd ~/onforkhub-deploy &&
+           chmod +x install-services.sh &&
            if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
-             chmod +x ~/onforkhub-deploy/install-services.sh
-             ~/onforkhub-deploy/install-services.sh
+             sudo ./install-services.sh
            fi
-           docker --version && docker compose version
          "
 
-     - name: Deploy
+     - name: Deploy Services
        env:
          SSH_USER: ${{ secrets.SSH_USERNAME }}
          SSH_HOST: ${{ secrets.SSH_HOST }}
        run: |
-         scp -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            cd ~/onforkhub-deploy &&
            chmod +x *.sh &&
