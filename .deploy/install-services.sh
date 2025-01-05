@@ -20,4 +20,3 @@ sudo systemctl disable nginx
 docker --version
 docker compose version
 nginx -v
-
