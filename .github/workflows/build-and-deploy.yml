@@ -15,16 +15,6 @@ on:
    branches:
      - dev
      - main
-     - 'feature/**'
-     - 'hotfix/**'
-     - 'bugfix/**'
-   paths:
-     - 'src/Presentations/OnForkHub.Api/**'
-     - 'src/Presentations/OnForkHub.Web/**'
-     - 'docker-compose.yml'
-     - '.github/workflows/**'
-     - '.deploy/**'
-
 env:
  REGISTRY: ghcr.io
  API_IMAGE_NAME: onforkhub-api
