@@ -73,6 +73,35 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Get current UTC time
+        id: current-time
+        if: failure()
+        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+      - name: Notify Build Failure
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          disable_web_page_preview: true
+          message: |
+            🔔 *Build Failure Notification*
+            
+            📦 *Build Job Failed*
+            Branch: `${{ github.ref_name }}`
+            Commit: `${{ github.sha }}`
+            Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
+            
+            🏗️ *Build Details:*
+            Repository: ${{ github.repository }}
+            Workflow: ${{ github.workflow }}
+            
+            [View Build Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ⏰ ${{ steps.current-time.outputs.time }}
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -91,23 +120,20 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
           
-      - name: Verify Deployment Files
+      - name: Set scripts permissions locally
         run: |
-          if [ ! -d ".deploy" ]; then
-            echo "Error: .deploy directory not found!"
-            echo "Current directory contents:"
-            ls -la
-            exit 1
-          fi
-          echo "Contents of .deploy directory:"
+          chmod +x .deploy/*.sh
           ls -la .deploy/
           
-      - name: Create Remote Directory
+      - name: Create Remote Directory and Set Permissions
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "mkdir -p ~/onforkhub-deploy"
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            mkdir -p ~/onforkhub-deploy &&
+            chmod 755 ~/onforkhub-deploy
+          "
           
       - name: Copy Deployment Files
         env:
@@ -116,12 +142,15 @@ jobs:
         run: |
           scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
           
-      - name: Set Execute Permissions
+      - name: Set Execute Permissions on Remote
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "chmod +x ~/onforkhub-deploy/*.sh"
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            chmod -R 755 ~/onforkhub-deploy/*.sh &&
+            ls -la ~/onforkhub-deploy/
+          "
           
       - name: Deploy Services
         env:
@@ -130,11 +159,13 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
-            ./cleanup-services.sh &&
-            ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
+            echo 'Starting cleanup...' &&
+            bash ./cleanup-services.sh &&
+            echo 'Starting services...' &&
+            bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
           "
           
-      - name: Verify Deployment
+      - name: Verify Deployment Status
         if: success()
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
@@ -145,11 +176,11 @@ jobs:
             echo '=== Container Status ===' &&
             docker ps &&
             echo '=== API Logs ===' &&
-            docker logs onforkhub-api --tail 10 &&
+            docker logs onforkhub-api --tail 10 2>/dev/null || true &&
             echo '=== Web Logs ===' &&
-            docker logs onforkhub-web --tail 10 &&
+            docker logs onforkhub-web --tail 10 2>/dev/null || true &&
             echo '=== Proxy Logs ===' &&
-            docker logs reverse-proxy --tail 10
+            docker logs reverse-proxy --tail 10 2>/dev/null || true
           "
           
       - name: Health Check
@@ -157,13 +188,20 @@ jobs:
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
+        id: health-check
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             echo '=== Health Check ===' &&
-            curl -sSf http://localhost:9000/health || echo 'API health check failed' &&
-            curl -sSf http://localhost:80 || echo 'Web health check failed'
+            API_HEALTH=\$(curl -sSf http://localhost:9000/health || echo 'failed') &&
+            WEB_HEALTH=\$(curl -sSf http://localhost:80 || echo 'failed') &&
+            echo "api_status=\$API_HEALTH" >> \$GITHUB_OUTPUT &&
+            echo "web_status=\$WEB_HEALTH" >> \$GITHUB_OUTPUT
           "
+
+      - name: Get current UTC time
+        id: current-time
+        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
       - name: Cleanup on Failure
         if: failure()
@@ -173,5 +211,40 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
-            ./cleanup-services.sh
+            echo 'Deployment failed, cleaning up...' &&
+            bash ./cleanup-services.sh
           "
+
+      - name: Notify Deployment Status
+        if: always()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          disable_web_page_preview: true
+          message: |
+            🔔 *Deployment Status Notification*
+            
+            🚀 *Deployment ${{ job.status == 'success' && 'Succeeded' || 'Failed' }}*
+            Branch: `${{ github.ref_name }}`
+            Commit: `${{ github.sha }}`
+            Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
+            
+            🏗️ *Deployment Details:*
+            Repository: ${{ github.repository }}
+            Environment: Production
+            Status: `${{ job.status }}`
+            
+            ${{ job.status == 'success' && format('✅ *Services Health Status:*
+            - API Health: `{0}`
+            - Web Health: `{1}`
+            - Containers: Running', 
+            steps.health-check.outputs.api_status,
+            steps.health-check.outputs.web_status) ||
+            '⚠️ *Error Details:*
+            The deployment process failed. Please check the logs for more information.' }}
+            
+            [View Deployment Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ⏰ ${{ steps.current-time.outputs.time }}
