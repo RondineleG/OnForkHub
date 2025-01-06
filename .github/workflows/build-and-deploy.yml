@@ -182,22 +182,6 @@ jobs:
             echo '=== Proxy Logs ===' &&
             docker logs reverse-proxy --tail 10 2>/dev/null || true
           "
-          
-      - name: Health Check
-        if: success()
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        id: health-check
-        run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy &&
-            echo '=== Health Check ===' &&
-            API_HEALTH=\$(curl -sSf http://localhost:9000/health || echo 'failed') &&
-            WEB_HEALTH=\$(curl -sSf http://localhost:80 || echo 'failed') &&
-            echo "api_status=\$API_HEALTH" >> \$GITHUB_OUTPUT &&
-            echo "web_status=\$WEB_HEALTH" >> \$GITHUB_OUTPUT
-          "
 
       - name: Get current UTC time
         id: current-time
@@ -236,12 +220,8 @@ jobs:
             Environment: Production
             Status: `${{ job.status }}`
             
-            ${{ job.status == 'success' && format('✅ *Services Health Status:*
-            - API Health: `{0}`
-            - Web Health: `{1}`
-            - Containers: Running', 
-            steps.health-check.outputs.api_status,
-            steps.health-check.outputs.web_status) ||
+            ${{ job.status == 'success' && '✅ *Services Status:*
+            All services have been deployed successfully.' ||
             '⚠️ *Error Details:*
             The deployment process failed. Please check the logs for more information.' }}
             
