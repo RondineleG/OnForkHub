@@ -1,5 +1,3 @@
-using OnForkHub.Core.Validations.Categories;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -47,7 +45,7 @@ builder.Services.AddDbContext<EntityFrameworkDataContext>(options => options.Use
 builder.Services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
 builder.Services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
 builder.Services.AddValidators(typeof(CategoryValidator).Assembly);
-builder.Services.AddUseCases(typeof(GetAllCategoriesUseCase).Assembly);
+builder.Services.AddUseCases(typeof(GetAllUseCase).Assembly);
 
 var app = builder.Build();
 

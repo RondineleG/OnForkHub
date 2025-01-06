@@ -11,15 +11,10 @@ on:
        options:
          - dev
          - main
-         - feature/implement-category-crud-api-endpoints
  push:
    branches:
      - dev
-   paths:
-     - 'src/Presentations/OnForkHub.Api/**'
-     - 'src/Presentations/OnForkHub.Web/**'
-     - 'docker-compose.yml'
-     - '.github/workflows/**'
+     - main
 
 env:
  REGISTRY: ghcr.io
@@ -33,26 +28,27 @@ jobs:
    permissions:
      contents: read
      packages: write
-
+   
    steps:
-     - uses: actions/checkout@v4
+     - name: Checkout repository
+       uses: actions/checkout@v4
        with:
-         ref: ${{ github.event.inputs.branch || 'dev' }}
-
+         ref: ${{ github.event.inputs.branch || github.ref }}
+         
      - name: Set up Docker Buildx
        uses: docker/setup-buildx-action@v3
-
+       
      - name: Login to GitHub Container Registry
        uses: docker/login-action@v3
        with:
          registry: ${{ env.REGISTRY }}
          username: ${{ github.actor }}
          password: ${{ secrets.GITHUB_TOKEN }}
-
+         
      - name: Set lowercase repository owner
        run: |
          echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
+         
      - name: Build and push API image
        uses: docker/build-push-action@v5
        with:
@@ -64,7 +60,7 @@ jobs:
            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:latest
          cache-from: type=gha
          cache-to: type=gha,mode=max
-
+         
      - name: Build and push Web image
        uses: docker/build-push-action@v5
        with:
@@ -77,14 +73,46 @@ jobs:
          cache-from: type=gha
          cache-to: type=gha,mode=max
 
+     - name: Get current UTC time
+       id: current-time
+       if: failure()
+       run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+     - name: Notify Build Failure
+       if: failure()
+       uses: appleboy/telegram-action@master
+       with:
+         to: ${{ secrets.TELEGRAM_CHAT_ID }}
+         token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+         format: markdown
+         disable_web_page_preview: true
+         message: |
+           🔔 *Build Failure Notification*
+           
+           📦 *Build Job Failed*
+           Branch: `${{ github.ref_name }}`
+           Commit: `${{ github.sha }}`
+           Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
+           
+           🏗️ *Build Details:*
+           Repository: ${{ github.repository }}
+           Workflow: ${{ github.workflow }}
+           
+           [View Build Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+           
+           ⏰ ${{ steps.current-time.outputs.time }}
+
  deploy:
    needs: build
    runs-on: ubuntu-latest
+   environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+   
    steps:
-     - uses: actions/checkout@v4
+     - name: Checkout repository
+       uses: actions/checkout@v4
        with:
-         ref: ${{ github.event.inputs.branch || 'dev' }}
-
+         ref: ${{ github.event.inputs.branch || github.ref }}
+         
      - name: Install SSH Key
        run: |
          mkdir -p ~/.ssh
@@ -92,34 +120,68 @@ jobs:
          chmod 600 ~/.ssh/deploy_key
          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-     - name: Check Dependencies
+     - name: Check and Install Dependencies
        env:
          SSH_USER: ${{ secrets.SSH_USERNAME }}
          SSH_HOST: ${{ secrets.SSH_HOST }}
        run: |
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
-             chmod +x ~/onforkhub-deploy/install-services.sh
-             ~/onforkhub-deploy/install-services.sh
+             echo 'Installing dependencies...'
+             mkdir -p ~/onforkhub-deploy
            fi
-           docker --version && docker compose version
          "
-
-     - name: Deploy
+         
+     - name: Copy Deployment Files
        env:
          SSH_USER: ${{ secrets.SSH_USERNAME }}
          SSH_HOST: ${{ secrets.SSH_HOST }}
        run: |
-         scp -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+         scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+
+     - name: Install Services if Needed
+       env:
+         SSH_USER: ${{ secrets.SSH_USERNAME }}
+         SSH_HOST: ${{ secrets.SSH_HOST }}
+       run: |
+         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+           cd ~/onforkhub-deploy &&
+           chmod +x install-services.sh &&
+           if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
+             echo 'Installing Docker and dependencies...'
+             sudo ./install-services.sh
+           else
+             echo 'Docker and dependencies already installed'
+           fi
+         "
+         
+     - name: Set Execute Permissions
+       env:
+         SSH_USER: ${{ secrets.SSH_USERNAME }}
+         SSH_HOST: ${{ secrets.SSH_HOST }}
+       run: |
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            cd ~/onforkhub-deploy &&
            chmod +x *.sh &&
-           echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin &&
-           ./cleanup-services.sh &&
-           ./start-services.sh
+           ls -la
          "
-
-     - name: Verify Deployment
+         
+     - name: Deploy Services
+       env:
+         SSH_USER: ${{ secrets.SSH_USERNAME }}
+         SSH_HOST: ${{ secrets.SSH_HOST }}
+         ENVIRONMENT: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
+       run: |
+         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+           cd ~/onforkhub-deploy &&
+           echo 'Starting cleanup...' &&
+           ./cleanup-services.sh &&
+           echo 'Starting services in ${{ github.ref_name == 'main' && 'PRODUCTION' || 'DEVELOPMENT' }} environment...' &&
+           export ASPNETCORE_ENVIRONMENT=${{ github.ref_name == 'main' && 'Production' || 'Development' }} &&
+           ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
+         "
+         
+     - name: Verify Deployment Status
        if: success()
        env:
          SSH_USER: ${{ secrets.SSH_USERNAME }}
@@ -127,8 +189,58 @@ jobs:
        run: |
          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
            cd ~/onforkhub-deploy &&
+           echo '=== Container Status ===' &&
            docker ps &&
-           docker logs onforkhub-api --tail 10 &&
-           docker logs onforkhub-web --tail 10 &&
-           docker logs reverse-proxy --tail 10
+           echo '=== API Logs ===' &&
+           docker logs onforkhub-api --tail 10 2>/dev/null || true &&
+           echo '=== Web Logs ===' &&
+           docker logs onforkhub-web --tail 10 2>/dev/null || true &&
+           echo '=== Proxy Logs ===' &&
+           docker logs reverse-proxy --tail 10 2>/dev/null || true
          "
+
+     - name: Get current UTC time
+       id: current-time
+       run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+     - name: Cleanup on Failure
+       if: failure()
+       env:
+         SSH_USER: ${{ secrets.SSH_USERNAME }}
+         SSH_HOST: ${{ secrets.SSH_HOST }}
+       run: |
+         ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+           cd ~/onforkhub-deploy &&
+           echo 'Deployment failed, cleaning up...' &&
+           ./cleanup-services.sh
+         "
+
+     - name: Notify Deployment Status
+       if: always()
+       uses: appleboy/telegram-action@master
+       with:
+         to: ${{ secrets.TELEGRAM_CHAT_ID }}
+         token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+         format: markdown
+         disable_web_page_preview: true
+         message: |
+           🔔 *Deployment Status Notification*
+           
+           🚀 *Deployment ${{ job.status == 'success' && 'Succeeded' || 'Failed' }}*
+           Branch: `${{ github.ref_name }}`
+           Environment: `${{ github.ref_name == 'main' && 'Production' || 'Development' }}`
+           Commit: `${{ github.sha }}`
+           Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
+           
+           🏗️ *Deployment Details:*
+           Repository: ${{ github.repository }}
+           Status: `${{ job.status }}`
+           
+           ${{ job.status == 'success' && '✅ *Services Status:*
+           All services have been deployed successfully.' ||
+           '⚠️ *Error Details:*
+           The deployment process failed. Please check the logs for more information.' }}
+           
+           [View Deployment Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+           
+           ⏰ ${{ steps.current-time.outputs.time }}
