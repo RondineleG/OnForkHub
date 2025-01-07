@@ -3,19 +3,19 @@ name: Build and Deploy to VPS
 on:
   workflow_dispatch:
     inputs:
-      branch:
+      branch_type:
         description: 'Select branch type'
         required: true
         type: choice
         options:
+          - feature/
+          - bugfix/
+          - hotfix/
+          - release/
           - dev
           - main
-          - release
-          - feature
-          - hotfix
-          - bugfix
       branch_name:
-        description: 'Branch name (only for release/feature/hotfix/bugfix, ex: release/1.0)'
+        description: 'Branch name (required for feature/bugfix/hotfix/release, ex: for feature/user-auth just type user-auth)'
         required: false
         type: string
         default: ''
@@ -41,14 +41,17 @@ jobs:
       - name: Set full branch name
         if: github.event_name == 'workflow_dispatch'
         run: |
-          if [[ "${{ github.event.inputs.branch }}" == "dev" || "${{ github.event.inputs.branch }}" == "main" ]]; then
-            echo "FULL_BRANCH=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
+          if [[ "${{ github.event.inputs.branch_type }}" == "dev" || "${{ github.event.inputs.branch_type }}" == "main" ]]; then
+            echo "FULL_BRANCH=${{ github.event.inputs.branch_type }}" >> $GITHUB_ENV
           else
             if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
-              echo "❌ Branch name is required for ${{ github.event.inputs.branch }} branches"
+              echo "❌ Branch name is required for ${{ github.event.inputs.branch_type }} branches"
               exit 1
             fi
-            echo "FULL_BRANCH=${{ github.event.inputs.branch }}/${{ github.event.inputs.branch_name }}" >> $GITHUB_ENV
+            # Remove any trailing slashes from branch type and leading slashes from branch name
+            BRANCH_TYPE=$(echo "${{ github.event.inputs.branch_type }}" | sed 's#/$##')
+            BRANCH_NAME=$(echo "${{ github.event.inputs.branch_name }}" | sed 's#^/##')
+            echo "FULL_BRANCH=${BRANCH_TYPE}/${BRANCH_NAME}" >> $GITHUB_ENV
           fi
 
       - name: Checkout repository
@@ -250,4 +253,8 @@ jobs:
             🚀 *Deployment ${{ job.status == 'success' && 'Succeeded' || 'Failed' }}*
             Branch: `${{ github.ref_name }}`
             Environment: `${{ github.ref_name == 'main' && 'Production' || 'Development' }}`
-            Commit: `${{ github.sh
+            Commit: `${{ github.sha }}`
+            
+            [View Deployment Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ⏰ ${{ steps.current-time.outputs.time }}
