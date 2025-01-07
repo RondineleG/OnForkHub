@@ -4,10 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy (ex: dev, main, release/1.0, feature/login)'
+        description: 'Select branch type'
         required: true
+        type: choice
+        options:
+          - dev
+          - main
+          - release
+          - feature
+          - hotfix
+          - bugfix
+      branch_name:
+        description: 'Branch name (only for release/feature/hotfix/bugfix, ex: release/1.0)'
+        required: false
         type: string
-        default: 'dev'
+        default: ''
   push:
     branches:
       - dev
@@ -27,19 +38,23 @@ jobs:
       packages: write
    
     steps:
-      - name: Validate branch name
+      - name: Set full branch name
         if: github.event_name == 'workflow_dispatch'
         run: |
-          branch="${{ github.event.inputs.branch }}"
-          if [[ ! "$branch" =~ ^(dev|main|release/.*|feature/.*|hotfix/.*|bugfix/.*)$ ]]; then
-            echo "❌ Invalid branch. Must be 'dev', 'main' or start with 'release/', 'feature/', 'hotfix/' or 'bugfix/'"
-            exit 1
+          if [[ "${{ github.event.inputs.branch }}" == "dev" || "${{ github.event.inputs.branch }}" == "main" ]]; then
+            echo "FULL_BRANCH=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
+          else
+            if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
+              echo "❌ Branch name is required for ${{ github.event.inputs.branch }} branches"
+              exit 1
+            fi
+            echo "FULL_BRANCH=${{ github.event.inputs.branch }}/${{ github.event.inputs.branch_name }}" >> $GITHUB_ENV
           fi
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
          
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -117,7 +132,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
          
       - name: Install SSH Key
         run: |
@@ -235,18 +250,4 @@ jobs:
             🚀 *Deployment ${{ job.status == 'success' && 'Succeeded' || 'Failed' }}*
             Branch: `${{ github.ref_name }}`
             Environment: `${{ github.ref_name == 'main' && 'Production' || 'Development' }}`
-            Commit: `${{ github.sha }}`
-            Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
-           
-            🏗️ *Deployment Details:*
-            Repository: ${{ github.repository }}
-            Status: `${{ job.status }}`
-           
-            ${{ job.status == 'success' && '✅ *Services Status:*
-            All services have been deployed successfully.' ||
-            '⚠️ *Error Details:*
-            The deployment process failed. Please check the logs for more information.' }}
-           
-            [View Deployment Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-           
-            ⏰ ${{ steps.current-time.outputs.time }}
+            Commit: `${{ github.sh
