@@ -11,6 +11,10 @@ on:
        options:
          - dev
          - main
+         - 'release/**'
+         - 'feature/**'
+         - 'hotfix/**'
+         - 'bugfix/**'
  push:
    branches:
      - dev
