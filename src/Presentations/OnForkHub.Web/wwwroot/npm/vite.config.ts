@@ -1,6 +1,5 @@
-/// <reference types="vite/client" />
-import {resolve} from 'path'
-import {BuildOptions, defineConfig, ResolveOptions} from 'vite'
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
     build: {
@@ -13,19 +12,19 @@ export default defineConfig({
             fileName: () => 'main.min.js'
         },
         rollupOptions: {
-            external: ['webtorrent'],
+            external: ['webtorrent', 'events', 'buffer', 'stream', 'util', 'os', 'crypto', 'path', 'http', 'https', 'zlib', 'net', 'tls', 'fs', 'dns', 'dgram'],
             output: {
-                globals: {
-                    'webtorrent': 'WebTorrent'
-                },
                 format: 'es',
-                compact: true
+                compact: true,
+                globals: {
+                    webtorrent: 'WebTorrent'
+                }
             }
         }
-    } as BuildOptions,
+    },
     resolve: {
         alias: {
             '@': resolve(__dirname, './src')
         }
-    } as ResolveOptions
+    }
 })

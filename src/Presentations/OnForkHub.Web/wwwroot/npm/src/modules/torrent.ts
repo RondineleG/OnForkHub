@@ -1,57 +1,45 @@
-import WebTorrent from 'webtorrent';
+declare const WebTorrent: any;
 
-const clients: { [key: string]: WebTorrent.Instance } = {};
+let client: any = null;
 
-interface Player {
-    invokeMethodAsync(methodName: string, ...args: any[]): Promise<void>;
+export async function initTorrentPlayer(progressElement: HTMLElement): Promise<void> {
+    try {
+        client = new WebTorrent();
+        progressElement.textContent = "WebTorrent initialized successfully";
+    } catch (error) {
+        console.error('Error initializing WebTorrent:', error);
+        throw error;
+    }
 }
 
-export async function initTorrentPlayer(
-    elementId: string,
-    component: Player,
-    torrentId: string
+export async function startDownload(
+    progressElement: HTMLElement,
+    videoContainerSelector: string,
+    magnetUri: string
 ): Promise<void> {
     try {
-        clients[elementId] = new WebTorrent();
-        const client = clients[elementId];
-
-        const container = document.getElementById(elementId);
-        if (!container) {
-            throw new Error(`Container #${elementId} not found`);
+        const videoContainer = document.querySelector(videoContainerSelector);
+        if (!videoContainer) {
+            throw new Error('Video container not found');
         }
 
-        const video = container.querySelector('video') as HTMLVideoElement;
-        const progress = container.querySelector('.torrent-progress') as HTMLElement;
-
-        if (!video || !progress) {
-            throw new Error('Required elements not found');
+        if (!client) {
+            throw new Error('WebTorrent not initialized');
         }
 
-        // Setup event listeners
-        video.addEventListener('play', () => {
-            component.invokeMethodAsync('OnPlay');
-        });
-
-        video.addEventListener('ended', () => {
-            component.invokeMethodAsync('OnEnded');
-        });
-
-        video.addEventListener('timeupdate', () => {
-            component.invokeMethodAsync('OnTimeUpdate',
-                video.currentTime,
-                video.duration
-            );
-        });
-
-        // Add torrent
-        client.add(torrentId, {
+        videoContainer.innerHTML = '';
+        const videoElement = document.createElement('video');
+        videoElement.controls = true;
+        videoElement.className = 'w-100 h-100';
+        videoContainer.appendChild(videoElement);
+        client.add(magnetUri, {
             announce: [
                 'wss://tracker.openwebtorrent.com',
                 'wss://tracker.btorrent.xyz',
                 'wss://tracker.fastcast.nz'
             ]
-        }, torrent => {
-            const file = torrent.files.find(f =>
+        }, (torrent: any) => {
+            const file = torrent.files.find((f: any) =>
                 f.name.endsWith('.mp4') ||
                 f.name.endsWith('.webm') ||
                 f.name.endsWith('.mkv')
@@ -61,30 +49,28 @@ export async function initTorrentPlayer(
                 throw new Error('No video file found in torrent');
             }
 
-            file.getBlobURL((err, url) => {
+            file.getBlobURL((err: any, url: string) => {
                 if (err) throw err;
                 if (!url) throw new Error('Failed to get video URL');
-
-                video.src = url;
+                videoElement.src = url;
             });
 
             torrent.on('download', () => {
                 const percent = (torrent.progress * 100).toFixed(1);
-                progress.textContent = `Downloading: ${percent}%`;
-                progress.style.display = torrent.progress === 1 ? 'none' : 'block';
+                progressElement.textContent = `Downloading: ${percent}%`;
+                progressElement.className = 'alert alert-info';
             });
         });
-
     } catch (error) {
-        console.error('Error initializing torrent player:', error);
+        console.error('Error starting download:', error);
         throw error;
     }
 }
 
-export function disposeTorrentPlayer(elementId: string): void {
-    const client = clients[elementId];
+export async function stopDownload(): Promise<void> {
     if (client) {
-        client.destroy();
-        delete clients[elementId];
+        client.destroy(() => {
+            client = new WebTorrent();
+        });
     }
 }
