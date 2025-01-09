@@ -1,5 +1,4 @@
 declare const WebTorrent: any;
-
 let client: any = null;
 
 export async function initTorrentPlayer(progressElement: HTMLElement): Promise<void> {
@@ -18,59 +17,63 @@ export async function startDownload(
     magnetUri: string
 ): Promise<void> {
     try {
-        const videoContainer = document.querySelector(videoContainerSelector);
-        if (!videoContainer) {
-            throw new Error('Video container not found');
-        }
+        if (!client) client = new WebTorrent();
 
-        if (!client) {
-            throw new Error('WebTorrent not initialized');
-        }
+        const videoContainer = document.querySelector(videoContainerSelector) as HTMLDivElement;
+        if (!videoContainer) throw new Error('Video container not found');
 
+        // Create video element
+        const video = document.createElement('video');
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.maxHeight = '480px';
+        video.controls = true;
+
+        // Clear container and add video
         videoContainer.innerHTML = '';
-        const videoElement = document.createElement('video');
-        videoElement.controls = true;
-        videoElement.className = 'w-100 h-100';
-        videoContainer.appendChild(videoElement);
-        client.add(magnetUri, {
-            announce: [
-                'wss://tracker.openwebtorrent.com',
-                'wss://tracker.btorrent.xyz',
-                'wss://tracker.fastcast.nz'
-            ]
-        }, (torrent: any) => {
-            const file = torrent.files.find((f: any) =>
-                f.name.endsWith('.mp4') ||
-                f.name.endsWith('.webm') ||
-                f.name.endsWith('.mkv')
-            );
+        videoContainer.appendChild(video);
 
-            if (!file) {
-                throw new Error('No video file found in torrent');
-            }
+        return new Promise((resolve, reject) => {
+            client.add(magnetUri, (torrent: any) => {
+                // Get the largest video file
+                const files = torrent.files.filter((file: any) =>
+                    file.name.endsWith('.mp4') ||
+                    file.name.endsWith('.webm') ||
+                    file.name.endsWith('.mkv')
+                );
+                const file = files.reduce((a: any, b: any) => a.length > b.length ? a : b);
 
-            file.getBlobURL((err: any, url: string) => {
-                if (err) throw err;
-                if (!url) throw new Error('Failed to get video URL');
-                videoElement.src = url;
-            });
+                if (!file) {
+                    reject(new Error('No video file found'));
+                    return;
+                }
 
-            torrent.on('download', () => {
-                const percent = (torrent.progress * 100).toFixed(1);
-                progressElement.textContent = `Downloading: ${percent}%`;
-                progressElement.className = 'alert alert-info';
+                // Stream to video element
+                file.renderTo(video);
+
+                torrent.on('download', () => {
+                    const progress = (torrent.progress * 100).toFixed(1);
+                    progressElement.textContent = `Downloading: ${progress}%`;
+                });
+
+                torrent.on('done', () => {
+                    progressElement.textContent = 'Download complete';
+                    resolve();
+                });
             });
         });
     } catch (error) {
-        console.error('Error starting download:', error);
         throw error;
     }
 }
 
 export async function stopDownload(): Promise<void> {
     if (client) {
-        client.destroy(() => {
-            client = new WebTorrent();
+        await new Promise<void>((resolve) => {
+            client.destroy(() => {
+                client = new WebTorrent();
+                resolve();
+            });
         });
     }
 }
