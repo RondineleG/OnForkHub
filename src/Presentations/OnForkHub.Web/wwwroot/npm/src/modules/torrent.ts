@@ -4,9 +4,8 @@ let client: any = null;
 export async function initTorrentPlayer(progressElement: HTMLElement): Promise<void> {
     try {
         client = new WebTorrent();
-        progressElement.textContent = "WebTorrent initialized successfully";
+        progressElement.textContent = "Ready to play";
     } catch (error) {
-        console.error('Error initializing WebTorrent:', error);
         throw error;
     }
 }
@@ -17,45 +16,36 @@ export async function startDownload(
     magnetUri: string
 ): Promise<void> {
     try {
-        if (!client) client = new WebTorrent();
+        const container = document.querySelector(videoContainerSelector);
+        if (!container) throw new Error('Container not found');
 
-        const videoContainer = document.querySelector(videoContainerSelector) as HTMLDivElement;
-        if (!videoContainer) throw new Error('Video container not found');
+        container.innerHTML = `
+            <video controls playsinline 
+                style="width:100%;height:100%;object-fit:contain;background:#000;">
+            </video>
+        `;
+        const video = container.querySelector('video');
 
-        videoContainer.innerHTML = '<video controls style="width: 100%; height: 100%;"></video>';
-        const video = videoContainer.querySelector('video') as HTMLVideoElement;
-
-        client.add(magnetUri, {
-            announce: [
-                'wss://tracker.openwebtorrent.com',
-                'wss://tracker.btorrent.xyz',
-                'wss://tracker.fastcast.nz'
-            ]
-        }, (torrent: any) => {
-            const file = torrent.files.find((file: any) =>
-                file.name.endsWith('.mp4') ||
-                file.name.endsWith('.webm') ||
-                file.name.endsWith('.mkv')
+        client.add(magnetUri, (torrent: any) => {
+            const file = torrent.files.find((f: any) =>
+                f.name.endsWith('.mp4') ||
+                f.name.endsWith('.mkv') ||
+                f.name.endsWith('.webm')
             );
 
             if (!file) throw new Error('No video file found');
 
-            file.renderTo(video, {
-                autoplay: true,
-                muted: false,
-                controls: true,
-                errorCallback: (err: any) => {
-                    console.error('Error rendering:', err);
+            file.getBlobURL((err: any, url: string) => {
+                if (err) throw err;
+                if (video) {
+                    video.src = url;
+                    video.play().catch(console.error);
                 }
             });
 
             torrent.on('download', () => {
-                const progress = (torrent.progress * 100).toFixed(1);
-                progressElement.textContent = `Downloading: ${progress}%`;
-            });
-
-            torrent.on('done', () => {
-                progressElement.textContent = 'Download complete!';
+                progressElement.textContent =
+                    `Loading: ${(torrent.progress * 100).toFixed(1)}%`;
             });
         });
 
