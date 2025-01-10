@@ -28,6 +28,7 @@ public static class Program
                 {
                     services.AddSingleton<ILogger, ConsoleLogger>();
                     services.AddSingleton<IProcessRunner, ProcessRunner>();
+                    services.AddSingleton<IGitAliasConfiguration, GitAliasConfiguration>();
                     services.AddSingleton<IGitEditorService, GitEditorService>();
                     services.AddSingleton<IGitHubClient, GitHubClient>();
                     services.AddSingleton<IPackageInstaller, DependencyPackageInstaller>();
