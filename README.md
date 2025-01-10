@@ -227,23 +227,23 @@ dotnet watch run
 After setting up the project, you will have access to convenient Git aliases. They become available after restarting your terminal or running `. $PROFILE` in your terminal:
 
 ```bash
-# Core Commands
-gs  # git status -sb
-ga  # git add --all
-gc  # git commit -ev
-gps # git push
-gpl # git pull
-gf  # git fetch
+# Git Aliases Quick Reference
+gs    # git status -sb (shows clean branch status)
+ga    # git add --all (stages all changes)
+gc -m "message"  # git commit with message
+gps   # git push
+gpl   # git pull
+gf    # git fetch
 
 # Branch Management
-gb  # git branch
-gco # git checkout
+gb    # git branch
+gco   # git checkout
 
-# Viewing Changes
-gl  # git log with nice formatting
-gt  # git log --graph (tree view)
-gd  # git diff
-gr  # git remote -v
+# Log & History
+gl -n  # git log with nice formatting (e.g. gl -20 for last 20 commits)
+gt -n  # git tree view (e.g. gt -10 for last 10 commits)
+gd     # git diff (shows uncommitted changes)
+gr     # git remote -v (shows remote repositories)
 ```
 
 #### 5. CLI Tool (dtn)

@@ -1,6 +1,12 @@
 namespace OnForkHub.Scripts;
 
-public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRequestConfiguration prConfig, ICliHandler cliHandler)
+public class Startup(
+    ILogger logger,
+    GitFlowConfiguration gitFlow,
+    GitFlowPullRequestConfiguration prConfig,
+    ICliHandler cliHandler,
+    IGitAliasConfiguration gitAliasConfiguration
+)
 {
     public async Task<int> RunAsync(string[] args)
     {
@@ -17,7 +23,7 @@ public class Startup(ILogger logger, GitFlowConfiguration gitFlow, GitFlowPullRe
                 logger.Log(ELogLevel.Error, "Git not installed");
                 return 1;
             }
-
+            await gitAliasConfiguration.ConfigureAliasesAsync();
             await gitFlow.EnsureGitFlowConfiguredAsync();
             if (await cliHandler.HandlePackageCommand(args))
             {
