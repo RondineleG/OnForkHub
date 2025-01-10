@@ -29,28 +29,31 @@ export async function startDownload(
         container.innerHTML = '';
         container.appendChild(videoElement);
 
-        client.add(magnetUri, { announce: ['wss://tracker.webtorrent.io'] }, (torrent: any) => {
-            const files = torrent.files;
-            const videoFile = files.find((file: any) => {
-                return /\.(mp4|mkv|webm)$/i.test(file.name);
+        client.add(magnetUri, {
+            announce: [
+                'wss://tracker.btorrent.xyz',
+                'wss://tracker.openwebtorrent.com',
+                'wss://tracker.fastcast.nz'
+            ]
+        }, (torrent: any) => {
+            const file = torrent.files.find((f: any) => {
+                return /\.(mp4|mkv|webm)$/i.test(f.name);
             });
 
-            if (!videoFile) {
-                throw new Error('No video file found in torrent');
+            if (!file) {
+                throw new Error('No video file found');
             }
 
-            videoFile.getBlobURL((err: Error | null, url: string) => {
-                if (err) throw err;
-                videoElement.src = url;
-                videoElement.play();
+            file.renderTo(videoElement, {
+                autoplay: true,
+                muted: false
             });
 
-            let lastProgress = 0;
             torrent.on('download', () => {
-                const newProgress = Math.floor(torrent.progress * 100);
-                if (newProgress > lastProgress) {
-                    lastProgress = newProgress;
-                    progressElement.textContent = `Downloading: ${newProgress}%`;
+                const progress = Math.floor(torrent.progress * 100);
+                progressElement.textContent = `Downloading: ${progress}%`;
+                if (torrent.progress > 0.01 && videoElement.paused) {
+                    videoElement.play().catch(console.error);
                 }
             });
 
