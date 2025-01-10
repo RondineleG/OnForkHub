@@ -16,36 +16,46 @@ export async function startDownload(
     magnetUri: string
 ): Promise<void> {
     try {
-        const container = document.querySelector(videoContainerSelector);
-        if (!container) throw new Error('Container not found');
+        if (!client) {
+            client = new WebTorrent();
+        }
 
-        container.innerHTML = `
-            <video controls playsinline 
-                style="width:100%;height:100%;object-fit:contain;background:#000;">
-            </video>
-        `;
-        const video = container.querySelector('video');
+        const container = document.querySelector(videoContainerSelector) as HTMLElement;
+        const videoElement = document.createElement('video');
+        videoElement.controls = true;
+        videoElement.style.width = '100%';
+        videoElement.style.height = '100%';
+        videoElement.style.backgroundColor = '#000';
+        container.innerHTML = '';
+        container.appendChild(videoElement);
 
-        client.add(magnetUri, (torrent: any) => {
-            const file = torrent.files.find((f: any) =>
-                f.name.endsWith('.mp4') ||
-                f.name.endsWith('.mkv') ||
-                f.name.endsWith('.webm')
-            );
+        client.add(magnetUri, { announce: ['wss://tracker.webtorrent.io'] }, (torrent: any) => {
+            const files = torrent.files;
+            const videoFile = files.find((file: any) => {
+                return /\.(mp4|mkv|webm)$/i.test(file.name);
+            });
 
-            if (!file) throw new Error('No video file found');
+            if (!videoFile) {
+                throw new Error('No video file found in torrent');
+            }
 
-            file.getBlobURL((err: any, url: string) => {
+            videoFile.getBlobURL((err: Error | null, url: string) => {
                 if (err) throw err;
-                if (video) {
-                    video.src = url;
-                    video.play().catch(console.error);
+                videoElement.src = url;
+                videoElement.play();
+            });
+
+            let lastProgress = 0;
+            torrent.on('download', () => {
+                const newProgress = Math.floor(torrent.progress * 100);
+                if (newProgress > lastProgress) {
+                    lastProgress = newProgress;
+                    progressElement.textContent = `Downloading: ${newProgress}%`;
                 }
             });
 
-            torrent.on('download', () => {
-                progressElement.textContent =
-                    `Loading: ${(torrent.progress * 100).toFixed(1)}%`;
+            torrent.on('done', () => {
+                progressElement.textContent = 'Download complete';
             });
         });
 
@@ -56,7 +66,11 @@ export async function startDownload(
 
 export async function stopDownload(): Promise<void> {
     if (client) {
-        client.destroy();
-        client = new WebTorrent();
+        await new Promise<void>((resolve) => {
+            client.destroy(() => {
+                client = new WebTorrent();
+                resolve();
+            });
+        });
     }
 }
