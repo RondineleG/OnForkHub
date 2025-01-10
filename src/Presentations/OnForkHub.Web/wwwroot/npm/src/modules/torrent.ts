@@ -22,46 +22,58 @@ export async function startDownload(
         const videoContainer = document.querySelector(videoContainerSelector) as HTMLDivElement;
         if (!videoContainer) throw new Error('Video container not found');
 
-        // Create video element
         const video = document.createElement('video');
         video.style.width = '100%';
         video.style.height = '100%';
         video.style.maxHeight = '480px';
         video.controls = true;
 
-        // Clear container and add video
         videoContainer.innerHTML = '';
         videoContainer.appendChild(video);
 
-        return new Promise((resolve, reject) => {
-            client.add(magnetUri, (torrent: any) => {
-                // Get the largest video file
-                const files = torrent.files.filter((file: any) =>
-                    file.name.endsWith('.mp4') ||
-                    file.name.endsWith('.webm') ||
-                    file.name.endsWith('.mkv')
-                );
-                const file = files.reduce((a: any, b: any) => a.length > b.length ? a : b);
+        client.add(magnetUri, (torrent: any) => {
+            const file = torrent.files.find((file: any) =>
+                file.name.endsWith('.mp4') ||
+                file.name.endsWith('.webm') ||
+                file.name.endsWith('.mkv')
+            );
 
-                if (!file) {
-                    reject(new Error('No video file found'));
-                    return;
+            if (!file) throw new Error('No video file found');
+
+            // Start streaming immediately
+            const stream = file.createReadStream();
+            let buffer = [];
+            let isPlaying = false;
+
+            stream.on('data', (chunk: any) => {
+                buffer.push(chunk);
+                if (!isPlaying && buffer.length > 10) {
+                    isPlaying = true;
+                    file.getBlobURL((err: any, url: string) => {
+                        if (!err && url) {
+                            video.src = url;
+                            video.play();
+                        }
+                    });
                 }
+            });
 
-                // Stream to video element
-                file.renderTo(video);
+            torrent.on('download', () => {
+                const progress = (torrent.progress * 100).toFixed(1);
+                progressElement.textContent = `Downloading: ${progress}%`;
 
-                torrent.on('download', () => {
-                    const progress = (torrent.progress * 100).toFixed(1);
-                    progressElement.textContent = `Downloading: ${progress}%`;
-                });
-
-                torrent.on('done', () => {
-                    progressElement.textContent = 'Download complete';
-                    resolve();
-                });
+                if (torrent.progress > 0.05 && !isPlaying) {
+                    isPlaying = true;
+                    file.getBlobURL((err: any, url: string) => {
+                        if (!err && url) {
+                            video.src = url;
+                            video.play();
+                        }
+                    });
+                }
             });
         });
+
     } catch (error) {
         throw error;
     }
@@ -69,11 +81,7 @@ export async function startDownload(
 
 export async function stopDownload(): Promise<void> {
     if (client) {
-        await new Promise<void>((resolve) => {
-            client.destroy(() => {
-                client = new WebTorrent();
-                resolve();
-            });
-        });
+        client.destroy();
+        client = new WebTorrent();
     }
 }
