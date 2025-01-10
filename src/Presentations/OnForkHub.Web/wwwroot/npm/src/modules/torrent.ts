@@ -22,16 +22,16 @@ export async function startDownload(
         const videoContainer = document.querySelector(videoContainerSelector) as HTMLDivElement;
         if (!videoContainer) throw new Error('Video container not found');
 
-        const video = document.createElement('video');
-        video.style.width = '100%';
-        video.style.height = '100%';
-        video.style.maxHeight = '480px';
-        video.controls = true;
+        videoContainer.innerHTML = '<video controls style="width: 100%; height: 100%;"></video>';
+        const video = videoContainer.querySelector('video') as HTMLVideoElement;
 
-        videoContainer.innerHTML = '';
-        videoContainer.appendChild(video);
-
-        client.add(magnetUri, (torrent: any) => {
+        client.add(magnetUri, {
+            announce: [
+                'wss://tracker.openwebtorrent.com',
+                'wss://tracker.btorrent.xyz',
+                'wss://tracker.fastcast.nz'
+            ]
+        }, (torrent: any) => {
             const file = torrent.files.find((file: any) =>
                 file.name.endsWith('.mp4') ||
                 file.name.endsWith('.webm') ||
@@ -40,37 +40,22 @@ export async function startDownload(
 
             if (!file) throw new Error('No video file found');
 
-            // Start streaming immediately
-            const stream = file.createReadStream();
-            let buffer = [];
-            let isPlaying = false;
-
-            stream.on('data', (chunk: any) => {
-                buffer.push(chunk);
-                if (!isPlaying && buffer.length > 10) {
-                    isPlaying = true;
-                    file.getBlobURL((err: any, url: string) => {
-                        if (!err && url) {
-                            video.src = url;
-                            video.play();
-                        }
-                    });
+            file.renderTo(video, {
+                autoplay: true,
+                muted: false,
+                controls: true,
+                errorCallback: (err: any) => {
+                    console.error('Error rendering:', err);
                 }
             });
 
             torrent.on('download', () => {
                 const progress = (torrent.progress * 100).toFixed(1);
                 progressElement.textContent = `Downloading: ${progress}%`;
+            });
 
-                if (torrent.progress > 0.05 && !isPlaying) {
-                    isPlaying = true;
-                    file.getBlobURL((err: any, url: string) => {
-                        if (!err && url) {
-                            video.src = url;
-                            video.play();
-                        }
-                    });
-                }
+            torrent.on('done', () => {
+                progressElement.textContent = 'Download complete!';
             });
         });
 
