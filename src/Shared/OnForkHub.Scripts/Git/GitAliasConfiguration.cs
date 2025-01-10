@@ -45,29 +45,6 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
                 _logger.Log(ELogLevel.Warning, $"Failed to configure alias {alias}: {ex.Message}");
             }
         }
-
-        // Configure complex aliases separately
-        var complexAliases = new Dictionary<string, string>
-        {
-            { "gc", "!f() { git commit -m \"$*\"; }; f" },
-            { "gt", "!f() { n=${1:-10}; git log --graph --oneline --decorate -n \"$n\"; }; f" },
-            {
-                "gl",
-                "!f() { n=${1:-10}; git log --graph --pretty=format:\"%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)\" --abbrev-commit -n \"$n\"; }; f"
-            },
-        };
-
-        foreach (var (alias, command) in complexAliases)
-        {
-            try
-            {
-                await _processRunner.RunAsync("git", $"config --global alias.{alias} \"{command}\"");
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(ELogLevel.Warning, $"Failed to configure complex alias {alias}: {ex.Message}");
-            }
-        }
     }
 
     private async Task ConfigurePowerShellAliasesAsync()
@@ -126,22 +103,85 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
 
             var content =
                 @"
-function GitCommit { git commit -m ""$($args -join ' ')"" }
-function GitTree { $n = if ($args[0]) { $args[0] } else { 10 }; git log --graph --oneline --decorate -n $n }
-function GitLog { $n = if ($args[0]) { $args[0] } else { 10 }; git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit -n $n }
+Remove-Item Alias:gc -Force -ErrorAction SilentlyContinue
+Remove-Item Alias:gps -Force -ErrorAction SilentlyContinue
+Remove-Item Alias:gl -Force -ErrorAction SilentlyContinue
 
-Set-Alias -Name gc -Value GitCommit -Force
-Set-Alias -Name gt -Value GitTree -Force
-Set-Alias -Name gl -Value GitLog -Force
-Set-Alias -Name gs -Value 'git status -sb' -Force
-Set-Alias -Name ga -Value 'git add --all' -Force
-Set-Alias -Name gps -Value 'git push' -Force
-Set-Alias -Name gpl -Value 'git pull' -Force
-Set-Alias -Name gf -Value 'git fetch' -Force
-Set-Alias -Name gco -Value 'git checkout' -Force
-Set-Alias -Name gb -Value 'git branch' -Force
-Set-Alias -Name gr -Value 'git remote -v' -Force
-Set-Alias -Name gd -Value 'git diff' -Force";
+function GitStatus {
+    & git status -sb $args
+}
+Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
+
+function GitCommit {
+    param(
+        [string]$Message
+    )
+    if ($Message) {
+        & git commit -m $Message
+    }
+    else {
+        & git commit -e
+    }
+}
+Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
+
+function GitAdd {
+    & git add --all $args
+}
+Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
+
+function GitTree {
+    param(
+        [int]$CommitCount = 10 
+    )
+    & git log --max-count=$CommitCount --graph --oneline --decorate $args
+}
+Set-Alias -Name gt -Value GitTree -Force -Option AllScope
+
+function GitPush {
+    & git push $args
+}
+Set-Alias -Name gps -Value GitPush -Force -Option AllScope
+
+function GitPull {
+    & git pull $args
+}
+Set-Alias -Name gpl -Value GitPull -Force -Option AllScope
+
+function GitFetch {
+    & git fetch $args
+}
+Set-Alias -Name gf -Value GitFetch -Force -Option AllScope
+
+function GitCheckout {
+    & git checkout $args
+}
+Set-Alias -Name gco -Value GitCheckout -Force -Option AllScope
+
+function GitBranch {
+    & git branch $args
+}
+Set-Alias -Name gb -Value GitBranch -Force -Option AllScope
+
+function GitRemote {
+    & git remote -v $args
+}
+Set-Alias -Name gr -Value GitRemote -Force -Option AllScope
+
+function GitDiff {
+    & git diff $args
+}
+Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
+
+function GitLog {
+    param(
+        [int]$CommitCount = 10  
+    )
+    & git log --max-count=$CommitCount --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit $args
+}
+Set-Alias -Name gl -Value GitLog -Force -Option AllScope
+
+Write-Host 'Git aliases loaded successfully!'";
 
             if (File.Exists(profilePath))
             {
