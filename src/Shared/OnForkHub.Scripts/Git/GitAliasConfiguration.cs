@@ -5,9 +5,9 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
     private readonly Dictionary<string, string> _aliasCommands = new()
     {
         { "gs", "status -sb" },
-        { "gc", "commit -ev" },
+        { "gc", "commit -m" },
         { "ga", "add --all" },
-        { "gt", "log --graph --oneline --decorate" },
+        { "gt", "!sh -c 'git log --graph --oneline --decorate -n ${1:-10}' -" },
         { "gps", "push" },
         { "gpl", "pull" },
         { "gf", "fetch" },
@@ -15,11 +15,13 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
         { "gb", "branch" },
         { "gr", "remote -v" },
         { "gd", "diff" },
-        { "gl", "log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short" },
+        {
+            "gl",
+            "!sh -c 'git log --graph --pretty=format:\"%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)\" --abbrev-commit -n ${1:-10}' -"
+        },
     };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
     public async Task ConfigureAliasesAsync()
@@ -42,7 +44,6 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
             }
 
             await ConfigurePowerShellAliasesAsync();
-
             _logger.Log(ELogLevel.Info, "Git aliases configuration completed.");
         }
         catch (Exception ex)
@@ -55,19 +56,26 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
     private static string GeneratePowerShellAliasContent()
     {
         return $@"
-# Git Aliases
-# Generated on {DateTime.Now:yyyy-MM-dd HH:mm:ss}
 if (Get-Command git -ErrorAction SilentlyContinue) {{
     function GitStatus {{ & git status -sb $args }}
     Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
 
-    function GitCommit {{ & git commit -ev $args }}
+    function GitCommit {{ 
+        if ($args.Count -eq 0) {{
+            Write-Host 'Usage: gc <message>'
+            return
+        }}
+        & git commit -m $args[0]
+    }}
     Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
 
     function GitAdd {{ & git add --all $args }}
     Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
 
-    function GitTree {{ & git log --graph --oneline --decorate $args }}
+    function GitTree {{ 
+        $count = if ($args.Count -gt 0) {{ $args[0] }} else {{ 10 }}
+        & git log --graph --oneline --decorate -n $count
+    }}
     Set-Alias -Name gt -Value GitTree -Force -Option AllScope
 
     function GitPush {{ & git push $args }}
@@ -92,15 +100,10 @@ if (Get-Command git -ErrorAction SilentlyContinue) {{
     Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
 
     function GitLog {{
-        & git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit $args
+        $count = if ($args.Count -gt 0) {{ $args[0] }} else {{ 10 }}
+        & git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit -n $count
     }}
     Set-Alias -Name gl -Value GitLog -Force -Option AllScope
-
-    # Force reload the alias
-    if (Test-Path alias:gl) {{
-        Remove-Item alias:gl -Force
-        Set-Alias -Name gl -Value GitLog -Force -Option AllScope
-    }}
 
     Write-Host 'Git aliases loaded successfully!'
 }}";
@@ -151,8 +154,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {{
                 @"
             $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
             if (Test-Path $PROFILE) { . $PROFILE }
-            Get-Alias | Where-Object { $_.Name -like 'g*' } | Format-Table -AutoSize
-        ";
+            Get-Alias | Where-Object { $_.Name -like 'g*' } | Format-Table -AutoSize";
 
             foreach (var shell in new[] { "powershell", "pwsh" })
             {
