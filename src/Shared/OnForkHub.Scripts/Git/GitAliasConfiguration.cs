@@ -5,9 +5,7 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
     private readonly Dictionary<string, string> _aliasCommands = new()
     {
         { "gs", "status -sb" },
-        { "gc", "commit -m" },
         { "ga", "add --all" },
-        { "gt", "!sh -c 'git log --graph --oneline --decorate -n ${1:-10}' -" },
         { "gps", "push" },
         { "gpl", "pull" },
         { "gf", "fetch" },
@@ -15,10 +13,6 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
         { "gb", "branch" },
         { "gr", "remote -v" },
         { "gd", "diff" },
-        {
-            "gl",
-            "!sh -c 'git log --graph --pretty=format:\"%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)\" --abbrev-commit -n ${1:-10}' -"
-        },
     };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -28,176 +22,143 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
     {
         try
         {
-            _logger.Log(ELogLevel.Info, "Configuring Git aliases...");
-
-            foreach (var (alias, command) in _aliasCommands)
-            {
-                try
-                {
-                    await _processRunner.RunAsync("git", $"config --global alias.{alias} \"{command}\"");
-                    _logger.Log(ELogLevel.Info, $"Configured alias: {alias} => git {command}");
-                }
-                catch (Exception ex)
-                {
-                    _logger.Log(ELogLevel.Warning, $"Failed to configure alias {alias}: {ex.Message}");
-                }
-            }
-
+            await ConfigureGitAliasesAsync();
             await ConfigurePowerShellAliasesAsync();
-            _logger.Log(ELogLevel.Info, "Git aliases configuration completed.");
         }
         catch (Exception ex)
         {
-            _logger.Log(ELogLevel.Error, $"Error configuring Git aliases: {ex.Message}");
+            _logger.Log(ELogLevel.Error, $"Error configuring aliases: {ex.Message}");
             throw;
         }
     }
 
-    private static string GeneratePowerShellAliasContent()
+    private async Task ConfigureGitAliasesAsync()
     {
-        return $@"
-if (Get-Command git -ErrorAction SilentlyContinue) {{
-    function GitStatus {{ & git status -sb $args }}
-    Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
-
-    function GitCommit {{ 
-        if ($args.Count -eq 0) {{
-            Write-Host 'Usage: gc <message>'
-            return
-        }}
-        & git commit -m $args[0]
-    }}
-    Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
-
-    function GitAdd {{ & git add --all $args }}
-    Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
-
-    function GitTree {{ 
-        $count = if ($args.Count -gt 0) {{ $args[0] }} else {{ 10 }}
-        & git log --graph --oneline --decorate -n $count
-    }}
-    Set-Alias -Name gt -Value GitTree -Force -Option AllScope
-
-    function GitPush {{ & git push $args }}
-    Set-Alias -Name gps -Value GitPush -Force -Option AllScope
-
-    function GitPull {{ & git pull $args }}
-    Set-Alias -Name gpl -Value GitPull -Force -Option AllScope
-
-    function GitFetch {{ & git fetch $args }}
-    Set-Alias -Name gf -Value GitFetch -Force -Option AllScope
-
-    function GitCheckout {{ & git checkout $args }}
-    Set-Alias -Name gco -Value GitCheckout -Force -Option AllScope
-
-    function GitBranch {{ & git branch $args }}
-    Set-Alias -Name gb -Value GitBranch -Force -Option AllScope
-
-    function GitRemote {{ & git remote -v $args }}
-    Set-Alias -Name gr -Value GitRemote -Force -Option AllScope
-
-    function GitDiff {{ & git diff $args }}
-    Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
-
-    function GitLog {{
-        $count = if ($args.Count -gt 0) {{ $args[0] }} else {{ 10 }}
-        & git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit -n $count
-    }}
-    Set-Alias -Name gl -Value GitLog -Force -Option AllScope
-
-    Write-Host 'Git aliases loaded successfully!'
-}}";
-    }
-
-    private static string UpdateExistingAliases(string currentContent, string newAliases)
-    {
-        var lines = currentContent.Split('\n');
-        var startIndex = Array.FindIndex(lines, l => l.Contains("# Git Aliases"));
-        var endIndex = Array.FindIndex(lines, startIndex + 1, l => l.Contains("}}"));
-
-        if (startIndex >= 0 && endIndex >= 0)
+        foreach (var (alias, command) in _aliasCommands)
         {
-            var beforeAliases = string.Join('\n', lines.Take(startIndex));
-            var afterAliases = string.Join('\n', lines.Skip(endIndex + 1));
-            return $"{beforeAliases}\n{newAliases}{afterAliases}";
+            try
+            {
+                await _processRunner.RunAsync("git", $"config --global alias.{alias} \"{command}\"");
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(ELogLevel.Warning, $"Failed to configure alias {alias}: {ex.Message}");
+            }
         }
 
-        return currentContent + "\n" + newAliases;
+        // Configure complex aliases separately
+        var complexAliases = new Dictionary<string, string>
+        {
+            { "gc", "!f() { git commit -m \"$*\"; }; f" },
+            { "gt", "!f() { n=${1:-10}; git log --graph --oneline --decorate -n \"$n\"; }; f" },
+            {
+                "gl",
+                "!f() { n=${1:-10}; git log --graph --pretty=format:\"%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)\" --abbrev-commit -n \"$n\"; }; f"
+            },
+        };
+
+        foreach (var (alias, command) in complexAliases)
+        {
+            try
+            {
+                await _processRunner.RunAsync("git", $"config --global alias.{alias} \"{command}\"");
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(ELogLevel.Warning, $"Failed to configure complex alias {alias}: {ex.Message}");
+            }
+        }
     }
 
     private async Task ConfigurePowerShellAliasesAsync()
     {
-        try
+        var profilePaths = new[]
         {
-            var profilePaths = new[]
-            {
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "Documents",
-                    "WindowsPowerShell",
-                    "Microsoft.PowerShell_profile.ps1"
-                ),
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "Documents",
-                    "PowerShell",
-                    "Microsoft.PowerShell_profile.ps1"
-                ),
-            };
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Documents",
+                "WindowsPowerShell",
+                "Microsoft.PowerShell_profile.ps1"
+            ),
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Documents",
+                "PowerShell",
+                "Microsoft.PowerShell_profile.ps1"
+            ),
+        };
 
-            foreach (var psProfilePath in profilePaths)
-            {
-                await ConfigureProfileAsync(psProfilePath);
-            }
+        foreach (var path in profilePaths)
+        {
+            await ConfigureProfileAsync(path);
+        }
 
-            var reloadScript =
-                @"
-            $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
-            if (Test-Path $PROFILE) { . $PROFILE }
-            Get-Alias | Where-Object { $_.Name -like 'g*' } | Format-Table -AutoSize";
+        await ReloadProfilesAsync();
+    }
 
-            foreach (var shell in new[] { "powershell", "pwsh" })
+    private async Task ReloadProfilesAsync()
+    {
+        var reloadScript =
+            "$env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User'); if (Test-Path $PROFILE) { . $PROFILE }";
+
+        foreach (var shell in new[] { "powershell", "pwsh" })
+        {
+            try
             {
                 await _processRunner.RunAsync(shell, $"-NoProfile -Command {reloadScript}");
-                _logger.Log(ELogLevel.Info, $"Aliases loaded in {shell}");
             }
-
-            _logger.Log(ELogLevel.Info, "PowerShell Git aliases configured successfully.");
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Warning, $"Failed to configure PowerShell aliases: {ex.Message}");
+            catch (Exception ex)
+            {
+                _logger.Log(ELogLevel.Warning, $"Failed to reload {shell} profile: {ex.Message}");
+            }
         }
     }
 
     private async Task ConfigureProfileAsync(string profilePath)
     {
-        var profileDir = Path.GetDirectoryName(profilePath);
-        if (!Directory.Exists(profileDir))
+        try
         {
-            Directory.CreateDirectory(profileDir!);
-        }
-
-        var aliasContent = GeneratePowerShellAliasContent();
-
-        if (File.Exists(profilePath))
-        {
-            var currentContent = await File.ReadAllTextAsync(profilePath);
-            if (!currentContent.Contains("# Git Aliases"))
+            var dir = Path.GetDirectoryName(profilePath);
+            if (!Directory.Exists(dir))
             {
-                await File.AppendAllTextAsync(profilePath, $"\n{aliasContent}");
+                Directory.CreateDirectory(dir!);
+            }
+
+            var content =
+                @"
+function GitCommit { git commit -m ""$($args -join ' ')"" }
+function GitTree { $n = if ($args[0]) { $args[0] } else { 10 }; git log --graph --oneline --decorate -n $n }
+function GitLog { $n = if ($args[0]) { $args[0] } else { 10 }; git log --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit -n $n }
+
+Set-Alias -Name gc -Value GitCommit -Force
+Set-Alias -Name gt -Value GitTree -Force
+Set-Alias -Name gl -Value GitLog -Force
+Set-Alias -Name gs -Value 'git status -sb' -Force
+Set-Alias -Name ga -Value 'git add --all' -Force
+Set-Alias -Name gps -Value 'git push' -Force
+Set-Alias -Name gpl -Value 'git pull' -Force
+Set-Alias -Name gf -Value 'git fetch' -Force
+Set-Alias -Name gco -Value 'git checkout' -Force
+Set-Alias -Name gb -Value 'git branch' -Force
+Set-Alias -Name gr -Value 'git remote -v' -Force
+Set-Alias -Name gd -Value 'git diff' -Force";
+
+            if (File.Exists(profilePath))
+            {
+                var currentContent = await File.ReadAllTextAsync(profilePath);
+                if (!currentContent.Contains("GitCommit"))
+                {
+                    await File.AppendAllTextAsync(profilePath, content);
+                }
             }
             else
             {
-                var newContent = UpdateExistingAliases(currentContent, aliasContent);
-                await File.WriteAllTextAsync(profilePath, newContent);
+                await File.WriteAllTextAsync(profilePath, content);
             }
         }
-        else
+        catch (Exception ex)
         {
-            await File.WriteAllTextAsync(profilePath, aliasContent);
+            _logger.Log(ELogLevel.Warning, $"Failed to configure profile {profilePath}: {ex.Message}");
         }
-
-        _logger.Log(ELogLevel.Info, $"Configured aliases in: {profilePath}");
     }
 }
