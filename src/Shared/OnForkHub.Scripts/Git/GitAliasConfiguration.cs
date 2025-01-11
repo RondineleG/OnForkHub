@@ -13,6 +13,7 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
         { "gb", "branch" },
         { "gr", "remote -v" },
         { "gd", "diff" },
+        { "gc", "commit  -m" },
     };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -116,14 +117,15 @@ function GitCommit {
         $Message = $args[0]
     }
 
-    if ($Message) {
-        & git commit -m ""$Message""
+    if (![string]::IsNullOrWhiteSpace($Message)) {
+        & git commit -m ""`""$Message`""""
     }
     else {
-        & git commit
+        Write-Error ""Você precisa fornecer uma mensagem para o commit.""
     }
 }
 Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
+
 
 function GitAdd {
     & git add --all $args
