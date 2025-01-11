@@ -13,7 +13,6 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
         { "gb", "branch" },
         { "gr", "remote -v" },
         { "gd", "diff" },
-        { "gc", "commit  -m" },
     };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -108,24 +107,23 @@ Remove-Item Alias:gc -Force -ErrorAction SilentlyContinue
 Remove-Item Alias:gps -Force -ErrorAction SilentlyContinue
 Remove-Item Alias:gl -Force -ErrorAction SilentlyContinue
 
+function GitStatus {
+    & git status -sb $args
+}
+Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
+
 function GitCommit {
     param(
         [string]$Message
     )
-
-    if (-not $Message -and $args.Count -gt 0) {
-        $Message = $args[0]
-    }
-
-    if (![string]::IsNullOrWhiteSpace($Message)) {
-        & git commit -m ""`""$Message`""""
+    if ($Message) {
+        & git commit -m $Message
     }
     else {
-        Write-Error ""Você precisa fornecer uma mensagem para o commit.""
+        & git commit -e
     }
 }
 Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
-
 
 function GitAdd {
     & git add --all $args
