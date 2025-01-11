@@ -116,6 +116,11 @@ function GitCommit {
     param(
         [string]$Message
     )
+    # Verifica se $Message foi passado explicitamente ou usa $args[0]
+    if (-not $Message -and $args.Count -gt 0) {
+        $Message = $args[0]
+    }
+
     if ($Message) {
         & git commit -m $Message
     }
