@@ -107,25 +107,20 @@ Remove-Item Alias:gc -Force -ErrorAction SilentlyContinue
 Remove-Item Alias:gps -Force -ErrorAction SilentlyContinue
 Remove-Item Alias:gl -Force -ErrorAction SilentlyContinue
 
-function GitStatus {
-    & git status -sb $args
-}
-Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
-
 function GitCommit {
     param(
         [string]$Message
     )
-    # Verifica se $Message foi passado explicitamente ou usa $args[0]
+
     if (-not $Message -and $args.Count -gt 0) {
         $Message = $args[0]
     }
 
     if ($Message) {
-        & git commit -m $Message
+        & git commit -m ""$Message""
     }
     else {
-        & git commit -e
+        & git commit
     }
 }
 Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
