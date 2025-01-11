@@ -16,6 +16,7 @@ sudo usermod -aG docker $USER
 
 sudo systemctl stop nginx
 sudo systemctl disable nginx
+sudo systemctl stop nginx
 
 docker --version
 docker compose version
