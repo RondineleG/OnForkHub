@@ -14,7 +14,9 @@ public sealed class HuskyConfiguration(
         gitFlowConfiguration ?? throw new ArgumentNullException(nameof(gitFlowConfiguration));
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
+
     private readonly string _projectRoot = projectRoot ?? throw new ArgumentNullException(nameof(projectRoot));
 
     public async Task<bool> ConfigureAsync()
@@ -68,20 +70,6 @@ public sealed class HuskyConfiguration(
         return true;
     }
 
-    private async Task<bool> RestoreDotnetToolsAsync()
-    {
-        try
-        {
-            await _processRunner.RunAsync("dotnet", "tool restore", _projectRoot);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Error, $"Failed to restore dotnet tools: {ex.Message}");
-            return false;
-        }
-    }
-
     private async Task<bool> InstallHuskyAsync()
     {
         try
@@ -92,6 +80,20 @@ public sealed class HuskyConfiguration(
         catch (Exception ex)
         {
             _logger.Log(ELogLevel.Error, $"Failed to install Husky: {ex.Message}");
+            return false;
+        }
+    }
+
+    private async Task<bool> RestoreDotnetToolsAsync()
+    {
+        try
+        {
+            await _processRunner.RunAsync("dotnet", "tool restore", _projectRoot);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Error, $"Failed to restore dotnet tools: {ex.Message}");
             return false;
         }
     }

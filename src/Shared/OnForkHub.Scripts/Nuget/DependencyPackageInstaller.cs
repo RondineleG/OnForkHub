@@ -2,10 +2,14 @@ namespace OnForkHub.Scripts.NuGet;
 
 public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRunner, string solutionRoot) : IPackageInstaller
 {
-    private const string NugetSearchUrl = "https://api-v2v3search-0.nuget.org/query?q={0}&take=10";
     private const string DependenciesProjectPath = "src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj";
+
+    private const string NugetSearchUrl = "https://api-v2v3search-0.nuget.org/query?q={0}&take=10";
+
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
+
     private readonly string _solutionRoot = solutionRoot ?? throw new ArgumentNullException(nameof(solutionRoot));
 
     public async Task InstallPackageDirectAsync(string packageId, string version = "")
@@ -43,28 +47,19 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         await ProcessPackageSelections(packages);
     }
 
-    private async Task<List<PackageInfo>> SearchPackages(string searchTerm)
+    private async Task InstallPackage(string packageName, string version)
     {
-        using var client = new HttpClient();
-        var url = $"{NugetSearchUrl}{searchTerm}";
-        var response = await client.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-        var results = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var packages = new List<PackageInfo>();
-        var data = results.RootElement.GetProperty("data");
-        _logger.Log(ELogLevel.Info, "\nFound packages:");
-        for (var i = 0; i < data.GetArrayLength(); i++)
+        var projectPath = Path.Combine(_solutionRoot, DependenciesProjectPath);
+        if (!File.Exists(projectPath))
         {
-            var package = new PackageInfo(
-                data[i].GetProperty("id").GetString() ?? string.Empty,
-                data[i].GetProperty("version").GetString() ?? string.Empty,
-                data[i].GetProperty("description").GetString() ?? string.Empty
-            );
-            packages.Add(package);
-            _logger.Log(ELogLevel.Info, $"{i}: {package.Id} ({package.Version})");
+            throw new FileNotFoundException($"Dependencies project not found: {projectPath}");
         }
 
-        return packages;
+        var versionArg = string.IsNullOrWhiteSpace(version) ? string.Empty : $"--version {version}";
+        var command = $"add {projectPath} package {packageName} {versionArg}";
+        _logger.Log(ELogLevel.Info, $"Installing {packageName} {version}...");
+        await _processRunner.RunAsync("dotnet", command);
+        _logger.Log(ELogLevel.Info, $"Installed {packageName}");
     }
 
     private async Task ProcessPackageSelections(List<PackageInfo> packages)
@@ -89,18 +84,27 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         }
     }
 
-    private async Task InstallPackage(string packageName, string version)
+    private async Task<List<PackageInfo>> SearchPackages(string searchTerm)
     {
-        var projectPath = Path.Combine(_solutionRoot, DependenciesProjectPath);
-        if (!File.Exists(projectPath))
+        using var client = new HttpClient();
+        var url = $"{NugetSearchUrl}{searchTerm}";
+        var response = await client.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+        var results = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var packages = new List<PackageInfo>();
+        var data = results.RootElement.GetProperty("data");
+        _logger.Log(ELogLevel.Info, "\nFound packages:");
+        for (var i = 0; i < data.GetArrayLength(); i++)
         {
-            throw new FileNotFoundException($"Dependencies project not found: {projectPath}");
+            var package = new PackageInfo(
+                data[i].GetProperty("id").GetString() ?? string.Empty,
+                data[i].GetProperty("version").GetString() ?? string.Empty,
+                data[i].GetProperty("description").GetString() ?? string.Empty
+            );
+            packages.Add(package);
+            _logger.Log(ELogLevel.Info, $"{i}: {package.Id} ({package.Version})");
         }
 
-        var versionArg = string.IsNullOrWhiteSpace(version) ? string.Empty : $"--version {version}";
-        var command = $"add {projectPath} package {packageName} {versionArg}";
-        _logger.Log(ELogLevel.Info, $"Installing {packageName} {version}...");
-        await _processRunner.RunAsync("dotnet", command);
-        _logger.Log(ELogLevel.Info, $"Installed {packageName}");
+        return packages;
     }
 }

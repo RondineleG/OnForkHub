@@ -1,18 +1,16 @@
 namespace OnForkHub.Core.ValueObjects;
 
-/// <summary>
-///     Documentation for Email class.
-/// </summary>
+/// <summary>Documentation for Email class.</summary>
 public partial class Email : ValueObject
 {
-    private readonly ValidationResult _validationResult;
-
     private Email(string value, ValidationResult validationResult)
     {
         Value = value;
         Validate();
         _validationResult = validationResult;
     }
+
+    private readonly ValidationResult _validationResult;
 
     public string Value { get; }
 

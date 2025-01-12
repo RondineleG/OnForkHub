@@ -2,14 +2,15 @@ namespace OnForkHub.Core.ValueObjects;
 
 public class Name : ValueObject
 {
-    private const int MinNameLength = 3;
-    private const int MaxNameLength = 50;
-
     private Name(string value)
     {
         Value = value;
         Validate();
     }
+
+    private const int MaxNameLength = 50;
+
+    private const int MinNameLength = 3;
 
     public string Value { get; }
 
