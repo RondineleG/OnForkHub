@@ -123,12 +123,18 @@ Remove-Item Alias:gl -Force -ErrorAction SilentlyContinue
 Remove-Item Alias:gt -Force -ErrorAction SilentlyContinue
 
 function GitCommit {
-    if ($args.Count -eq 0) {
+    param(
+        [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
+        [string[]]$Message
+    )
+    
+    if (-not $Message) {
         Write-Host ""Usage: gc <message>""
         return
     }
-    $message = $args -join ' '
-    & git commit -m $message
+    
+    $commitMessage = $Message -join ' '
+    & git commit -m ""$commitMessage""
 }
 
 function GitTree {
