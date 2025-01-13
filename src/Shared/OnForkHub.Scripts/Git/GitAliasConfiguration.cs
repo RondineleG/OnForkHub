@@ -118,7 +118,7 @@ function GitCommit {
     )
 
     if (-not $Message) {
-        Write-Host ""Usage: gc <message>""
+        Write-Host ""Usage: gc <message> or gc -m <message>""
         return
     }
 
