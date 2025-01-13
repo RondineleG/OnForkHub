@@ -46,18 +46,26 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
             }
         }
 
-        try
+        var complexAliases = new Dictionary<string, string>
         {
-            await _processRunner.RunAsync("git", "config --global alias.gc '!f() { git commit -m \"$*\"; }; f'");
-            await _processRunner.RunAsync("git", "config --global alias.gt '!f() { git log --max-count=${1:-10} --graph --oneline --decorate; }; f'");
-            await _processRunner.RunAsync(
-                "git",
-                "config --global alias.gl '!f() { git log --max-count=${1:-10} --graph --pretty=format:\"%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)\" --abbrev-commit; }; f'"
-            );
-        }
-        catch (Exception ex)
+            { "gc", "commit" }, // Keep simple to allow PowerShell function to handle it
+            { "gt", "log --graph --oneline --decorate" },
+            {
+                "gl",
+                "log --graph --pretty=format:\"%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)\" --abbrev-commit"
+            },
+        };
+
+        foreach (var (alias, command) in complexAliases)
         {
-            _logger.Log(ELogLevel.Warning, $"Failed to configure complex aliases: {ex.Message}");
+            try
+            {
+                await _processRunner.RunAsync("git", $"config --global alias.{alias} \"{command}\"");
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(ELogLevel.Warning, $"Failed to configure complex alias {alias}: {ex.Message}");
+            }
         }
     }
 
