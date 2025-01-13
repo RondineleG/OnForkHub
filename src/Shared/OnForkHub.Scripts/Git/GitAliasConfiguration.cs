@@ -45,28 +45,6 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
                 _logger.Log(ELogLevel.Warning, $"Failed to configure alias {alias}: {ex.Message}");
             }
         }
-
-        var complexAliases = new Dictionary<string, string>
-        {
-            { "gc", "!sh -c 'git commit -m \"$*\"' -" },
-            { "gt", "!sh -c 'git log --max-count=${1:-10} --graph --oneline --decorate' -" },
-            {
-                "gl",
-                "!sh -c 'git log --max-count=${1:-10} --graph --pretty=format:\"%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)\" --abbrev-commit' -"
-            },
-        };
-
-        foreach (var (alias, command) in complexAliases)
-        {
-            try
-            {
-                await _processRunner.RunAsync("git", $"config --global alias.{alias} \"{command}\"");
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(ELogLevel.Warning, $"Failed to configure complex alias {alias}: {ex.Message}");
-            }
-        }
     }
 
     private async Task ConfigurePowerShellAliasesAsync()
@@ -134,29 +112,26 @@ function GitStatus { git status -sb $args }
 Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
 
 function GitCommit {
-    if ($args.Count -eq 0) {
-        Write-Host ""Usage: gc 'commit message'"" -ForegroundColor Yellow
+    param(
+        [Parameter(Position = 0, Mandatory = $false, ValueFromRemainingArguments = $true)]
+        [string[]]$Message
+    )
+
+    if (-not $Message) {
+        Write-Host ""Usage: gc <message>""
         return
     }
-    
-    # Handle both with and without -m flag
-    if ($args[0] -eq ""-m"") {
-        if ($args.Count -lt 2) {
-            Write-Host ""Error: No commit message provided"" -ForegroundColor Red
-            return
-        }
-        $commitMessage = $args[1]
-    } else {
-        $commitMessage = $args -join ' '
-    }
-    
-    # Ensure message is properly quoted
-    git commit -m ""$commitMessage""
-}
-Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
 
-function GitAdd { git add --all $args }
-Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
+    $commitMessage = $Message -join ' '
+    try {
+        & git commit -m ""$commitMessage""
+    }
+    catch {
+        Write-Host ""Error during commit: $($_.Exception.Message)""
+    }
+}
+
+Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
 
 function GitTree {
     $count = 10
@@ -176,28 +151,7 @@ function GitLog {
         git log --max-count=$count --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit
     }
 }
-Set-Alias -Name gl -Value GitLog -Force -Option AllScope
-
-function GitPush { git push $args }
-Set-Alias -Name gps -Value GitPush -Force -Option AllScope
-
-function GitPull { git pull $args }
-Set-Alias -Name gpl -Value GitPull -Force -Option AllScope
-
-function GitFetch { git fetch $args }
-Set-Alias -Name gf -Value GitFetch -Force -Option AllScope
-
-function GitCheckout { git checkout $args }
-Set-Alias -Name gco -Value GitCheckout -Force -Option AllScope
-
-function GitBranch { git branch $args }
-Set-Alias -Name gb -Value GitBranch -Force -Option AllScope
-
-function GitRemote { git remote -v $args }
-Set-Alias -Name gr -Value GitRemote -Force -Option AllScope
-
-function GitDiff { git diff $args }
-Set-Alias -Name gd -Value GitDiff -Force -Option AllScope";
+Set-Alias -Name gl -Value GitLog -Force -Option AllScope";
 
             if (File.Exists(profilePath))
             {
