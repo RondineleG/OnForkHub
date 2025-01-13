@@ -48,7 +48,7 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
 
         var complexAliases = new Dictionary<string, string>
         {
-            { "gc", "commit" }, // Keep simple to allow PowerShell function to handle it
+            { "gc", "commit" },
             { "gt", "log --graph --oneline --decorate" },
             {
                 "gl",
