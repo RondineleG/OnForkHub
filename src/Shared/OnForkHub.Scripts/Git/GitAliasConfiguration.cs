@@ -113,23 +113,23 @@ Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
 
 function GitCommit {
     param(
-        [Parameter(Position = 0, Mandatory = $false, ValueFromRemainingArguments = $true)]
-        [string[]]$Message
+        [Parameter(Position = 0, Mandatory = $true)]
+        [string]$Message
     )
 
     if (-not $Message) {
-        Write-Host ""Usage: gc <message> or gc -m <message>""
+        Write-Host ""Uso: gc <mensagem>""
         return
     }
 
-    $commitMessage = $Message -join ' '
     try {
-        & git commit -m ""$commitMessage""
+        git commit -m ""$Message""
     }
     catch {
-        Write-Host ""Error during commit: $($_.Exception.Message)""
+        Write-Host ""Erro durante o commit: $($_.Exception.Message)""
     }
 }
+
 
 Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
 
