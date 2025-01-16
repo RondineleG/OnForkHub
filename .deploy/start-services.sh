@@ -47,6 +47,7 @@ sleep 5
 
 echo "Checking container status..."
 docker ps
+sudo systemctl stop nginx
 
 echo "Checking container logs..."
 docker logs onforkhub-api --tail 10 || true

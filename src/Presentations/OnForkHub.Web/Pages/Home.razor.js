@@ -12,7 +12,6 @@ export function playVideo(fileName, videoElement) {
     }
 }
 
-
 let touchstartX = 0;
 let touchendX = 0;
 let isVideoContainer = false;

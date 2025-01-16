@@ -4,12 +4,26 @@ public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntit
     where T : BaseEntity
 {
     private readonly List<IValidationRule<T>> _customRules = [];
+
     private readonly List<Action<ValidationErrorMessage>> _errorHandlers = [];
+
     private readonly List<Func<T, ValidationResult>> _validations = [];
+
+    public IValidationBuilder<T> Builder { get; } = builder ?? throw new ArgumentNullException(nameof(builder));
 
     public IEntityValidator<T> Validator { get; } = validator ?? throw new ArgumentNullException(nameof(validator));
 
-    public IValidationBuilder<T> Builder { get; } = builder ?? throw new ArgumentNullException(nameof(builder));
+    public IValidationService<T> AddRule(IValidationRule<T> rule)
+    {
+        _customRules.Add(rule);
+        return this;
+    }
+
+    public IValidationService<T> AddValidation(Func<T, ValidationResult> validation)
+    {
+        _validations.Add(validation);
+        return this;
+    }
 
     public virtual IValidationResult Validate(T entity)
     {
@@ -63,18 +77,6 @@ public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntit
         }
 
         return result;
-    }
-
-    public IValidationService<T> AddRule(IValidationRule<T> rule)
-    {
-        _customRules.Add(rule);
-        return this;
-    }
-
-    public IValidationService<T> AddValidation(Func<T, ValidationResult> validation)
-    {
-        _validations.Add(validation);
-        return this;
     }
 
     public IValidationService<T> WithErrorHandler(Action<ValidationErrorMessage> errorHandler)

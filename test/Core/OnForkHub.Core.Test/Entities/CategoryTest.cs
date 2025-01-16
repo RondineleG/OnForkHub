@@ -41,6 +41,30 @@ public class CategoryTest
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Should load category with UpdatedAt successfully")]
+    public void ShouldLoadCategoryWithUpdatedAtSuccessfully()
+    {
+        var id = Id.Create();
+        var name = Name.Create("Category Test");
+        var description = "Category description";
+        var createdAt = DateTime.UtcNow;
+        var updatedAt = createdAt.AddHours(1);
+
+        var result = Category.Load(id, name, description, createdAt, updatedAt);
+
+        result.Status.Should().Be(EResultStatus.Success);
+        result.Data.Should().NotBeNull();
+        result.Data!.Id.Should().Be(id);
+        result.Data.Name.Should().Be(name);
+        result.Data.Description.Should().Be(description);
+        result.Data.CreatedAt.Should().Be(createdAt);
+        result.Data.UpdatedAt.Should().Be(updatedAt);
+        result.Data.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
+        result.Data.UpdatedAt.Value.Kind.Should().Be(DateTimeKind.Utc);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
     [DisplayName("Should load category with valid ID")]
     public void ShouldLoadCategoryWithValidId()
     {
@@ -86,26 +110,21 @@ public class CategoryTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should load category with UpdatedAt successfully")]
-    public void ShouldLoadCategoryWithUpdatedAtSuccessfully()
+    [DisplayName("Should update category data successfully")]
+    public void ShouldUpdateCategoryDataSuccessfully()
     {
-        var id = Id.Create();
-        var name = Name.Create("Category Test");
-        var description = "Category description";
-        var createdAt = DateTime.UtcNow;
-        var updatedAt = createdAt.AddHours(1);
+        var originalCategory = Category.Create(Name.Create("Original Category"), "Original description").Data!;
 
-        var result = Category.Load(id, name, description, createdAt, updatedAt);
+        var newName = Name.Create("Updated Category");
+        var newDescription = "Updated description";
+
+        var result = originalCategory.UpdateCategory(newName, newDescription);
 
         result.Status.Should().Be(EResultStatus.Success);
-        result.Data.Should().NotBeNull();
-        result.Data!.Id.Should().Be(id);
-        result.Data.Name.Should().Be(name);
-        result.Data.Description.Should().Be(description);
-        result.Data.CreatedAt.Should().Be(createdAt);
-        result.Data.UpdatedAt.Should().Be(updatedAt);
-        result.Data.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
-        result.Data.UpdatedAt.Value.Kind.Should().Be(DateTimeKind.Utc);
+        originalCategory.Name.Should().Be(newName);
+        originalCategory.Description.Should().Be(newDescription);
+        originalCategory.UpdatedAt.Should().NotBeNull();
+        originalCategory.UpdatedAt!.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Fact]
@@ -128,24 +147,5 @@ public class CategoryTest
         Action action = () => Category.Load("invalid-guid", Name.Create("Test"), "Description", DateTime.UtcNow);
 
         action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should update category data successfully")]
-    public void ShouldUpdateCategoryDataSuccessfully()
-    {
-        var originalCategory = Category.Create(Name.Create("Original Category"), "Original description").Data!;
-
-        var newName = Name.Create("Updated Category");
-        var newDescription = "Updated description";
-
-        var result = originalCategory.UpdateCategory(newName, newDescription);
-
-        result.Status.Should().Be(EResultStatus.Success);
-        originalCategory.Name.Should().Be(newName);
-        originalCategory.Description.Should().Be(newDescription);
-        originalCategory.UpdatedAt.Should().NotBeNull();
-        originalCategory.UpdatedAt!.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
 }

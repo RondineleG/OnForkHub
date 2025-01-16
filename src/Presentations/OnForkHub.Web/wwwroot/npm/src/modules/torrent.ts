@@ -61,7 +61,6 @@ export async function startDownload(
                 progressElement.textContent = 'Download complete';
             });
         });
-
     } catch (error) {
         throw error;
     }
