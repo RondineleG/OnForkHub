@@ -6,12 +6,12 @@ public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context)
 
     private readonly ICosmosContainerContext<Category> _context = context;
 
-    public async Task<RequestResult<Category>> CreateAsync(Category category)
+    public async Task<RequestResult<Category>> CreateAsync(Category entity)
     {
-        ArgumentNullException.ThrowIfNull(category);
+        ArgumentNullException.ThrowIfNull(entity);
         try
         {
-            var result = await _context.CreateAsync(category);
+            var result = await _context.CreateAsync(entity);
             return RequestResult<Category>.Success(result);
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
@@ -68,17 +68,17 @@ public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context)
         }
     }
 
-    public async Task<RequestResult<Category>> UpdateAsync(Category category)
+    public async Task<RequestResult<Category>> UpdateAsync(Category entity)
     {
-        ArgumentNullException.ThrowIfNull(category);
+        ArgumentNullException.ThrowIfNull(entity);
         try
         {
-            var result = await _context.UpdateAsync(category);
+            var result = await _context.UpdateAsync(entity);
             return RequestResult<Category>.Success(result);
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
-            return RequestResult<Category>.WithError($"{EntityName} not found with ID: {category.Id}");
+            return RequestResult<Category>.WithError($"{EntityName} not found with ID: {entity.Id}");
         }
         catch (Exception ex) when (ex is not PersistenceException)
         {

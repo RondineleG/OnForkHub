@@ -14,6 +14,7 @@ on:
           - release/
           - dev
           - main
+          - uat
       branch_name:
         description: 'Branch name (required for feature/bugfix/hotfix/release, ex: for feature/user-auth just type user-auth)'
         required: false
@@ -23,6 +24,7 @@ on:
     branches:
       - dev
       - main
+      - uat
 
 env:
   REGISTRY: ghcr.io

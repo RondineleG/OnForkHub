@@ -4,11 +4,46 @@
             "documentExposedElements": false,
             "documentInternalElements": false,
             "documentPrivateFields": false,
-            "documentInterfaces": false
+            "documentInterfaces": false,
+            "companyName": "",
+            "copyrightText": "",
+            "xmlHeader": false
         },
         "orderingRules": {
             "usingDirectivesPlacement": "outsideNamespace",
-            "systemUsingDirectivesFirst": true
+            "systemUsingDirectivesFirst": true,
+            "blankLinesBetweenUsingGroups": "allow",
+            "elementOrder": [
+                "kind",
+                "accessibility",
+                "constant",
+                "static",
+                "readonly"
+            ]
+        },
+        "namingRules": {
+            "allowCommonHungarianPrefixes": false,
+            "allowedHungarianPrefixes": []
+        },
+        "maintainabilityRules": {
+            "topLevelTypes": [
+                "class",
+                "interface",
+                "struct",
+                "enum"
+            ]
+        },
+        "layoutRules": {
+            "newlineAtEndOfFile": "require",
+            "allowConsecutiveUsings": true
+        },
+        "readabilityRules": {
+            "allowBuiltInTypeAliases": false
+        },
+        "spacingRules": {
+            "spaceBetweenMethodDeclarationParameterList": false,
+            "spaceBetweenMethodCallParameterList": false,
+            "spaceBetweenBrackets": false
         }
     }
 }
