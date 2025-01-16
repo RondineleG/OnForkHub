@@ -16,6 +16,16 @@ public class TitleTest
     }
 
     [Fact]
+    [DisplayName("Should return validation error for long title")]
+    public void ShouldReturnValidationErrorForLongTitle()
+    {
+        var title = Title.Create(new string('a', 51));
+        var validationResult = title.Validate();
+
+        validationResult.Errors.Should().ContainSingle(error => error.Message == TitleResources.TitleMaxLength && error.Field == "Title");
+    }
+
+    [Fact]
     [DisplayName("Should return validation error for required title")]
     public void ShouldReturnValidationErrorForNullTitle()
     {
@@ -33,15 +43,5 @@ public class TitleTest
         var validationResult = title.Validate();
 
         validationResult.Errors.Should().ContainSingle(error => error.Message == TitleResources.TitleMinLength && error.Field == "Title");
-    }
-
-    [Fact]
-    [DisplayName("Should return validation error for long title")]
-    public void ShouldReturnValidationErrorForLongTitle()
-    {
-        var title = Title.Create(new string('a', 51));
-        var validationResult = title.Validate();
-
-        validationResult.Errors.Should().ContainSingle(error => error.Message == TitleResources.TitleMaxLength && error.Field == "Title");
     }
 }

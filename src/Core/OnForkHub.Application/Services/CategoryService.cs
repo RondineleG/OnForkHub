@@ -3,16 +3,12 @@ namespace OnForkHub.Application.Services;
 public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidationService<Category> validationService) : BaseService, ICategoryService
 {
     private readonly ICategoryRepositoryEF _categoryRepository = categoryRepository;
+
     private readonly IValidationService<Category> _validationService = validationService;
 
     public Task<RequestResult<Category>> CreateAsync(Category category)
     {
         return ExecuteWithValidationAsync(category, _categoryRepository.CreateAsync, _validationService);
-    }
-
-    public Task<RequestResult<Category>> UpdateAsync(Category category)
-    {
-        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validationService, true);
     }
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)
@@ -25,6 +21,11 @@ public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidati
         });
     }
 
+    public Task<RequestResult<IEnumerable<Category>>> GetAllAsync(int page, int size)
+    {
+        return ExecuteAsync(async () => await _categoryRepository.GetAllAsync(page, size));
+    }
+
     public Task<RequestResult<Category>> GetByIdAsync(long id)
     {
         return ExecuteAsync(async () =>
@@ -34,8 +35,8 @@ public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidati
         });
     }
 
-    public Task<RequestResult<IEnumerable<Category>>> GetAllAsync(int page, int size)
+    public Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        return ExecuteAsync(async () => await _categoryRepository.GetAllAsync(page, size));
+        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validationService, true);
     }
 }

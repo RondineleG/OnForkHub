@@ -5,11 +5,11 @@ public interface IBaseRepository<TEntity>
 {
     Task<RequestResult<TEntity>> CreateAsync(TEntity entity);
 
-    Task<RequestResult<TEntity>> UpdateAsync(TEntity entity);
-
     Task<RequestResult<TEntity>> DeleteAsync(Id id);
+
+    Task<RequestResult<IEnumerable<TEntity>>> GetAllAsync(int page, int size);
 
     Task<RequestResult<TEntity>> GetByIdAsync(Id id);
 
-    Task<RequestResult<IEnumerable<TEntity>>> GetAllAsync(int page, int size);
+    Task<RequestResult<TEntity>> UpdateAsync(TEntity entity);
 }

@@ -9,6 +9,7 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
     private readonly IGitHubClient _githubClient = githubClient ?? throw new ArgumentNullException(nameof(githubClient));
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
     public async Task CreatePullRequestForGitFlowFinishAsync()

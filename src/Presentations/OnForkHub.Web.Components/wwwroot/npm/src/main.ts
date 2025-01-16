@@ -1,4 +1,4 @@
-import {initTorrentPlayer, startDownload, stopDownload} from './modules/torrent'
+import { initTorrentPlayer, startDownload, stopDownload } from './modules/torrent'
 
 export {
     initTorrentPlayer,

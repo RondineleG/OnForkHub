@@ -3,6 +3,7 @@ namespace OnForkHub.Api.Endpoints.V1.Categories;
 public class GetAllEndpoint : IEndpoint
 {
     private const string RouteV1 = "/api/v1/category";
+
     private const int V1 = 1;
 
     public void Register(WebApplication app)

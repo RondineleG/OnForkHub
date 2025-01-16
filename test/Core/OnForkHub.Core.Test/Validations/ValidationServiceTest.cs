@@ -2,10 +2,6 @@ namespace OnForkHub.Core.Test.Validations;
 
 public class ValidationServiceTest
 {
-    private readonly IValidationBuilder<TestEntity> _builder;
-    private readonly TestValidationService _service;
-    private readonly IEntityValidator<TestEntity> _validator;
-
     public ValidationServiceTest()
     {
         _builder = Substitute.For<IValidationBuilder<TestEntity>>();
@@ -15,40 +11,39 @@ public class ValidationServiceTest
         _service = new TestValidationService(_builder, _validator);
     }
 
+    private readonly IValidationBuilder<TestEntity> _builder;
+
+    private readonly TestValidationService _service;
+
+    private readonly IEntityValidator<TestEntity> _validator;
+
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should validate entity successfully")]
-    public void ShouldValidateEntitySuccessfully()
+    [DisplayName("Should execute added validations")]
+    public void ShouldExecuteAddedValidations()
     {
         var entity = new TestEntity();
+        _service.AddValidation(e => ValidationResult.Failure("Validation error"));
 
         var result = _service.Validate(entity);
 
-        result.IsValid.Should().BeTrue();
+        result.IsValid.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Validation error");
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return failure when entity is null")]
-    public void ShouldReturnFailureWhenEntityIsNull()
+    [DisplayName("Should execute all error handlers for each error")]
+    public void ShouldExecuteAllErrorHandlersForEachError()
     {
-        var result = _service.Validate(null);
+        var entity = new TestEntity();
+        var handlerCount = 0;
 
-        result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("cannot be null");
-    }
+        _service.AddValidation(e => ValidationResult.Failure("Error")).WithErrorHandler(_ => handlerCount++).WithErrorHandler(_ => handlerCount++);
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should validate update with null entity")]
-    public void ShouldValidateUpdateWithNullEntity()
-    {
-        TestEntity? entity = null;
+        _service.Validate(entity);
 
-        var result = _service.ValidateUpdate(entity!);
-
-        result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("TestEntity cannot be null").And.Contain("TestEntity ID is required for updates");
+        handlerCount.Should().Be(2);
     }
 
     [Fact]
@@ -69,20 +64,6 @@ public class ValidationServiceTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should execute added validations")]
-    public void ShouldExecuteAddedValidations()
-    {
-        var entity = new TestEntity();
-        _service.AddValidation(e => ValidationResult.Failure("Validation error"));
-
-        var result = _service.Validate(entity);
-
-        result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("Validation error");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should execute error handlers when validation fails")]
     public void ShouldExecuteErrorHandlersWhenValidationFails()
     {
@@ -94,19 +75,6 @@ public class ValidationServiceTest
         _service.Validate(entity);
 
         handlerCalled.Should().BeTrue();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should validate property using expression")]
-    public void ShouldValidatePropertyUsingExpression()
-    {
-        var entity = new TestEntity { Name = "Test" };
-
-        var result = _service.ValidatePropertyPublic(entity, e => e.Name, b => b.NotNull());
-
-        result.IsValid.Should().BeTrue();
-        _builder.Received().WithField(nameof(TestEntity.Name), entity.Name);
     }
 
     [Fact]
@@ -128,17 +96,51 @@ public class ValidationServiceTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should execute all error handlers for each error")]
-    public void ShouldExecuteAllErrorHandlersForEachError()
+    [DisplayName("Should return failure when entity is null")]
+    public void ShouldReturnFailureWhenEntityIsNull()
+    {
+        var result = _service.Validate(null);
+
+        result.IsValid.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("cannot be null");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should validate entity successfully")]
+    public void ShouldValidateEntitySuccessfully()
     {
         var entity = new TestEntity();
-        var handlerCount = 0;
 
-        _service.AddValidation(e => ValidationResult.Failure("Error")).WithErrorHandler(_ => handlerCount++).WithErrorHandler(_ => handlerCount++);
+        var result = _service.Validate(entity);
 
-        _service.Validate(entity);
+        result.IsValid.Should().BeTrue();
+    }
 
-        handlerCount.Should().Be(2);
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should validate property using expression")]
+    public void ShouldValidatePropertyUsingExpression()
+    {
+        var entity = new TestEntity { Name = "Test" };
+
+        var result = _service.ValidatePropertyPublic(entity, e => e.Name, b => b.NotNull());
+
+        result.IsValid.Should().BeTrue();
+        _builder.Received().WithField(nameof(TestEntity.Name), entity.Name);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should validate update with null entity")]
+    public void ShouldValidateUpdateWithNullEntity()
+    {
+        TestEntity? entity = null;
+
+        var result = _service.ValidateUpdate(entity!);
+
+        result.IsValid.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("TestEntity cannot be null").And.Contain("TestEntity ID is required for updates");
     }
 
     public class TestEntity : BaseEntity

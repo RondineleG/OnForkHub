@@ -3,12 +3,17 @@ namespace OnForkHub.Core.Validations;
 public sealed class ValidationResult : IValidationResult
 {
     private readonly List<ValidationErrorMessage> _errors = [];
+
     private readonly Dictionary<string, object> _metadata = [];
 
     public string ErrorMessage => string.Join("; ", _errors.Select(e => string.IsNullOrEmpty(e.Field) ? e.Message : $"{e.Field}: {e.Message}"));
+
     public IReadOnlyCollection<ValidationErrorMessage> Errors => new ReadOnlyCollection<ValidationErrorMessage>(_errors);
+
     public bool HasError => !IsValid;
+
     public bool IsValid => _errors.Count == 0;
+
     public IDictionary<string, object> Metadata => _metadata;
 
     public static ValidationResult Combine(params ValidationResult[] results)
@@ -48,11 +53,6 @@ public sealed class ValidationResult : IValidationResult
         }
 
         return result;
-    }
-
-    public static ValidationResult operator |(ValidationResult left, ValidationResult right)
-    {
-        return left?.IsValid == true ? left : right ?? Success();
     }
 
     public static ValidationResult Success()
@@ -128,5 +128,10 @@ public sealed class ValidationResult : IValidationResult
     public async Task<ValidationResult> ValidateAsync(Func<Task<bool>> predicate, string message, string field = "")
     {
         return await predicate() ? Failure(message, field) : Success();
+    }
+
+    public static ValidationResult operator |(ValidationResult left, ValidationResult right)
+    {
+        return left?.IsValid == true ? left : right ?? Success();
     }
 }

@@ -4,6 +4,16 @@ public class ValidationErrorMessageTest
 {
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Should create error message with empty source when null")]
+    public void ShouldCreateErrorMessageWithEmptySourceWhenNull()
+    {
+        var message = new ValidationErrorMessage("Error message", "Field", null);
+
+        message.Source.Should().BeEmpty();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
     [DisplayName("Should create error message with field and message")]
     public void ShouldCreateErrorMessageWithFieldAndMessage()
     {
@@ -26,16 +36,6 @@ public class ValidationErrorMessageTest
         message.Field.Should().Be("Field");
         message.Message.Should().Be("Error message");
         message.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should create error message with empty source when null")]
-    public void ShouldCreateErrorMessageWithEmptySourceWhenNull()
-    {
-        var message = new ValidationErrorMessage("Error message", "Field", null);
-
-        message.Source.Should().BeEmpty();
     }
 
     [Fact]

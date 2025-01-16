@@ -3,8 +3,11 @@ namespace OnForkHub.Api.Endpoints.V2.Categories;
 public class Delete(ILogger<Delete> logger, IUseCase<long, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
     private const int V2 = 2;
+
     private static readonly string Route = $"{GetVersionedRoute(V2)}/{{id}}";
+
     private readonly ILogger<Delete> _logger = logger;
+
     private readonly IUseCase<long, Category> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)

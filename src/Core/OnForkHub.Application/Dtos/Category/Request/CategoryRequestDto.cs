@@ -2,11 +2,11 @@ namespace OnForkHub.Application.Dtos.Category.Request;
 
 public class CategoryRequestDto
 {
+    public string Description { get; set; } = string.Empty;
+
     [Required(ErrorMessage = $"The {nameof(Name)} field is required")]
     [MaxLength(50, ErrorMessage = $"The {nameof(Name)} field must be at most 50 characters long.")]
     public string Name { get; set; } = string.Empty;
-
-    public string Description { get; set; } = string.Empty;
 
     public static RequestResult<Core.Entities.Category> Create(CategoryRequestDto request)
     {

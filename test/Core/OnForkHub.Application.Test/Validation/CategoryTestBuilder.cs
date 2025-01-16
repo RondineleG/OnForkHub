@@ -3,12 +3,15 @@ namespace OnForkHub.Application.Test.Validation;
 public class CategoryTestBuilder
 {
     private string _description = "Test Description";
+
     private Name _name = Name.Create("Test Name");
 
-    public CategoryTestBuilder WithName(Name name)
+    public Category? Build()
     {
-        _name = name;
-        return this;
+        var result = Category.Create(_name, _description);
+        return !result.Status.Equals(EResultStatus.Success)
+            ? throw new InvalidOperationException($"Failed to build category: {result.Message}")
+            : result.Data;
     }
 
     public CategoryTestBuilder WithDescription(string description)
@@ -17,11 +20,9 @@ public class CategoryTestBuilder
         return this;
     }
 
-    public Category? Build()
+    public CategoryTestBuilder WithName(Name name)
     {
-        var result = Category.Create(_name, _description);
-        return !result.Status.Equals(EResultStatus.Success)
-            ? throw new InvalidOperationException($"Failed to build category: {result.Message}")
-            : result.Data;
+        _name = name;
+        return this;
     }
 }

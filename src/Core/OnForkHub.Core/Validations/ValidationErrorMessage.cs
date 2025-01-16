@@ -16,11 +16,11 @@ public sealed class ValidationErrorMessage
         Timestamp = DateTime.UtcNow;
     }
 
-    public string Source { get; } = string.Empty;
-
     public string Field { get; }
 
     public string Message { get; }
+
+    public string Source { get; } = string.Empty;
 
     public DateTime Timestamp { get; } = DateTime.UtcNow;
 
