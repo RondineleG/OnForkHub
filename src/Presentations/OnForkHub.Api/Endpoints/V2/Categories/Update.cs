@@ -5,8 +5,11 @@ namespace OnForkHub.Api.Endpoints.V2.Categories;
 public class Update(ILogger<Update> logger, IUseCase<CategoryUpdateRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
     private const int V2 = 2;
+
     private static readonly string Route = $"{GetVersionedRoute(V2)}/{{id}}";
+
     private readonly ILogger<Update> _logger = logger;
+
     private readonly IUseCase<CategoryUpdateRequestDto, Category> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)

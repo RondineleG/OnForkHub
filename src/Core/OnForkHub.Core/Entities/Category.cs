@@ -7,8 +7,9 @@ public class Category : BaseEntity
 
     private Category() { }
 
-    public Name Name { get; private set; } = null!;
     public string Description { get; private set; } = string.Empty;
+
+    public Name Name { get; private set; } = null!;
 
     public static RequestResult<Category> Create(Name name, string description)
     {

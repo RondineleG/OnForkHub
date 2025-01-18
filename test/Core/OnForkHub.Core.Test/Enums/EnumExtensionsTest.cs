@@ -4,17 +4,6 @@ namespace OnForkHub.Core.Test.Enums;
 
 public class EnumExtensionsTest
 {
-    public enum ETestResultStatus
-    {
-        [Description("Successful Result")]
-        Success,
-
-        [Description("Has Validation Errors")]
-        HasValidation,
-
-        NoDescription,
-    }
-
     [Theory]
     [InlineData(EResultStatus.Success, "Success")]
     [InlineData(EResultStatus.HasValidation, "HasValidation")]
@@ -44,6 +33,29 @@ public class EnumExtensionsTest
     }
 
     [Theory]
+    [InlineData("SUCCESSFUL RESULT")]
+    [InlineData("successful result")]
+    [InlineData("Successful Result")]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should parse enum from description case insensitive")]
+    public void ParseFromDescriptionShouldBeCaseInsensitive(string description)
+    {
+        var result = EnumExtensions.ParseFromDescription<ETestResultStatus>(description);
+        result.Should().Be(ETestResultStatus.Success);
+    }
+
+    [Theory]
+    [InlineData("success", EResultStatus.Success)]
+    [InlineData("hasvalidation", EResultStatus.HasValidation)]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should parse enum with different casing formats")]
+    public void ParseFromDescriptionShouldHandleDifferentCasing(string description, EResultStatus expected)
+    {
+        var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
+        result.Should().Be(expected);
+    }
+
+    [Theory]
     [InlineData("Success", EResultStatus.Success)]
     [InlineData("HasValidation", EResultStatus.HasValidation)]
     [InlineData("HasError", EResultStatus.HasError)]
@@ -59,16 +71,13 @@ public class EnumExtensionsTest
         result.Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("SUCCESSFUL RESULT")]
-    [InlineData("successful result")]
-    [InlineData("Successful Result")]
+    [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should parse enum from description case insensitive")]
-    public void ParseFromDescriptionShouldBeCaseInsensitive(string description)
+    [DisplayName("Should throw when description not found in enum")]
+    public void ParseFromDescriptionShouldThrowWhenNotFound()
     {
-        var result = EnumExtensions.ParseFromDescription<ETestResultStatus>(description);
-        result.Should().Be(ETestResultStatus.Success);
+        var action = () => EnumExtensions.ParseFromDescription<ETestResultStatus>("Invalid");
+        action.Should().Throw<ArgumentException>().WithMessage("Description 'Invalid' not found in enum ETestResultStatus");
     }
 
     [Fact]
@@ -78,15 +87,6 @@ public class EnumExtensionsTest
     {
         var action = () => EnumExtensions.ParseFromDescription<ETestResultStatus>(null!);
         action.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw when description not found in enum")]
-    public void ParseFromDescriptionShouldThrowWhenNotFound()
-    {
-        var action = () => EnumExtensions.ParseFromDescription<ETestResultStatus>("Invalid");
-        action.Should().Throw<ArgumentException>().WithMessage("Description 'Invalid' not found in enum ETestResultStatus");
     }
 
     [Theory]
@@ -100,14 +100,14 @@ public class EnumExtensionsTest
         result.Should().Be(description.Trim() == "Success" ? EResultStatus.Success : EResultStatus.HasValidation);
     }
 
-    [Theory]
-    [InlineData("success", EResultStatus.Success)]
-    [InlineData("hasvalidation", EResultStatus.HasValidation)]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should parse enum with different casing formats")]
-    public void ParseFromDescriptionShouldHandleDifferentCasing(string description, EResultStatus expected)
+    public enum ETestResultStatus
     {
-        var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
-        result.Should().Be(expected);
+        [Description("Successful Result")]
+        Success,
+
+        [Description("Has Validation Errors")]
+        HasValidation,
+
+        NoDescription,
     }
 }

@@ -2,15 +2,17 @@ namespace OnForkHub.Core.Entities;
 
 public class User : BaseEntity
 {
-    private readonly List<Video> _videos = [];
-
     protected User(Id id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
     private User() { }
 
+    private readonly List<Video> _videos = [];
+
     public Email Email { get; private set; } = null!;
+
     public Name Name { get; private set; } = null!;
+
     public IReadOnlyCollection<Video> Videos => _videos.AsReadOnly();
 
     public static RequestResult<User> Create(Name name, string email)

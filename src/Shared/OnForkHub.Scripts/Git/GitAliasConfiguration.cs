@@ -106,82 +106,52 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
 Remove-Item Alias:gc -Force -ErrorAction SilentlyContinue
 Remove-Item Alias:gps -Force -ErrorAction SilentlyContinue
 Remove-Item Alias:gl -Force -ErrorAction SilentlyContinue
+Remove-Item Alias:gt -Force -ErrorAction SilentlyContinue
 
-function GitStatus {
-    & git status -sb $args
-}
+function GitStatus { git status -sb $args }
 Set-Alias -Name gs -Value GitStatus -Force -Option AllScope
 
 function GitCommit {
     param(
+        [Parameter(Position = 0, Mandatory = $true)]
         [string]$Message
     )
-    if ($Message) {
-        & git commit -m $Message
+
+    if (-not $Message) {
+        Write-Host ""Uso: gc <mensagem>""
+        return
     }
-    else {
-        & git commit -e
+
+    try {
+        git commit -m ""$Message""
+    }
+    catch {
+        Write-Host ""Erro durante o commit: $($_.Exception.Message)""
     }
 }
+
+
 Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
 
-function GitAdd {
-    & git add --all $args
-}
-Set-Alias -Name ga -Value GitAdd -Force -Option AllScope
-
 function GitTree {
-    param(
-        [int]$CommitCount = 10 
-    )
-    & git log --max-count=$CommitCount --graph --oneline --decorate $args
+    $count = 10
+    if ($args.Count -gt 0 -and [int]::TryParse($args[0], [ref]$count)) {
+        git log --max-count=$count --graph --oneline --decorate
+    } else {
+        git log --max-count=$count --graph --oneline --decorate
+    }
 }
 Set-Alias -Name gt -Value GitTree -Force -Option AllScope
 
-function GitPush {
-    & git push $args
-}
-Set-Alias -Name gps -Value GitPush -Force -Option AllScope
-
-function GitPull {
-    & git pull $args
-}
-Set-Alias -Name gpl -Value GitPull -Force -Option AllScope
-
-function GitFetch {
-    & git fetch $args
-}
-Set-Alias -Name gf -Value GitFetch -Force -Option AllScope
-
-function GitCheckout {
-    & git checkout $args
-}
-Set-Alias -Name gco -Value GitCheckout -Force -Option AllScope
-
-function GitBranch {
-    & git branch $args
-}
-Set-Alias -Name gb -Value GitBranch -Force -Option AllScope
-
-function GitRemote {
-    & git remote -v $args
-}
-Set-Alias -Name gr -Value GitRemote -Force -Option AllScope
-
-function GitDiff {
-    & git diff $args
-}
-Set-Alias -Name gd -Value GitDiff -Force -Option AllScope
-
 function GitLog {
-    param(
-        [int]$CommitCount = 10  
-    )
-    & git log --max-count=$CommitCount --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit $args
+    $count = 10
+    if ($args.Count -gt 0 -and [int]::TryParse($args[0], [ref]$count)) {
+        git log --max-count=$count --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit
+    } else {
+        git log --max-count=$count --graph --pretty=format:'%C(red)%h%C(reset) - %C(yellow)%d%C(reset) %s %C(green)(%cr) %C(bold blue)<%an>%C(reset)' --abbrev-commit
+    }
 }
-Set-Alias -Name gl -Value GitLog -Force -Option AllScope
-
-Write-Host 'Git aliases loaded successfully!'";
+Set-Alias -Name gl -Value GitLog -Force -Option AllScope";
 
             if (File.Exists(profilePath))
             {

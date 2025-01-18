@@ -11,6 +11,13 @@ public static class EnumExtensions
         return type.GetField(name)!.GetCustomAttributes(false).OfType<T>().FirstOrDefault()!;
     }
 
+    public static string GetDescription(this Enum value)
+    {
+        var attributes = (DescriptionAttribute[])value.GetType().GetField(value.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+        return Array.Find(attributes, a => true)?.Description ?? value.ToString();
+    }
+
     public static TEnum ParseFromDescription<TEnum>(string description)
         where TEnum : Enum
     {
@@ -30,12 +37,5 @@ public static class EnumExtensions
             ?.GetValue(null);
 
         return value is null ? throw new ArgumentException($"Description '{description}' not found in enum {enumType.Name}") : (TEnum)value;
-    }
-
-    public static string GetDescription(this Enum value)
-    {
-        var attributes = (DescriptionAttribute[])value.GetType().GetField(value.ToString())!.GetCustomAttributes(typeof(DescriptionAttribute), false);
-
-        return Array.Find(attributes, a => true)?.Description ?? value.ToString();
     }
 }

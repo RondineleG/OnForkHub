@@ -3,6 +3,7 @@ namespace OnForkHub.Scripts.Git;
 public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHubClient
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
     private readonly Dictionary<string, string> _requiredLabels = new()
@@ -11,6 +12,12 @@ public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHu
         { "high", "#7a2102" },
         { "large", "#010821" },
     };
+
+    public async Task CreatePullRequestAsync(PullRequestInfo prInfo)
+    {
+        var createCommand = BuildPullRequestCommand("pr create", null, prInfo);
+        await _processRunner.RunAsync("gh", createCommand);
+    }
 
     public async Task EnsureLabelsExistAsync()
     {
@@ -40,12 +47,6 @@ public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHu
     {
         var editCommand = BuildPullRequestCommand("pr edit", prNumber, prInfo);
         await _processRunner.RunAsync("gh", editCommand);
-    }
-
-    public async Task CreatePullRequestAsync(PullRequestInfo prInfo)
-    {
-        var createCommand = BuildPullRequestCommand("pr create", null, prInfo);
-        await _processRunner.RunAsync("gh", createCommand);
     }
 
     private static string BuildPullRequestCommand(string action, string? prNumber, PullRequestInfo prInfo)

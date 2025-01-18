@@ -16,6 +16,11 @@ public class ValidEntityTestFixture : BaseEntity
         }
     }
 
+    public static void ExecuteException()
+    {
+        throw new DomainException("Invalid entity state");
+    }
+
     public void ExecuteUpdate()
     {
         if (CreatedAt.Kind != DateTimeKind.Utc)
@@ -24,10 +29,5 @@ public class ValidEntityTestFixture : BaseEntity
         }
 
         Update();
-    }
-
-    public static void ExecuteException()
-    {
-        throw new DomainException("Invalid entity state");
     }
 }
