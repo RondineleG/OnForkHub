@@ -1,8 +1,10 @@
+using OnForkHub.Web.Components.Models;
+
 namespace OnForkHub.Web.Components.VideoPlayer;
 
 public partial class Player
 {
-    private DotNetObjectReference<Player> objectRef;
+    private DotNetObjectReference<Player> objectRef = null!;
 
     [Parameter]
     public bool AirplayControl { get; set; } = false;
@@ -27,15 +29,14 @@ public partial class Player
 
     [Parameter]
     public bool FullscreenControl { get; set; } = false;
-
     [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object> InputAttributes { get; set; }
+    public Dictionary<string, object> InputAttributes { get; set; } = [];
 
     [Parameter]
     public bool Loop { get; set; } = false;
 
     [Parameter]
-    public string MagnetUri { get; set; }
+    public string MagnetUri { get; set; } = string.Empty;
 
     [Parameter]
     public bool MuteControl { get; set; } = false;
@@ -59,7 +60,7 @@ public partial class Player
     public bool PlayLargeControl { get; set; } = false;
 
     [Parameter]
-    public string Poster { get; set; }
+    public string Poster { get; set; } = string.Empty;
 
     [Parameter]
     public bool ProgressControl { get; set; } = false;
@@ -77,13 +78,12 @@ public partial class Player
     public bool SettingsControl { get; set; } = false;
 
     [Parameter]
-    public List<Source> Sources { get; set; }
+    public List<Source> Sources { get; set; } = [];
 
     [Parameter]
     public bool Speed { get; set; } = false;
-
     [Parameter]
-    public List<Track> Tracks { get; set; }
+    public List<Track> Tracks { get; set; } = [];
 
     [Parameter]
     public bool VolumeControl { get; set; } = false;
@@ -118,7 +118,7 @@ public partial class Player
             || string.IsNullOrWhiteSpace(InputAttributes.FirstOrDefault(p => p.Key == "id").Value.ToString())
         )
         {
-            throw new ArgumentNullException("id (HTML) can not be null or empty");
+            throw new ArgumentNullException(nameof(InputAttributes), "id (HTML) can not be null or empty");
         }
 
         var elementId = InputAttributes.FirstOrDefault(p => p.Key == "id").Value.ToString();
@@ -149,24 +149,4 @@ public partial class Player
             FullscreenControl
         );
     }
-}
-
-public class Source
-{
-    public string Src { get; set; }
-
-    public string Type { get; set; }
-}
-
-public class Track
-{
-    public bool IsDefault { get; set; }
-
-    public string Kind { get; set; }
-
-    public string Label { get; set; }
-
-    public string Src { get; set; }
-
-    public string SrcLang { get; set; }
 }
