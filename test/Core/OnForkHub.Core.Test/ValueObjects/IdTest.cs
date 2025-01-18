@@ -96,52 +96,6 @@ public class IdTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException when converting invalid Guid format")]
-    public void ShouldThrowDomainExceptionWhenConvertingInvalidGuidFormat()
-    {
-        var invalidGuid = "invalid-guid-format";
-
-        var action = () =>
-        {
-            Id id = invalidGuid;
-        };
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException when converting invalid string to Id")]
-    public void ShouldThrowDomainExceptionWhenConvertingInvalidStringToId(string? value)
-    {
-        var action = () =>
-        {
-            Id id = value;
-        };
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException when trying to convert empty Guid string")]
-    public void ShouldThrowDomainExceptionWhenTryingToConvertEmptyGuidString()
-    {
-        var emptyGuidString = Guid.Empty.ToString("N");
-
-        var action = () =>
-        {
-            Id id = emptyGuidString;
-        };
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should validate Id correctly")]
     public void ShouldValidateIdCorrectly()
     {

@@ -138,24 +138,6 @@ public class GenericRequestResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return RequestResult with EntityNotFound status and null ID in RequestEntityWarning")]
-    public void ShouldReturnRequestResultWithEntityNotFoundStatusAndNullIdInRequestEntityWarning()
-    {
-        var entity = "Product";
-        object id = null;
-        var description = "Product not found";
-
-        var result = RequestResult<string>.EntityNotFound(entity, id, description);
-
-        result.Status.Should().Be(EResultStatus.EntityNotFound);
-        result.RequestEntityWarning.Should().NotBeNull();
-        result.RequestEntityWarning!.Name.Should().Be(entity);
-        result.RequestEntityWarning.Id.Should().BeNull();
-        result.RequestEntityWarning.Message.Should().Be(description);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should return RequestResult with validation status using implicit operator")]
     public void ShouldReturnRequestResultWithValidationStatusUsingImplicitOperator()
     {

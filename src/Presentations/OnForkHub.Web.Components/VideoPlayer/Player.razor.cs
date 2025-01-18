@@ -118,7 +118,7 @@ public partial class Player
             || string.IsNullOrWhiteSpace(InputAttributes.FirstOrDefault(p => p.Key == "id").Value.ToString())
         )
         {
-            throw new ArgumentNullException(nameof(InputAttributes), "id (HTML) can not be null or empty");
+            throw new ArgumentException("id (HTML) can not be null or empty");
         }
 
         var elementId = InputAttributes.FirstOrDefault(p => p.Key == "id").Value.ToString();
