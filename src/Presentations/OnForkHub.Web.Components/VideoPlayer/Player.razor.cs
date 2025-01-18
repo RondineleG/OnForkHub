@@ -29,6 +29,7 @@ public partial class Player
 
     [Parameter]
     public bool FullscreenControl { get; set; } = false;
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> InputAttributes { get; set; } = [];
 
@@ -82,6 +83,7 @@ public partial class Player
 
     [Parameter]
     public bool Speed { get; set; } = false;
+
     [Parameter]
     public List<Track> Tracks { get; set; } = [];
 
