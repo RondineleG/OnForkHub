@@ -60,7 +60,7 @@ public class CategoryTest
         result.Data.CreatedAt.Should().Be(createdAt);
         result.Data.UpdatedAt.Should().Be(updatedAt);
         result.Data.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
-        result.Data.UpdatedAt.Value.Kind.Should().Be(DateTimeKind.Utc);
+        result.Data.UpdatedAt!.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Fact]

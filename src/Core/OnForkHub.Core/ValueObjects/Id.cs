@@ -25,6 +25,7 @@ public sealed class Id : ValueObject
 
     public static implicit operator Id(string value)
     {
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), IdResources.IdEmpty);
         return Create(value);
     }
 
