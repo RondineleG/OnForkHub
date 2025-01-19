@@ -75,8 +75,8 @@ The project has been successfully deployed and tested on a minimal VPS configura
 
 ### Public Access
 Development  environment  deployment is available at:
-- **Frontend**: http://209.46.125.85/
-- **API Documentation**: http://209.46.125.85:9000/swagger/index.html
+- **Frontend**: http://34.229.148.3/
+- **API Documentation**: http://34.229.148.3:9000/swagger/index.html
 
 ### Docker Setup
 The deployment uses Docker with a reverse proxy configuration:
