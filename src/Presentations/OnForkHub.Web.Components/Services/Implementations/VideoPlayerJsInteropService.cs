@@ -1,37 +1,10 @@
+using OnForkHub.Web.Components.Services.Interfaces;
+
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
-namespace OnForkHub.Web.Components.VideoPlayer;
+namespace OnForkHub.Web.Components.Services.Implementations;
 
-public interface IVideoPlayerJsInterop
-{
-    Task Initialize(
-        string id,
-        DotNetObjectReference<Player> objectRef,
-        string magnetUri,
-        bool captions,
-        bool quality,
-        bool speed,
-        bool loop,
-        bool playLargeControl,
-        bool restartControl,
-        bool rewindControl,
-        bool playControl,
-        bool fastForwardControl,
-        bool progressControl,
-        bool currentTimeControl,
-        bool durationControl,
-        bool muteControl,
-        bool volumeControl,
-        bool captionsControl,
-        bool settingsControl,
-        bool pIPControl,
-        bool airplayControl,
-        bool downloadControl,
-        bool fullscreenControl
-    );
-}
-
-public class VideoPlayerJsInterop(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInterop
+public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInteropService
 {
     private readonly Lazy<Task<IJSObjectReference>> mainTask = new(
         () => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask()

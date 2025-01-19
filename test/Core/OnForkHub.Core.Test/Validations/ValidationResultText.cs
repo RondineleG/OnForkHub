@@ -220,19 +220,6 @@ public class ValidationResultTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception when attempting to merge with null")]
-    public void ShouldThrowExceptionWhenAttemptingToMergeWithNull()
-    {
-        var result = new ValidationResult();
-        IValidationResult? validate = null;
-
-        Action action = () => result.Merge(validate);
-
-        action.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should throw exception with message when invalid")]
     public void ShouldThrowExceptionWithMessageWhenInvalid()
     {

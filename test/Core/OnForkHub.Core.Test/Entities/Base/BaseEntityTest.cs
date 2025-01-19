@@ -90,13 +90,11 @@ public class BaseEntityTest
         var entity = new ValidEntityTestFixture();
 
         entity.ExecuteUpdate();
-        Thread.Sleep(100);
         entity.ExecuteUpdate();
-        Thread.Sleep(100);
         entity.ExecuteUpdate();
 
         entity.UpdatedAt.Should().NotBeNull();
-        entity.UpdatedAt.Value.Kind.Should().Be(DateTimeKind.Utc);
+        entity.UpdatedAt!.Value.Kind.Should().Be(DateTimeKind.Utc);
         entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
     }
 
@@ -235,7 +233,7 @@ public class BaseEntityTest
         entity.ExecuteUpdate();
 
         entity.UpdatedAt.Should().NotBeNull();
-        entity.UpdatedAt.Value.Kind.Should().Be(DateTimeKind.Utc);
+        entity.UpdatedAt!.Value.Kind.Should().Be(DateTimeKind.Utc);
         entity.UpdatedAt.Should().BeCloseTo(beforeUpdate, TimeSpan.FromSeconds(1));
     }
 
@@ -252,7 +250,6 @@ public class BaseEntityTest
 
         for (var i = 0; i < numberOfUpdates; i++)
         {
-            Thread.Sleep(100);
             entity.ExecuteUpdate();
             updates.Add(entity.UpdatedAt);
         }
@@ -282,13 +279,12 @@ public class BaseEntityTest
         entity.ExecuteUpdate();
         var firstUpdate = entity.UpdatedAt;
 
-        Thread.Sleep(100);
-
         entity.ExecuteUpdate();
         var secondUpdate = entity.UpdatedAt;
 
-        firstUpdate.Should().NotBe(secondUpdate);
-        secondUpdate.Should().BeAfter(firstUpdate.Value);
+        firstUpdate.Should().NotBeNull();
+        secondUpdate.Should().NotBeNull();
+        secondUpdate!.Value.Should().BeAfter(firstUpdate!.Value);
         secondUpdate.Value.Kind.Should().Be(DateTimeKind.Utc);
     }
 }

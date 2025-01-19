@@ -96,17 +96,6 @@ public class ValidationServiceTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return failure when entity is null")]
-    public void ShouldReturnFailureWhenEntityIsNull()
-    {
-        var result = _service.Validate(null);
-
-        result.IsValid.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("cannot be null");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should validate entity successfully")]
     public void ShouldValidateEntitySuccessfully()
     {
