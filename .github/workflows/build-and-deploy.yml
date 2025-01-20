@@ -43,7 +43,7 @@ jobs:
       - name: Set full branch name
         if: github.event_name == 'workflow_dispatch'
         run: |
-          if [[ "${{ github.event.inputs.branch_type }}" == "dev" || "${{ github.event.inputs.branch_type }}" == "main" ]]; then
+          if [[ "${{ github.event.inputs.branch_type }}" == "dev" || "${{ github.event.inputs.branch_type }}" == "main" || "${{ github.event.inputs.branch_type }}" == "uat" ]]; then
             echo "FULL_BRANCH=${{ github.event.inputs.branch_type }}" >> $GITHUB_ENV
           else
             if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
