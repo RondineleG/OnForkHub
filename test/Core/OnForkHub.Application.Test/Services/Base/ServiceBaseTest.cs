@@ -2,12 +2,12 @@ namespace OnForkHub.Application.Test.Services.Base;
 
 public class ServiceBaseTest
 {
-    private readonly TestService _serviceBase;
-
     public ServiceBaseTest()
     {
         _serviceBase = new TestService();
     }
+
+    private readonly TestService _serviceBase;
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -22,6 +22,19 @@ public class ServiceBaseTest
 
     [Fact]
     [Trait("Category", "Unit")]
+    [DisplayName("Should execute operation with valid entity successfully")]
+    public async Task ShouldExecuteOperationWithValidEntitySuccessfully()
+    {
+        var entity = new TestEntity { Name = "Test" };
+
+        var result = await _serviceBase.ExecuteOperationAsync(entity, e => Task.FromResult(RequestResult<TestEntity>.Success(e)), ValidateTestEntity);
+
+        result.Status.Should().Be(EResultStatus.Success);
+        result.Data.Should().Be(entity);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
     [DisplayName("Should handle general exception")]
     public async Task ShouldHandleGeneralException()
     {
@@ -32,19 +45,6 @@ public class ServiceBaseTest
         result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError.Should().NotBeNull();
         result.RequestError!.Description.Should().Be("Error processing operation: General error");
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should execute operation with valid entity successfully")]
-    public async Task ShouldExecuteOperationWithValidEntitySuccessfully()
-    {
-        var entity = new TestEntity { Name = "Test" };
-
-        var result = await _serviceBase.ExecuteOperationAsync(entity, e => Task.FromResult(RequestResult<TestEntity>.Success(e)), ValidateTestEntity);
-
-        result.Status.Should().Be(EResultStatus.Success);
-        result.Data.Should().Be(entity);
     }
 
     private static ValidationResult ValidateTestEntity(TestEntity entity)

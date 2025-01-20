@@ -5,6 +5,7 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
+
     private readonly string _projectRoot = projectRoot ?? throw new ArgumentNullException(nameof(projectRoot));
 
     public async Task ConfigureEditorAsync()

@@ -2,6 +2,11 @@ namespace OnForkHub.Persistence.Exceptions;
 
 public static class PersistenceExceptionHandler
 {
+    public static string EntityNotFound(string entityName, long id)
+    {
+        return $"{entityName} not found with ID: {id}.";
+    }
+
     public static PersistenceException HandleDbException(Exception exception, string operation, string entityName)
     {
         return exception is DbUpdateException dbUpdateException
@@ -9,14 +14,38 @@ public static class PersistenceExceptionHandler
             : new DatabaseOperationException(operation, exception.Message);
     }
 
-    public static string EntityNotFound(string entityName, long id)
-    {
-        return $"{entityName} not found with ID: {id}.";
-    }
-
     public static string UnexpectedError(string operation, string message)
     {
         return $"Unexpected error when {operation}: {message}";
+    }
+
+    private static string GetAffectedField(string errorMessage)
+    {
+        try
+        {
+            if (errorMessage.Contains('\'', StringComparison.Ordinal))
+            {
+                var start = errorMessage.IndexOf("column '", StringComparison.Ordinal) + 8;
+                var end = errorMessage.IndexOf('\'', start);
+                return errorMessage[start..end];
+            }
+        }
+        catch (Exception ex)
+        {
+            return $"unknown field : {ex.Message}";
+        }
+
+        return $"unknown field : {errorMessage}";
+    }
+
+    private static Exception GetInnermostException(Exception exception)
+    {
+        while (exception.InnerException != null)
+        {
+            exception = exception.InnerException;
+        }
+
+        return exception;
     }
 
     private static PersistenceException HandleDbUpdateException(DbUpdateException exception, string operation, string entityName)
@@ -50,34 +79,5 @@ public static class PersistenceExceptionHandler
 
             _ => new DatabaseOperationException(operation, errorMessage),
         };
-    }
-
-    private static Exception GetInnermostException(Exception exception)
-    {
-        while (exception.InnerException != null)
-        {
-            exception = exception.InnerException;
-        }
-
-        return exception;
-    }
-
-    private static string GetAffectedField(string errorMessage)
-    {
-        try
-        {
-            if (errorMessage.Contains('\'', StringComparison.Ordinal))
-            {
-                var start = errorMessage.IndexOf("column '", StringComparison.Ordinal) + 8;
-                var end = errorMessage.IndexOf('\'', start);
-                return errorMessage[start..end];
-            }
-        }
-        catch (Exception ex)
-        {
-            return $"unknown field : {ex.Message}";
-        }
-
-        return $"unknown field : {errorMessage}";
     }
 }

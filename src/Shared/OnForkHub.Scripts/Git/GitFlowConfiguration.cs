@@ -3,6 +3,7 @@ namespace OnForkHub.Scripts.Git;
 public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processRunner)
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
     public async Task EnsureCleanWorkingTreeAsync()

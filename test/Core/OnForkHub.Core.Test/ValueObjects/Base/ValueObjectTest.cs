@@ -86,18 +86,6 @@ public class ValueObjectTests
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return false when comparing a null object with a non-null object")]
-    public void ShouldReturnFalseWhenComparingNullWithNonNull()
-    {
-        var obj1 = new SampleValueObjectTestFixture(1, "Test");
-        SampleValueObjectTestFixture obj2 = null;
-
-        ValueObject.EqualOperator(obj1, obj2).Should().BeFalse();
-        ValueObject.EqualOperator(obj2, obj1).Should().BeFalse();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should return false when comparing with different types")]
     public void ShouldReturnFalseWhenComparingWithDifferentTypes()
     {

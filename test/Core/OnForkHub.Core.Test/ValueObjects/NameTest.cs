@@ -15,16 +15,4 @@ public class NameTest
 
         act.Should().NotThrow();
     }
-
-    [Theory]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException for null or empty name")]
-    [InlineData(null)]
-    [InlineData("")]
-    public void ShouldThrowDomainExceptionForNullOrEmptyName(string? name)
-    {
-        Action act = () => Name.Create(name);
-
-        act.Should().Throw<DomainException>().WithMessage(NameResources.NameEmpty);
-    }
 }

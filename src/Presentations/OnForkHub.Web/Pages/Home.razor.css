@@ -58,7 +58,6 @@
     border-radius: 10px;
     min-height: 300px;
     min-width: 300px;
-
 }
 
 .nav-button {
@@ -75,9 +74,9 @@
     transition: background-color 0.3s;
 }
 
-.nav-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
+    .nav-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
 
 .interaction-buttons {
     display: flex;
@@ -98,17 +97,17 @@
     padding: 10px;
 }
 
-.action-btn:hover {
-    transform: scale(1.1);
-}
+    .action-btn:hover {
+        transform: scale(1.1);
+    }
 
-.action-btn i {
-    font-size: 24px;
-}
+    .action-btn i {
+        font-size: 24px;
+    }
 
-.action-btn span {
-    font-size: 12px;
-}
+    .action-btn span {
+        font-size: 12px;
+    }
 
 .video-list-container {
     display: flex;

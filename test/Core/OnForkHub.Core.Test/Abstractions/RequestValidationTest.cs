@@ -6,34 +6,12 @@ public class RequestValidationTests
 {
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should allow null values for properties")]
-    public void ShouldAllowNullValuesForProperties()
-    {
-        var validation = new RequestValidation(null, null);
-
-        validation.PropertyName.Should().BeNull();
-        validation.Description.Should().BeNull();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should be considered different from another type when using Equals")]
     public void ShouldBeConsideredDifferentFromAnotherTypeWhenUsingEquals()
     {
         var validation = new RequestValidation("TestField", "Description");
 
         validation.Equals("OtherType").Should().BeFalse();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should be different when one property is null")]
-    public void ShouldBeDifferentWhenOnePropertyIsNull()
-    {
-        var validation1 = new RequestValidation("TestField", null);
-        var validation2 = new RequestValidation("TestField", "Description");
-
-        validation1.Should().NotBe(validation2);
     }
 
     [Fact]

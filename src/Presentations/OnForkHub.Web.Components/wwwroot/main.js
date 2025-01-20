@@ -1,4 +1,4 @@
-﻿export function videoInitialize(elementId, component,
+export function videoInitialize(elementId, component,
                                 captions,
                                 quality,
                                 speed,
@@ -19,7 +19,6 @@
                                 airplayControl,
                                 downloadControl,
                                 fullscreenControl) {
-
     var settingsArray = new Array();
     if (captions)
         settingsArray.push("captions");
@@ -80,5 +79,4 @@
     player.on('play', async event => {
         await component.invokeMethodAsync('OnPlay');
     });
-
 }

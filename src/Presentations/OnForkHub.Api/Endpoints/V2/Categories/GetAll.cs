@@ -3,8 +3,11 @@ namespace OnForkHub.Api.Endpoints.V2.Categories;
 public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
     private const int V2 = 2;
+
     private static readonly string Route = GetVersionedRoute(V2);
+
     private readonly ILogger<GetAll> _logger = logger;
+
     private readonly IUseCase<PaginationRequestDto, IEnumerable<Category>> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)

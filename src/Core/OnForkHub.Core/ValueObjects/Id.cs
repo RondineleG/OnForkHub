@@ -2,8 +2,6 @@ namespace OnForkHub.Core.ValueObjects;
 
 public sealed class Id : ValueObject
 {
-    private readonly ValidationResult _validationResult;
-
     private Id(Guid value)
     {
         Value = value;
@@ -11,26 +9,29 @@ public sealed class Id : ValueObject
         Validate();
     }
 
+    private readonly ValidationResult _validationResult;
+
     public Guid Value { get; }
+
+    public static Id Create()
+    {
+        return new Id(Guid.NewGuid());
+    }
 
     public static implicit operator Guid(Id id)
     {
         return id.Value;
     }
 
-    public static implicit operator string(Id id)
-    {
-        return id.ToString();
-    }
-
     public static implicit operator Id(string value)
     {
+        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), IdResources.IdEmpty);
         return Create(value);
     }
 
-    public static Id Create()
+    public static implicit operator string(Id id)
     {
-        return new Id(Guid.NewGuid());
+        return id.ToString();
     }
 
     public override string ToString()
