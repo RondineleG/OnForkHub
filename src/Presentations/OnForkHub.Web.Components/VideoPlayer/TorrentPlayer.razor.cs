@@ -8,16 +8,6 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
 
     private DotNetObjectReference<TorrentPlayer>? _objectRef;
 
-    [Inject]
-    protected IJSRuntime JSRuntime { get; set; } = default!;
-
-    [Parameter]
-    public string PlayerId { get; set; } = "torrent-player";
-
-    [Parameter]
-    [EditorRequired]
-    public string TorrentId { get; set; } = default!;
-
     [Parameter]
     public EventCallback OnEndedVideo { get; set; }
 
@@ -26,6 +16,16 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
 
     [Parameter]
     public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
+
+    [Parameter]
+    public string PlayerId { get; set; } = "torrent-player";
+
+    [Parameter]
+    [EditorRequired]
+    public string TorrentId { get; set; } = default!;
+
+    [Inject]
+    protected IJSRuntime JSRuntime { get; set; } = default!;
 
     public async ValueTask DisposeAsync()
     {
@@ -45,9 +45,22 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
         }
     }
 
-    protected override void OnInitialized()
+    [JSInvokable]
+    public async Task OnEnded()
     {
-        _objectRef = DotNetObjectReference.Create(this);
+        await OnEndedVideo.InvokeAsync();
+    }
+
+    [JSInvokable]
+    public async Task OnPlay()
+    {
+        await OnPlayVideo.InvokeAsync();
+    }
+
+    [JSInvokable]
+    public async Task OnTimeUpdate(float currentTime, float duration)
+    {
+        await OnVideoTimeUpdate.InvokeAsync((currentTime, duration));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -68,21 +81,8 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
         }
     }
 
-    [JSInvokable]
-    public async Task OnEnded()
+    protected override void OnInitialized()
     {
-        await OnEndedVideo.InvokeAsync();
-    }
-
-    [JSInvokable]
-    public async Task OnPlay()
-    {
-        await OnPlayVideo.InvokeAsync();
-    }
-
-    [JSInvokable]
-    public async Task OnTimeUpdate(float currentTime, float duration)
-    {
-        await OnVideoTimeUpdate.InvokeAsync((currentTime, duration));
+        _objectRef = DotNetObjectReference.Create(this);
     }
 }

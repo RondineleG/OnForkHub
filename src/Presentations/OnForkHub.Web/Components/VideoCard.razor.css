@@ -39,12 +39,12 @@
     transition: 0.35s;
 }
 
-.hc-card .hc-content p {
-    font-size: .9rem;
-    font-family: var(--cf-title-font);
-    letter-spacing: 1px;
-    margin-top: .5em;
-}
+    .hc-card .hc-content p {
+        font-size: .9rem;
+        font-family: var(--cf-title-font);
+        letter-spacing: 1px;
+        margin-top: .5em;
+    }
 
 .hc-content {
     position: relative;
@@ -55,7 +55,6 @@
     width: 100%;
     height: 100%;
 }
-
 
 .btn-glass {
     display: flex;
@@ -73,15 +72,15 @@
     transition: 0.3s;
 }
 
-.btn-glass:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-}
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
 
-.btn-glass > i {
-    display: flex;
-    font-size: 2rem;
-}
+    .btn-glass > i {
+        display: flex;
+        font-size: 2rem;
+    }
 
 @media screen and (min-width: 768px) {
     .hc-card {

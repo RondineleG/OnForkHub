@@ -4,6 +4,7 @@ public class CreateCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF, I
     : IUseCase<CategoryRequestDto, Category>
 {
     private readonly ICategoryRepositoryEF _categoryRepositoryEF = categoryRepositoryEF;
+
     private readonly IEntityValidator<Category> _validator = validator;
 
     public async Task<RequestResult<Category>> ExecuteAsync(CategoryRequestDto request)

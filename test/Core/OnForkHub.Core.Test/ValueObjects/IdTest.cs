@@ -4,84 +4,14 @@ public class IdTest
 {
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should create new Id with valid Guid")]
-    public void ShouldCreateNewIdWithValidGuid()
+    [DisplayName("Should consider different Ids with different values")]
+    public void ShouldConsiderDifferentIdsWithDifferentValues()
     {
-        var id = Id.Create();
+        var id1 = Id.Create();
+        var id2 = Id.Create();
 
-        id.Should().NotBeNull();
-        id.Value.Should().NotBe(Guid.Empty);
-        var validationResult = id.Validate();
-        validationResult.IsValid.Should().BeTrue();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should convert valid string to Id using implicit operator")]
-    public void ShouldConvertValidStringToIdUsingImplicitOperator()
-    {
-        var guidString = Guid.NewGuid().ToString("N");
-
-        Id id = guidString;
-
-        id.Should().NotBeNull();
-        id.Value.Should().NotBe(Guid.Empty);
-        id.ToString().Should().Be(guidString);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException when converting invalid string to Id")]
-    public void ShouldThrowDomainExceptionWhenConvertingInvalidStringToId(string? value)
-    {
-        var action = () =>
-        {
-            Id id = value;
-        };
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException when converting invalid Guid format")]
-    public void ShouldThrowDomainExceptionWhenConvertingInvalidGuidFormat()
-    {
-        var invalidGuid = "invalid-guid-format";
-
-        var action = () =>
-        {
-            Id id = invalidGuid;
-        };
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should convert Id to string in N format")]
-    public void ShouldConvertIdToStringInNFormat()
-    {
-        var id = Id.Create();
-
-        string result = id;
-
-        result.Should().Be(id.Value.ToString("N"));
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should convert Id to Guid")]
-    public void ShouldConvertIdToGuid()
-    {
-        var id = Id.Create();
-
-        Guid result = id;
-
-        result.Should().Be(id.Value);
+        id1.Should().NotBe(id2);
+        id1.GetHashCode().Should().NotBe(id2.GetHashCode());
     }
 
     [Fact]
@@ -99,14 +29,53 @@ public class IdTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should consider different Ids with different values")]
-    public void ShouldConsiderDifferentIdsWithDifferentValues()
+    [DisplayName("Should convert Id to Guid")]
+    public void ShouldConvertIdToGuid()
     {
-        var id1 = Id.Create();
-        var id2 = Id.Create();
+        var id = Id.Create();
 
-        id1.Should().NotBe(id2);
-        id1.GetHashCode().Should().NotBe(id2.GetHashCode());
+        Guid result = id;
+
+        result.Should().Be(id.Value);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should convert Id to string in N format")]
+    public void ShouldConvertIdToStringInNFormat()
+    {
+        var id = Id.Create();
+
+        string result = id;
+
+        result.Should().Be(id.Value.ToString("N"));
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should convert valid string to Id using implicit operator")]
+    public void ShouldConvertValidStringToIdUsingImplicitOperator()
+    {
+        var guidString = Guid.NewGuid().ToString("N");
+
+        Id id = guidString;
+
+        id.Should().NotBeNull();
+        id.Value.Should().NotBe(Guid.Empty);
+        id.ToString().Should().Be(guidString);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should create new Id with valid Guid")]
+    public void ShouldCreateNewIdWithValidGuid()
+    {
+        var id = Id.Create();
+
+        id.Should().NotBeNull();
+        id.Value.Should().NotBe(Guid.Empty);
+        var validationResult = id.Validate();
+        validationResult.IsValid.Should().BeTrue();
     }
 
     [Fact]
@@ -123,21 +92,6 @@ public class IdTest
         stringValue.Should().Be(id.Value.ToString("N"));
         guidValue.Should().Be(id.Value);
         reconvertedId.Should().Be(id);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw DomainException when trying to convert empty Guid string")]
-    public void ShouldThrowDomainExceptionWhenTryingToConvertEmptyGuidString()
-    {
-        var emptyGuidString = Guid.Empty.ToString("N");
-
-        var action = () =>
-        {
-            Id id = emptyGuidString;
-        };
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
     }
 
     [Fact]

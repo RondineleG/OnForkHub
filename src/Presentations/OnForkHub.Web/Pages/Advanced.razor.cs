@@ -1,4 +1,4 @@
-using OnForkHub.Web.Components.VideoPlayer;
+using OnForkHub.Web.Components.Models;
 
 namespace OnForkHub.Web.Pages;
 

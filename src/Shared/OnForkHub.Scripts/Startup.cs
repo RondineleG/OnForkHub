@@ -12,6 +12,12 @@ public class Startup(
     {
         try
         {
+            if (args.Contains("-i"))
+            {
+                await gitAliasConfiguration.ConfigureAliasesAsync();
+                return 0;
+            }
+
             if (args.Contains("-h"))
             {
                 cliHandler.ShowHelp();

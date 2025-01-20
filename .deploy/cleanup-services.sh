@@ -1,25 +1,24 @@
 #!/bin/bash
-set -e
 
 echo "Starting complete cleanup..."
 
 echo "Stopping all containers..."
-docker compose down --remove-orphans || true
+sudo docker compose down --remove-orphans
 
 echo "Removing all containers..."
-docker ps -aq | xargs -r docker stop || true
-docker ps -aq | xargs -r docker rm -f || true
+sudo docker ps -aq | xargs -r sudo docker stop
+sudo docker ps -aq | xargs -r sudo docker rm -f
 
 echo "Removing all images..."
-docker images -q | xargs -r docker rmi -f || true
+sudo docker images -q | xargs -r sudo docker rmi -f
 
 echo "Removing unused networks..."
-docker network prune -f || true
+sudo docker network prune -f
 
 echo "Removing unused volumes..."
-docker volume prune -f || true
+sudo docker volume prune -f
 
 echo "Cleaning up system..."
-docker system prune -f --volumes || true
+sudo docker system prune -f --volumes
 
 echo "Process completed!"

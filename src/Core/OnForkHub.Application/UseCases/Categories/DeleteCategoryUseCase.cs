@@ -4,9 +4,9 @@ public class DeleteCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF) :
 {
     private readonly ICategoryRepositoryEF _categoryRepositoryEF = categoryRepositoryEF;
 
-    public async Task<RequestResult<Category>> ExecuteAsync(long id)
+    public async Task<RequestResult<Category>> ExecuteAsync(long request)
     {
-        var result = await _categoryRepositoryEF.DeleteAsync(id);
+        var result = await _categoryRepositoryEF.DeleteAsync(request);
         return result.Status != EResultStatus.Success || result.Data is null
             ? RequestResult<Category>.WithError("Failed to delete category")
             : RequestResult<Category>.Success(result.Data);

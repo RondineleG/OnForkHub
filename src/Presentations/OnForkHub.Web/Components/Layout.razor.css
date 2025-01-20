@@ -16,24 +16,24 @@
     font-size: 1rem;
 }
 
-.ctaStyle a {
-    -webkit-text-decoration: inherit;
-    text-decoration: inherit;
-    text-transform: uppercase;
-}
-
-.ctaStyle i {
-    color: var(--cf-theme-core);
-    font-size: 1.5rem;
-}
-
-@media (min-width: 768px) {
-    .ctaStyle {
-        font-size: 2rem;
+    .ctaStyle a {
+        -webkit-text-decoration: inherit;
+        text-decoration: inherit;
+        text-transform: uppercase;
     }
 
     .ctaStyle i {
         color: var(--cf-theme-core);
         font-size: 1.5rem;
     }
+
+@media (min-width: 768px) {
+    .ctaStyle {
+        font-size: 2rem;
+    }
+
+        .ctaStyle i {
+            color: var(--cf-theme-core);
+            font-size: 1.5rem;
+        }
 }
