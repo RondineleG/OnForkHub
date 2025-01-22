@@ -30,6 +30,7 @@ export async function startDownload(
 
         const videoElement = document.createElement('video');
         videoElement.controls = true;
+        videoElement.autoplay = true;
         videoElement.style.width = '100%';
         videoElement.style.height = '100%';
         videoElement.style.backgroundColor = '#000';
@@ -41,8 +42,10 @@ export async function startDownload(
                 'wss://tracker.openwebtorrent.com',
                 'wss://tracker.fastcast.nz'
             ]
-        }, (torrent: any) => {
-            const file = torrent.files.find((f: any) => {
+        });
+
+        currentTorrent.on('ready', () => {
+            const file = currentTorrent.files.find((f: any) => {
                 return /\.(mp4|mkv|webm)$/i.test(f.name);
             });
 
@@ -50,59 +53,60 @@ export async function startDownload(
                 throw new Error('No video file found');
             }
 
-            file.getBlobURL((err: any, url: string) => {
-                if (!err && url) {
-                    videoElement.src = url;
-                    const playPromise = videoElement.play();
-                    if (playPromise) {
-                        playPromise.catch(() => {
-                            videoElement.addEventListener('click', () => {
-                                videoElement.play();
-                            });
-                        });
-                    }
-                }
+            file.appendTo(videoElement, {
+                autoplay: true,
+                muted: false,
             });
 
-            let lastProgress = 0;
-            torrent.on('download', () => {
-                const progress = Math.floor(torrent.progress * 100);
-                if (progress > lastProgress) {
-                    lastProgress = progress;
-                    progressElement.textContent = `Downloading: ${progress}%`;
-                }
-
-                if (videoElement.paused && torrent.progress > 0.005) {
-                    videoElement.play().catch(() => {
-                    });
-                }
-            });
-
-            torrent.on('done', () => {
-                progressElement.textContent = 'Download complete';
-                if (videoElement.paused) {
-                    videoElement.play().catch(console.error);
-                }
+            videoElement.addEventListener('canplay', () => {
+                videoElement.play().catch(console.error);
             });
         });
 
+        currentTorrent.on('download', () => {
+            const progress = Math.floor(currentTorrent.progress * 100);
+            progressElement.textContent = `Downloading: ${progress}%`;
+
+            if (videoElement.paused && currentTorrent.progress > 0.005) {
+                videoElement.play().catch(() => { });
+            }
+        });
+
+        currentTorrent.on('done', () => {
+            progressElement.textContent = 'Download complete';
+            if (videoElement.paused) {
+                videoElement.play().catch(console.error);
+            }
+        });
+
+        currentTorrent.on('error', (err: Error) => {
+            console.error('Torrent error:', err);
+            throw err;
+        });
+
     } catch (error) {
+        console.error('Error in startDownload:', error);
         throw error;
     }
 }
 
 export async function stopDownload(): Promise<void> {
-    if (currentTorrent) {
-        currentTorrent.destroy();
-        currentTorrent = null;
-    }
+    try {
+        if (currentTorrent) {
+            currentTorrent.destroy();
+            currentTorrent = null;
+        }
 
-    if (client) {
-        await new Promise<void>((resolve) => {
-            client.destroy(() => {
-                client = new WebTorrent();
-                resolve();
+        if (client) {
+            await new Promise<void>((resolve) => {
+                client.destroy(() => {
+                    client = new WebTorrent();
+                    resolve();
+                });
             });
-        });
+        }
+    } catch (error) {
+        console.error('Error stopping download:', error);
+        throw error;
     }
 }
