@@ -1,5 +1,6 @@
 declare const WebTorrent: any;
 let client: any = null;
+let currentTorrent: any = null;
 
 export async function initTorrentPlayer(progressElement: HTMLElement): Promise<void> {
     try {
@@ -20,16 +21,21 @@ export async function startDownload(
             client = new WebTorrent();
         }
 
+        if (currentTorrent) {
+            currentTorrent.destroy();
+        }
+
         const container = document.querySelector(videoContainerSelector) as HTMLElement;
+        container.innerHTML = '';
+
         const videoElement = document.createElement('video');
         videoElement.controls = true;
         videoElement.style.width = '100%';
         videoElement.style.height = '100%';
         videoElement.style.backgroundColor = '#000';
-        container.innerHTML = '';
         container.appendChild(videoElement);
 
-        client.add(magnetUri, {
+        currentTorrent = client.add(magnetUri, {
             announce: [
                 'wss://tracker.btorrent.xyz',
                 'wss://tracker.openwebtorrent.com',
@@ -44,29 +50,53 @@ export async function startDownload(
                 throw new Error('No video file found');
             }
 
-            file.renderTo(videoElement, {
-                autoplay: true,
-                muted: false
+            file.getBlobURL((err: any, url: string) => {
+                if (!err && url) {
+                    videoElement.src = url;
+                    const playPromise = videoElement.play();
+                    if (playPromise) {
+                        playPromise.catch(() => {
+                            videoElement.addEventListener('click', () => {
+                                videoElement.play();
+                            });
+                        });
+                    }
+                }
             });
 
+            let lastProgress = 0;
             torrent.on('download', () => {
                 const progress = Math.floor(torrent.progress * 100);
-                progressElement.textContent = `Downloading: ${progress}%`;
-                if (torrent.progress > 0.01 && videoElement.paused) {
-                    videoElement.play().catch(console.error);
+                if (progress > lastProgress) {
+                    lastProgress = progress;
+                    progressElement.textContent = `Downloading: ${progress}%`;
+                }
+
+                if (videoElement.paused && torrent.progress > 0.005) {
+                    videoElement.play().catch(() => {
+                    });
                 }
             });
 
             torrent.on('done', () => {
                 progressElement.textContent = 'Download complete';
+                if (videoElement.paused) {
+                    videoElement.play().catch(console.error);
+                }
             });
         });
+
     } catch (error) {
         throw error;
     }
 }
 
 export async function stopDownload(): Promise<void> {
+    if (currentTorrent) {
+        currentTorrent.destroy();
+        currentTorrent = null;
+    }
+
     if (client) {
         await new Promise<void>((resolve) => {
             client.destroy(() => {
