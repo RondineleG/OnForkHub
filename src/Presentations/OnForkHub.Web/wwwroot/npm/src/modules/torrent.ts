@@ -23,29 +23,20 @@ export async function startDownload(
 
         if (currentTorrent) {
             currentTorrent.destroy();
+            currentTorrent = null;
         }
 
         const container = document.querySelector(videoContainerSelector) as HTMLElement;
-        container.innerHTML = '';
+        container.innerHTML = `
+            <video controls style="width:100%; height:100%; background-color: #000;">
+                Your browser does not support video playback.
+            </video>
+        `;
 
-        const videoElement = document.createElement('video');
-        videoElement.controls = true;
-        videoElement.autoplay = true;
-        videoElement.style.width = '100%';
-        videoElement.style.height = '100%';
-        videoElement.style.backgroundColor = '#000';
-        container.appendChild(videoElement);
+        const videoElement = container.querySelector('video') as HTMLVideoElement;
 
-        currentTorrent = client.add(magnetUri, {
-            announce: [
-                'wss://tracker.btorrent.xyz',
-                'wss://tracker.openwebtorrent.com',
-                'wss://tracker.fastcast.nz'
-            ]
-        });
-
-        currentTorrent.on('ready', () => {
-            const file = currentTorrent.files.find((f: any) => {
+        client.add(magnetUri, (torrent: any) => {
+            const file = torrent.files.find((f: any) => {
                 return /\.(mp4|mkv|webm)$/i.test(f.name);
             });
 
@@ -53,35 +44,39 @@ export async function startDownload(
                 throw new Error('No video file found');
             }
 
-            file.appendTo(videoElement, {
-                autoplay: true,
-                muted: false,
+            const stream = file.createReadStream();
+            const mediaSource = new MediaSource();
+            videoElement.src = URL.createObjectURL(mediaSource);
+
+            mediaSource.addEventListener('sourceopen', () => {
+                const sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+                stream.on('data', (chunk: Uint8Array) => {
+                    if (!sourceBuffer.updating) {
+                        try {
+                            sourceBuffer.appendBuffer(chunk);
+                        } catch (e) {
+                            console.warn('Error appending buffer:', e);
+                        }
+                    }
+                });
             });
 
-            videoElement.addEventListener('canplay', () => {
-                videoElement.play().catch(console.error);
+            videoElement.play().catch(console.error);
+
+            torrent.on('download', () => {
+                const progress = Math.floor(torrent.progress * 100);
+                progressElement.textContent = `Downloading: ${progress}%`;
+
+                if (videoElement.paused) {
+                    videoElement.play().catch(() => { });
+                }
             });
-        });
 
-        currentTorrent.on('download', () => {
-            const progress = Math.floor(currentTorrent.progress * 100);
-            progressElement.textContent = `Downloading: ${progress}%`;
+            torrent.on('done', () => {
+                progressElement.textContent = 'Download complete';
+            });
 
-            if (videoElement.paused && currentTorrent.progress > 0.005) {
-                videoElement.play().catch(() => { });
-            }
-        });
-
-        currentTorrent.on('done', () => {
-            progressElement.textContent = 'Download complete';
-            if (videoElement.paused) {
-                videoElement.play().catch(console.error);
-            }
-        });
-
-        currentTorrent.on('error', (err: Error) => {
-            console.error('Torrent error:', err);
-            throw err;
+            currentTorrent = torrent;
         });
 
     } catch (error) {
@@ -91,22 +86,17 @@ export async function startDownload(
 }
 
 export async function stopDownload(): Promise<void> {
-    try {
-        if (currentTorrent) {
-            currentTorrent.destroy();
-            currentTorrent = null;
-        }
+    if (currentTorrent) {
+        currentTorrent.destroy();
+        currentTorrent = null;
+    }
 
-        if (client) {
-            await new Promise<void>((resolve) => {
-                client.destroy(() => {
-                    client = new WebTorrent();
-                    resolve();
-                });
+    if (client) {
+        await new Promise<void>((resolve) => {
+            client.destroy(() => {
+                client = new WebTorrent();
+                resolve();
             });
-        }
-    } catch (error) {
-        console.error('Error stopping download:', error);
-        throw error;
+        });
     }
 }
