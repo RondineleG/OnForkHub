@@ -104,7 +104,7 @@ public class BaseEntityTest
     public void ShouldThrowExceptionForEmptyGuid()
     {
         var creationDate = DateTime.UtcNow;
-        var emptyGuid = "00000000000000000000000000000000";
+        var emptyGuid = string.Empty;
 
         Action action = () => new ValidEntityTestFixture(emptyGuid, creationDate);
 
