@@ -9,7 +9,7 @@ public static class WebApiConfiguration
         services.RegisterImplementationsOf<IEndpointAsync>(markerType);
     }
 
-    public static async Task RegisterWebApisAsync(this WebApplication app)
+    public static async Task UseWebApisAsync(this WebApplication app)
     {
         using (var scope = app.Services.CreateScope())
         {

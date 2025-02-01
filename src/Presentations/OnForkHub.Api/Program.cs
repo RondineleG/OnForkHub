@@ -1,101 +1,11 @@
-using OnForkHub.Application.Services;
-using OnForkHub.Core.Interfaces.Services;
-using OnForkHub.Core.Validations;
-using OnForkHub.Persistence.Configurations;
-
-using Raven.Client.Documents;
-
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc(
-        "v1",
-        new OpenApiInfo
-        {
-            Version = "v1",
-            Title = "OnForkHub API - Version 1",
-            Description = "API version 1 documentation",
-        }
-    );
 
-    options.SwaggerDoc(
-        "v2",
-        new OpenApiInfo
-        {
-            Version = "v2",
-            Title = "OnForkHub API - Version 2",
-            Description = "API version 2 documentation",
-        }
-    );
-
-    options.SwaggerDoc(
-        "v3",
-        new OpenApiInfo
-        {
-            Version = "v3",
-            Title = "OnForkHub API - Version 3",
-            Description = "API version 3 documentation",
-        }
-    );
-});
-
-builder
-    .Services.AddApiVersioning(options =>
-    {
-        options.DefaultApiVersion = new ApiVersion(1);
-        options.ReportApiVersions = true;
-        options.AssumeDefaultVersionWhenUnspecified = true;
-    })
-    .AddApiExplorer(options =>
-    {
-        options.GroupNameFormat = "'v'V";
-        options.SubstituteApiVersionInUrl = true;
-    });
-
-var ravenDbSettings = builder.Configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>();
-
-builder.Services.AddSingleton<IDocumentStore>(serviceProvider =>
-{
-    var store = new DocumentStore { Urls = ravenDbSettings?.Urls, Database = ravenDbSettings?.Database };
-
-    store.Initialize();
-    return store;
-});
-
-builder.Services.AddSingleton<RavenDbDataContext>();
-builder.Services.AddWebApi(typeof(Program));
-var configurationBuilder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appSettings.json", true, true);
-IConfiguration configuration = configurationBuilder.Build();
-var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-builder.Services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
-builder.Services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
-builder.Services.AddValidators(typeof(CategoryValidator).Assembly);
-builder.Services.AddEntityValidator(typeof(CategoryValidator).Assembly);
-builder.Services.AddUseCases(typeof(GetAllUseCase).Assembly);
-builder.Services.AddValidationRule(typeof(CategoryNameValidationRule).Assembly);
-
-builder.Services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
-builder.Services.AddScoped<IValidationBuilder<Category>, ValidationBuilder<Category>>();
-builder.Services.AddScoped<IEntityValidator<Category>, CategoryValidator>();
-builder.Services.AddScoped(typeof(IValidationService<>), typeof(ValidationService<>));
-builder.Services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
-builder.Services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
-builder.Services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
+builder.Services.AddSwaggerServices();
+builder.Services.AddRavenDbServices(builder.Configuration);
+builder.Services.AddEntityFrameworkServices(builder.Configuration);
+builder.Services.AddCustomServices();
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnForkHub API V1");
-        c.SwaggerEndpoint("/swagger/v2/swagger.json", "OnForkHub API V2");
-        c.SwaggerEndpoint("/swagger/v3/swagger.json", "OnForkHub API V3");
-    });
-}
-
-await app.RegisterWebApisAsync();
+app.UseCustomSwagger();
+await app.UseWebApisAsync();
 await app.RunAsync();
