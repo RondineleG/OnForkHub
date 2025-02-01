@@ -1,3 +1,6 @@
+using OnForkHub.Persistence.Configurations;
+using Raven.Client.Documents;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -36,6 +39,17 @@ builder
         options.SubstituteApiVersionInUrl = true;
     });
 
+var ravenDbSettings = builder.Configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>();
+
+builder.Services.AddSingleton<IDocumentStore>(serviceProvider =>
+{
+    var store = new DocumentStore { Urls = ravenDbSettings?.Urls, Database = ravenDbSettings?.Database };
+
+    store.Initialize();
+    return store;
+});
+
+builder.Services.AddSingleton<RavenDbDataContext>();
 builder.Services.AddWebApi(typeof(Program));
 var configurationBuilder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appSettings.json", true, true);
 IConfiguration configuration = configurationBuilder.Build();
@@ -59,6 +73,5 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// app.UseHttpsRedirection(); //Only dev publish test
 await app.RegisterWebApisAsync();
 await app.RunAsync();
