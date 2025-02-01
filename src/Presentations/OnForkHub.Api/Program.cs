@@ -1,3 +1,5 @@
+using OnForkHub.Application.Services;
+using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.Persistence.Configurations;
 
 using Raven.Client.Documents;
@@ -59,6 +61,8 @@ var connectionString = configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
 builder.Services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
+builder.Services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
+builder.Services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
 builder.Services.AddValidators(typeof(CategoryValidator).Assembly);
 builder.Services.AddUseCases(typeof(GetAllUseCase).Assembly);
 
@@ -71,6 +75,7 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "OnForkHub API V1");
         c.SwaggerEndpoint("/swagger/v2/swagger.json", "OnForkHub API V2");
+        c.SwaggerEndpoint("/swagger/v2/swagger.json", "OnForkHub API V3");
     });
 }
 
