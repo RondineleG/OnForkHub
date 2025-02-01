@@ -66,7 +66,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
   ## 🚀 Deployment Guide
 ### VPS Specifications
-The project has been successfully deployed and tested on a minimal VPS configuration forma Azure free tier:
+The project has been successfully deployed and tested on a minimal VPS configuration from Azure free tier:
 
 ### Public Access
 Development  environment  deployment is available at:
