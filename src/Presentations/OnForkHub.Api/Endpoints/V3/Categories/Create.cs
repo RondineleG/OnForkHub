@@ -34,8 +34,7 @@ public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Categor
             .Produces<RequestResult<Category>>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .RequireAuthorization();
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         return Task.FromResult(RequestResult.Success());
     }

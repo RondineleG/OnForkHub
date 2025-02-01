@@ -1,21 +1,21 @@
+using OnForkHub.Persistence.Contexts;
+
 namespace OnForkHub.Persistence.Repositories;
 
-public class CategoryRepositoryRavenDB(IDocumentStore documentStore) : ICategoryRepositoryRavenDB
+public class CategoryRepositoryRavenDB(RavenDbDataContext context) : ICategoryRepositoryRavenDB
 {
     private const string EntityName = nameof(Category);
-    private readonly IDocumentStore _documentStore = documentStore;
+    private readonly RavenDbDataContext _context = context;
 
     public async Task<RequestResult<Category>> CreateAsync(Category category)
     {
         ArgumentNullException.ThrowIfNull(category);
         try
         {
-            using (var session = _documentStore.OpenAsyncSession())
-            {
-                await session.StoreAsync(category);
-                await session.SaveChangesAsync();
-                return RequestResult<Category>.Success(category);
-            }
+            using var session = _context.Store.OpenAsyncSession();
+            await session.StoreAsync(category);
+            await session.SaveChangesAsync();
+            return RequestResult<Category>.Success(category);
         }
         catch (Exception ex)
         {
@@ -27,18 +27,18 @@ public class CategoryRepositoryRavenDB(IDocumentStore documentStore) : ICategory
     {
         try
         {
-            using (var session = _documentStore.OpenAsyncSession())
-            {
-                var category = await session.LoadAsync<Category>(id);
-                if (category == null)
-                {
-                    return RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");
-                }
+            using var session = _context.Store.OpenAsyncSession();
+            var documentId = $"categories/{id}";
+            var category = await session.LoadAsync<Category>(documentId);
 
-                session.Delete(category);
-                await session.SaveChangesAsync();
-                return RequestResult<Category>.Success(category);
+            if (category == null)
+            {
+                return RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");
             }
+
+            session.Delete(category);
+            await session.SaveChangesAsync();
+            return RequestResult<Category>.Success(category);
         }
         catch (Exception ex)
         {
@@ -50,12 +50,10 @@ public class CategoryRepositoryRavenDB(IDocumentStore documentStore) : ICategory
     {
         try
         {
-            using (var session = _documentStore.OpenAsyncSession())
-            {
-                var categories = await LinqExtensions.ToListAsync(session.Query<Category>().Skip((page - 1) * size).Take(size));
+            using var session = _context.Store.OpenAsyncSession();
+            var categories = await LinqExtensions.ToListAsync(session.Query<Category>().Skip((page - 1) * size).Take(size));
 
-                return RequestResult<IEnumerable<Category>>.Success(categories);
-            }
+            return RequestResult<IEnumerable<Category>>.Success(categories);
         }
         catch (Exception ex)
         {
@@ -67,13 +65,13 @@ public class CategoryRepositoryRavenDB(IDocumentStore documentStore) : ICategory
     {
         try
         {
-            using (var session = _documentStore.OpenAsyncSession())
-            {
-                var category = await session.LoadAsync<Category>(id);
-                return category != null
-                    ? RequestResult<Category>.Success(category)
-                    : RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");
-            }
+            using var session = _context.Store.OpenAsyncSession();
+            var documentId = $"categories/{id}";
+            var category = await session.LoadAsync<Category>(documentId);
+
+            return category != null
+                ? RequestResult<Category>.Success(category)
+                : RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");
         }
         catch (Exception ex)
         {
@@ -86,12 +84,10 @@ public class CategoryRepositoryRavenDB(IDocumentStore documentStore) : ICategory
         ArgumentNullException.ThrowIfNull(category);
         try
         {
-            using (var session = _documentStore.OpenAsyncSession())
-            {
-                await session.StoreAsync(category);
-                await session.SaveChangesAsync();
-                return RequestResult<Category>.Success(category);
-            }
+            using var session = _context.Store.OpenAsyncSession();
+            await session.StoreAsync(category);
+            await session.SaveChangesAsync();
+            return RequestResult<Category>.Success(category);
         }
         catch (Exception ex)
         {
