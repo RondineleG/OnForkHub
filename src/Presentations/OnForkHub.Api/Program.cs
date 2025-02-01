@@ -1,4 +1,5 @@
 using OnForkHub.Persistence.Configurations;
+
 using Raven.Client.Documents;
 
 var builder = WebApplication.CreateBuilder(args);
