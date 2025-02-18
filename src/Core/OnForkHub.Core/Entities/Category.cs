@@ -56,6 +56,11 @@ public class Category : BaseEntity
         }
     }
 
+    protected override string GetCollectionName()
+    {
+        return "categories                                                                                                                                                                                                                                                                                                                                                                                                  ";
+    }
+
     protected override void ValidateEntityState()
     {
         base.ValidateEntityState();
