@@ -1,5 +1,6 @@
 namespace OnForkHub.Core.ValueObjects;
 
+[JsonConverter(typeof(NameConverter))]
 public class Name : ValueObject
 {
     private Name(string value)
