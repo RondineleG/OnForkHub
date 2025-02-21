@@ -2,14 +2,14 @@ namespace OnForkHub.Core.ValueObjects;
 
 public sealed class Id : ValueObject
 {
-    private readonly ValidationResult _validationResult;
-
     private Id(Guid value)
     {
         Value = value;
         _validationResult = new ValidationResult();
         Validate();
     }
+
+    private readonly ValidationResult _validationResult;
 
     public Guid Value { get; }
 
@@ -25,18 +25,9 @@ public sealed class Id : ValueObject
 
     public static implicit operator Id(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new DomainException(IdResources.IdEmpty);
-        }
-
         if (value.Contains('/'))
         {
             var parts = value.Split('/');
-            if (parts.Length != 2)
-            {
-                throw new DomainException(IdResources.InvalidIdFormat);
-            }
 
             var idPart = parts[1].Split('-')[0];
             if (Guid.TryParse(idPart, out var guid))
@@ -67,32 +58,5 @@ public sealed class Id : ValueObject
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return Value;
-    }
-
-    private static Id Create(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new DomainException(IdResources.IdEmpty);
-        }
-
-        if (value.Contains('/'))
-        {
-            var parts = value.Split('/');
-            if (parts.Length != 2)
-            {
-                throw new DomainException(IdResources.InvalidIdFormat);
-            }
-
-            var idPart = parts[1].Split('-')[0];
-            if (Guid.TryParse(idPart, out var guid))
-            {
-                return new Id(guid);
-            }
-        }
-
-        return !Guid.TryParseExact(value, "N", out var normalGuid) ? throw new DomainException(IdResources.InvalidIdFormat)
-            : normalGuid == Guid.Empty ? throw new DomainException(IdResources.IdEmpty)
-            : new Id(normalGuid);
     }
 }
