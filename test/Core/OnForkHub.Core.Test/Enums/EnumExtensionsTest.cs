@@ -46,9 +46,7 @@ public class EnumExtensionsTest
     [DisplayName("Should parse enum from valid description, ignoring case")]
     public void ParseFromDescriptionEnumShouldMatchExpectedValue(string description, EResultStatus expected)
     {
-        var enumValues = Enum.GetValues(typeof(EResultStatus))
-            .Cast<EResultStatus>()
-            .ToList();
+        var enumValues = Enum.GetValues(typeof(EResultStatus)).Cast<EResultStatus>().ToList();
 
         var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
 
@@ -79,6 +77,7 @@ public class EnumExtensionsTest
         var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
         result.Should().Be(expected);
     }
+
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should throw when description not found in enum")]

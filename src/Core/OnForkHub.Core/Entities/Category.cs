@@ -25,6 +25,7 @@ public class Category : BaseEntity
             return RequestResult<Category>.WithError(ex.Message);
         }
     }
+
     public static RequestResult<Category> Load(Id id, Name name, string description, DateTime createdAt, DateTime? updatedAt = null)
     {
         try
@@ -38,6 +39,7 @@ public class Category : BaseEntity
             return RequestResult<Category>.WithError(ex.Message);
         }
     }
+
     public RequestResult UpdateCategory(Name name, string description)
     {
         try
@@ -53,10 +55,12 @@ public class Category : BaseEntity
             return RequestResult.WithError(ex.Message);
         }
     }
+
     protected override string GetCollectionName()
     {
         return "categories";
     }
+
     protected override void ValidateEntityState()
     {
         base.ValidateEntityState();
