@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Validations;
 
-public abstract class ValidationService<T>(IValidationBuilder<T> builder, IEntityValidator<T> validator) : IValidationService<T>
+public class ValidationService<T>(IValidationBuilder<T> builder, IEntityValidator<T> validator) : IValidationService<T>
     where T : BaseEntity
 {
     private readonly List<IValidationRule<T>> _customRules = [];
