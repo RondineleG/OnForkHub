@@ -25,8 +25,18 @@ public sealed class Id : ValueObject
 
     public static implicit operator Id(string value)
     {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), IdResources.IdEmpty);
-        return Create(value);
+        if (value.Contains('/'))
+        {
+            var parts = value.Split('/');
+
+            var idPart = parts[1].Split('-')[0];
+            if (Guid.TryParse(idPart, out var guid))
+            {
+                return new Id(guid);
+            }
+        }
+
+        return Guid.TryParse(value, out var normalGuid) ? new Id(normalGuid) : throw new DomainException(IdResources.InvalidIdFormat);
     }
 
     public static implicit operator string(Id id)
@@ -48,18 +58,5 @@ public sealed class Id : ValueObject
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return Value;
-    }
-
-    private static Id Create(string value)
-    {
-        DomainException.ThrowErrorWhen(() => string.IsNullOrWhiteSpace(value), IdResources.IdEmpty);
-
-        if (!Guid.TryParseExact(value, "N", out var guid))
-        {
-            throw new DomainException(IdResources.InvalidIdFormat);
-        }
-
-        DomainException.ThrowErrorWhen(() => guid == Guid.Empty, IdResources.IdEmpty);
-        return new Id(guid);
     }
 }

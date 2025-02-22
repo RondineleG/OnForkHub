@@ -1,3 +1,10 @@
+using OnForkHub.Application.Services;
+using OnForkHub.Core.Interfaces.Services;
+using OnForkHub.Core.Validations;
+using OnForkHub.Persistence.Configurations;
+
+using Raven.Client.Documents;
+
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
@@ -111,5 +118,47 @@ public static class RegistrationServicesExtensions
                     )
                 )
             );
+    }
+
+    public static IServiceCollection AddRavenDbServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var ravenDbSettings = configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>();
+
+        services.AddSingleton<IDocumentStore>(serviceProvider =>
+        {
+            var store = new DocumentStore { Urls = ravenDbSettings?.Urls, Database = ravenDbSettings?.Database };
+            store.Initialize();
+            return store;
+        });
+
+        services.AddSingleton<RavenDbDataContext>();
+        return services;
+    }
+
+    public static IServiceCollection AddEntityFrameworkServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
+        services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
+        return services;
+    }
+
+    public static IServiceCollection AddCustomServices(this IServiceCollection services)
+    {
+        services.AddWebApi(typeof(Program));
+        services.AddValidators(typeof(CategoryValidator).Assembly);
+        services.AddEntityValidator(typeof(CategoryValidator).Assembly);
+        services.AddUseCases(typeof(GetAllUseCase).Assembly);
+        services.AddValidationRule(typeof(CategoryNameValidationRule).Assembly);
+
+        services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
+        services.AddScoped<IValidationBuilder<Category>, ValidationBuilder<Category>>();
+        services.AddScoped<IEntityValidator<Category>, CategoryValidator>();
+        services.AddScoped(typeof(IValidationService<>), typeof(ValidationService<>));
+        services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
+        services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
+        services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
+
+        return services;
     }
 }

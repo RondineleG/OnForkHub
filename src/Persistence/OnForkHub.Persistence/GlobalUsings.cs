@@ -12,4 +12,6 @@ global using OnForkHub.Core.ValueObjects;
 global using OnForkHub.Persistence.Contexts.Base;
 global using OnForkHub.Persistence.Exceptions;
 
+global using Raven.Client.Documents;
+
 global using System.Net;
