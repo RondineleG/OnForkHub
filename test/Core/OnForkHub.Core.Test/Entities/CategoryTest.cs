@@ -91,9 +91,7 @@ public class CategoryTest
 
         Action action = () => Category.Load("categories/" + string.Empty, name, description, createdAt);
 
-        action.Should()
-            .Throw<DomainException>()
-            .WithMessage(IdResources.InvalidIdFormat);
+        action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
     }
 
     [Fact]
