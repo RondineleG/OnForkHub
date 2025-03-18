@@ -1,5 +1,4 @@
 using OnForkHub.Web.Components.Services.Interfaces;
-
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.Services.Implementations;

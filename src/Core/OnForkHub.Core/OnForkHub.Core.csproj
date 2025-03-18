@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj"/>
-        <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj"/>
+        <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
+        <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
     </ItemGroup>
 
 </Project>

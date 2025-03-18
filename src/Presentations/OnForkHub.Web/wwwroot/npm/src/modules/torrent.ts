@@ -27,61 +27,35 @@ export async function startDownload(
         }
 
         const container = document.querySelector(videoContainerSelector) as HTMLElement;
-        container.innerHTML = '';
+        container.innerHTML = `
+            <video controls playsinline style="width:100%; height:100%; background:#000;"></video>
+        `;
 
-        const videoElement = document.createElement('video');
-        videoElement.style.width = '100%';
-        videoElement.style.height = '100%';
-        videoElement.style.backgroundColor = '#000';
-        videoElement.controls = true;
-        videoElement.autoplay = true;
-        container.appendChild(videoElement);
+        const videoElement = container.querySelector('video');
+        if (!videoElement) throw new Error('Video element not found');
 
-        currentTorrent = client.add(magnetUri, {
-            announce: [
-                'wss://tracker.btorrent.xyz',
-                'wss://tracker.openwebtorrent.com',
-                'wss://tracker.fastcast.nz'
-            ]
-        });
-
-        currentTorrent.on('ready', () => {
-            const file = currentTorrent.files.find((f: any) => {
+        client.add(magnetUri, (torrent: any) => {
+            const files = torrent.files.filter((f: any) => {
                 return /\.(mp4|mkv|webm)$/i.test(f.name);
             });
+            const videoFile = files.reduce((a: any, b: any) => a.length > b.length ? a : b);
 
-            if (!file) {
-                throw new Error('No video file found');
-            }
-
-            file.getBlobURL((err: any, url: string) => {
-                if (err) throw err;
-
-                videoElement.src = url;
-                const playPromise = videoElement.play();
-                if (playPromise) {
-                    playPromise.catch(() => {
-                        console.log("Autoplay prevented, trying again...");
-                        file.createReadStream().pipe(videoElement);          
-                    });
-                }
+            videoFile.renderTo(videoElement, {
+                autoplay: true,
+                controls: true,
+                muted: false
             });
 
-            file.select();
-        });
+            torrent.on('download', () => {
+                const progress = Math.floor(torrent.progress * 100);
+                progressElement.textContent = `Downloading: ${progress}%`;
+            });
 
-        currentTorrent.on('download', () => {
-            const progress = Math.floor(currentTorrent.progress * 100);
-            progressElement.textContent = `Downloading: ${progress}%`;
+            torrent.on('done', () => {
+                progressElement.textContent = 'Download complete';
+            });
 
-            if (videoElement.paused) {
-                videoElement.play().catch(console.error);
-            }
-        });
-
-        currentTorrent.on('error', (err: Error) => {
-            console.error('Torrent error:', err);
-            throw err;
+            currentTorrent = torrent;
         });
 
     } catch (error) {

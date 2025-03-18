@@ -55,7 +55,9 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
     {
         try
         {
-            var categories = await _context.Categories.OrderBy(c => c.Id).Skip((page - 1) * size).Take(size).ToListAsync();
+            var categories = await EntityFrameworkQueryableExtensions.ToListAsync(
+                _context.Categories.OrderBy(c => c.Id).Skip((page - 1) * size).Take(size)
+            );
 
             return RequestResult<IEnumerable<Category>>.Success(categories);
         }

@@ -2,9 +2,14 @@ namespace OnForkHub.Core.Entities.Base;
 
 public abstract class BaseEntity : IAggregateRoot
 {
+    private readonly Id _entityId;
+
+    public string Id { get; set; }
+
     protected BaseEntity()
     {
-        Id = Id.Create();
+        _entityId = ValueObjects.Id.Create();
+        Id = $"{GetCollectionName()}/{_entityId}";
         CreatedAt = DateTime.UtcNow;
         ValidateInitialState();
     }
@@ -12,15 +17,18 @@ public abstract class BaseEntity : IAggregateRoot
     protected BaseEntity(Id id, DateTime createdAt, DateTime? updatedAt = null)
     {
         ValidateConstructorParameters(id, createdAt, updatedAt);
-        Id = id;
+        _entityId = id;
+        Id = $"{GetCollectionName()}/{id}";
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
     }
 
+    protected virtual string GetCollectionName()
+    {
+        return GetType().Name;
+    }
+
     public DateTime CreatedAt { get; protected set; }
-
-    public Id Id { get; protected set; }
-
     public DateTime? UpdatedAt { get; protected set; }
 
     protected void Update()

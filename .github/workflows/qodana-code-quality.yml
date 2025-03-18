@@ -34,7 +34,7 @@ jobs:
       # Criando novo global.json com versão mais recente
       - name: Create global.json
         run: |
-          dotnet new globaljson --sdk-version 9.0.100 --force
+          dotnet new globaljson --roll-forward feature --force
           cat global.json
           
       - name: Verify .NET installation

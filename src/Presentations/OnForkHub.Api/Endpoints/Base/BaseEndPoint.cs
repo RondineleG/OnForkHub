@@ -23,66 +23,13 @@ public abstract class BaseEndpoint<TEntity>
         return $"/api/v{version}/{route}";
     }
 
-    protected static async Task<IResult> HandleCreateUseCase<TRequest, TResponse>(
+    protected static async Task<IResult> HandleUseCaseAsync<TRequest, TResponse>(
         IUseCase<TRequest, TResponse> useCase,
         ILogger logger,
-        TRequest request
+        TRequest request,
+        Func<RequestResult<TResponse>, IResult> successHandler,
+        string errorTitle
     )
-    {
-        ArgumentNullException.ThrowIfNull(useCase);
-        ArgumentNullException.ThrowIfNull(logger);
-
-        try
-        {
-            EndpointLogMessages.LogCreatingResource(logger, useCase.GetType().Name, JsonSerializer.Serialize(request), null);
-            var result = await useCase.ExecuteAsync(request);
-
-            if (result.Status == EResultStatus.Success && result is RequestResult<TResponse> typedResult)
-            {
-                var response = new
-                {
-                    data = typedResult.Data,
-                    message = result.Message,
-                    date = result.Date,
-                    id = result.Id,
-                };
-
-                var resourceId = typedResult.Data?.GetType().GetProperty("Id")?.GetValue(typedResult.Data)?.ToString();
-                var route = $"/{typeof(TEntity).Name.ToLowerInvariant()}/{resourceId ?? result.Id}";
-                return Results.Created(route, response);
-            }
-
-            return MapResponse(result);
-        }
-        catch (Exception ex)
-        {
-            EndpointLogMessages.LogUseCaseError(logger, useCase.GetType().Name, ex.Message, ex);
-            return Results.Problem(title: "Creation Failed", detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    protected static async Task<IResult> HandleDeleteUseCase<TRequest, TResponse>(
-        IUseCase<TRequest, TResponse> useCase,
-        ILogger logger,
-        TRequest request
-    )
-    {
-        ArgumentNullException.ThrowIfNull(useCase);
-        ArgumentNullException.ThrowIfNull(logger);
-        try
-        {
-            EndpointLogMessages.LogExecutingUseCase(logger, useCase.GetType().Name, JsonSerializer.Serialize(request), null);
-            var result = await useCase.ExecuteAsync(request);
-            return result.Status == EResultStatus.Success ? Results.NoContent() : MapResponse(result);
-        }
-        catch (Exception ex)
-        {
-            EndpointLogMessages.LogUseCaseError(logger, useCase.GetType().Name, ex.Message, ex);
-            return Results.Problem(title: "Deletion Failed", detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-        }
-    }
-
-    protected static async Task<IResult> HandleUseCase<TRequest, TResponse>(IUseCase<TRequest, TResponse> useCase, ILogger logger, TRequest request)
     {
         ArgumentNullException.ThrowIfNull(useCase);
         ArgumentNullException.ThrowIfNull(logger);
@@ -91,7 +38,8 @@ public abstract class BaseEndpoint<TEntity>
         {
             EndpointLogMessages.LogExecutingUseCase(logger, useCase.GetType().Name, JsonSerializer.Serialize(request), null);
             var result = await useCase.ExecuteAsync(request);
-            return MapResponse(result);
+
+            return result.Status == EResultStatus.Success ? successHandler(result) : MapResponse(result);
         }
         catch (OperationCanceledException)
         {
@@ -101,8 +49,50 @@ public abstract class BaseEndpoint<TEntity>
         catch (Exception ex)
         {
             EndpointLogMessages.LogUseCaseError(logger, useCase.GetType().Name, ex.Message, ex);
-            return Results.Problem(title: "Internal Server Error", detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
+            return Results.Problem(title: errorTitle, detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
         }
+    }
+
+    protected static async Task<IResult> HandleCreateUseCase<TRequest, TResponse>(
+        IUseCase<TRequest, TResponse> useCase,
+        ILogger logger,
+        TRequest request
+    )
+    {
+        return await HandleUseCaseAsync(
+            useCase,
+            logger,
+            request,
+            result =>
+            {
+                var response = new
+                {
+                    data = result.Data,
+                    message = result.Message,
+                    date = result.Date,
+                    id = result.Id,
+                };
+
+                var resourceId = result.Data?.GetType().GetProperty("Id")?.GetValue(result.Data)?.ToString();
+                var route = $"/{typeof(TEntity).Name.ToLowerInvariant()}/{resourceId ?? result.Id}";
+                return Results.Created(route, response);
+            },
+            "Creation Failed"
+        );
+    }
+
+    protected static async Task<IResult> HandleDeleteUseCase<TRequest, TResponse>(
+        IUseCase<TRequest, TResponse> useCase,
+        ILogger logger,
+        TRequest request
+    )
+    {
+        return await HandleUseCaseAsync(useCase, logger, request, _ => Results.NoContent(), "Deletion Failed");
+    }
+
+    protected static async Task<IResult> HandleUseCase<TRequest, TResponse>(IUseCase<TRequest, TResponse> useCase, ILogger logger, TRequest request)
+    {
+        return await HandleUseCaseAsync(useCase, logger, request, MapResponse, "Internal Server Error");
     }
 
     private static IResult MapResponse<T>(RequestResult<T> result)

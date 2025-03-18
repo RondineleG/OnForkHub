@@ -33,6 +33,29 @@ public class EnumExtensionsTest
     }
 
     [Theory]
+    [InlineData("success", EResultStatus.Success)]
+    [InlineData("hasvalidation", EResultStatus.HasValidation)]
+    [InlineData("Success", EResultStatus.Success)]
+    [InlineData("HasValidation", EResultStatus.HasValidation)]
+    [InlineData("HasError", EResultStatus.HasError)]
+    [InlineData("EntityNotFound", EResultStatus.EntityNotFound)]
+    [InlineData("EntityHasError", EResultStatus.EntityHasError)]
+    [InlineData("EntityAlreadyExists", EResultStatus.EntityAlreadyExists)]
+    [InlineData("NoContent", EResultStatus.NoContent)]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should parse enum from valid description, ignoring case")]
+    public void ParseFromDescriptionEnumShouldMatchExpectedValue(string description, EResultStatus expected)
+    {
+        var enumValues = Enum.GetValues(typeof(EResultStatus)).Cast<EResultStatus>().ToList();
+
+        var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
+
+        result.Should().BeOneOf(enumValues);
+        result.Should().Be(expected);
+        result.ToString().ToLowerInvariant().Should().Contain(description.ToLowerInvariant());
+    }
+
+    [Theory]
     [InlineData("SUCCESSFUL RESULT")]
     [InlineData("successful result")]
     [InlineData("Successful Result")]
@@ -50,22 +73,6 @@ public class EnumExtensionsTest
     [Trait("Category", "Unit")]
     [DisplayName("Should parse enum with different casing formats")]
     public void ParseFromDescriptionShouldHandleDifferentCasing(string description, EResultStatus expected)
-    {
-        var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
-        result.Should().Be(expected);
-    }
-
-    [Theory]
-    [InlineData("Success", EResultStatus.Success)]
-    [InlineData("HasValidation", EResultStatus.HasValidation)]
-    [InlineData("HasError", EResultStatus.HasError)]
-    [InlineData("EntityNotFound", EResultStatus.EntityNotFound)]
-    [InlineData("EntityHasError", EResultStatus.EntityHasError)]
-    [InlineData("EntityAlreadyExists", EResultStatus.EntityAlreadyExists)]
-    [InlineData("NoContent", EResultStatus.NoContent)]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should parse enum from valid description")]
-    public void ParseFromDescriptionShouldReturnCorrectEnum(string description, EResultStatus expected)
     {
         var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
         result.Should().Be(expected);

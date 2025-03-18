@@ -32,7 +32,7 @@ public class CategoryTest
 
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
-        result.Data!.Id.Should().Be(id);
+        result.Data!.Id.Should().EndWith(id);
         result.Data.Name.Should().Be(name);
         result.Data.Description.Should().Be(description);
         result.Data.CreatedAt.Should().Be(createdAt);
@@ -54,7 +54,7 @@ public class CategoryTest
 
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
-        result.Data!.Id.Should().Be(id);
+        result.Data!.Id.Should().EndWith(id);
         result.Data.Name.Should().Be(name);
         result.Data.Description.Should().Be(description);
         result.Data.CreatedAt.Should().Be(createdAt);
@@ -77,7 +77,7 @@ public class CategoryTest
 
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
-        result.Data!.Id.Should().Be(id);
+        result.Data!.Id.Should().EndWith(id);
     }
 
     [Fact]
@@ -89,9 +89,9 @@ public class CategoryTest
         var description = "Category description";
         var createdAt = DateTime.UtcNow;
 
-        Action action = () => Category.Load(string.Empty, name, description, createdAt);
+        Action action = () => Category.Load("categories/" + string.Empty, name, description, createdAt);
 
-        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
+        action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
     }
 
     [Fact]

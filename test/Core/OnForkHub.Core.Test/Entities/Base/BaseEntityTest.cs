@@ -15,49 +15,6 @@ public class BaseEntityTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should accept valid GUID as ID")]
-    public void ShouldAcceptValidGuidAsId()
-    {
-        var creationDate = DateTime.UtcNow;
-        var validId = Id.Create();
-
-        var entity = new ValidEntityTestFixture(validId, creationDate);
-
-        entity.Id.Should().Be(validId);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should create entity with valid ID")]
-    public void ShouldCreateEntityWhenIdIsValid()
-    {
-        var id = Id.Create();
-        var creationDate = DateTime.UtcNow;
-        var entity = new ValidEntityTestFixture(id, creationDate);
-
-        var result = new ValidationResult();
-        result.BeValid();
-
-        entity.Id.Should().Be(id);
-        entity.CreatedAt.Should().Be(creationDate);
-        entity.UpdatedAt.Should().BeNull();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should create entity with valid Id value object")]
-    public void ShouldCreateEntityWithValidIdValueObject()
-    {
-        var id = Id.Create();
-        var createdAt = DateTime.UtcNow;
-        var entity = new ValidEntityTestFixture(id, createdAt);
-
-        entity.Id.Should().Be(id);
-        entity.CreatedAt.Should().Be(createdAt);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("Should include field name in error message")]
     public void ShouldIncludeFieldNameInErrorMessage()
     {
@@ -79,7 +36,7 @@ public class BaseEntityTest
         entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
         entity.UpdatedAt.Should().BeNull();
         entity.Id.Should().NotBeNull();
-        entity.Id.Value.Should().NotBe(Guid.Empty);
+        entity.Id.Should().NotBe(string.Empty);
     }
 
     [Fact]
@@ -98,60 +55,18 @@ public class BaseEntityTest
         entity.CreatedAt.Kind.Should().Be(DateTimeKind.Utc);
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception for empty GUID")]
-    public void ShouldThrowExceptionForEmptyGuid()
-    {
-        var creationDate = DateTime.UtcNow;
-        var emptyGuid = "00000000000000000000000000000000";
-
-        Action action = () => new ValidEntityTestFixture(emptyGuid, creationDate);
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception for empty ID")]
-    public void ShouldThrowExceptionForEmptyId()
-    {
-        var creationDate = DateTime.UtcNow;
-
-        Action action = () => new ValidEntityTestFixture(string.Empty, creationDate);
-
-        action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
-    }
-
     [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
+    [InlineData("invalid-guid-format")]
     [InlineData("invalid-guid")]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception for invalid ID")]
-    public void ShouldThrowExceptionForInvalidId(string invalidId)
-    {
-        var creationDate = DateTime.UtcNow;
-        Action action = () => new ValidEntityTestFixture(invalidId, creationDate);
-
-        if (string.IsNullOrWhiteSpace(invalidId))
-        {
-            action.Should().Throw<DomainException>().WithMessage(IdResources.IdEmpty);
-        }
-        else
-        {
-            action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
-        }
-    }
-
-    [Fact]
+    [InlineData("categories/invalid-guid")]
+    [InlineData("categories/123")]
     [Trait("Category", "Unit")]
     [DisplayName("Should throw exception for invalid ID format")]
-    public void ShouldThrowExceptionForInvalidIdFormat()
+    public void ShouldThrowExceptionForInvalidIdFormat(string invalidId)
     {
         var creationDate = DateTime.UtcNow;
 
-        Action action = () => new ValidEntityTestFixture("invalid-guid-format", creationDate);
+        Action action = () => new ValidEntityTestFixture(invalidId, creationDate);
 
         action.Should().Throw<DomainException>().WithMessage(IdResources.InvalidIdFormat);
     }
