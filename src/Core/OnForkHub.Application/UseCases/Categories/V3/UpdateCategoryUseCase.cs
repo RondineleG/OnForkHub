@@ -25,7 +25,7 @@ public class UpdateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenD
             return RequestResult<Category>.WithValidations(errors);
         }
 
-        var result = await _categoryServiceRavenDB.CreateAsync(categoryResult.Data);
+        var result = await _categoryServiceRavenDB.UpdateAsync(categoryResult.Data);
         return ((result.Status != EResultStatus.Success) || (result.Data is null))
             ? RequestResult<Category>.WithError("Failed to create category")
             : RequestResult<Category>.Success(result.Data);
