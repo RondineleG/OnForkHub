@@ -2,6 +2,7 @@ using OnForkHub.Application.Services;
 using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.Core.Validations;
 using OnForkHub.Persistence.Configurations;
+
 using Raven.Client.Documents;
 
 namespace OnForkHub.Api.Extensions;
@@ -147,7 +148,7 @@ public static class RegistrationServicesExtensions
         services.AddWebApi(typeof(Program));
         services.AddValidators(typeof(CategoryValidator).Assembly);
         services.AddEntityValidator(typeof(CategoryValidator).Assembly);
-        services.AddUseCases(typeof(GetAllUseCase).Assembly);
+        services.AddUseCases(typeof(GetAllCategoryUseCase).Assembly);
         services.AddValidationRule(typeof(CategoryNameValidationRule).Assembly);
 
         services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));

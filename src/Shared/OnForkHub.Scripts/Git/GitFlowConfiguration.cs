@@ -180,7 +180,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
     private async Task<List<string>> GetExistingBranches()
     {
         var branchOutput = await _processRunner.RunAsync("git", "branch");
-        return branchOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(b => b.Trim('*', ' ')).ToList();
+        return [.. branchOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(b => b.Trim('*', ' '))];
     }
 
     private async Task RunGitFlowInit(string workingDir)

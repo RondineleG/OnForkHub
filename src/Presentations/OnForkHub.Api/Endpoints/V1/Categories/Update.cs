@@ -4,9 +4,9 @@ namespace OnForkHub.Api.Endpoints.V1.Categories;
 
 public class Update(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
-    private const int V3 = 3;
+    private const int V1 = 3;
 
-    private static readonly string Route = GetVersionedRoute(V3);
+    private static readonly string Route = GetVersionedRoute(V1);
 
     private readonly ILogger<Create> _logger = logger;
 
@@ -14,7 +14,7 @@ public class Update(ILogger<Create> logger, IUseCase<CategoryRequestDto, Categor
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
-        var apiVersionSet = CreateApiVersionSet(app, V3);
+        var apiVersionSet = CreateApiVersionSet(app, V1);
 
         ConfigureEndpoint(
                 app.MapPost(
@@ -25,12 +25,12 @@ public class Update(ILogger<Create> logger, IUseCase<CategoryRequestDto, Categor
                     }
                 )
             )
-            .WithName("CreateCategoryV3")
+            .WithName("UpdateCategory")
             .WithApiVersionSet(apiVersionSet)
-            .MapToApiVersion(V3)
-            .WithDescription("Creates a new category")
-            .WithSummary("Create category")
-            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V3}" })
+            .MapToApiVersion(V1)
+            .WithDescription("Update an existing category")
+            .WithSummary("Update category")
+            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
             .Produces<RequestResult<Category>>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest)
