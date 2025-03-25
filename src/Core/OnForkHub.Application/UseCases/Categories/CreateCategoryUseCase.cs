@@ -1,6 +1,6 @@
 namespace OnForkHub.Application.UseCases.Categories;
 
-public class CreateCategoryRavenDBUseCase(ICategoryServiceRavenDB categoryServiceRavenDB, IEntityValidator<Category> validator)
+public class CreateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenDB, IEntityValidator<Category> validator)
     : IUseCase<CategoryRequestDto, Category>
 {
     private readonly ICategoryServiceRavenDB _categoryServiceRavenDB = categoryServiceRavenDB;

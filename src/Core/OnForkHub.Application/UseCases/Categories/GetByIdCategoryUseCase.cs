@@ -1,6 +1,6 @@
 namespace OnForkHub.Application.UseCases.Categories;
 
-public class GetCategoryByIdUseCase(ICategoryRepositoryEF categoryRepositoryEF) : IUseCase<long, Category>
+public class GetByIdCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF) : IUseCase<long, Category>
 {
     private readonly ICategoryRepositoryEF _categoryRepositoryEF = categoryRepositoryEF;
 
