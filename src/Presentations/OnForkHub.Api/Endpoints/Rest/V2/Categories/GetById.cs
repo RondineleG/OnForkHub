@@ -1,38 +1,40 @@
-namespace OnForkHub.Api.Endpoints.V2.Categories;
+namespace OnForkHub.Api.Endpoints.Rest.V2.Categories;
 
-public class Delete(ILogger<Delete> logger, IUseCase<long, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
+public class GetById(ILogger<GetById> logger, IUseCase<long, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
     private const int V2 = 2;
 
     private static readonly string Route = $"{GetVersionedRoute(V2)}/{{id}}";
 
-    private readonly ILogger<Delete> _logger = logger;
+    private readonly ILogger<GetById> _logger = logger;
 
     private readonly IUseCase<long, Category> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
         var apiVersionSet = CreateApiVersionSet(app, V2);
+
         ConfigureEndpoint(
-                app.MapDelete(
+                app.MapGet(
                     Route,
                     async ([FromRoute] long id, CancellationToken cancellationToken) =>
                     {
-                        return await HandleDeleteUseCase(_useCase, _logger, id);
+                        return await HandleUseCase(_useCase, _logger, id);
                     }
                 )
             )
-            .WithName("DeleteCategoryV2")
+            .WithName("GetCategoryByIdV2")
             .WithApiVersionSet(apiVersionSet)
             .MapToApiVersion(V2)
-            .WithDescription("Deletes a category")
-            .WithSummary("Delete category")
+            .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))
+            .WithDescription("Returns a specific category by its ID")
+            .WithSummary("Get category by ID")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V2}" })
-            .Produces(StatusCodes.Status204NoContent)
+            .Produces<RequestResult<Category>>()
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
             .RequireAuthorization();
+
         return Task.FromResult(RequestResult.Success());
     }
 }

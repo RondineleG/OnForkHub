@@ -1,6 +1,4 @@
-using OnForkHub.Application.Dtos.Category.Request;
-
-namespace OnForkHub.Api.Endpoints.V2.Categories;
+namespace OnForkHub.Api.Endpoints.Rest.V2.Categories;
 
 public class Update(ILogger<Update> logger, IUseCase<CategoryUpdateRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {

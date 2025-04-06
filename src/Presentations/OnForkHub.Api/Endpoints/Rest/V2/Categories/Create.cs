@@ -1,12 +1,10 @@
-using OnForkHub.Application.Dtos.Category.Request;
-
-namespace OnForkHub.Api.Endpoints.V3.Categories;
+namespace OnForkHub.Api.Endpoints.Rest.V2.Categories;
 
 public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
-    private const int V3 = 3;
+    private const int V2 = 2;
 
-    private static readonly string Route = GetVersionedRoute(V3);
+    private static readonly string Route = GetVersionedRoute(V2);
 
     private readonly ILogger<Create> _logger = logger;
 
@@ -14,7 +12,7 @@ public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Categor
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
-        var apiVersionSet = CreateApiVersionSet(app, V3);
+        var apiVersionSet = CreateApiVersionSet(app, V2);
 
         ConfigureEndpoint(
                 app.MapPost(
@@ -25,16 +23,17 @@ public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Categor
                     }
                 )
             )
-            .WithName("CreateCategoryV3")
+            .WithName("CreateCategoryV2")
             .WithApiVersionSet(apiVersionSet)
-            .MapToApiVersion(V3)
+            .MapToApiVersion(V2)
             .WithDescription("Creates a new category")
             .WithSummary("Create category")
-            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V3}" })
+            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V2}" })
             .Produces<RequestResult<Category>>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .RequireAuthorization();
 
         return Task.FromResult(RequestResult.Success());
     }

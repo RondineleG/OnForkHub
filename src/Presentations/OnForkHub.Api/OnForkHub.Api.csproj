@@ -26,4 +26,8 @@
         <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Endpoints\GraphQL\Queries\" />
+    </ItemGroup>
+
 </Project>

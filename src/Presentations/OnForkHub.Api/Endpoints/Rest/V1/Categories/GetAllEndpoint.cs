@@ -1,4 +1,4 @@
-namespace OnForkHub.Api.Endpoints.V1.Categories;
+namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
 public class GetAllEndpoint : IEndpoint
 {

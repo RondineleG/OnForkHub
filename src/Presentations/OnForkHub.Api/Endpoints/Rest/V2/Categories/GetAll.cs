@@ -1,10 +1,10 @@
-namespace OnForkHub.Api.Endpoints.V3.Categories;
+namespace OnForkHub.Api.Endpoints.Rest.V2.Categories;
 
 public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
-    private const int V3 = 3;
+    private const int V2 = 2;
 
-    private static readonly string Route = GetVersionedRoute(V3);
+    private static readonly string Route = GetVersionedRoute(V2);
 
     private readonly ILogger<GetAll> _logger = logger;
 
@@ -12,7 +12,7 @@ public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnum
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
-        var apiVersionSet = CreateApiVersionSet(app, V3);
+        var apiVersionSet = CreateApiVersionSet(app, V2);
 
         ConfigureEndpoint(
                 app.MapGet(
@@ -24,13 +24,13 @@ public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnum
                     }
                 )
             )
-            .WithName("GetAllCategoriesV3")
+            .WithName("GetAllCategoriesV2")
             .WithApiVersionSet(apiVersionSet)
-            .MapToApiVersion(V3)
+            .MapToApiVersion(V2)
             .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))
             .WithDescription("Returns all categories")
             .WithSummary("List categories")
-            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V3}" })
+            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V2}" })
             .Produces<RequestResult<IEnumerable<Category>>>();
 
         return Task.FromResult(RequestResult.Success());
