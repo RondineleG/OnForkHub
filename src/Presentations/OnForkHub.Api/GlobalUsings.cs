@@ -1,8 +1,6 @@
 global using Asp.Versioning;
 global using Asp.Versioning.Builder;
 
-global using HotChocolate;
-
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.OpenApi.Models;
@@ -11,7 +9,6 @@ global using MoreLinq;
 
 global using OnForkHub.Api.Configuration;
 global using OnForkHub.Api.Endpoints.Base;
-global using OnForkHub.Api.Endpoints.GraphQL.Mutations.Categories;
 global using OnForkHub.Api.Extensions;
 global using OnForkHub.Application.Dtos.Base;
 global using OnForkHub.Application.Dtos.Category.Request;
@@ -24,6 +21,7 @@ global using OnForkHub.Core.Interfaces.UseCases;
 global using OnForkHub.Core.Interfaces.Validations;
 global using OnForkHub.Core.Requests;
 global using OnForkHub.Core.Validations.Categories;
+global using OnForkHub.CrossCutting.Extensions;
 global using OnForkHub.Persistence.Contexts;
 global using OnForkHub.Persistence.Contexts.Base;
 global using OnForkHub.Persistence.Repositories;

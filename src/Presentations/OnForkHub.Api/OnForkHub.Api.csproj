@@ -24,10 +24,11 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Core\OnForkHub.Application\OnForkHub.Application.csproj" />
         <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+        <ProjectReference Include="..\..\Shared\OnForkHub.CrossCutting\OnForkHub.CrossCutting.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Endpoints\GraphQL\Queries\" />
+      <Folder Include="Endpoints\GraphQL\Categories\" />
     </ItemGroup>
 
 </Project>
