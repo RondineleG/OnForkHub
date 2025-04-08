@@ -4,7 +4,7 @@ namespace OnForkHub.Api.Endpoints.V1.Categories;
 
 public class Update(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
-    private const int V1 = 3;
+    private const int V1 = 1;
 
     private static readonly string Route = GetVersionedRoute(V1);
 
