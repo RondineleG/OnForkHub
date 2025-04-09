@@ -1,5 +1,5 @@
-using OnForkHub.Core.GraphQL;
-using OnForkHub.CrossCutting.GraphQL;
+using OnForkHub.Application.GraphQL.Mutations.Categories;
+using OnForkHub.Application.GraphQL.Queries.Categories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,11 +7,18 @@ builder.Services.AddSwaggerServices();
 builder.Services.AddRavenDbServices(builder.Configuration);
 builder.Services.AddEntityFrameworkServices(builder.Configuration);
 builder.Services.AddCustomServices();
-builder.Services.AddSingleton<IGraphQLConfigurator, HotChocolateConfigurator>();
-builder.Services.AddGraphQLFromCrossCutting();
+
+builder
+    .Services.AddGraphQLServer()
+    .AddQueryType()
+    .AddTypeExtension<GetAllCategoryQuery>()
+    .AddMutationType()
+    .AddTypeExtension<CreateCategoryMutation>()
+    .AddFiltering()
+    .AddSorting();
 
 var app = builder.Build();
 app.UseCustomSwagger();
-app.MapGraphQL();
-await app.UseWebApisAsync();
+await app.UseEndpoinAsync();
+app.MapGraphQL("/graphql").WithName("OnForkHubGraphQL");
 await app.RunAsync();

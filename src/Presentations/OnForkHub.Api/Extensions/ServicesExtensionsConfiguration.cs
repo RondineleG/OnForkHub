@@ -145,7 +145,7 @@ public static class ServicesExtensionsConfiguration
 
     public static IServiceCollection AddCustomServices(this IServiceCollection services)
     {
-        services.AddWebApi(typeof(Program));
+        services.AddEndpoin(typeof(Program));
         services.AddValidators(typeof(CategoryValidator).Assembly);
         services.AddEntityValidator(typeof(CategoryValidator).Assembly);
         services.AddUseCases(typeof(GetAllUseCase).Assembly);

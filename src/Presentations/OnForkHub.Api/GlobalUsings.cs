@@ -21,7 +21,6 @@ global using OnForkHub.Core.Interfaces.UseCases;
 global using OnForkHub.Core.Interfaces.Validations;
 global using OnForkHub.Core.Requests;
 global using OnForkHub.Core.Validations.Categories;
-global using OnForkHub.CrossCutting.Extensions;
 global using OnForkHub.Persistence.Contexts;
 global using OnForkHub.Persistence.Contexts.Base;
 global using OnForkHub.Persistence.Repositories;

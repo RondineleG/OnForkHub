@@ -1,15 +1,15 @@
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
-public static class WebApiConfiguration
+public static class EndpoinConfiguration
 {
-    public static void AddWebApi(this IServiceCollection services, Type markerType)
+    public static void AddEndpoin(this IServiceCollection services, Type markerType)
     {
         services.RegisterImplementationsOf<IEndpoint>(markerType);
         services.RegisterImplementationsOf<IEndpointAsync>(markerType);
     }
 
-    public static async Task UseWebApisAsync(this WebApplication app)
+    public static async Task UseEndpoinAsync(this WebApplication app)
     {
         using (var scope = app.Services.CreateScope())
         {
