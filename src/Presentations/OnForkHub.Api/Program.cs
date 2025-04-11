@@ -1,5 +1,4 @@
-using OnForkHub.Application.GraphQL.Mutations.Categories;
-using OnForkHub.Application.GraphQL.Queries.Categories;
+using OnForkHub.Api.Endpoints.GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,14 +7,7 @@ builder.Services.AddRavenDbServices(builder.Configuration);
 builder.Services.AddEntityFrameworkServices(builder.Configuration);
 builder.Services.AddCustomServices();
 
-builder
-    .Services.AddGraphQLServer()
-    .AddQueryType()
-    .AddTypeExtension<GetAllCategoryQuery>()
-    .AddMutationType()
-    .AddTypeExtension<CreateCategoryMutation>()
-    .AddFiltering()
-    .AddSorting();
+builder.Services.AddGraphQLServer().AddQueries().AddMutations().AddFiltering().AddSorting();
 
 var app = builder.Build();
 app.UseCustomSwagger();
