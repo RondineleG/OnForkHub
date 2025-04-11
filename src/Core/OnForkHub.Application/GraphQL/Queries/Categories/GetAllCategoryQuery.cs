@@ -1,7 +1,3 @@
-using HotChocolate.Types;
-
-using OnForkHub.Core.GraphQL;
-
 namespace OnForkHub.Application.GraphQL.Queries.Categories;
 
 public class GetAllCategoryQuery : QueryGraphQLBase
