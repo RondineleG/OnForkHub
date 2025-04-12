@@ -1,6 +1,6 @@
-namespace OnForkHub.Application.UseCases.Categories;
+namespace OnForkHub.Application.UseCases.Categories.V3;
 
-public class CreateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenDB, IEntityValidator<Category> validator)
+public class UpdateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenDB, IEntityValidator<Category> validator)
     : IUseCase<CategoryRequestDto, Category>
 {
     private readonly ICategoryServiceRavenDB _categoryServiceRavenDB = categoryServiceRavenDB;
@@ -25,7 +25,7 @@ public class CreateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenD
             return RequestResult<Category>.WithValidations(errors);
         }
 
-        var result = await _categoryServiceRavenDB.CreateAsync(categoryResult.Data);
+        var result = await _categoryServiceRavenDB.UpdateAsync(categoryResult.Data);
         return ((result.Status != EResultStatus.Success) || (result.Data is null))
             ? RequestResult<Category>.WithError("Failed to create category")
             : RequestResult<Category>.Success(result.Data);

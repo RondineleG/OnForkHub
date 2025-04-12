@@ -1,4 +1,4 @@
-namespace OnForkHub.Api.Endpoints.V1.Categories;
+namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
 public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
@@ -17,13 +17,14 @@ public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnum
         ConfigureEndpoint(
                 app.MapGet(
                     Route,
-                    async ([AsParameters] PaginationRequestDto request, CancellationToken cancellationToken = default) =>
+                    async (CancellationToken cancellationToken) =>
                     {
+                        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
                         return await HandleUseCase(_useCase, _logger, request);
                     }
                 )
             )
-            .WithName("GetAllCategories")
+            .WithName("GetAllCategoriesV1")
             .WithApiVersionSet(apiVersionSet)
             .MapToApiVersion(V1)
             .CacheOutput(x => x.Expire(TimeSpan.FromMinutes(10)))

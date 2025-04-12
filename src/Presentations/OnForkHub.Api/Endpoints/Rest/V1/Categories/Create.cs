@@ -1,6 +1,4 @@
-using OnForkHub.Application.Dtos.Category.Request;
-
-namespace OnForkHub.Api.Endpoints.V1.Categories;
+namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
 public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
 {
@@ -25,7 +23,7 @@ public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Categor
                     }
                 )
             )
-            .WithName("CreateCategory")
+            .WithName("CreateCategoryV1")
             .WithApiVersionSet(apiVersionSet)
             .MapToApiVersion(V1)
             .WithDescription("Creates a new category")

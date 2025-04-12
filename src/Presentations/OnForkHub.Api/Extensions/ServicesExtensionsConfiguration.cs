@@ -8,7 +8,7 @@ using Raven.Client.Documents;
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
-public static class RegistrationServicesExtensions
+public static class ServicesExtensionsConfiguration
 {
     public static IServiceCollection AddEntityValidator(this IServiceCollection services, Assembly assembly)
     {
@@ -145,7 +145,7 @@ public static class RegistrationServicesExtensions
 
     public static IServiceCollection AddCustomServices(this IServiceCollection services)
     {
-        services.AddWebApi(typeof(Program));
+        services.AddEndpoin(typeof(Program));
         services.AddValidators(typeof(CategoryValidator).Assembly);
         services.AddEntityValidator(typeof(CategoryValidator).Assembly);
         services.AddUseCases(typeof(GetAllCategoryUseCase).Assembly);
