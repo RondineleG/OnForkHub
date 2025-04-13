@@ -6,6 +6,20 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
 
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
+    public async Task ConfigureGlobalAutoSetupRemote()
+    {
+        try
+        {
+            _logger.Log(ELogLevel.Info, "Configuring global Git autoSetupRemote...");
+            await _processRunner.RunAsync("git", "config --global push.autoSetupRemote true");
+            _logger.Log(ELogLevel.Info, "Global autoSetupRemote configured successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Warning, $"Failed to set global autoSetupRemote: {ex.Message}");
+        }
+    }
+
     public async Task EnsureCleanWorkingTreeAsync()
     {
         try
@@ -145,20 +159,6 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         {
             _logger.Log(ELogLevel.Error, $"Error creating {branchName} branch: {ex.Message}");
             throw;
-        }
-    }
-
-    public async Task ConfigureGlobalAutoSetupRemote()
-    {
-        try
-        {
-            _logger.Log(ELogLevel.Info, "Configuring global Git autoSetupRemote...");
-            await _processRunner.RunAsync("git", "config --global push.autoSetupRemote true");
-            _logger.Log(ELogLevel.Info, "Global autoSetupRemote configured successfully.");
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(ELogLevel.Warning, $"Failed to set global autoSetupRemote: {ex.Message}");
         }
     }
 
