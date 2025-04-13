@@ -78,7 +78,7 @@ public abstract class BaseEndpoint<TEntity>
                 return Results.Created(route, response);
             },
             "Creation Failed"
-        );
+        ).ConfigureAwait(false);
     }
 
     protected static async Task<IResult> HandleDeleteUseCase<TRequest, TResponse>(
@@ -87,12 +87,12 @@ public abstract class BaseEndpoint<TEntity>
         TRequest request
     )
     {
-        return await HandleUseCaseAsync(useCase, logger, request, _ => Results.NoContent(), "Deletion Failed");
+        return await HandleUseCaseAsync(useCase, logger, request, _ => Results.NoContent(), "Deletion Failed").ConfigureAwait(false);
     }
 
     protected static async Task<IResult> HandleUseCase<TRequest, TResponse>(IUseCase<TRequest, TResponse> useCase, ILogger logger, TRequest request)
     {
-        return await HandleUseCaseAsync(useCase, logger, request, MapResponse, "Internal Server Error");
+        return await HandleUseCaseAsync(useCase, logger, request, MapResponse, "Internal Server Error").ConfigureAwait(false);
     }
 
     private static IResult MapResponse<T>(RequestResult<T> result)

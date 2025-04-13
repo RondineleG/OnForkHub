@@ -14,17 +14,50 @@
             "systemUsingDirectivesFirst": true,
             "blankLinesBetweenUsingGroups": "allow",
             "elementOrder": [
-                "kind",
-                "accessibility",
-                "constant",
-                "static",
-                "readonly"
+                "public",
+                "protected",
+                "internal",
+                "private",
+                "fields",
+                "constructors",
+                "properties",
+                "methods"
             ]
         },
         "namingRules": {
             "allowCommonHungarianPrefixes": false,
-            "allowedHungarianPrefixes": []
+            "allowedHungarianPrefixes": [],
+            "includeInferredTupleElementNames": true,
+            "rules": [
+                {
+                    "name": "InterfaceMustBeginWithI",
+                    "symbolKind": "interface",
+                    "namingStyle": "interfacePrefixI"
+                },
+                {
+                    "name": "EnumMustBeginWithE",
+                    "symbolKind": "enum",
+                    "namingStyle": "enumPrefixE"
+                }
+            ],
+            "namingStyles": [
+                {
+                    "name": "interfacePrefixI",
+                    "prefix": "I",
+                    "suffix": "",
+                    "wordPattern": "^[A-Z][a-zA-Z0-9]*$",
+                    "capitalization": "pascal_case"
+                },
+                {
+                    "name": "enumPrefixE",
+                    "prefix": "E",
+                    "suffix": "",
+                    "wordPattern": "^[A-Z][a-zA-Z0-9]*$",
+                    "capitalization": "pascal_case"
+                }
+            ]
         },
+        "maxLineLength": 150,
         "maintainabilityRules": {
             "topLevelTypes": [
                 "class",
@@ -38,7 +71,7 @@
             "allowConsecutiveUsings": true
         },
         "readabilityRules": {
-            "allowBuiltInTypeAliases": false
+            "allowBuiltInTypeAliases": true
         },
         "spacingRules": {
             "spaceBetweenMethodDeclarationParameterList": false,

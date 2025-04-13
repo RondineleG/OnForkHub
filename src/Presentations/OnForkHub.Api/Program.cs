@@ -11,6 +11,6 @@ builder.Services.AddGraphQLServer().AddQueries().AddMutations().AddFiltering().A
 
 var app = builder.Build();
 app.UseCustomSwagger();
-await app.UseEndpoinAsync();
 app.MapGraphQL("/graphql").WithName("OnForkHubGraphQL");
-await app.RunAsync();
+await app.UseEndpointsAsync().ConfigureAwait(false);
+await app.RunAsync().ConfigureAwait(false);
