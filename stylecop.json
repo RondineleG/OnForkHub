@@ -1,11 +1,13 @@
 {
+    "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
     "settings": {
         "documentationRules": {
             "documentExposedElements": false,
             "documentInternalElements": false,
             "documentPrivateFields": false,
             "documentInterfaces": false,
-            "companyName": "",
+            "companyName": "OnForkHub",
+            "documentationCulture": "en-US",
             "copyrightText": "",
             "xmlHeader": false
         },
@@ -23,6 +25,11 @@
                 "properties",
                 "methods"
             ]
+        },
+        "indentation": {
+            "indentationSize": 4,
+            "tabSize": 4,
+            "useTabs": false
         },
         "namingRules": {
             "allowCommonHungarianPrefixes": false,

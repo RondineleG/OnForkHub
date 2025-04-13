@@ -48,6 +48,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             await RunGitFlowInit(workingDir);
             await ConfigureGitFlowSettings(workingDir);
             await EnsureRequiredBranchesExistAsync();
+            await ConfigureGlobalAutoSetupRemote();
 
             _logger.Log(ELogLevel.Info, "Git Flow configuration completed successfully.");
         }
@@ -102,6 +103,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             { "gitflow.feature.no-merge", "true" },
             { "gitflow.feature.keepbranch", "true" },
             { "gitflow.path.hooks", ".husky" },
+            { "push.autoSetupRemote", "true" },
         };
 
         foreach (var config in configs)
@@ -143,6 +145,20 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         {
             _logger.Log(ELogLevel.Error, $"Error creating {branchName} branch: {ex.Message}");
             throw;
+        }
+    }
+
+    public async Task ConfigureGlobalAutoSetupRemote()
+    {
+        try
+        {
+            _logger.Log(ELogLevel.Info, "Configuring global Git autoSetupRemote...");
+            await _processRunner.RunAsync("git", "config --global push.autoSetupRemote true");
+            _logger.Log(ELogLevel.Info, "Global autoSetupRemote configured successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(ELogLevel.Warning, $"Failed to set global autoSetupRemote: {ex.Message}");
         }
     }
 
