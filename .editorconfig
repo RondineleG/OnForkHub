@@ -248,6 +248,17 @@ dotnet_diagnostic.CA1806.severity = none
 dotnet_diagnostic.CA2201.severity = none
 dotnet_diagnostic.CA1816.severity = none
 dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CRR0029.severity = none
 
-# Custom word list
-csharp_preferred_words = Invalido
+dotnet_naming_rule.enum_should_be_begins_with_e.severity = error
+dotnet_naming_rule.enum_should_be_begins_with_e.symbols = enum
+dotnet_naming_rule.enum_should_be_begins_with_e.style = begins_with_e
+
+dotnet_naming_symbols.enum.applicable_kinds = enum
+dotnet_naming_symbols.enum.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+dotnet_naming_symbols.enum.required_modifiers =
+
+dotnet_naming_style.begins_with_e.required_prefix = E
+dotnet_naming_style.begins_with_e.required_suffix =
+dotnet_naming_style.begins_with_e.word_separator =
+dotnet_naming_style.begins_with_e.capitalization = pascal_case

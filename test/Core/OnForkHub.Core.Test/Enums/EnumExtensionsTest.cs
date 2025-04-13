@@ -46,7 +46,7 @@ public class EnumExtensionsTest
     [DisplayName("Should parse enum from valid description, ignoring case")]
     public void ParseFromDescriptionEnumShouldMatchExpectedValue(string description, EResultStatus expected)
     {
-        var enumValues = Enum.GetValues(typeof(EResultStatus)).Cast<EResultStatus>().ToList();
+        var enumValues = Enum.GetValues<EResultStatus>().Cast<EResultStatus>().ToList();
 
         var result = EnumExtensions.ParseFromDescription<EResultStatus>(description);
 
