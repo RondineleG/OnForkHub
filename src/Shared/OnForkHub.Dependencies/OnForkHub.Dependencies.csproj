@@ -7,6 +7,7 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
         <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
@@ -54,11 +55,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="..\..\..\stylecop.json" />
+        <None Include="..\..\..\stylecop.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <PackageReference Include="StyleCop.Analyzers" Version="1.*">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+
 
     <!--Dependencies for OnForkHub.Scripts-->
     <ItemGroup>
