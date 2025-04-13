@@ -117,7 +117,6 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             { "gitflow.feature.no-merge", "true" },
             { "gitflow.feature.keepbranch", "true" },
             { "gitflow.path.hooks", ".husky" },
-            { "push.autoSetupRemote", "true" },
         };
 
         foreach (var config in configs)
