@@ -7,6 +7,7 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>$(NoWarn);1591</NoWarn>
         <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
@@ -15,8 +16,10 @@
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Http.Client" Version="8.*" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.*" />
+        <PackageReference Include="HotChocolate.AspNetCore" Version="15.*" />
+        <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.*" />
         <PackageReference Include="morelinq" Version="4.*" />
-        <PackageReference Include="RavenDB.Client" Version="6.2.3" />
+        <PackageReference Include="RavenDB.Client" Version="6.*" />
         <PackageReference Include="Serilog" Version="4.*" />
         <PackageReference Include="Serilog.Sinks.File" Version="6.*" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
@@ -52,11 +55,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="..\..\..\stylecop.json" />
+        <None Include="..\..\..\stylecop.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <PackageReference Include="StyleCop.Analyzers" Version="1.*">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+
 
     <!--Dependencies for OnForkHub.Scripts-->
     <ItemGroup>

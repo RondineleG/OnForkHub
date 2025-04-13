@@ -126,7 +126,7 @@ function GitCommit {
         git commit -m ""$Message""
     }
     catch {
-        Write-Host ""Erro durante o commit: $($_.Exception.Message)""
+        Write-Host ""Error during commit: $($_.Exception.Message)""
     }
 }
 

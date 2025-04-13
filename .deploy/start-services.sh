@@ -1,14 +1,21 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <github_token> <github_username>"
+echo "Starting development environment setup..."
+
+if ! command -v gh &> /dev/null; then
+    echo "GitHub CLI is not installed. Please install it first."
     exit 1
 fi
 
-GITHUB_TOKEN=$1
-GITHUB_USERNAME=$2
+if ! gh auth status &> /dev/null; then
+    echo "You are not authenticated with GitHub CLI. Please run 'gh auth login' first."
+    exit 1
+fi
 
-echo "Starting development environment setup..."
+GITHUB_USERNAME=$(gh api user --jq '.login')
+GITHUB_TOKEN=$(gh auth token)
+
+echo "Using GitHub account: $GITHUB_USERNAME"
 
 sudo mkdir -p logs/nginx logs/onforkhub-api logs/onforkhub-web
 
@@ -47,4 +54,4 @@ sudo docker logs onforkhub-api --tail 10 || true
 sudo docker logs onforkhub-web --tail 10 || true
 sudo docker logs reverse-proxy --tail 10 || true
 
-echo "Development environment is ready!"
+echo "Environment is ready!"

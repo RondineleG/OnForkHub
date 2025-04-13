@@ -51,7 +51,6 @@ public class CategoryValidationService : ValidationService<Category>
             return result;
         });
 
-        // Second mode validation
         AddRule(new CategoryNameValidationRule());
         AddRule(new CategoryDescriptionValidationRule());
 
