@@ -203,6 +203,8 @@ git config --global commit.template .\gitmessage.md
 [optional footer(s)]
 
 # Example
+
+# feat – new features
 feat(auth): implement multi-factor authentication
 
 - Add SMS verification
@@ -210,6 +212,23 @@ feat(auth): implement multi-factor authentication
 - Add backup codes generation
 
 Closes #123
+
+# fix – Bug fixes
+fix(api): correct null pointer exception on login
+
+- Added null checks for user data
+- Improved error response format
+
+Fixes #410
+
+# refactor – Code improvements without changes in behavior
+refactor(core): simplify validation logic
+
+- Replaced nested conditions with early returns
+
+git commit -m "feat(auth): implement passwordless login"
+git commit -m "fix(api): correct null pointer exception"
+git commit -m "docs(readme): add setup instructions for Windows"
 ```
 
 #### 3. Local Development
