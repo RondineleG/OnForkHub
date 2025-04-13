@@ -188,6 +188,12 @@ git flow release start v1.2.0
 
 #### 2. Commit Standards
 
+#### configure template
+
+```bash
+git config --global commit.template .\gitmessage.md
+```
+
 ```bash
 # Structure
 <type>(<scope>): <description>
