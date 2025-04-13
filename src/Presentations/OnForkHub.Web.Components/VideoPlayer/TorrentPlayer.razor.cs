@@ -41,7 +41,7 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error disposing torrent player: {ex.Message}");
+            await Console.Error.WriteLineAsync($"Error disposing torrent player: {ex.Message}");
         }
     }
 
@@ -75,7 +75,7 @@ public partial class TorrentPlayer : ComponentBase, IAsyncDisposable
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error initializing torrent player: {ex.Message}");
+                await Console.Error.WriteLineAsync($"Error initializing torrent player: {ex.Message}");
                 throw;
             }
         }

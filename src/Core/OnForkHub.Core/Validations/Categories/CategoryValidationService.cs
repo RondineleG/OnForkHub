@@ -5,7 +5,6 @@ public class CategoryValidationService : ValidationService<Category>
     public CategoryValidationService(IValidationBuilder<Category> builder, IEntityValidator<Category> validator)
         : base(builder, validator)
     {
-        // First mode validation
         AddValidation(category =>
         {
             var result = ValidationResult.Success();
@@ -52,7 +51,6 @@ public class CategoryValidationService : ValidationService<Category>
             return result;
         });
 
-        // Second mode validation
         AddRule(new CategoryNameValidationRule());
         AddRule(new CategoryDescriptionValidationRule());
 

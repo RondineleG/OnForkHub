@@ -1,7 +1,26 @@
+# Generated files
 *.Designer.cs
 *.g.cs
 *.Generated.cs
+**/Generated/*.cs
+*.designer.cs
 
+# Build outputs
 **/bin/**
 **/obj/**
+
+# Third-party libraries
 **/wwwroot/lib/**
+
+# Other common patterns to consider
+**/node_modules/**
+**/TestResults/**
+**/Migrations/*.cs
+*.min.css
+*.min.js
+
+# Temporary files
+*.tmp
+*~
+.vs/
+.vscode/

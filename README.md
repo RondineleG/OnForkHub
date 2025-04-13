@@ -30,6 +30,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
 - **🎯 Backend**: .NET 9 with ASP.NET Core
 - **🌐 Frontend**: Blazor WebAssembly
+- **💾 Databases**: RavenDB, CosmosDB, SQL Server
 - **📦 Storage**: Azure Blob Storage/AWS S3
 - **🔄 P2P**: WebTorrent
 - **🐳 Containers**: Docker
@@ -66,12 +67,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
   ## 🚀 Deployment Guide
 ### VPS Specifications
-The project has been successfully deployed and tested on a minimal VPS configuration:
-- **Type**: Virtual Machine
-- **Size**: VPS 1/1/10
-- **CPU**: 1 vCore
-- **RAM**: 1 GB
-- **Storage**: 10 GB NVMe SSD
+The project has been successfully deployed and tested on a minimal VPS configuration from Azure free tier:
 
 ### Public Access
 Development  environment  deployment is available at:
@@ -192,6 +188,12 @@ git flow release start v1.2.0
 
 #### 2. Commit Standards
 
+#### configure template
+
+```bash
+git config --global commit.template .\gitmessage.md
+```
+
 ```bash
 # Structure
 <type>(<scope>): <description>
@@ -201,6 +203,8 @@ git flow release start v1.2.0
 [optional footer(s)]
 
 # Example
+
+# feat – new features
 feat(auth): implement multi-factor authentication
 
 - Add SMS verification
@@ -208,6 +212,23 @@ feat(auth): implement multi-factor authentication
 - Add backup codes generation
 
 Closes #123
+
+# fix – Bug fixes
+fix(api): correct null pointer exception on login
+
+- Added null checks for user data
+- Improved error response format
+
+Fixes #410
+
+# refactor – Code improvements without changes in behavior
+refactor(core): simplify validation logic
+
+- Replaced nested conditions with early returns
+
+git commit -m "feat(auth): implement passwordless login"
+git commit -m "fix(api): correct null pointer exception"
+git commit -m "docs(readme): add setup instructions for Windows"
 ```
 
 #### 3. Local Development

@@ -1,9 +1,9 @@
 namespace OnForkHub.Application.UseCases.Categories;
 
-public class CreateCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF, IEntityValidator<Category> validator)
+public class CreateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenDB, IEntityValidator<Category> validator)
     : IUseCase<CategoryRequestDto, Category>
 {
-    private readonly ICategoryRepositoryEF _categoryRepositoryEF = categoryRepositoryEF;
+    private readonly ICategoryServiceRavenDB _categoryServiceRavenDB = categoryServiceRavenDB;
 
     private readonly IEntityValidator<Category> _validator = validator;
 
@@ -13,7 +13,7 @@ public class CreateCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF, I
 
         var name = Name.Create(request.Name);
         var categoryResult = Category.Create(name, request.Description);
-        if (categoryResult.Status != EResultStatus.Success || categoryResult.Data is null)
+        if ((categoryResult.Status != EResultStatus.Success) || (categoryResult.Data is null))
         {
             return RequestResult<Category>.WithError(categoryResult.ToString());
         }
@@ -25,8 +25,8 @@ public class CreateCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF, I
             return RequestResult<Category>.WithValidations(errors);
         }
 
-        var result = await _categoryRepositoryEF.CreateAsync(categoryResult.Data);
-        return result.Status != EResultStatus.Success || result.Data is null
+        var result = await _categoryServiceRavenDB.CreateAsync(categoryResult.Data);
+        return ((result.Status != EResultStatus.Success) || (result.Data is null))
             ? RequestResult<Category>.WithError("Failed to create category")
             : RequestResult<Category>.Success(result.Data);
     }

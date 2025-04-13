@@ -24,6 +24,7 @@
     keeplocal = true
     keepbranch = true
     squash = false
+    no-push = true
 
 
 [gitflow "release"]
@@ -51,3 +52,10 @@
     release = release/
     hotfix = hotfix/
     versiontag = v
+
+
+[commit]
+    template = .gitmessage.md
+
+[alias]
+    cm = commit

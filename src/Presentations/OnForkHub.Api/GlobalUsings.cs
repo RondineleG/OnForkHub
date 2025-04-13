@@ -11,6 +11,7 @@ global using OnForkHub.Api.Configuration;
 global using OnForkHub.Api.Endpoints.Base;
 global using OnForkHub.Api.Extensions;
 global using OnForkHub.Application.Dtos.Base;
+global using OnForkHub.Application.Dtos.Category.Request;
 global using OnForkHub.Application.UseCases.Categories;
 global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Entities.Base;
