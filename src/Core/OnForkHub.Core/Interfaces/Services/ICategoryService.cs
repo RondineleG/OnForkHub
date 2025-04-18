@@ -1,0 +1,14 @@
+namespace OnForkHub.Core.Interfaces.Services;
+
+public interface ICategoryService
+{
+    Task<RequestResult<Category>> CreateAsync(Category category);
+
+    Task<RequestResult<Category>> DeleteAsync(long id);
+
+    Task<RequestResult<IEnumerable<Category>>> GetAllAsync(int page, int size);
+
+    Task<RequestResult<Category>> GetByIdAsync(long id);
+
+    Task<RequestResult<Category>> UpdateAsync(Category category);
+}

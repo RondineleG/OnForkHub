@@ -1,0 +1,179 @@
+name: Code Analysis and SDK Management
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  format-and-analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Removendo global.json existente
+      - name: Remove global.json if exists
+        run: rm -f global.json
+        continue-on-error: true
+          
+      # Configurando .NET 9
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+            
+      # Criando novo global.json com versão mais recente
+      - name: Create global.json
+        run: |
+          dotnet new globaljson --roll-forward feature --force
+          cat global.json
+          
+      - name: Verify .NET installation
+        run: |
+          dotnet --version
+          dotnet --info
+        
+      - name: Create tools manifest
+        run: |
+          dotnet new tool-manifest --force
+          
+      - name: Install tools
+        run: |
+          dotnet tool install --local Husky
+          dotnet tool install --local CSharpier
+          dotnet tool install --local dotnet-format
+          
+      - name: Verify tools installation
+        run: dotnet tool list
+
+      - name: Create analysis branch
+        if: github.event_name == 'pull_request'
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          BRANCH_NAME="bugfix/qodana-${PR_NUMBER}"
+          git checkout -b "$BRANCH_NAME"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+      
+      - name: Run CSharpier
+        run: dotnet csharpier .
+        continue-on-error: true
+        
+      - name: Run dotnet format
+        run: dotnet format
+        continue-on-error: true
+        
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code || echo "has_changes=true" >> $GITHUB_OUTPUT
+
+      - name: Commit changes
+        if: steps.git-check.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "style: apply code fixes for PR #${{ github.event.pull_request.number }}"
+          
+      - name: Push branch
+        if: steps.git-check.outputs.has_changes == 'true' && github.event_name == 'pull_request'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          force: true
+
+      - name: Create Pull Request
+        if: steps.git-check.outputs.has_changes == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const branchName = `bugfix/qodana-${prNumber}`;
+            
+            try {
+              const newPr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `fix: 🔍 Code quality fixes for PR #${prNumber}`,
+                body: `This PR contains automated code quality fixes for PR #${prNumber}.
+                
+                Changes include:
+                - Code formatting with CSharpier
+                - Style improvements with dotnet format
+                - Best practices applications
+                
+                These changes are automated to help maintain code quality standards.
+                
+                > Using .NET 9.0 for all formatting and analysis tools.`,
+                head: branchName,
+                base: context.payload.pull_request.head.ref,
+                maintainer_can_modify: true
+              });
+              
+              // Add labels
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: newPr.data.number,
+                labels: ['automated-fixes', 'code-quality']
+              });
+              
+              // Add comment to original PR
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `🤖 I've created PR #${newPr.data.number} with code quality improvements using .NET 9.0 tools. Please review and merge if the changes look good!`
+              });
+            } catch (error) {
+              console.log('Error creating PR:', error);
+              core.setFailed('Failed to create PR');
+            }
+
+      - name: Create labels if not exists
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              {
+                name: 'automated-fixes',
+                color: '0e8a16',
+                description: 'Automated code fixes'
+              },
+              {
+                name: 'code-quality',
+                color: '7057ff',
+                description: 'Code quality improvements'
+              }
+            ];
+            
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name
+                });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                }
+              }
+            }

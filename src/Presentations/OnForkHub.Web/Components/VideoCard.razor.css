@@ -1,0 +1,104 @@
+.hc-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.hc-card {
+    width: 100px;
+    height: 100px;
+    border-radius: 15px;
+    padding: 3px;
+    background: white;
+    position: relative;
+    box-shadow: 0px 7px 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    transition: 0.4s ease-out;
+    cursor: pointer;
+}
+
+.selected {
+    border: 3px solid var(--cf-theme-core);
+}
+
+.hc-card img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 15px;
+}
+
+.hc-card .hc-content {
+    color: white;
+    z-index: 3;
+    position: relative;
+    opacity: 1;
+    transition: 0.35s;
+}
+
+    .hc-card .hc-content p {
+        font-size: .9rem;
+        font-family: var(--cf-title-font);
+        letter-spacing: 1px;
+        margin-top: .5em;
+    }
+
+.hc-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    width: 100%;
+    height: 100%;
+}
+
+.btn-glass {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-glass > i {
+        display: flex;
+        font-size: 2rem;
+    }
+
+@media screen and (min-width: 768px) {
+    .hc-card {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media screen and (min-width: 1360px) {
+    .hc-card {
+        width: 170px;
+        height: 170px;
+    }
+}
+
+@media screen and (min-width: 1920px) {
+    .hc-card {
+        width: 260px;
+        height: 260px;
+    }
+}

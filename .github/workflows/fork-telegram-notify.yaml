@@ -1,0 +1,55 @@
+name: Fork Telegram Notification
+
+on: 
+  fork
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Fork Info
+        id: fork_info
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const forks = await github.rest.repos.listForks({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            
+            const latestFork = forks.data[0]
+            console.log('Latest fork:', latestFork)
+            
+            core.setOutput('forker', latestFork.owner.login)
+            core.setOutput('fork_url', latestFork.html_url)
+
+      - name: Send Telegram Message
+        run: |
+          FORKER="${{ steps.fork_info.outputs.forker }}"
+          FORK_URL="${{ steps.fork_info.outputs.fork_url }}"
+          REPO="${{ github.repository }}"
+          TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+          MESSAGE="🔔 *GitHub Notification*
+
+          📝 *Fork Detected*
+          • *Repository:* \`${REPO}\`
+          • *Forked by:* \`${FORKER}\`
+          • *Fork URL:* [View Fork](${FORK_URL})
+          • *Time:* \`${TIME}\`"
+
+          curl -X POST \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "chat_id": ${{ secrets.TELEGRAM_CHAT_ID }},
+              "text": "'"$MESSAGE"'",
+              "parse_mode": "Markdown",
+              "disable_web_page_preview": true
+            }'
+
+      - name: Log Details
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Forked by: ${{ steps.fork_info.outputs.forker }}"
+          echo "Repository: ${{ github.repository }}"

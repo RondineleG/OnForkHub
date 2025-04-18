@@ -1,0 +1,88 @@
+{
+    "settings": {
+        "documentationRules": {
+            "documentExposedElements": false,
+            "documentInternalElements": false,
+            "documentPrivateFields": false,
+            "documentInterfaces": false,
+            "companyName": "OnForkHub",
+            "documentationCulture": "en-US",
+            "copyrightText": "",
+            "xmlHeader": false
+        },
+        "orderingRules": {
+            "usingDirectivesPlacement": "outsideNamespace",
+            "systemUsingDirectivesFirst": true,
+            "blankLinesBetweenUsingGroups": "allow",
+            "elementOrder": [
+                "public",
+                "protected",
+                "internal",
+                "private",
+                "fields",
+                "constructors",
+                "properties",
+                "methods"
+            ]
+        },
+        "indentation": {
+            "indentationSize": 4,
+            "tabSize": 4,
+            "useTabs": false
+        },
+        "namingRules": {
+            "allowCommonHungarianPrefixes": false,
+            "allowedHungarianPrefixes": [],
+            "includeInferredTupleElementNames": true,
+            "rules": [
+                {
+                    "name": "InterfaceMustBeginWithI",
+                    "symbolKind": "interface",
+                    "namingStyle": "interfacePrefixI"
+                },
+                {
+                    "name": "EnumMustBeginWithE",
+                    "symbolKind": "enum",
+                    "namingStyle": "enumPrefixE"
+                }
+            ],
+            "namingStyles": [
+                {
+                    "name": "interfacePrefixI",
+                    "prefix": "I",
+                    "suffix": "",
+                    "wordPattern": "^[A-Z][a-zA-Z0-9]*$",
+                    "capitalization": "pascal_case"
+                },
+                {
+                    "name": "enumPrefixE",
+                    "prefix": "E",
+                    "suffix": "",
+                    "wordPattern": "^[A-Z][a-zA-Z0-9]*$",
+                    "capitalization": "pascal_case"
+                }
+            ]
+        },
+        "maxLineLength": 150,
+        "maintainabilityRules": {
+            "topLevelTypes": [
+                "class",
+                "interface",
+                "struct",
+                "enum"
+            ]
+        },
+        "layoutRules": {
+            "newlineAtEndOfFile": "require",
+            "allowConsecutiveUsings": true
+        },
+        "readabilityRules": {
+            "allowBuiltInTypeAliases": true
+        },
+        "spacingRules": {
+            "spaceBetweenMethodDeclarationParameterList": false,
+            "spaceBetweenMethodCallParameterList": false,
+            "spaceBetweenBrackets": false
+        }
+    }
+}

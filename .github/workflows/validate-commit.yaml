@@ -1,0 +1,90 @@
+name: Validate Commit Messages
+on: [push, pull_request]
+
+jobs:
+  validate-commits:
+    name: Validate Commit Messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get commit range
+        id: commit-range
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "range=${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "range=${{ github.event.before }}..${{ github.event.after }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate commit messages
+        run: |
+          VALIDATION_START_DATE="2025-04-10 12:00:00"
+
+          echo "🔍 Analyzing commits in range: ${{ steps.commit-range.outputs.range }}"
+          echo "----------------------------------------"
+
+          INVALID_COMMITS=()
+          while IFS= read -r commit_hash; do
+            commit_date=$(git show -s --format=%ai "$commit_hash")
+            if [[ "$commit_date" < "$VALIDATION_START_DATE" ]]; then
+              echo "ℹ️ Skipping commit from before validation start date: ${commit_hash:0:8}"
+              continue
+            fi
+
+            message=$(git log --format=%B -n 1 "$commit_hash")
+            branch_name=$(git branch --contains "$commit_hash" | grep -v "HEAD" | head -n 1 | xargs)
+
+            # Skip automated commits
+            if [[ "$message" == "🤖 Apply quick-fixes by Qodana" ]]; then
+              echo "ℹ️ Skipping Qodana automated commit: ${commit_hash:0:8}"
+              continue
+            fi
+
+            # Skip PR merge commits
+            if [[ "$message" =~ ^(Feature|Hotfix|Bugfix|Release)/.*\(#[0-9]+\)$ ]]; then
+              echo "ℹ️ Skipping PR merge commit: ${commit_hash:0:8}"
+              continue
+            fi
+
+            # Handle regular merge commits
+            if [[ "$message" =~ ^Merge && ! "$message" =~ ^merge: ]]; then
+              message="merge: ${message#Merge }"
+            fi
+
+            # Validate commit message format
+            if ! echo "$message" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\([a-z0-9-]+\))?(!)?: .+"; then
+              INVALID_COMMITS+=("$commit_hash")
+              echo "❌ Invalid commit found:"
+              echo "   Hash: ${commit_hash:0:8}"
+              echo "   Date: $commit_date"
+              echo "   Message: $message"
+              echo "   Branch: $branch_name"
+              echo "   Error: Invalid format. Expected: <type>[optional scope]: <description>"
+              echo "----------------------------------------"
+            fi
+          done < <(git log ${{ steps.commit-range.outputs.range }} --format=%H)
+
+          if [ ${#INVALID_COMMITS[@]} -ne 0 ]; then
+            echo "❌ Found ${#INVALID_COMMITS[@]} invalid commit(s)"
+            echo ""
+            echo "📝 Branch-specific commit types:"
+            echo "----------------------------------------"
+            echo "feature/*: feat, refactor, fix, test, docs, style, merge"
+            echo "hotfix/*: fix, hotfix, perf, merge"
+            echo "bugfix/*: fix, bugfix, perf, merge"
+            echo "release/*: release, chore, docs, merge"
+            echo ""
+            echo "Format: <type>[optional scope]: <description>"
+            echo ""
+            echo "Examples:"
+            echo "✅ fix(validation): correct commit message parser"
+            echo "✅ feat: add new user authentication"
+            echo "✅ docs(api): update endpoint documentation"
+            echo "✅ merge: branch 'feature/xyz' into main"
+            exit 1
+          else
+            echo "✅ All commit messages are valid!"
+          fi

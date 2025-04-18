@@ -1,0 +1,22 @@
+{
+    "tasks": [
+        {
+            "name": "dotnet-format-csharpier",
+            "command": "dotnet",
+            "args": [
+                "csharpier",
+                "${staged}"
+            ],
+            "include": [
+                "**/*.cs","**/*.css","**/*.js","**/*.razor","**/*.sql"
+            ]
+        },
+        {
+            "name": "dotnet-test",
+            "group": "pre-push-operations",
+            "command": "dotnet",
+            "args": ["test", "--filter", "Category=Unit", "--logger", "console;verbosity=detailed"]
+        }
+
+    ]
+}

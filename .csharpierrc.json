@@ -1,0 +1,14 @@
+{
+  "printWidth": 150,
+  "useTabs": false,
+  "tabWidth": 4,
+  "endOfLine": "lf",
+  "indentStyle": "space",
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "arrowParens": "always",
+  "trailingComma": "all",
+  "singleQuote": false,
+  "quoteProps": "as-needed",
+  "insertFinalNewline": true
+}

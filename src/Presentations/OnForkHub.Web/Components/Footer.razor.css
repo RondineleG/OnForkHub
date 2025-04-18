@@ -1,0 +1,20 @@
+.footerStyle {
+    background-color: var(--cf-dark-color);
+}
+
+    .footerStyle a {
+        color: var(--cf-theme-200);
+    }
+
+        .footerStyle a:hover {
+            color: var(--cf-theme-core);
+        }
+
+.bi {
+    font-size: 1.5rem;
+    padding-inline-start: .5rem;
+}
+
+.copyright {
+    font-size: .75rem;
+}

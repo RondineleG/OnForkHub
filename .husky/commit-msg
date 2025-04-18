@@ -1,0 +1,110 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+"$(dirname "$0")/commit-msg-qodana" "$1" || exit $?
+
+# === Configs ===
+COMMIT_FILE="$1"
+CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || echo "detached")"
+COMMIT_PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\([a-z0-9-]+\))?(!)?: .+"
+
+# === Functions ===
+normalize_merge_commit() {
+  local commit_msg="$(cat "$COMMIT_FILE")"
+  case "$commit_msg" in
+    Merge*)
+      if ! echo "$commit_msg" | grep -Eq "^merge: "; then
+        sed -i.bak 's/^Merge/merge:/' "$COMMIT_FILE"
+        rm -f "$COMMIT_FILE.bak" 2>/dev/null || true
+        echo "ℹ️ Merge commit automatically reformatted."
+      fi
+      ;;
+  esac
+}
+
+show_allowed_types() {
+  echo "For this branch type, commit messages must start with one of the following types:"
+  case "$1" in
+    feature/*)
+      echo "  - feat:     ➡️ For new features"
+      echo "  - refactor: ➡️ For code refactoring"
+      echo "  - fix:      ➡️ For bug fixes"
+      echo "  - test:     ➡️ For adding or updating tests"
+      echo "  - docs:     ➡️ For documentation updates"
+      echo "  - style:    ➡️ For code style changes"
+      echo "  - merge:    ➡️ For merge commits"
+      ;;
+    hotfix/*)
+      echo "  - fix:      ➡️ For bug fixes"
+      echo "  - hotfix:   ➡️ For critical fixes"
+      echo "  - perf:     ➡️ For performance improvements"
+      echo "  - merge:    ➡️ For merge commits"
+      ;;
+    bugfix/*)
+      echo "  - fix:      ➡️ For bug fixes"
+      echo "  - bugfix:   ➡️ For bug fixes"
+      echo "  - perf:     ➡️ For performance improvements"
+      echo "  - merge:    ➡️ For merge commits"
+      ;;
+    release/*)
+      echo "  - release:  ➡️ For release related changes"
+      echo "  - chore:    ➡️ For maintenance tasks"
+      echo "  - docs:     ➡️ For documentation updates"
+      echo "  - merge:    ➡️ For merge commits"
+      ;;
+  esac
+}
+
+get_valid_types_regex() {
+  case "$1" in
+    feature/*) echo "^(feat|refactor|fix|test|docs|style|merge).*" ;;
+    hotfix/*)  echo "^(fix|hotfix|perf|merge).*" ;;
+    bugfix/*)  echo "^(fix|bugfix|perf|merge).*" ;;
+    release/*) echo "^(release|chore|docs|merge).*" ;;
+    *)         echo "" ;;
+  esac
+}
+
+# === Main ===
+
+normalize_merge_commit
+
+COMMIT_MESSAGE="$(cat "$COMMIT_FILE")"
+
+if ! grep -Eq "$COMMIT_PATTERN" <<< "$COMMIT_MESSAGE"; then
+  echo "❌ Invalid commit message format!"
+  echo "The commit message should follow the Conventional Commits format:"
+  echo "  <type>[optional scope]: <description>"
+  echo ""
+  echo "Examples:"
+  echo "  feat: add new feature"
+  echo "  feat(api): add new endpoint"
+  echo "  fix(ui): resolve button alignment"
+  echo "  feat!: breaking change in API"
+  echo "  merge: branch 'feature/xyz' into main"
+  echo ""
+  echo "Allowed types:"
+  echo "  feat     ➡️ New feature (MINOR in SemVer)"
+  echo "  fix      ➡️ Bug fix (PATCH in SemVer)"
+  echo "  docs     ➡️ Documentation only"
+  echo "  style    ➡️ Code style changes"
+  echo "  refactor ➡️ Code refactoring"
+  echo "  perf     ➡️ Performance improvements"
+  echo "  test     ➡️ Adding or fixing tests"
+  echo "  build    ➡️ Build system or dependencies"
+  echo "  ci       ➡️ CI configuration/scripts"
+  echo "  chore    ➡️ Maintenance tasks"
+  echo "  revert   ➡️ Reverts a commit"
+  echo "  merge    ➡️ Merge commits"
+  exit 1
+fi
+
+VALID_TYPES_REGEX="$(get_valid_types_regex "$CURRENT_BRANCH")"
+
+if [ -n "$VALID_TYPES_REGEX" ] && ! grep -Eq "$VALID_TYPES_REGEX" <<< "$COMMIT_MESSAGE"; then
+  echo "❌ Invalid commit type for branch '$CURRENT_BRANCH'!"
+  show_allowed_types "$CURRENT_BRANCH"
+  exit 1
+fi
+
+echo "✅ Commit message is valid and follows Conventional Commits format."
