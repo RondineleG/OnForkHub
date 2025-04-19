@@ -1,6 +1,3 @@
-using OnForkHub.Application.GraphQL.Mutations.Categories;
-using OnForkHub.Core.GraphQL;
-
 namespace OnForkHub.CrossCutting.GraphQL;
 
 public class HotChocolateConfigurator : IGraphQLConfigurator
