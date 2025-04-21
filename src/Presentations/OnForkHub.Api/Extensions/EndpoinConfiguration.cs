@@ -9,7 +9,7 @@ public static class EndpoinConfiguration
         services.RegisterImplementationsOf<IEndpointAsync>(markerType);
     }
 
-    public static async Task UseEndpoinAsync(this WebApplication app)
+    public static async Task UseEndpointsAsync(this WebApplication app)
     {
         using (var scope = app.Services.CreateScope())
         {
