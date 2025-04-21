@@ -15,7 +15,6 @@ global using OnForkHub.Core.Interfaces.Validations;
 global using OnForkHub.Core.Requests;
 global using OnForkHub.Core.Validations;
 global using OnForkHub.Core.ValueObjects;
-global using OnForkHub.CrossCutting.GraphQL;
 
 global using System.ComponentModel.DataAnnotations;
 

@@ -1,3 +1,5 @@
+using OnForkHub.CrossCutting.GraphQL.HotChocolate;
+
 namespace OnForkHub.Application.GraphQL.Mutations.Categories;
 
 public class CreateCategoryMutation : HotChocolateMutationBase

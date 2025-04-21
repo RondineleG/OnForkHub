@@ -9,13 +9,18 @@
         <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <LangVersion>latest</LangVersion>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+
     </PropertyGroup>
 
 
-    <!--API-->
+
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Http.Client" Version="8.*" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.*" />
+        <PackageReference Include="GraphQL" Version="8.*" />
+        <PackageReference Include="GraphQL.SystemTextJson" Version="8.5.0" />
         <PackageReference Include="HotChocolate.AspNetCore" Version="15.*" />
         <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.*" />
         <PackageReference Include="morelinq" Version="4.*" />
@@ -26,13 +31,11 @@
     </ItemGroup>
 
 
-    <!--Dependencies for ui projects-->
     <ItemGroup>
         <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.*" />
         <PackageReference Include="MudBlazor" Version="7.*" />
     </ItemGroup>
 
-    <!--Dependencies for persitence projects-->
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.*" />
@@ -47,7 +50,6 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.*" />
     </ItemGroup>
 
-    <!--Dependencies for test projects-->
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="7.*" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.*" />
@@ -64,7 +66,6 @@
     </ItemGroup>
 
 
-    <!--Dependencies for OnForkHub.Scripts-->
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.*" />

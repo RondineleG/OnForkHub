@@ -1,3 +1,5 @@
+using OnForkHub.CrossCutting.GraphQL.HotChocolate;
+
 namespace OnForkHub.Application.GraphQL.Queries.Categories;
 
 public class GetAllCategoryQuery : HotChocolateQueryBase
