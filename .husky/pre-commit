@@ -1,11 +1,11 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
 export LC_ALL=en_US.UTF-8
 export LANG=pt_BR.UTF-8
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
-RESET=$(tput sgr0)
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+RESET='\033[0m'
 
 echo "🚀 Preparing to commit changes..."
 echo "----------------------------------"

@@ -6,13 +6,13 @@ using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
 namespace OnForkHub.Application.GraphQL.Mutations.Categories;
+
 public class GetAllCategoryQuery
 {
     public string Name { get; set; } = "getAllCategories";
     public string Description { get; set; } = "Returns all categories";
 
-    public static async Task<RequestResult<IEnumerable<Category>>> HandleAsync(
-        IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
+    public static async Task<RequestResult<IEnumerable<Category>>> HandleAsync(IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
     {
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
         return await useCase.ExecuteAsync(request);
@@ -26,12 +26,12 @@ public class GetAllCategoryHotChocolateAdapter : HotChocolateQueryBase
     public override string Description => _query.Description;
 
     public override string Name => _query.Name;
+
     protected override void RegisterQuery(IObjectTypeDescriptor descriptor)
     {
         descriptor
             .Field(Name)
-            .ResolveWith<GetAllCategoryQuery>(q =>
-                GetAllCategoryQuery.HandleAsync(default!))
+            .ResolveWith<GetAllCategoryQuery>(q => GetAllCategoryQuery.HandleAsync(default!))
             .Type<ObjectType<RequestResult<IEnumerable<Category>>>>()
             .Description(Description);
     }
@@ -49,17 +49,16 @@ public class GetAllCategoryGraphQLNetAdapter : GraphQLNetQueryBase
             .Description(Description)
             .ResolveAsync(async context =>
             {
-                var serviceProvider = context.RequestServices
-                    ?? throw new InvalidOperationException("RequestServices is null.");
+                var serviceProvider = context.RequestServices ?? throw new InvalidOperationException("RequestServices is null.");
 
-                var useCase = serviceProvider
-                    .GetRequiredService<IUseCase<PaginationRequestDto, IEnumerable<Category>>>();
+                var useCase = serviceProvider.GetRequiredService<IUseCase<PaginationRequestDto, IEnumerable<Category>>>();
 
                 var result = await GetAllCategoryQuery.HandleAsync(useCase);
                 return result.Data;
             });
     }
 }
+
 public class CategoryGraphType : ObjectGraphType<Category>
 {
     public CategoryGraphType()

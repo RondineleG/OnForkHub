@@ -1,4 +1,5 @@
 namespace OnForkHub.CrossCutting.GraphQL.GraphQLNet;
+
 public class GraphQLNetEndpoint : IGraphQLEndpoint
 {
     public string Path => "/graphql-net";

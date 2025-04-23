@@ -14,11 +14,10 @@ public class GraphQLNetConfigurator : IGraphQLConfigurator
         });
 
         services.AddGraphQL();
-        services.Configure<ExecutionOptions>(
-            options =>
-            {
-                options.EnableMetrics = true;
-            });
+        services.Configure<ExecutionOptions>(options =>
+        {
+            options.EnableMetrics = true;
+        });
     }
 
     private static void RegisterOperations(GraphQLNetSchemaBuilder schemaBuilder)
@@ -27,8 +26,7 @@ public class GraphQLNetConfigurator : IGraphQLConfigurator
 
         foreach (var assembly in assemblies)
         {
-            foreach (var type in assembly.GetTypes()
-                    .Where(t => !t.IsAbstract && typeof(IGraphQLQuery).IsAssignableFrom(t)))
+            foreach (var type in assembly.GetTypes().Where(t => !t.IsAbstract && typeof(IGraphQLQuery).IsAssignableFrom(t)))
             {
                 if (Activator.CreateInstance(type) is IGraphQLQuery query)
                 {
@@ -36,8 +34,7 @@ public class GraphQLNetConfigurator : IGraphQLConfigurator
                 }
             }
 
-            foreach (var type in assembly.GetTypes()
-                .Where(t => !t.IsAbstract && typeof(IGraphQLMutation).IsAssignableFrom(t)))
+            foreach (var type in assembly.GetTypes().Where(t => !t.IsAbstract && typeof(IGraphQLMutation).IsAssignableFrom(t)))
             {
                 if (Activator.CreateInstance(type) is IGraphQLMutation mutation)
                 {

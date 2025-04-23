@@ -8,7 +8,8 @@ public class GetAllCategoryQuery : HotChocolateQueryBase
     public override string Description => "Returns all categories";
 
     public static async Task<RequestResult<IEnumerable<Category>>> HandleAsync(
-        [Service] IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
+        [Service] IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase
+    )
     {
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
         return await useCase.ExecuteAsync(request);

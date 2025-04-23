@@ -18,11 +18,7 @@ public class GraphQLNetSchemaBuilder : IGraphQLSchemaBuilder, IDisposable
         _queryType = new QueryGraphType();
         _mutationType = new MutationGraphType();
 
-        _schema = new Schema(serviceProvider)
-        {
-            Query = _queryType,
-            Mutation = _mutationType
-        };
+        _schema = new Schema(serviceProvider) { Query = _queryType, Mutation = _mutationType };
     }
 
     public IGraphQLSchemaBuilder AddQuery(IGraphQLQuery query)
