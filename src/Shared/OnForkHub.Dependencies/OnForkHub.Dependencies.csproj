@@ -20,7 +20,8 @@
         <PackageReference Include="Asp.Versioning.Http.Client" Version="8.*" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.*" />
         <PackageReference Include="GraphQL" Version="8.*" />
-        <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="8.2.0" />
+        <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="8.*" />
+        <PackageReference Include="GraphQL.Server.Ui.Playground" Version="8.2.0" />
         <PackageReference Include="GraphQL.SystemTextJson" Version="8.5.0" />
         <PackageReference Include="HotChocolate.AspNetCore" Version="15.*" />
         <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.*" />

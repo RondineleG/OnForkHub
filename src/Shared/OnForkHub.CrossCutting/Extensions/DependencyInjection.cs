@@ -9,14 +9,15 @@ public static class DependencyInjection
     {
         services.AddSingleton<IGraphQLConfigurator, HotChocolateConfigurator>();
         services.AddSingleton<IGraphQLConfigurator, GraphQLNetConfigurator>();
-        services.AddSingleton<IGraphQLEndpoint, HotChocolateEndpoint>();
-        services.AddSingleton<IGraphQLEndpoint, GraphQLNetEndpoint>();
 
+        // Create and configure the endpoint manager
         var endpointManager = new GraphQLEndpointManager();
-
         endpointManager.RegisterEndpoint(new HotChocolateEndpoint());
         endpointManager.RegisterEndpoint(new GraphQLNetEndpoint());
         endpointManager.ConfigureAll(services);
+
+        // Register the configured instance
+        services.AddSingleton(endpointManager);
 
         return services;
     }
