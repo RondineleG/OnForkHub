@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
-public class HotChocolateConfigurator : IGraphQLConfigurator
+public class HotChocolateConfigurator : IGraphQLServiceConfigurator
 {
     public void RegisterGraphQLServices(IServiceCollection services)
     {

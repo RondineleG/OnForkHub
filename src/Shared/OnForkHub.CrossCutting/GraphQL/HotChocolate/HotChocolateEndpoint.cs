@@ -1,10 +1,10 @@
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
-public class HotChocolateEndpoint : IGraphQLEndpoint
+public class HotChocolateEndpoint : IGraphQLServiceEndpoint
 {
     public string Path => "/graphql-hotchocolate";
 
-    public IGraphQLConfigurator Configurator { get; }
+    public IGraphQLServiceConfigurator Configurator { get; }
 
     public HotChocolateEndpoint()
     {

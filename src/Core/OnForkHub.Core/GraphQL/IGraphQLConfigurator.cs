@@ -21,22 +21,22 @@ public interface IGraphQLSchemaBuilder
     object Build();
 }
 
-public interface IGraphQLConfigurator
+public interface IGraphQLServiceConfigurator
 {
     void RegisterGraphQLServices(IServiceCollection services);
 }
 
-public interface IGraphQLEndpoint
+public interface IGraphQLServiceEndpoint
 {
     string Path { get; }
-    IGraphQLConfigurator Configurator { get; }
+    IGraphQLServiceConfigurator Configurator { get; }
 }
 
-public class GraphQLEndpointManager
+public class GraphQLServiceEndpointManager
 {
-    private readonly List<IGraphQLEndpoint> _endpoints = [];
+    private readonly List<IGraphQLServiceEndpoint> _endpoints = [];
 
-    public void RegisterEndpoint(IGraphQLEndpoint endpoint)
+    public void RegisterEndpoint(IGraphQLServiceEndpoint endpoint)
     {
         _endpoints.Add(endpoint);
     }
@@ -49,5 +49,5 @@ public class GraphQLEndpointManager
         }
     }
 
-    public IReadOnlyList<IGraphQLEndpoint> Endpoints => _endpoints.AsReadOnly();
+    public IReadOnlyList<IGraphQLServiceEndpoint> Endpoints => _endpoints.AsReadOnly();
 }

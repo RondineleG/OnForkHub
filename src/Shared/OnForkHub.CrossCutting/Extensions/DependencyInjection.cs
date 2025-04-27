@@ -7,11 +7,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddGraphQLFromCrossCutting(this IServiceCollection services)
     {
-        services.AddSingleton<IGraphQLConfigurator, HotChocolateConfigurator>();
-        services.AddSingleton<IGraphQLConfigurator, GraphQLNetConfigurator>();
+        services.AddSingleton<IGraphQLServiceConfigurator, HotChocolateConfigurator>();
+        services.AddSingleton<IGraphQLServiceConfigurator, GraphQLNetConfigurator>();
 
         // Create and configure the endpoint manager
-        var endpointManager = new GraphQLEndpointManager();
+        var endpointManager = new GraphQLServiceEndpointManager();
         endpointManager.RegisterEndpoint(new HotChocolateEndpoint());
         endpointManager.RegisterEndpoint(new GraphQLNetEndpoint());
         endpointManager.ConfigureAll(services);

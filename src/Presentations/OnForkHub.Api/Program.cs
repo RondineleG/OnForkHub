@@ -12,7 +12,7 @@ builder.Services.AddRavenDbServices(builder.Configuration);
 builder.Services.AddEntityFrameworkServices(builder.Configuration);
 builder.Services.AddCustomServices();
 
-var endpointManager = new GraphQLEndpointManager();
+var endpointManager = new GraphQLServiceEndpointManager();
 endpointManager.RegisterEndpoint(new HotChocolateEndpoint());
 endpointManager.RegisterEndpoint(new GraphQLNetEndpoint());
 
