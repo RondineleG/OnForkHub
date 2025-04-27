@@ -4,7 +4,7 @@ namespace OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 
 public class GraphQLNetConfigurator : IGraphQLConfigurator
 {
-    public void RegisterGraphQLServices(IServiceCollection services)
+    public static void RegisterGraphQLServices(IServiceCollection services)
     {
         services.AddScoped(sp =>
         {
