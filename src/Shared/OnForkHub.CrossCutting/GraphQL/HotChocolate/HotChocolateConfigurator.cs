@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
 public class HotChocolateConfigurator : IGraphQLConfigurator
@@ -22,23 +20,26 @@ public class HotChocolateConfigurator : IGraphQLConfigurator
 
         foreach (var assembly in assemblies)
         {
-            try
+            foreach (var type in assembly.GetTypes()
+                .Where(t => !t.IsAbstract
+                            && !t.IsGenericTypeDefinition
+                            && typeof(IGraphQLQuery).IsAssignableFrom(t)))
             {
-                foreach (var type in assembly.GetTypes().Where(t => !t.IsAbstract && typeof(IGraphQLQuery).IsAssignableFrom(t)))
+                if (Activator.CreateInstance(type) is IGraphQLQuery instance)
                 {
-                    var query = (IGraphQLQuery)Activator.CreateInstance(type)!;
-                    graphQLSchemaBuilder.AddQuery(query);
-                }
-
-                foreach (var type in assembly.GetTypes().Where(t => !t.IsAbstract && typeof(IGraphQLMutation).IsAssignableFrom(t)))
-                {
-                    var mutation = (IGraphQLMutation)Activator.CreateInstance(type)!;
-                    graphQLSchemaBuilder.AddMutation(mutation);
+                    graphQLSchemaBuilder.AddQuery(instance);
                 }
             }
-            catch (ReflectionTypeLoadException)
+
+            foreach (var type in assembly.GetTypes()
+                .Where(t => !t.IsAbstract
+                            && !t.IsGenericTypeDefinition
+                            && typeof(IGraphQLMutation).IsAssignableFrom(t)))
             {
-                continue;
+                if (Activator.CreateInstance(type) is IGraphQLMutation instance)
+                {
+                    graphQLSchemaBuilder.AddMutation(instance);
+                }
             }
         }
     }

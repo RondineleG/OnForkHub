@@ -1,6 +1,7 @@
 using GraphQL;
 using GraphQL.SystemTextJson;
 
+using OnForkHub.Api.Middlewares;
 using OnForkHub.Core.Extensions;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
@@ -29,10 +30,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    app.UseCustomSwagger();
 }
 
-Console.WriteLine($"API Mode: {apiMode}");
-Console.WriteLine($"Number of registered endpoints: {endpointManager.Endpoints.Count}");
+app.UseMiddleware<ApiTypeDetectionMiddleware>();
 
 if (apiMode is "All" or "Rest")
 {
@@ -47,11 +48,6 @@ if (apiMode is "All" or "HotChocolate")
 if (apiMode is "All" or "GraphQLNet")
 {
     app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(endpointManager);
-}
-
-if (apiMode is "All" or "Rest")
-{
-    app.UseCustomSwagger();
 }
 
 await app.RunAsync();
