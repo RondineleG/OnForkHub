@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
+        <ProjectReference Include="..\..\Shared\OnForkHub.CrossCutting\OnForkHub.CrossCutting.csproj" />
     </ItemGroup>
 
 </Project>

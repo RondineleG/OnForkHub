@@ -8,7 +8,6 @@ global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Entities.Base;
 global using OnForkHub.Core.Enums;
 global using OnForkHub.Core.Exceptions;
-global using OnForkHub.Core.GraphQL;
 global using OnForkHub.Core.Interfaces.Repositories;
 global using OnForkHub.Core.Interfaces.Services;
 global using OnForkHub.Core.Interfaces.UseCases;

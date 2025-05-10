@@ -1,7 +1,12 @@
+using OnForkHub.CrossCutting.GraphQL.HotChocolate;
+
 namespace OnForkHub.Application.GraphQL.Queries.Categories;
 
-public class GetAllCategoryQuery : QueryGraphQLBase
+public class GetAllCategoryQuery : HotChocolateQueryBase
 {
+    public override string Name => "getAllCategories";
+    public override string Description => "Returns all categories";
+
     public static async Task<RequestResult<IEnumerable<Category>>> HandleAsync(
         [Service] IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase
     )
@@ -10,12 +15,12 @@ public class GetAllCategoryQuery : QueryGraphQLBase
         return await useCase.ExecuteAsync(request);
     }
 
-    public override void Register(IObjectTypeDescriptor descriptor)
+    protected override void RegisterQuery(IObjectTypeDescriptor descriptor)
     {
         descriptor
-            .Field("getAllCategories")
+            .Field(Name)
             .ResolveWith<GetAllCategoryQuery>(q => HandleAsync(default!))
             .Type<ObjectType<RequestResult<IEnumerable<Category>>>>()
-            .Description("Returns all categories");
+            .Description(Description);
     }
 }
