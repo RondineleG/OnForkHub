@@ -1,14 +1,37 @@
 {
     "$schema": "https://json.schemastore.org/launchsettings.json",
     "profiles": {
-        "OnForkHub": {
+        "OnForkHub - Rest": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
             "launchUrl": "swagger",
             "applicationUrl": "https://0.0.0.0:9001;http://0.0.0.0:9000",
             "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "AppSettings__ApiMode": "Rest"
+            }
+        },
+        "OnForkHub - GraphQL.Net": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "launchUrl": "graphql-net",
+            "applicationUrl": "https://0.0.0.0:9003;http://0.0.0.0:9002",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "AppSettings__ApiMode": "GraphQLNet"
+            }
+        },
+        "OnForkHub - HotChocolate": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "launchUrl": "graphql-hotchocolate",
+            "applicationUrl": "https://0.0.0.0:9005;http://0.0.0.0:9004",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "AppSettings__ApiMode": "HotChocolate"
             }
         }
     }

@@ -1,7 +1,3 @@
-using HotChocolate.Execution.Configuration;
-
-using OnForkHub.Core.GraphQL;
-
 namespace OnForkHub.Api.Endpoints.GraphQL;
 
 public static class GraphQLSetup
