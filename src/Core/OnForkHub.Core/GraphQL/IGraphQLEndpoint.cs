@@ -22,7 +22,6 @@ public interface IGraphQLQueryHandler<TRequest, TResponse>
     Task<RequestResult<TResponse>> HandleAsync(TRequest input);
 }
 
-// Interface genérica para Mutations
 public interface IGraphQLMutationHandler<TRequest, TResponse>
 {
     Task<RequestResult<TResponse>> HandleAsync(TRequest input);
