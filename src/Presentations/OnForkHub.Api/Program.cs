@@ -1,4 +1,5 @@
 using GraphQL;
+using GraphQL.SystemTextJson;
 
 using OnForkHub.Core.Extensions;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
@@ -21,7 +22,7 @@ endpointManager.ConfigureAll(builder.Services);
 
 builder.Services.AddGraphQLServices();
 builder.Services.AddGraphQLOperations(typeof(Program).Assembly, typeof(IGraphQLQuery).Assembly);
-builder.Services.AddSingleton<IGraphQLTextSerializer>();
+builder.Services.AddSingleton<IGraphQLTextSerializer, GraphQLSerializer>();
 
 var app = builder.Build();
 
