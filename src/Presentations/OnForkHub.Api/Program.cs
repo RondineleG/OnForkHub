@@ -1,10 +1,6 @@
-using GraphQL;
-using GraphQL.SystemTextJson;
-
 using OnForkHub.Api.Middlewares;
-using OnForkHub.Core.Extensions;
-using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
-using OnForkHub.CrossCutting.GraphQL.HotChocolate;
+using OnForkHub.Application.Extensions;
+using OnForkHub.CrossCutting.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,16 +10,8 @@ builder.Services.AddSwaggerServices();
 builder.Services.AddRavenDbServices(builder.Configuration);
 builder.Services.AddEntityFrameworkServices(builder.Configuration);
 builder.Services.AddCustomServices();
-
-var endpointManager = new GraphQLEndpointManager();
-endpointManager.RegisterEndpoint(new HotChocolateEndpoint());
-endpointManager.RegisterEndpoint(new GraphQLNetEndpoint());
-builder.Services.AddSingleton(endpointManager);
-endpointManager.ConfigureAll(builder.Services);
-
-builder.Services.AddGraphQLServices();
-builder.Services.AddGraphQLOperations(typeof(Program).Assembly, typeof(IGraphQLQuery).Assembly);
-builder.Services.AddSingleton<IGraphQLTextSerializer, GraphQLSerializer>();
+builder.Services.AddGraphQLFromCrossCutting();
+builder.Services.AddGraphQLAdapters();
 
 var app = builder.Build();
 
@@ -35,19 +23,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ApiTypeDetectionMiddleware>();
 
-if (apiMode is "All" or "Rest")
+if (apiMode is "Rest")
 {
     app.MapGroup("/api/v1/rest").MapRestEndpoints();
 }
 
-if (apiMode is "All" or "HotChocolate")
+if (apiMode is "HotChocolate")
 {
-    app.MapGroup("/api/v1/graph/hc").MapHotChocolateEndpoints(endpointManager);
+    app.MapGroup("/api/v1/graph/hc").MapHotChocolateEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
 }
 
-if (apiMode is "All" or "GraphQLNet")
+if (apiMode is "GraphQLNet")
 {
-    app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(endpointManager);
+    app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
 }
 
 await app.RunAsync();

@@ -11,17 +11,40 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddGraphQLAdapters(this IServiceCollection services)
     {
-        // Handlers
         services.AddScoped<IGraphQLQueryHandler<PaginationRequestDto, IEnumerable<Category>>, GetAllCategoriesHandler>();
         services.AddScoped<IGraphQLMutationHandler<CategoryRequestDto, Category>, CreateCategoryHandler>();
 
-        // HotChocolate Adapters
-        services.AddScoped<HotChocolateQueryAdapter<PaginationRequestDto, IEnumerable<Category>>>();
-        services.AddScoped<HotChocolateMutationAdapter<CategoryRequestDto, Category>>();
+        services.AddScoped<IGraphQLQuery>(sp =>
+        {
+            var handler = sp.GetRequiredService<IGraphQLQueryHandler<PaginationRequestDto, IEnumerable<Category>>>();
+            return new HotChocolateQueryAdapter<PaginationRequestDto, IEnumerable<Category>>(
+                handler,
+                "getAllCategories",
+                "Retrieve all categories with pagination."
+            );
+        });
 
-        // GraphQL.Net Adapters
-        services.AddScoped<GraphQLNetQueryAdapter<PaginationRequestDto, IEnumerable<Category>>>();
-        services.AddScoped<GraphQLNetMutationAdapter<CategoryRequestDto, Category>>();
+        services.AddScoped<IGraphQLMutation>(sp =>
+        {
+            var handler = sp.GetRequiredService<IGraphQLMutationHandler<CategoryRequestDto, Category>>();
+            return new HotChocolateMutationAdapter<CategoryRequestDto, Category>(handler, "createCategory", "Create a new category.");
+        });
+
+        services.AddScoped<IGraphQLQuery>(sp =>
+        {
+            var handler = sp.GetRequiredService<IGraphQLQueryHandler<PaginationRequestDto, IEnumerable<Category>>>();
+            return new GraphQLNetQueryAdapter<PaginationRequestDto, IEnumerable<Category>>(
+                handler,
+                "getAllCategories",
+                "Retrieve all categories with pagination."
+            );
+        });
+
+        services.AddScoped<IGraphQLMutation>(sp =>
+        {
+            var handler = sp.GetRequiredService<IGraphQLMutationHandler<CategoryRequestDto, Category>>();
+            return new GraphQLNetMutationAdapter<CategoryRequestDto, Category>(handler, "createCategory", "Create a new category.");
+        });
 
         return services;
     }

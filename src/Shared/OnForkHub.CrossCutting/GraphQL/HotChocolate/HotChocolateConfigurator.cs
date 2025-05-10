@@ -20,10 +20,9 @@ public class HotChocolateConfigurator : IGraphQLConfigurator
 
         foreach (var assembly in assemblies)
         {
-            foreach (var type in assembly.GetTypes()
-                .Where(t => !t.IsAbstract
-                            && !t.IsGenericTypeDefinition
-                            && typeof(IGraphQLQuery).IsAssignableFrom(t)))
+            foreach (
+                var type in assembly.GetTypes().Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition && typeof(IGraphQLQuery).IsAssignableFrom(t))
+            )
             {
                 if (Activator.CreateInstance(type) is IGraphQLQuery instance)
                 {
@@ -31,10 +30,11 @@ public class HotChocolateConfigurator : IGraphQLConfigurator
                 }
             }
 
-            foreach (var type in assembly.GetTypes()
-                .Where(t => !t.IsAbstract
-                            && !t.IsGenericTypeDefinition
-                            && typeof(IGraphQLMutation).IsAssignableFrom(t)))
+            foreach (
+                var type in assembly
+                    .GetTypes()
+                    .Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition && typeof(IGraphQLMutation).IsAssignableFrom(t))
+            )
             {
                 if (Activator.CreateInstance(type) is IGraphQLMutation instance)
                 {

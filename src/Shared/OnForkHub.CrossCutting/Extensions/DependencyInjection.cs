@@ -1,3 +1,4 @@
+using OnForkHub.CrossCutting.GraphQL;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
@@ -10,14 +11,13 @@ public static class DependencyInjection
         services.AddSingleton<IGraphQLConfigurator, HotChocolateConfigurator>();
         services.AddSingleton<IGraphQLConfigurator, GraphQLNetConfigurator>();
 
-        // Create and configure the endpoint manager
         var endpointManager = new GraphQLEndpointManager();
         endpointManager.RegisterEndpoint(new HotChocolateEndpoint());
         endpointManager.RegisterEndpoint(new GraphQLNetEndpoint());
         endpointManager.ConfigureAll(services);
-
-        // Register the configured instance
         services.AddSingleton(endpointManager);
+
+        services.AddSingleton<GraphQLAdapterFactory>();
 
         return services;
     }
