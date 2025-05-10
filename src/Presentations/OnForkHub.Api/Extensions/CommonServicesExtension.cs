@@ -1,7 +1,7 @@
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
-public static class ServicesExtensionsConfiguration
+public static class CommonServicesExtension
 {
     public static IServiceCollection AddEntityValidator(this IServiceCollection services, Assembly assembly)
     {

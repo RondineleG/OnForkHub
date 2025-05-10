@@ -1,7 +1,7 @@
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
-public static class EndpoinConfiguration
+public static class EndpoinExtension
 {
     public static void AddEndpoin(this IServiceCollection services, Type markerType)
     {

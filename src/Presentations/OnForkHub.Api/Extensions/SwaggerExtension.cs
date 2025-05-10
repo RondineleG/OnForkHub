@@ -1,7 +1,7 @@
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
-public static class SwaggerConfiguration
+public static class SwaggerExtension
 {
     public static IServiceCollection AddSwaggerServices(this IServiceCollection services)
     {

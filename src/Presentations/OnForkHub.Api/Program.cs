@@ -6,6 +6,7 @@ using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
 var builder = WebApplication.CreateBuilder(args);
+
 var apiMode = builder.Configuration.GetValue<string>("AppSettings:ApiMode") ?? "All";
 
 builder.Services.AddSwaggerServices();
@@ -16,7 +17,6 @@ builder.Services.AddCustomServices();
 var endpointManager = new GraphQLEndpointManager();
 endpointManager.RegisterEndpoint(new HotChocolateEndpoint());
 endpointManager.RegisterEndpoint(new GraphQLNetEndpoint());
-
 builder.Services.AddSingleton(endpointManager);
 endpointManager.ConfigureAll(builder.Services);
 
@@ -34,20 +34,19 @@ if (app.Environment.IsDevelopment())
 Console.WriteLine($"API Mode: {apiMode}");
 Console.WriteLine($"Number of registered endpoints: {endpointManager.Endpoints.Count}");
 
-foreach (var endpoint in endpointManager.Endpoints)
+if (apiMode is "All" or "Rest")
 {
-    Console.WriteLine($"Found endpoint: {endpoint.GetType().Name} at path {endpoint.Path}");
+    app.MapGroup("/api/v1/rest").MapRestEndpoints();
+}
 
-    if (endpoint is HotChocolateEndpoint && (apiMode == "All" || apiMode == "HotChocolate"))
-    {
-        app.MapGraphQL(path: endpoint.Path);
-        Console.WriteLine($"HotChocolate GraphQL endpoint registered at {endpoint.Path}");
-    }
-    else if (endpoint is GraphQLNetEndpoint && (apiMode == "All" || apiMode == "GraphQLNet"))
-    {
-        app.UseGraphQL(endpoint.Path);
-        Console.WriteLine($"GraphQL.NET endpoint registered at {endpoint.Path}");
-    }
+if (apiMode is "All" or "HotChocolate")
+{
+    app.MapGroup("/api/v1/graph/hc").MapHotChocolateEndpoints(endpointManager);
+}
+
+if (apiMode is "All" or "GraphQLNet")
+{
+    app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(endpointManager);
 }
 
 if (apiMode is "All" or "Rest")
@@ -55,5 +54,4 @@ if (apiMode is "All" or "Rest")
     app.UseCustomSwagger();
 }
 
-await app.UseEndpointsAsync();
 await app.RunAsync();
