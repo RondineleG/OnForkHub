@@ -8,7 +8,6 @@
 [![Issues Welcome](https://img.shields.io/badge/Issues-welcome-brightgreen.svg)](https://github.com/RondineleG/OnForkHub/issues)
 [![Code Analysis](https://github.com/RondineleG/OnForkHub/actions/workflows/qodana-code-quality.yml/badge.svg)](https://github.com/RondineleG/OnForkHub/actions/workflows/qodana-code-quality.yml)
 [![Validate Commit Messages](https://github.com/RondineleG/OnForkHub/actions/workflows/validate-commit.yaml/badge.svg)](https://github.com/RondineleG/OnForkHub/actions/workflows/validate-commit.yaml)
-[![Build Docker Images](https://github.com/RondineleG/OnForkHub/actions/workflows/gitHub-container-registry.yml/badge.svg?branch=dev&event=push)](https://github.com/RondineleG/OnForkHub/actions/workflows/gitHub-container-registry.yml)
 
 *A distributed video-sharing platform with hybrid P2P and CDN delivery*
 
@@ -71,8 +70,8 @@ The project has been successfully deployed and tested on a minimal VPS configura
 
 ### Public Access
 Development  environment  deployment is available at:
-- **Frontend**: http://20.119.85.209/
-- **API Documentation**: http://20.119.85.209:9000/swagger/index.html
+- **Frontend**: ...
+- **API Documentation**: ...
 
 ### Docker Setup
 The deployment uses Docker with a reverse proxy configuration:
