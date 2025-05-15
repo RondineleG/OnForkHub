@@ -152,6 +152,9 @@ public static class CommonServicesExtension
         services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
         services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
 
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IValidationService<Category>, CategoryValidationService>();
+
         return services;
     }
 }

@@ -57,7 +57,9 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
         services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
+        services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
         services.AddScoped<IValidationService<Category>, CategoryValidationService>();
 
         return services;

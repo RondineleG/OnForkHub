@@ -12,6 +12,7 @@ To reduce strong coupling and improve testability, interfaces were created for a
 
 - `ICategoryService`
 - `ICategoryRepositoryEF`
+- `ICategoryRepositoryRavenDB`
 - `IValidationService<Category>`
 
 These interfaces were registered in the dependency injection container in `src/Core/OnForkHub.Application/Extensions/DependencyInjection.cs`.
@@ -23,6 +24,25 @@ Services were refactored to ensure they have single, well-defined responsibiliti
 ### 3. Class Hierarchies
 
 Class hierarchies were reviewed and optimized to ensure they are well-structured and follow SOLID principles. Base classes like `BaseService` in `src/Core/OnForkHub.Application/Services/Base/BaseService.cs` and `BaseEntity` in `src/Core/OnForkHub.Core/Entities/Base/BaseEntity.cs` were reviewed to ensure they do not contain unnecessary logic.
+
+### 4. Refactored Services and Their Responsibilities
+
+The following services were refactored to follow the Single Responsibility Principle:
+
+- `CategoryService`: Handles only category-related operations.
+- `CategoryServiceRavenDB`: Handles only category-related operations for RavenDB.
+- `BaseService`: Provides common service functionalities and delegates validation to separate validation services.
+
+### 5. New Interfaces and Their Purpose
+
+The following new interfaces were introduced to decouple dependencies and improve testability:
+
+- `ICategoryService`: Defines the contract for category-related operations.
+- `ICategoryRepositoryEF`: Defines the contract for category-related operations using Entity Framework.
+- `ICategoryRepositoryRavenDB`: Defines the contract for category-related operations using RavenDB.
+- `IValidationService<Category>`: Defines the contract for validating `Category` entities.
+
+These interfaces were registered in the dependency injection container to ensure that the services are properly injected and can be easily replaced with mock implementations for testing.
 
 ## Conclusion
 
