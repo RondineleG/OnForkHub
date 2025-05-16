@@ -4,8 +4,9 @@ namespace OnForkHub.Application.GraphQL.Queries.Categories;
 
 public class GetAllCategoryQuery : HotChocolateQueryBase
 {
-    public override string Name => "getAllCategories";
     public override string Description => "Returns all categories";
+
+    public override string Name => "getAllCategories";
 
     public static async Task<RequestResult<IEnumerable<Category>>> HandleAsync(
         [Service] IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase

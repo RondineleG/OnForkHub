@@ -6,13 +6,6 @@ namespace OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 
 public class GraphQLNetSchemaBuilder : IGraphQLSchemaBuilder, IDisposable
 {
-    private readonly List<IGraphQLQuery> _queries = [];
-    private readonly List<IGraphQLMutation> _mutations = [];
-
-    private readonly Schema _schema;
-    private readonly QueryGraphType _queryType;
-    private readonly MutationGraphType _mutationType;
-
     public GraphQLNetSchemaBuilder(IServiceProvider serviceProvider)
     {
         _queryType = new QueryGraphType();
@@ -21,15 +14,25 @@ public class GraphQLNetSchemaBuilder : IGraphQLSchemaBuilder, IDisposable
         _schema = new Schema(serviceProvider) { Query = _queryType, Mutation = _mutationType };
     }
 
-    public IGraphQLSchemaBuilder AddQuery(IGraphQLQuery query)
-    {
-        _queries.Add(query);
-        return this;
-    }
+    private readonly List<IGraphQLMutation> _mutations = [];
+
+    private readonly MutationGraphType _mutationType;
+
+    private readonly List<IGraphQLQuery> _queries = [];
+
+    private readonly QueryGraphType _queryType;
+
+    private readonly Schema _schema;
 
     public IGraphQLSchemaBuilder AddMutation(IGraphQLMutation mutation)
     {
         _mutations.Add(mutation);
+        return this;
+    }
+
+    public IGraphQLSchemaBuilder AddQuery(IGraphQLQuery query)
+    {
+        _queries.Add(query);
         return this;
     }
 
@@ -54,19 +57,19 @@ public class GraphQLNetSchemaBuilder : IGraphQLSchemaBuilder, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private sealed class QueryGraphType : ObjectGraphType
-    {
-        public QueryGraphType()
-        {
-            Name = "Query";
-        }
-    }
-
     private sealed class MutationGraphType : ObjectGraphType
     {
         public MutationGraphType()
         {
             Name = "Mutation";
+        }
+    }
+
+    private sealed class QueryGraphType : ObjectGraphType
+    {
+        public QueryGraphType()
+        {
+            Name = "Query";
         }
     }
 }

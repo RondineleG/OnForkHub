@@ -9,8 +9,10 @@ public class GraphQLNetMutationAdapter<TRequest, TResponse>(IGraphQLMutationHand
     : GraphQLNetMutationBase
 {
     private readonly IGraphQLMutationHandler<TRequest, TResponse> _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-    public override string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
+
     public override string Description { get; } = description ?? throw new ArgumentNullException(nameof(description));
+
+    public override string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
 
     protected override void RegisterMutation(ObjectGraphType descriptor)
     {

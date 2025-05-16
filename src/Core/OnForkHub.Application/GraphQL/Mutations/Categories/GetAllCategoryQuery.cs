@@ -7,15 +7,26 @@ using OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
 namespace OnForkHub.Application.GraphQL.Mutations.Categories;
 
-public class GetAllCategoryQuery
+public class GetAllCategoryGraphQLNetAdapter : GraphQLNetQueryBase
 {
-    public string Name { get; set; } = "getAllCategories";
-    public string Description { get; set; } = "Returns all categories";
+    public override string Description => new GetAllCategoryQuery().Description;
 
-    public static async Task<RequestResult<IEnumerable<Category>>> HandleAsync(IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
+    public override string Name => new GetAllCategoryQuery().Name;
+
+    protected override void RegisterQuery(ObjectGraphType graphType)
     {
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
-        return await useCase.ExecuteAsync(request);
+        graphType
+            .Field<ListGraphType<CategoryGraphType>>(Name)
+            .Description(Description)
+            .ResolveAsync(async context =>
+            {
+                var serviceProvider = context.RequestServices ?? throw new InvalidOperationException("RequestServices is null.");
+
+                var useCase = serviceProvider.GetRequiredService<IUseCase<PaginationRequestDto, IEnumerable<Category>>>();
+
+                var result = await GetAllCategoryQuery.HandleAsync(useCase);
+                return result.Data;
+            });
     }
 }
 
@@ -37,25 +48,16 @@ public class GetAllCategoryHotChocolateAdapter : HotChocolateQueryBase
     }
 }
 
-public class GetAllCategoryGraphQLNetAdapter : GraphQLNetQueryBase
+public class GetAllCategoryQuery
 {
-    public override string Name => new GetAllCategoryQuery().Name;
-    public override string Description => new GetAllCategoryQuery().Description;
+    public string Description { get; set; } = "Returns all categories";
 
-    protected override void RegisterQuery(ObjectGraphType graphType)
+    public string Name { get; set; } = "getAllCategories";
+
+    public static async Task<RequestResult<IEnumerable<Category>>> HandleAsync(IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
     {
-        graphType
-            .Field<ListGraphType<CategoryGraphType>>(Name)
-            .Description(Description)
-            .ResolveAsync(async context =>
-            {
-                var serviceProvider = context.RequestServices ?? throw new InvalidOperationException("RequestServices is null.");
-
-                var useCase = serviceProvider.GetRequiredService<IUseCase<PaginationRequestDto, IEnumerable<Category>>>();
-
-                var result = await GetAllCategoryQuery.HandleAsync(useCase);
-                return result.Data;
-            });
+        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        return await useCase.ExecuteAsync(request);
     }
 }
 

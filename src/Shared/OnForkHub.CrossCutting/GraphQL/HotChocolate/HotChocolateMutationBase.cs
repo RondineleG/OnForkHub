@@ -4,8 +4,9 @@ namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
 public abstract class HotChocolateMutationBase : IGraphQLMutation
 {
-    public abstract string Name { get; }
     public abstract string Description { get; }
+
+    public abstract string Name { get; }
 
     public void Register(object descriptor)
     {

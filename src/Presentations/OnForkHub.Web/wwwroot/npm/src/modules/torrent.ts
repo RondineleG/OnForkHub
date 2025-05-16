@@ -57,7 +57,6 @@ export async function startDownload(
 
             currentTorrent = torrent;
         });
-
     } catch (error) {
         console.error('Error in startDownload:', error);
         throw error;

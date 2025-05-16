@@ -5,18 +5,20 @@ namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 public class HotChocolateSchemaBuilder(IRequestExecutorBuilder executorBuilder) : IGraphQLSchemaBuilder
 {
     private readonly IRequestExecutorBuilder _executorBuilder = executorBuilder;
-    private readonly List<IGraphQLQuery> _queries = [];
+
     private readonly List<IGraphQLMutation> _mutations = [];
 
-    public IGraphQLSchemaBuilder AddQuery(IGraphQLQuery query)
-    {
-        _queries.Add(query);
-        return this;
-    }
+    private readonly List<IGraphQLQuery> _queries = [];
 
     public IGraphQLSchemaBuilder AddMutation(IGraphQLMutation mutation)
     {
         _mutations.Add(mutation);
+        return this;
+    }
+
+    public IGraphQLSchemaBuilder AddQuery(IGraphQLQuery query)
+    {
+        _queries.Add(query);
         return this;
     }
 

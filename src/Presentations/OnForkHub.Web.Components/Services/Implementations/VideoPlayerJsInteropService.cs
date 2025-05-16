@@ -6,12 +6,12 @@ namespace OnForkHub.Web.Components.Services.Implementations;
 
 public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInteropService
 {
-    private readonly Lazy<Task<IJSObjectReference>> mainTask = new(
-        () => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask()
+    private readonly Lazy<Task<IJSObjectReference>> mainTask = new(() =>
+        jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask()
     );
 
-    private readonly Lazy<Task<IJSObjectReference>> moduleTask = new(
-        () => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
+    private readonly Lazy<Task<IJSObjectReference>> moduleTask = new(() =>
+        jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
     );
 
     public async ValueTask DisposeAsync()
