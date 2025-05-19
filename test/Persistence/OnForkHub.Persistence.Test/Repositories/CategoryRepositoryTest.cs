@@ -1,18 +1,16 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 namespace OnForkHub.Persistence.Test.Repositories;
 
 public class CategoryRepositoryTest
 {
+    private readonly CategoryRepositoryEF _categoryRepository;
+
+    private readonly IEntityFrameworkDataContext _context;
+
     public CategoryRepositoryTest()
     {
         _context = Substitute.For<IEntityFrameworkDataContext>();
         _categoryRepository = new CategoryRepositoryEF(_context);
     }
-
-    private readonly CategoryRepositoryEF _categoryRepository;
-
-    private readonly IEntityFrameworkDataContext _context;
 
     [Fact]
     [Trait("Category", "Unit")]

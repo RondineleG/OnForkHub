@@ -1,8 +1,7 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using GraphQL;
 using GraphQL.Types;
 
+using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.Core.Requests;
 
 namespace OnForkHub.CrossCutting.GraphQL.GraphQLNet;

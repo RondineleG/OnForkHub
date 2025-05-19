@@ -1,5 +1,3 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using OnForkHub.Web.Components.Models;
 
 namespace OnForkHub.Web.Components.VideoPlayer;

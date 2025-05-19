@@ -1,5 +1,3 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 global using Microsoft.Azure.Cosmos;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.ChangeTracking;

@@ -338,5 +338,15 @@ curly_bracket_next_line = true
 indent_brace_style = Allman
 
 # CodeRush
+[*.cs]
 dotnet_diagnostic.CRR0034.severity = none
 dotnet_diagnostic.CRR0035.severity = none
+dotnet_diagnostic.CRR1000.severity = none
+
+# StyleCop
+[*.{cs,vb}]
+dotnet_diagnostic.SA1517.severity = none
+
+
+[*.{cs,vb}]
+dotnet_diagnostic.IDE0073.severity = none

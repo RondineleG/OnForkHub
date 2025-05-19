@@ -1,5 +1,3 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 namespace OnForkHub.Persistence.Repositories;
 
 public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context) : IBaseRepository<Category>, ICategoryRepositoryComos

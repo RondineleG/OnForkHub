@@ -1,5 +1,3 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
 public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync

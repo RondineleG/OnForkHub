@@ -1,8 +1,6 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using Microsoft.Extensions.DependencyInjection;
 
-namespace OnForkHub.Core.GraphQL;
+namespace OnForkHub.Core.Interfaces.GraphQL;
 
 public interface IGraphQLConfigurator
 {

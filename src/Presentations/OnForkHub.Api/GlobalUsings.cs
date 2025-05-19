@@ -1,5 +1,3 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 global using Asp.Versioning;
 global using Asp.Versioning.Builder;
 

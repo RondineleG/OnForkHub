@@ -1,5 +1,3 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 namespace OnForkHub.Scripts.Git;
 
 public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHubClient

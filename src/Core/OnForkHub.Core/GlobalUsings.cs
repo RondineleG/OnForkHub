@@ -1,5 +1,3 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 global using OnForkHub.Abstractions.Resources.Core.Entities;
 global using OnForkHub.Abstractions.Resources.Core.ValueObjects;
 global using OnForkHub.Core.Converters;

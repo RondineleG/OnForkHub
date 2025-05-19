@@ -1,6 +1,6 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using HotChocolate.Execution.Configuration;
+
+using OnForkHub.Core.Interfaces.GraphQL;
 
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 

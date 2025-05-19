@@ -1,8 +1,6 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using Microsoft.Extensions.DependencyInjection;
 
-using OnForkHub.Core.GraphQL;
+using OnForkHub.Core.Interfaces.GraphQL;
 
 using System.Diagnostics.CodeAnalysis;
 

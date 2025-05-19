@@ -1,10 +1,8 @@
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using Microsoft.Extensions.DependencyInjection;
 
 using OnForkHub.Application.GraphQL.Handlers;
 using OnForkHub.Application.Services;
-using OnForkHub.Core.GraphQL;
+using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.Core.Validations.Categories;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
