@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace OnForkHub.Core.Validations;
 
 public class ValidationService<T>(IValidationBuilder<T> builder, IEntityValidator<T> validator) : IValidationService<T>

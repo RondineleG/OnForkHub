@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace OnForkHub.Core.Test.ValueObjects.Base;
 
 public class SampleValueObjectTestFixture(int property1, string property2) : ValueObject

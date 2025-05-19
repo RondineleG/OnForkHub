@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace OnForkHub.Scripts.Husky;
 
 public sealed class HuskyConfiguration(

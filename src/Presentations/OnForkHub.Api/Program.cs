@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using OnForkHub.Api.Middlewares;
 using OnForkHub.Application.Extensions;
 using OnForkHub.CrossCutting.Extensions;

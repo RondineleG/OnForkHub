@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace OnForkHub.Application.UseCases.Categories.V3;
 
 public class UpdateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenDB, IEntityValidator<Category> validator)

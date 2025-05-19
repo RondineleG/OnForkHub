@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
 
 namespace OnForkHub.Web.Components.VideoPlayer;

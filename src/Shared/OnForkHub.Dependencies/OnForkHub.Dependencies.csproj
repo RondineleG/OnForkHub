@@ -1,15 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>$(NoWarn);1591</NoWarn>
-    <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <LangVersion>latest</LangVersion>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http.Client" Version="8.*" />
@@ -47,14 +38,6 @@
     <PackageReference Include="FluentAssertions" Version="7.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.*" />
     <PackageReference Include="NSubstitute" Version="5.*" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\stylecop.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.*">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />

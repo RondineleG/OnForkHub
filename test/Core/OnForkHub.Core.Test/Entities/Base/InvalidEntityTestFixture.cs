@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 namespace OnForkHub.Core.Test.Entities.Base;
 
 public class InvalidEntityTestFixture : BaseEntity

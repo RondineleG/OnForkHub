@@ -1,3 +1,5 @@
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using OnForkHub.Web.Components.Services.Implementations;
 using OnForkHub.Web.Components.Services.Interfaces;
 
