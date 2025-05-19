@@ -88,15 +88,18 @@ public class CategoryServiceTest
         var validationResult = new ValidationResult();
         validationResult.AddError("Test error", "TestField");
 
-        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(validationResult);
+        _validationService.Validate(Arg.Any<Category>()).Returns(validationResult);
+
+        _categoryRepository.UpdateAsync(Arg.Any<Category>()).Returns(Task.FromResult(RequestResult<Category>.Success(category)));
 
         var result = await _categoryService.UpdateAsync(category);
 
+        result.Should().NotBeNull();
         result.Status.Should().Be(EResultStatus.HasValidation);
         result.Validations.Should().Contain(v => v.Description == "Test error" && v.PropertyName == "TestField");
 
         await _categoryRepository.DidNotReceive().UpdateAsync(Arg.Any<Category>());
-        _validationService.Received(1).ValidateUpdate(Arg.Is<Category>(c => c == category));
+        _validationService.Received(1).Validate(Arg.Is<Category>(c => c == category));
     }
 
     [Fact]
@@ -165,16 +168,14 @@ public class CategoryServiceTest
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
 
-        _validationService.ValidateUpdate(Arg.Any<Category>()).Returns(new ValidationResult());
-
-        _categoryRepository.UpdateAsync(category).Returns(RequestResult<Category>.Success(category));
-
+        _validationService.Validate(Arg.Any<Category>()).Returns(new ValidationResult());
+        _categoryRepository.UpdateAsync(category).Returns(Task.FromResult(RequestResult<Category>.Success(category)));
         var result = await _categoryService.UpdateAsync(category);
-
+        result.Should().NotBeNull();
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().Be(category);
 
         await _categoryRepository.Received(1).UpdateAsync(Arg.Is<Category>(c => c == category));
-        _validationService.Received(1).ValidateUpdate(Arg.Is<Category>(c => c == category));
+        _validationService.Received(1).Validate(Arg.Is<Category>(c => c == category));
     }
 }

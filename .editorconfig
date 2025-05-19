@@ -336,3 +336,7 @@ end_of_line = crlf
 [*.{cpp,h,in}]
 curly_bracket_next_line = true
 indent_brace_style = Allman
+
+# CodeRush
+dotnet_diagnostic.CRR0034.severity = none
+dotnet_diagnostic.CRR0035.severity = none
