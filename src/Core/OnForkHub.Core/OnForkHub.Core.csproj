@@ -1,16 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <NoWarn>$(NoWarn);1591</NoWarn>
-        <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
-        <LangVersion>latest</LangVersion>
-    </PropertyGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
-      <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
-    </ItemGroup>
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
+  </ItemGroup>
 </Project>

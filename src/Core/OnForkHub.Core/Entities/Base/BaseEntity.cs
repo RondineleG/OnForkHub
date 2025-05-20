@@ -2,10 +2,6 @@ namespace OnForkHub.Core.Entities.Base;
 
 public abstract class BaseEntity : IAggregateRoot
 {
-    private readonly Id _entityId;
-
-    public string Id { get; set; }
-
     protected BaseEntity()
     {
         _entityId = ValueObjects.Id.Create();
@@ -23,13 +19,18 @@ public abstract class BaseEntity : IAggregateRoot
         UpdatedAt = updatedAt;
     }
 
+    private readonly Id _entityId;
+
+    public DateTime CreatedAt { get; protected set; }
+
+    public string Id { get; set; }
+
+    public DateTime? UpdatedAt { get; protected set; }
+
     protected virtual string GetCollectionName()
     {
         return GetType().Name;
     }
-
-    public DateTime CreatedAt { get; protected set; }
-    public DateTime? UpdatedAt { get; protected set; }
 
     protected void Update()
     {

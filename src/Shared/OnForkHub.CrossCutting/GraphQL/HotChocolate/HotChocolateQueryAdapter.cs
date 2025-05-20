@@ -1,5 +1,6 @@
 using HotChocolate.Types;
 
+using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.Core.Requests;
 
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
@@ -9,8 +10,9 @@ public class HotChocolateQueryAdapter<TRequest, TResponse>(IGraphQLQueryHandler<
 {
     private readonly IGraphQLQueryHandler<TRequest, TResponse> _handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-    public override string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
     public override string Description { get; } = description ?? throw new ArgumentNullException(nameof(description));
+
+    public override string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
 
     protected override void RegisterQuery(IObjectTypeDescriptor descriptor)
     {

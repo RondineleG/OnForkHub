@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using OnForkHub.Core.GraphQL;
+using OnForkHub.Core.Interfaces.GraphQL;
 
 using System.Diagnostics.CodeAnalysis;
 
@@ -9,12 +9,6 @@ namespace OnForkHub.Core.Extensions;
 [ExcludeFromCodeCoverage]
 public static class GraphQLServiceExtensions
 {
-    public static IServiceCollection AddGraphQLServices(this IServiceCollection services)
-    {
-        services.AddSingleton<GraphQLEndpointManager>();
-        return services;
-    }
-
     public static IServiceCollection AddGraphQLOperations(this IServiceCollection services, params Assembly[] assemblies)
     {
         foreach (var assembly in assemblies)
@@ -30,6 +24,12 @@ public static class GraphQLServiceExtensions
                 services.AddTransient(typeof(IGraphQLMutation), mutationType);
             }
         }
+        return services;
+    }
+
+    public static IServiceCollection AddGraphQLServices(this IServiceCollection services)
+    {
+        services.AddSingleton<GraphQLEndpointManager>();
         return services;
     }
 }

@@ -3,6 +3,36 @@ namespace OnForkHub.Api.Extensions;
 [ExcludeFromCodeCoverage]
 public static class CommonServicesExtension
 {
+    public static IServiceCollection AddCustomServices(this IServiceCollection services)
+    {
+        services.AddEndpoin(typeof(Program));
+        services.AddValidators(typeof(CategoryValidator).Assembly);
+        services.AddEntityValidator(typeof(CategoryValidator).Assembly);
+        services.AddUseCases(typeof(GetAllCategoryUseCase).Assembly);
+        services.AddValidationRule(typeof(CategoryNameValidationRule).Assembly);
+
+        services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
+        services.AddScoped<IValidationBuilder<Category>, ValidationBuilder<Category>>();
+        services.AddScoped<IEntityValidator<Category>, CategoryValidator>();
+        services.AddScoped(typeof(IValidationService<>), typeof(ValidationService<>));
+        services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
+        services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
+        services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
+
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IValidationService<Category>, CategoryValidationService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddEntityFrameworkServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
+        services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
+        return services;
+    }
+
     public static IServiceCollection AddEntityValidator(this IServiceCollection services, Assembly assembly)
     {
         var validatorTypes = assembly
@@ -18,6 +48,21 @@ public static class CommonServicesExtension
             services.Add(new ServiceDescriptor(implementedInterface, type, ServiceLifetime.Scoped));
             Console.WriteLine($"Registered: {implementedInterface} -> {type}");
         }
+        return services;
+    }
+
+    public static IServiceCollection AddRavenDbServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var ravenDbSettings = configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>();
+
+        services.AddSingleton<IDocumentStore>(serviceProvider =>
+        {
+            var store = new DocumentStore { Urls = ravenDbSettings?.Urls, Database = ravenDbSettings?.Database };
+            store.Initialize();
+            return store;
+        });
+
+        services.AddSingleton<RavenDbDataContext>();
         return services;
     }
 
@@ -111,47 +156,5 @@ public static class CommonServicesExtension
                     )
                 )
             );
-    }
-
-    public static IServiceCollection AddRavenDbServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        var ravenDbSettings = configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>();
-
-        services.AddSingleton<IDocumentStore>(serviceProvider =>
-        {
-            var store = new DocumentStore { Urls = ravenDbSettings?.Urls, Database = ravenDbSettings?.Database };
-            store.Initialize();
-            return store;
-        });
-
-        services.AddSingleton<RavenDbDataContext>();
-        return services;
-    }
-
-    public static IServiceCollection AddEntityFrameworkServices(this IServiceCollection services, IConfiguration configuration)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
-        services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
-        return services;
-    }
-
-    public static IServiceCollection AddCustomServices(this IServiceCollection services)
-    {
-        services.AddEndpoin(typeof(Program));
-        services.AddValidators(typeof(CategoryValidator).Assembly);
-        services.AddEntityValidator(typeof(CategoryValidator).Assembly);
-        services.AddUseCases(typeof(GetAllCategoryUseCase).Assembly);
-        services.AddValidationRule(typeof(CategoryNameValidationRule).Assembly);
-
-        services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
-        services.AddScoped<IValidationBuilder<Category>, ValidationBuilder<Category>>();
-        services.AddScoped<IEntityValidator<Category>, CategoryValidator>();
-        services.AddScoped(typeof(IValidationService<>), typeof(ValidationService<>));
-        services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
-        services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
-        services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
-
-        return services;
     }
 }

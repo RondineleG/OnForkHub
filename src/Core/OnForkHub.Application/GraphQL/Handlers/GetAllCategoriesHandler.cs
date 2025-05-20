@@ -1,4 +1,4 @@
-using OnForkHub.Core.GraphQL;
+using OnForkHub.Core.Interfaces.GraphQL;
 
 namespace OnForkHub.Application.GraphQL.Handlers;
 

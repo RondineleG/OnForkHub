@@ -11,7 +11,7 @@ echo "🚀 Preparing to commit changes..."
 echo "----------------------------------"
 
 echo "🎨 Checking C# file formatting with CSharpier..."
-if dotnet csharpier . --check; then
+if dotnet csharpier format .; then
     echo "${GREEN}✅ All files are properly formatted.${RESET}"
 else
     echo "${RED}❌ Some files need formatting. Formatting now...${RESET}"
