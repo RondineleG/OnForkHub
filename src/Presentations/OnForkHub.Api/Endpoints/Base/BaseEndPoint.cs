@@ -23,36 +23,6 @@ public abstract class BaseEndpoint<TEntity>
         return $"/api/v{version}/{route}";
     }
 
-    protected static async Task<IResult> HandleUseCaseAsync<TRequest, TResponse>(
-        IUseCase<TRequest, TResponse> useCase,
-        ILogger logger,
-        TRequest request,
-        Func<RequestResult<TResponse>, IResult> successHandler,
-        string errorTitle
-    )
-    {
-        ArgumentNullException.ThrowIfNull(useCase);
-        ArgumentNullException.ThrowIfNull(logger);
-
-        try
-        {
-            EndpointLogMessages.LogExecutingUseCase(logger, useCase.GetType().Name, JsonSerializer.Serialize(request), null);
-            var result = await useCase.ExecuteAsync(request);
-
-            return result.Status == EResultStatus.Success ? successHandler(result) : MapResponse(result);
-        }
-        catch (OperationCanceledException)
-        {
-            EndpointLogMessages.LogOperationCancelled(logger, useCase.GetType().Name, null);
-            return Results.StatusCode(499);
-        }
-        catch (Exception ex)
-        {
-            EndpointLogMessages.LogUseCaseError(logger, useCase.GetType().Name, ex.Message, ex);
-            return Results.Problem(title: errorTitle, detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-        }
-    }
-
     protected static async Task<IResult> HandleCreateUseCase<TRequest, TResponse>(
         IUseCase<TRequest, TResponse> useCase,
         ILogger logger,
@@ -93,6 +63,36 @@ public abstract class BaseEndpoint<TEntity>
     protected static async Task<IResult> HandleUseCase<TRequest, TResponse>(IUseCase<TRequest, TResponse> useCase, ILogger logger, TRequest request)
     {
         return await HandleUseCaseAsync(useCase, logger, request, MapResponse, "Internal Server Error");
+    }
+
+    protected static async Task<IResult> HandleUseCaseAsync<TRequest, TResponse>(
+        IUseCase<TRequest, TResponse> useCase,
+        ILogger logger,
+        TRequest request,
+        Func<RequestResult<TResponse>, IResult> successHandler,
+        string errorTitle
+    )
+    {
+        ArgumentNullException.ThrowIfNull(useCase);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        try
+        {
+            EndpointLogMessages.LogExecutingUseCase(logger, useCase.GetType().Name, JsonSerializer.Serialize(request), null);
+            var result = await useCase.ExecuteAsync(request);
+
+            return result.Status == EResultStatus.Success ? successHandler(result) : MapResponse(result);
+        }
+        catch (OperationCanceledException)
+        {
+            EndpointLogMessages.LogOperationCancelled(logger, useCase.GetType().Name, null);
+            return Results.StatusCode(499);
+        }
+        catch (Exception ex)
+        {
+            EndpointLogMessages.LogUseCaseError(logger, useCase.GetType().Name, ex.Message, ex);
+            return Results.Problem(title: errorTitle, detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     private static IResult MapResponse<T>(RequestResult<T> result)

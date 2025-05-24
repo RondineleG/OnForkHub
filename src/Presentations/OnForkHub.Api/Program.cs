@@ -1,5 +1,6 @@
 using OnForkHub.Api.Middlewares;
 using OnForkHub.Application.Extensions;
+using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.CrossCutting.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);

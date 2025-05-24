@@ -16,6 +16,7 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
     };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     private readonly IProcessRunner _processRunner = processRunner ?? throw new ArgumentNullException(nameof(processRunner));
 
     public async Task ConfigureAliasesAsync()
@@ -73,24 +74,6 @@ public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner process
         await ReloadProfilesAsync();
     }
 
-    private async Task ReloadProfilesAsync()
-    {
-        var reloadScript =
-            "$env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User'); if (Test-Path $PROFILE) { . $PROFILE }";
-
-        foreach (var shell in new[] { "powershell", "pwsh" })
-        {
-            try
-            {
-                await _processRunner.RunAsync(shell, $"-NoProfile -Command {reloadScript}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(ELogLevel.Warning, $"Failed to reload {shell} profile: {ex.Message}");
-            }
-        }
-    }
-
     private async Task ConfigureProfileAsync(string profilePath)
     {
         try
@@ -130,7 +113,6 @@ function GitCommit {
     }
 }
 
-
 Set-Alias -Name gc -Value GitCommit -Force -Option AllScope
 
 function GitTree {
@@ -169,6 +151,24 @@ Set-Alias -Name gl -Value GitLog -Force -Option AllScope";
         catch (Exception ex)
         {
             _logger.Log(ELogLevel.Warning, $"Failed to configure profile {profilePath}: {ex.Message}");
+        }
+    }
+
+    private async Task ReloadProfilesAsync()
+    {
+        var reloadScript =
+            "$env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User'); if (Test-Path $PROFILE) { . $PROFILE }";
+
+        foreach (var shell in new[] { "powershell", "pwsh" })
+        {
+            try
+            {
+                await _processRunner.RunAsync(shell, $"-NoProfile -Command {reloadScript}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(ELogLevel.Warning, $"Failed to reload {shell} profile: {ex.Message}");
+            }
         }
     }
 }

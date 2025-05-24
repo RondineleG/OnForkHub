@@ -13,24 +13,8 @@ public sealed class CliHandler(ILogger logger, IPackageInstaller packageInstalle
     };
 
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
     private readonly IPackageInstaller _packageInstaller = packageInstaller ?? throw new ArgumentNullException(nameof(packageInstaller));
-
-    public void ShowHelp()
-    {
-        _logger.Log(ELogLevel.Info, "\nUsage: dtn <command> [options]");
-        _logger.Log(ELogLevel.Info, "\nCommands:");
-
-        foreach (var cmd in _commands)
-        {
-            var formattedCommand = $"  {cmd.Key,-CommandColumnWidth} {cmd.Value}";
-            _logger.Log(ELogLevel.Info, formattedCommand);
-        }
-
-        _logger.Log(ELogLevel.Info, "\nExamples:");
-        _logger.Log(ELogLevel.Info, "  dtn -i Serilog -v 3.*");
-        _logger.Log(ELogLevel.Info, "  dtn -s Newtonsoft");
-        _logger.Log(ELogLevel.Info, "  dtn -p");
-    }
 
     public async Task<bool> HandlePackageCommand(string[] args)
     {
@@ -47,6 +31,23 @@ public sealed class CliHandler(ILogger logger, IPackageInstaller packageInstalle
         }
 
         return args.Contains("-i") ? await HandleDirectInstall(args) : args.Contains("-s") && await HandleSearch(args);
+    }
+
+    public void ShowHelp()
+    {
+        _logger.Log(ELogLevel.Info, "\nUsage: dtn <command> [options]");
+        _logger.Log(ELogLevel.Info, "\nCommands:");
+
+        foreach (var cmd in _commands)
+        {
+            var formattedCommand = $"  {cmd.Key, -CommandColumnWidth} {cmd.Value}";
+            _logger.Log(ELogLevel.Info, formattedCommand);
+        }
+
+        _logger.Log(ELogLevel.Info, "\nExamples:");
+        _logger.Log(ELogLevel.Info, "  dtn -i Serilog -v 3.*");
+        _logger.Log(ELogLevel.Info, "  dtn -s Newtonsoft");
+        _logger.Log(ELogLevel.Info, "  dtn -p");
     }
 
     private async Task<bool> HandleDirectInstall(string[] args)

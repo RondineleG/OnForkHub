@@ -1,24 +1,24 @@
 export function videoInitialize(elementId, component,
-                                captions,
-                                quality,
-                                speed,
-                                loop,
-                                playLargeControl,
-                                restartControl,
-                                rewindControl,
-                                playControl,
-                                fastForwardControl,
-                                progressControl,
-                                currentTimeControl,
-                                durationControl,
-                                muteControl,
-                                volumeControl,
-                                captionsControl,
-                                settingsControl,
-                                pIPControl,
-                                airplayControl,
-                                downloadControl,
-                                fullscreenControl) {
+    captions,
+    quality,
+    speed,
+    loop,
+    playLargeControl,
+    restartControl,
+    rewindControl,
+    playControl,
+    fastForwardControl,
+    progressControl,
+    currentTimeControl,
+    durationControl,
+    muteControl,
+    volumeControl,
+    captionsControl,
+    settingsControl,
+    pIPControl,
+    airplayControl,
+    downloadControl,
+    fullscreenControl) {
     var settingsArray = new Array();
     if (captions)
         settingsArray.push("captions");
@@ -67,7 +67,7 @@ export function videoInitialize(elementId, component,
         settings: settingsArray,
         controls: controlsArray,
 
-        quality: {default: 576, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240, 200, 100, 50, 20]}
+        quality: { default: 576, options: [4320, 2880, 2160, 1440, 1080, 720, 576, 480, 360, 240, 200, 100, 50, 20] }
     });
     player.on('ended', async event => {
         await component.invokeMethodAsync('OnEnded');
