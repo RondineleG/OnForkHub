@@ -1,11 +1,14 @@
 using GraphQL.Types;
 
+using OnForkHub.Core.Interfaces.GraphQL;
+
 namespace OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 
 public abstract class GraphQLNetMutationBase : IGraphQLMutation
 {
-    public abstract string Name { get; }
     public abstract string Description { get; }
+
+    public abstract string Name { get; }
 
     public void Register(object descriptor)
     {

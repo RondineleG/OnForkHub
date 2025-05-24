@@ -5,6 +5,7 @@ namespace OnForkHub.Persistence.Repositories;
 public class CategoryRepositoryRavenDB(RavenDbDataContext context) : ICategoryRepositoryRavenDB
 {
     private const string EntityName = nameof(Category);
+
     private readonly RavenDbDataContext _context = context;
 
     public async Task<RequestResult<Category>> CreateAsync(Category category)

@@ -1,5 +1,7 @@
 using GraphQL;
 
+using OnForkHub.Core.Interfaces.GraphQL;
+
 namespace OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 
 public class GraphQLNetConfigurator : IGraphQLConfigurator

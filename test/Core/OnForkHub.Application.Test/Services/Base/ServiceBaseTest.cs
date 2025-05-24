@@ -2,12 +2,12 @@ namespace OnForkHub.Application.Test.Services.Base;
 
 public class ServiceBaseTest
 {
+    private readonly TestService _serviceBase;
+
     public ServiceBaseTest()
     {
         _serviceBase = new TestService();
     }
-
-    private readonly TestService _serviceBase;
 
     [Fact]
     [Trait("Category", "Unit")]

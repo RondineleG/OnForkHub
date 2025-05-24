@@ -4,8 +4,9 @@ namespace OnForkHub.Application.GraphQL.Mutations.Categories;
 
 public class CreateCategoryMutation : HotChocolateMutationBase
 {
-    public override string Name => "createCategory";
     public override string Description => "Creates a new category";
+
+    public override string Name => "createCategory";
 
     public static async Task<RequestResult<Category>> HandleAsync(CategoryRequestDto input, [Service] IUseCase<CategoryRequestDto, Category> useCase)
     {

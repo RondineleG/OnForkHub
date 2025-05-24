@@ -37,35 +37,14 @@ public abstract class BaseService
             var nullValidation = new[] { new RequestValidation(typeof(T).Name, $"{typeof(T).Name} cannot be null") };
             return RequestResult<T>.WithValidations(nullValidation);
         }
-
         var validationResult = validationFunc(entity);
         return validationResult.HasError ? CreateErrorResult<T>(validationResult) : await ExecuteAsync(() => operation(entity));
     }
 
-    protected async Task<RequestResult<IEnumerable<T>>> ExecuteBatchWithValidationAsync<T>(
-        IEnumerable<T> entities,
-        Func<IEnumerable<T>, Task<RequestResult<IEnumerable<T>>>> operation,
-        IValidationService<T> validationService
-    )
-        where T : BaseEntity
-    {
-        if (entities == null || !entities.Any())
-        {
-            var nullValidation = new[] { new RequestValidation(typeof(T).Name, $"No {typeof(T).Name} entities provided") };
-            return RequestResult<IEnumerable<T>>.WithValidations(nullValidation);
-        }
-
-        var validationResults = entities.Select(validationService.Validate);
-        var errors = validationResults.SelectMany(result => result.Errors).ToList();
-
-        return errors.Count != 0 ? CreateBatchErrorResult<T>(errors) : await ExecuteAsync(() => operation(entities));
-    }
-
-    protected async Task<RequestResult<T>> ExecuteWithValidationAsync<T>(
+    protected virtual async Task<RequestResult<T>> ExecuteAsync<T>(
         T entity,
         Func<T, Task<RequestResult<T>>> operation,
-        IValidationService<T> validationService,
-        bool isUpdate = false
+        IValidationService<T> validationService
     )
         where T : BaseEntity
     {
@@ -74,23 +53,13 @@ public abstract class BaseService
             var nullValidation = new[] { new RequestValidation(typeof(T).Name, $"{typeof(T).Name} cannot be null") };
             return RequestResult<T>.WithValidations(nullValidation);
         }
-
-        var validationResult = isUpdate ? validationService.ValidateUpdate(entity) : validationService.Validate(entity);
-
+        var validationResult = validationService.Validate(entity);
         return validationResult.HasError ? CreateErrorResult<T>(validationResult) : await ExecuteAsync(() => operation(entity));
-    }
-
-    private static RequestResult<IEnumerable<T>> CreateBatchErrorResult<T>(IEnumerable<ValidationErrorMessage> errors)
-    {
-        var validations = errors.Select(error => new RequestValidation(error.Field, error.Message)).ToArray();
-
-        return RequestResult<IEnumerable<T>>.WithValidations(validations);
     }
 
     private static RequestResult<T> CreateErrorResult<T>(IValidationResult validationResult)
     {
         var validations = validationResult.Errors.Select(error => new RequestValidation(error.Field, error.Message)).ToArray();
-
         return RequestResult<T>.WithValidations(validations);
     }
 }

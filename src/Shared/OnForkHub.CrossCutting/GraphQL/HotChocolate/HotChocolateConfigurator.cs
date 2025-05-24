@@ -1,3 +1,5 @@
+using OnForkHub.Core.Interfaces.GraphQL;
+
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
 public class HotChocolateConfigurator : IGraphQLConfigurator

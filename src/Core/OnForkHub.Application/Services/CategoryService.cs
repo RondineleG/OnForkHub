@@ -8,7 +8,7 @@ public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidati
 
     public Task<RequestResult<Category>> CreateAsync(Category category)
     {
-        return ExecuteWithValidationAsync(category, _categoryRepository.CreateAsync, _validationService);
+        return ExecuteAsync(category, _categoryRepository.CreateAsync, _validationService);
     }
 
     public async Task<RequestResult<Category>> DeleteAsync(long id)
@@ -37,6 +37,6 @@ public class CategoryService(ICategoryRepositoryEF categoryRepository, IValidati
 
     public Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validationService, true);
+        return ExecuteAsync(category, _categoryRepository.UpdateAsync, _validationService);
     }
 }

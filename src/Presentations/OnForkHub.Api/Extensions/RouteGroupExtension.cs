@@ -1,3 +1,4 @@
+using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
 

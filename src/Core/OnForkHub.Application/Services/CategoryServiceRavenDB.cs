@@ -5,11 +5,12 @@ public class CategoryServiceRavenDB(ICategoryRepositoryRavenDB categoryRepositor
         ICategoryServiceRavenDB
 {
     private readonly ICategoryRepositoryRavenDB _categoryRepository = categoryRepository;
+
     private readonly IValidationService<Category> _validationService = validationService;
 
     public Task<RequestResult<Category>> CreateAsync(Category category)
     {
-        return ExecuteWithValidationAsync(category, _categoryRepository.CreateAsync, _validationService);
+        return ExecuteAsync(category, _categoryRepository.CreateAsync, _validationService);
     }
 
     public async Task<RequestResult<Category>> DeleteAsync(string id)
@@ -38,6 +39,6 @@ public class CategoryServiceRavenDB(ICategoryRepositoryRavenDB categoryRepositor
 
     public Task<RequestResult<Category>> UpdateAsync(Category category)
     {
-        return ExecuteWithValidationAsync(category, _categoryRepository.UpdateAsync, _validationService, true);
+        return ExecuteAsync(category, _categoryRepository.UpdateAsync, _validationService);
     }
 }
