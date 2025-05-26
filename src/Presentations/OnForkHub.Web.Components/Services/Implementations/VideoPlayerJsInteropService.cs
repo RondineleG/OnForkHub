@@ -1,7 +1,5 @@
 using OnForkHub.Web.Components.Services.Interfaces;
 
-using IJSObjectReference = Microsoft.JSInterop.IJSObjectReference;
-
 namespace OnForkHub.Web.Components.Services.Implementations;
 
 public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInteropService
@@ -16,6 +14,12 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
 
     public async ValueTask DisposeAsync()
     {
+        if (_mainTask.IsValueCreated)
+        {
+            var mainModule = await _mainTask.Value;
+            await mainModule.DisposeAsync();
+        }
+
         if (_moduleTask.IsValueCreated)
         {
             var module = await _moduleTask.Value;
@@ -27,6 +31,8 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         string id,
         DotNetObjectReference<Player> objectRef,
         string magnetUri,
+        string torrentFilePath,
+        bool enableTorrentFileUpload,
         bool captions,
         bool quality,
         bool speed,
@@ -49,41 +55,87 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         bool fullscreenControl
     )
     {
-        await _moduleTask.Value;
-
-        if (!string.IsNullOrEmpty(magnetUri))
+        try
         {
-            await (await _mainTask.Value).InvokeVoidAsync("initTorrentPlayer", id);
+            // Carrega os módulos
+            await _moduleTask.Value;
+            var mainModule = await _mainTask.Value;
 
-            await (await _mainTask.Value).InvokeVoidAsync("startDownload", id, "#" + id, magnetUri);
+            // Verifica se é para usar WebTorrent
+            var useTorrent = !string.IsNullOrEmpty(magnetUri) ||
+                           !string.IsNullOrEmpty(torrentFilePath) ||
+                           enableTorrentFileUpload;
+
+            if (useTorrent)
+            {
+                // Inicializa WebTorrent
+                await mainModule.InvokeVoidAsync("initTorrentPlayer", id);
+
+                // Configura callback global para upload de arquivo
+                if (enableTorrentFileUpload)
+                {
+                    var script = $@"
+                         if (!window.torrentCallbacks) window.torrentCallbacks = {{}};
+                         window.torrentCallbacks['{id}'] = {{
+                             invokeMethodAsync: function(method, ...args) {{
+                                 return DotNet.invokeMethodAsync('{objectRef.GetType().Assembly.GetName().Name}', method, ...args);
+                             }}
+                         }};
+
+                         window.handleTorrentFile_{id} = async function() {{
+                             try {{
+                                 const mainModule = await import('./_content/OnForkHub.Web.Components/main.js');
+                                 await mainModule.startDownloadFromFile('{id}', '#{id}', window.torrentCallbacks['{id}']);
+                             }} catch (error) {{
+                                 console.error('Erro ao carregar torrent:', error);
+                                 window.torrentCallbacks['{id}'].invokeMethodAsync('OnTorrentErrorCallback', error.message);
+                             }}
+                         }};
+                      ";
+
+                    await jsRuntime.InvokeVoidAsync("eval", script);
+                }
+
+                // Se tem magnet URI, inicia download automaticamente
+                if (!string.IsNullOrEmpty(magnetUri))
+                {
+                    await mainModule.InvokeVoidAsync("startDownload", id, "#" + id, magnetUri, objectRef);
+                }
+            }
+            else
+            {
+                // Inicialização normal do player de vídeo (Plyr)
+                await mainModule.InvokeVoidAsync(
+                    "videoInitialize",
+                    id,
+                    objectRef,
+                    captions,
+                    quality,
+                    speed,
+                    loop,
+                    playLargeControl,
+                    restartControl,
+                    rewindControl,
+                    playControl,
+                    fastForwardControl,
+                    progressControl,
+                    currentTimeControl,
+                    durationControl,
+                    muteControl,
+                    volumeControl,
+                    captionsControl,
+                    settingsControl,
+                    pIPControl,
+                    airplayControl,
+                    downloadControl,
+                    fullscreenControl
+                );
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await (await _mainTask.Value).InvokeVoidAsync(
-                "videoInitialize",
-                id,
-                objectRef,
-                captions,
-                quality,
-                speed,
-                loop,
-                playLargeControl,
-                restartControl,
-                rewindControl,
-                playControl,
-                fastForwardControl,
-                progressControl,
-                currentTimeControl,
-                durationControl,
-                muteControl,
-                volumeControl,
-                captionsControl,
-                settingsControl,
-                pIPControl,
-                airplayControl,
-                downloadControl,
-                fullscreenControl
-            );
+            Console.WriteLine($"Erro na inicialização do player: {ex.Message}");
+            throw;
         }
     }
 }

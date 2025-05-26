@@ -1,6 +1,20 @@
-@page "/advanced"
-<div style="width:700px;">
-    <Player id="advanced"
+@page "/"
+@using OnForkHub.Web.Components.VideoPlayer
+@using OnForkHub.Web.Components.Models
+
+<PageTitle>Player Avançado - WebTorrent</PageTitle>
+
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <h1 style="margin-bottom: 30px; color: #333;">🎬 Player de Vídeo com WebTorrent</h1>
+
+    <div style="margin-bottom: 20px;">
+        <h3>Teste com Magnet URI</h3>
+        <p style="color: #666; margin-bottom: 15px;">
+            Exemplo usando um magnet URI público (Sintel - filme de código aberto):
+        </p>
+    </div>
+
+    <Player id="advanced-player"
             CurrentTimeControl="true"
             DownloadControl="true"
             DurationControl="true"
@@ -22,8 +36,105 @@
             Quality="true"
             Speed="true"
             Poster="poster.png"
-            Sources="@sources"
+            MagnetUri="@magnetUri"
+            EnableTorrentFileUpload="true"
             OnEndedVideo="OnEndedVideo"
             OnPlayVideo="OnPlayVideo"
-            OnVideoTimeUpdate="@(e => OnVideoTimeUpdate(e))"/>
+            OnVideoTimeUpdate="@OnVideoTimeUpdate"
+            OnTorrentProgress="@OnTorrentProgress"
+            OnTorrentReady="@OnTorrentReady"
+            OnTorrentError="@OnTorrentError" />
+
+    <div style="margin-top: 30px;">
+        <h3>Controles de Teste</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button @onclick="LoadSintelMagnet"
+                    style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                🎬 Carregar Sintel (Magnet)
+            </button>
+            <button @onclick="ClearMagnet"
+                    style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                🗑️ Limpar
+            </button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(currentStatus))
+        {
+            <div style="padding: 15px; background-color: #e7f3ff; border: 1px solid #b6d7ff; border-radius: 6px; margin-bottom: 20px;">
+                <strong>Status:</strong> @currentStatus
+            </div>
+        }
+
+        @if (progressPercentage > 0)
+        {
+            <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 5px;"><strong>Progresso do Download:</strong> @progressPercentage%</div>
+                <div style="width: 100%; background-color: #e9ecef; border-radius: 10px; height: 25px;">
+                    <div style="width: @(progressPercentage)%; background-color: #007bff; height: 100%; border-radius: 10px; transition: width 0.3s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        @if (progressPercentage > 10)
+                        {
+                            <span>@progressPercentage%</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+        <h4>Como usar:</h4>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li><strong>Magnet URI:</strong> Cole um link magnet no código ou use o botão de teste</li>
+            <li><strong>Arquivo .torrent:</strong> Use o botão "📁 Carregar Arquivo Torrent" para fazer upload</li>
+            <li><strong>Suporte:</strong> Funciona com arquivos .mp4, .mkv, .webm, .avi, .mov, .m4v</li>
+        </ul>
+
+        <div style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; font-size: 14px;">
+            <strong>⚠️ Nota:</strong> O WebTorrent funciona apenas em navegadores modernos com suporte ao WebRTC (Chrome, Firefox, Safari, Edge).
+        </div>
+    </div>
 </div>
+
+@code {
+    private string magnetUri = "";
+    private string currentStatus = "";
+    private int progressPercentage = 0;
+
+    private readonly string sintelMagnetUri = "magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F";
+
+    private void LoadSintelMagnet()
+    {
+        magnetUri = sintelMagnetUri;
+        currentStatus = "Carregando Sintel...";
+        progressPercentage = 0;
+        StateHasChanged();
+    }
+
+    private void ClearMagnet()
+    {
+        magnetUri = "";
+        currentStatus = "Pronto para nova seleção";
+        progressPercentage = 0;
+        StateHasChanged();
+    }
+  
+    private void OnTorrentProgress(int progress)
+    {
+        progressPercentage = progress;
+        currentStatus = $"Baixando... {progress}%";
+        StateHasChanged();
+    }
+
+    private void OnTorrentReady()
+    {
+        currentStatus = "Torrent pronto para reprodução!";
+        StateHasChanged();
+    }
+
+    private void OnTorrentError(string error)
+    {
+        currentStatus = $"Erro: {error}";
+        progressPercentage = 0;
+        StateHasChanged();
+    }
+}
