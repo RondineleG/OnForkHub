@@ -6,19 +6,19 @@ namespace OnForkHub.Web.Components.Services.Implementations;
 
 public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInteropService
 {
-    private readonly Lazy<Task<IJSObjectReference>> mainTask = new(() =>
+    private readonly Lazy<Task<IJSObjectReference>> _mainTask = new(() =>
         jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/main.js").AsTask()
     );
 
-    private readonly Lazy<Task<IJSObjectReference>> moduleTask = new(() =>
+    private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
         jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
     );
 
     public async ValueTask DisposeAsync()
     {
-        if (moduleTask.IsValueCreated)
+        if (_moduleTask.IsValueCreated)
         {
-            var module = await moduleTask.Value;
+            var module = await _moduleTask.Value;
             await module.DisposeAsync();
         }
     }
@@ -49,20 +49,17 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         bool fullscreenControl
     )
     {
-        await moduleTask.Value;
+        await _moduleTask.Value;
 
         if (!string.IsNullOrEmpty(magnetUri))
         {
-            // Inicializa o player de torrent
-            await (await mainTask.Value).InvokeVoidAsync("initTorrentPlayer", id);
+            await (await _mainTask.Value).InvokeVoidAsync("initTorrentPlayer", id);
 
-            // Inicia o download do torrent
-            await (await mainTask.Value).InvokeVoidAsync("startDownload", id, "#" + id, magnetUri);
+            await (await _mainTask.Value).InvokeVoidAsync("startDownload", id, "#" + id, magnetUri);
         }
         else
         {
-            // Inicializa o player normal
-            await (await mainTask.Value).InvokeVoidAsync(
+            await (await _mainTask.Value).InvokeVoidAsync(
                 "videoInitialize",
                 id,
                 objectRef,
