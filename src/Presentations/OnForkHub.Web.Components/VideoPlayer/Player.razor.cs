@@ -87,7 +87,7 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
         try
         {
-            await DisposeAsync();
+            // Add any additional asynchronous disposal logic here if needed.
         }
         catch (Exception ex)
         {
