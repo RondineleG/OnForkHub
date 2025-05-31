@@ -6,6 +6,8 @@ public interface IVideoPlayerJsInteropService
         string id,
         DotNetObjectReference<Player> objectRef,
         string magnetUri,
+        string torrentFilePath,
+        bool enableTorrentFileUpload,
         bool captions,
         bool quality,
         bool speed,

@@ -175,7 +175,7 @@ jobs:
             chmod +x install-services.sh &&
             if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
               echo 'Installing Docker and dependencies...'
-              sudo ./install-services.sh
+               ./install-services.sh
             else
               echo 'Docker and dependencies already installed'
             fi
