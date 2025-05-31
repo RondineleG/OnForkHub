@@ -181,7 +181,7 @@ export async function startDownload(
 
             torrent.on('error', (err: Error | String) => {
                 console.error('Erro no torrent:', err);
-                const errorMsg = err instanceof Error ? err.message : err;;
+                const errorMsg = err instanceof Error ? err.message : err;
                 if (dotNetObjectRef) {
                     dotNetObjectRef.invokeMethodAsync('OnTorrentErrorCallback', errorMsg);
                 }
