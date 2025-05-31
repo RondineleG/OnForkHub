@@ -17,7 +17,7 @@ declare global {
 let client: any = null;
 let currentTorrent: any = null;
 
-window.torrentCallbacks = {};
+if (!window.torrentCallbacks) window.torrentCallbacks = {};
 
 export async function initTorrentPlayer(containerId: string): Promise<void> {
     try {
