@@ -1,33 +1,90 @@
-<HeadContent>
-    <link rel="stylesheet" href="/_content/OnForkHub.Web.Components/plyr.css"/>
-</HeadContent>
-@if (Sources != null)
-{
-    <video controls poster="@Poster" @attributes="InputAttributes">
+@using OnForkHub.Web.Components.Models
+@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JSRuntime
 
-        @foreach (var source in Sources)
+<HeadContent>
+    <link rel="stylesheet" href="/_content/OnForkHub.Web.Components/plyr.css" />
+    <script src="https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js"></script>
+</HeadContent>
+
+@if (!string.IsNullOrEmpty(MagnetUri) || !string.IsNullOrEmpty(TorrentFilePath) || EnableTorrentFileUpload)
+{
+    <div style="width:100%; min-height:400px;">
+        @if (EnableTorrentFileUpload)
         {
-            <source src="@source.Src" type="@source.Type"/>
+            <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f8f9fa;">
+                <div style="margin-bottom: 10px;">
+                    <label for="torrent-file-@InputAttributes["id"]" style="display: block; margin-bottom: 5px; font-weight: 500;">
+                        Selecionar arquivo .torrent:
+                    </label>
+                    <input type="file"
+                           accept=".torrent"
+                           id="torrent-file-@InputAttributes["id"]"
+                           style="margin-bottom: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; width: 100%;" />
+                </div>
+                <button type="button"
+                        @onclick="HandleTorrentFile"
+                        style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">
+                    📁 Carregar Arquivo Torrent
+                </button>
+            </div>
         }
 
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div style="margin-bottom: 15px; padding: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 6px;">
+                <strong>Erro:</strong> @ErrorMessage
+            </div>
+        }
+
+        @if (TorrentProgress > 0 && TorrentProgress < 100)
+        {
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; border-radius: 6px;">
+                <div style="margin-bottom: 5px;">📥 Download em progresso: @TorrentProgress%</div>
+                <div style="width: 100%; background-color: #e9ecef; border-radius: 10px; height: 20px;">
+                    <div style="width: @(TorrentProgress)%; background-color: #007bff; height: 100%; border-radius: 10px; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+        }
+
+        <div id="@InputAttributes["id"]" style="width:100%; min-height:400px; background:#000; border-radius: 8px; overflow: hidden;">
+            <div style="display: flex; align-items: center; justify-content: center; height: 400px; color: white;">
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; margin-bottom: 10px;">🎬</div>
+                    <span>@(string.IsNullOrEmpty(MagnetUri) ? "Aguardando seleção de torrent..." : "Carregando torrent...")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (Sources?.Any() == true)
+{
+    <video controls poster="@Poster" @attributes="InputAttributes" style="border-radius: 8px; overflow: hidden;">
+        @foreach (var source in Sources)
+        {
+            <source src="@source.Src" type="@source.Type" />
+        }
         @if (Tracks != null)
         {
             foreach (var track in Tracks)
             {
                 if (track.IsDefault)
                 {
-                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang" default/>
+                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang" default />
                 }
                 else
                 {
-                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang"/>
+                    <track kind="@track.Kind" label="@track.Label" src="@track.Src" srclang="@track.SrcLang" />
                 }
             }
         }
-
     </video>
 }
 else
 {
-    <span>No source found</span>
+    <div style="padding: 40px; text-align: center; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px; background-color: #f8f9fa;">
+        <div style="font-size: 48px; margin-bottom: 15px;">📺</div>
+        <div style="font-size: 18px; font-weight: 500; margin-bottom: 5px;">Nenhuma fonte de vídeo encontrada</div>
+        <div style="font-size: 14px;">Configure uma fonte de vídeo, magnet URI ou habilite upload de torrents</div>
+    </div>
 }

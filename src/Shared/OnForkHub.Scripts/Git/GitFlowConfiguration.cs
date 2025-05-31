@@ -50,7 +50,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         {
             _logger.Log(ELogLevel.Info, "Checking Git Flow configuration...");
 
-            var workingDir = Environment.CurrentDirectory;
+            var workingDir = FindGitRepositoryRoot(Environment.CurrentDirectory) ?? throw new GitOperationException("Não foi possível encontrar a raiz do repositório Git. Certifique-se de que você está em um repositório Git válido.");
             _logger.Log(ELogLevel.Debug, $"Working directory: {workingDir}");
 
             if (!Directory.Exists(Path.Combine(workingDir, ".git")))
@@ -89,6 +89,29 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             _logger.Log(ELogLevel.Error, ex.Message);
             return false;
         }
+    }
+
+    private static string FindGitRepositoryRoot(string startPath)
+    {
+        var currentDirectory = new DirectoryInfo(startPath);
+        while (currentDirectory != null)
+        {
+            if (currentDirectory.Name.Equals("OnForkHub", StringComparison.OrdinalIgnoreCase))
+            {
+                return currentDirectory.FullName;
+            }
+            currentDirectory = currentDirectory.Parent;
+        }
+        currentDirectory = new DirectoryInfo(startPath);
+        while (currentDirectory != null)
+        {
+            if (Directory.Exists(Path.Combine(currentDirectory.FullName, ".git")))
+            {
+                return currentDirectory.FullName;
+            }
+            currentDirectory = currentDirectory.Parent;
+        }
+        return string.Empty;
     }
 
     private static bool IsFeatureBranch(string branchName)
@@ -186,7 +209,6 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             throw;
         }
     }
-
     private async Task<string> GetCurrentBranch()
     {
         return (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
