@@ -169,15 +169,44 @@ jobs:
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
+          SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x install-services.sh &&
             if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
               echo 'Installing Docker and dependencies...'
+              export SUDO_PASSWORD='$SUDO_PASSWORD'
               bash ./install-services.sh
+              echo 'Reloading shell environment...'
+              exec bash -l
             else
               echo 'Docker and dependencies already installed'
+              docker --version
+              docker compose version
+            fi
+          "
+
+      - name: Verify Docker Installation
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            echo 'Verifying Docker installation...' &&
+            if command -v docker &> /dev/null; then
+              docker --version
+              docker compose version
+              sudo systemctl status docker --no-pager
+            elif [ -x '/usr/bin/docker' ]; then
+              echo 'Docker found at /usr/bin/docker'
+              /usr/bin/docker --version
+              /usr/bin/docker compose version
+            else
+              echo 'Docker not found, checking installation...'
+              which docker || echo 'Docker not in PATH'
+              ls -la /usr/bin/docker* || echo 'No docker binaries found'
+              exit 1
             fi
           "
          
