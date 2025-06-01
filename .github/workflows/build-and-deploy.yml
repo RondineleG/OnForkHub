@@ -175,13 +175,13 @@ jobs:
             chmod +x install-services.sh &&
             if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
               echo 'Installing Docker and dependencies...'
-              sudo ./install-services.sh
+              bash ./install-services.sh
             else
               echo 'Docker and dependencies already installed'
             fi
           "
          
-      - name: Set Execute Permissions
+      - name: Set Execute Permissions and Verify
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -189,7 +189,11 @@ jobs:
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x *.sh &&
-            ls -la
+            echo 'Permissions set, verifying:' &&
+            ls -la *.sh &&
+            echo 'Testing executability:' &&
+            test -x cleanup-services.sh && echo '✅ cleanup-services.sh is executable' || echo '❌ cleanup-services.sh is NOT executable' &&
+            test -x start-services.sh && echo '✅ start-services.sh is executable' || echo '❌ start-services.sh is NOT executable'
           "
          
       - name: Deploy Services
@@ -201,10 +205,10 @@ jobs:
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             echo 'Starting cleanup...' &&
-            ./cleanup-services.sh &&
+            bash ./cleanup-services.sh &&
             echo 'Starting services in ${{ github.ref_name == 'main' && 'PRODUCTION' || 'DEVELOPMENT' }} environment...' &&
             export ASPNETCORE_ENVIRONMENT=${{ github.ref_name == 'main' && 'Production' || 'Development' }} &&
-            ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
+            bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
           "
          
       - name: Verify Deployment Status
@@ -238,7 +242,7 @@ jobs:
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             echo 'Deployment failed, cleaning up...' &&
-            ./cleanup-services.sh
+            bash ./cleanup-services.sh
           "
 
       - name: Notify Deployment Status
