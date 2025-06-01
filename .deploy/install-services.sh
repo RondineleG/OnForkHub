@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e  
+set -e
 
 run_sudo() {
     if [ -n "$SUDO_PASSWORD" ]; then
@@ -13,8 +13,8 @@ run_sudo() {
 echo "🔄 Starting system update..."
 run_sudo apt-get update && run_sudo apt-get upgrade -y
 
-echo "📦 Installing basic dependencies..."
-run_sudo apt-get install -y ca-certificates curl gnupg lsb-release nginx apt-transport-https software-properties-common
+echo "📦 Installing dependencies..."
+run_sudo apt-get install -y ca-certificates curl gnupg lsb-release apt-transport-https software-properties-common
 
 echo "🔑 Adding Docker GPG key..."
 run_sudo mkdir -p /etc/apt/keyrings
@@ -27,7 +27,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 echo "🔄 Updating package list with Docker repository..."
 run_sudo apt-get update
 
-echo "🐳 Installing Docker..."
+echo "🐳 Installing Docker and Docker Compose..."
 run_sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 echo "🔄 Starting Docker service..."
@@ -46,25 +46,25 @@ echo "✅ Installation completed! Checking versions..."
 export PATH="/usr/bin:/usr/local/bin:$PATH"
 hash -r
 
+echo "PATH is: $PATH"
+which docker || echo "❌ 'docker' not in PATH"
+ls -l /usr/bin/docker* || echo "❌ 'docker' not found in /usr/bin/"
+
 if command -v docker &> /dev/null; then
-    echo "✅ Docker version:"
-    docker --version
+    echo "✅ Docker version via command:"
+    sudo docker --version
 elif [ -x "/usr/bin/docker" ]; then
-    echo "✅ Docker version (via full path):"
-    /usr/bin/docker --version
+    echo "✅ Docker version via /usr/bin/docker:"
+    sudo /usr/bin/docker --version
 else
     echo "❌ Docker installation failed - command not found"
-    echo "Checking if docker service exists..."
     run_sudo systemctl status docker || echo "Docker service not found"
     exit 1
 fi
 
-if docker compose version &> /dev/null; then
+if sudo docker compose version &> /dev/null; then
     echo "✅ Docker Compose version:"
-    docker compose version
-elif [ -x "/usr/bin/docker" ]; then
-    echo "✅ Docker Compose version (via full path):"
-    /usr/bin/docker compose version
+    sudo docker compose version
 else
     echo "❌ Docker Compose not available"
     exit 1
