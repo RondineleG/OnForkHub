@@ -205,8 +205,10 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
+            echo 'Starting cleanup...' &&
             bash ./cleanup-services.sh &&
-            export ASPNETCORE_ENVIRONMENT=${{ env.ENVIRONMENT }} &&
+            echo 'Starting services in $ENVIRONMENT environment...' &&
+            export ASPNETCORE_ENVIRONMENT=$ENVIRONMENT &&
             bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
           "
 
@@ -226,4 +228,4 @@ jobs:
 
       - name: Get current UTC time
         id: current-time
-        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $
+        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
