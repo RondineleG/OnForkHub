@@ -2,21 +2,19 @@
 
 echo "Starting development environment setup..."
 
-if ! command -v gh &> /dev/null; then
-    echo "GitHub CLI is not installed. Please install it first."
+# Aceita o token como parâmetro
+GITHUB_TOKEN="$1"
+GITHUB_USERNAME="$2"
+
+if [ -z "$GITHUB_TOKEN" ] || [ -z "$GITHUB_USERNAME" ]; then
+    echo "Usage: $0 <github_token> <github_username>"
+    echo "Error: GitHub token and username are required"
     exit 1
 fi
-
-if ! gh auth status &> /dev/null; then
-    echo "You are not authenticated with GitHub CLI. Please run 'gh auth login' first."
-    exit 1
-fi
-
-GITHUB_USERNAME=$(gh api user --jq '.login')
-GITHUB_TOKEN=$(gh auth token)
 
 echo "Using GitHub account: $GITHUB_USERNAME"
 
+# Criar diretórios de logs
 sudo mkdir -p logs/nginx logs/onforkhub-api logs/onforkhub-web
 
 check_disk_space() {
@@ -33,25 +31,60 @@ check_disk_space
 echo "Logging into GitHub Container Registry..."
 echo "$GITHUB_TOKEN" | sudo docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
 
+if [ $? -ne 0 ]; then
+    echo "Failed to login to GitHub Container Registry"
+    exit 1
+fi
+
 echo "Stopping existing services..."
 sudo docker compose down --remove-orphans
 
 echo "Pruning unused Docker resources..."
 sudo docker system prune -f
 
-echo "Starting all services..."
+echo "Pulling latest images..."
 sudo docker compose pull
+
+if [ $? -ne 0 ]; then
+    echo "Failed to pull Docker images"
+    exit 1
+fi
+
+echo "Starting all services..."
 sudo docker compose up -d
 
+if [ $? -ne 0 ]; then
+    echo "Failed to start services"
+    exit 1
+fi
+
 echo "Waiting for services to start..."
-sleep 5
+sleep 10
 
 echo "Checking container status..."
 sudo docker ps
 
+echo "Checking if containers are healthy..."
+if ! sudo docker ps | grep -q "onforkhub-api"; then
+    echo "WARNING: onforkhub-api container is not running"
+fi
+
+if ! sudo docker ps | grep -q "onforkhub-web"; then
+    echo "WARNING: onforkhub-web container is not running"
+fi
+
+if ! sudo docker ps | grep -q "reverse-proxy"; then
+    echo "WARNING: reverse-proxy container is not running"
+fi
+
 echo "Checking container logs..."
-sudo docker logs onforkhub-api --tail 10 || true
-sudo docker logs onforkhub-web --tail 10 || true
-sudo docker logs reverse-proxy --tail 10 || true
+echo "=== API Logs ==="
+sudo docker logs onforkhub-api --tail 10 || echo "Failed to get API logs"
+
+echo "=== Web Logs ==="
+sudo docker logs onforkhub-web --tail 10 || echo "Failed to get Web logs"
+
+echo "=== Proxy Logs ==="
+sudo docker logs reverse-proxy --tail 10 || echo "Failed to get Proxy logs"
 
 echo "Environment is ready!"

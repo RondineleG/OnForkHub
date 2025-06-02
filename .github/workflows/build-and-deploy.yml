@@ -38,7 +38,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-   
+
     steps:
       - name: Set full branch name
         if: github.event_name == 'workflow_dispatch'
@@ -50,7 +50,6 @@ jobs:
               echo "❌ Branch name is required for ${{ github.event.inputs.branch_type }} branches"
               exit 1
             fi
-            # Remove any trailing slashes from branch type and leading slashes from branch name
             BRANCH_TYPE=$(echo "${{ github.event.inputs.branch_type }}" | sed 's#/$##')
             BRANCH_NAME=$(echo "${{ github.event.inputs.branch_name }}" | sed 's#^/##')
             echo "FULL_BRANCH=${BRANCH_TYPE}/${BRANCH_NAME}" >> $GITHUB_ENV
@@ -60,21 +59,20 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
-         
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-       
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-         
+
       - name: Set lowercase repository owner
-        run: |
-          echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-         
+        run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
@@ -86,7 +84,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.API_IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-         
+
       - name: Build and push Web image
         uses: docker/build-push-action@v5
         with:
@@ -114,31 +112,31 @@ jobs:
           disable_web_page_preview: true
           message: |
             🔔 *Build Failure Notification*
-           
+
             📦 *Build Job Failed*
             Branch: `${{ github.ref_name }}`
             Commit: `${{ github.sha }}`
             Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
-           
+
             🏗️ *Build Details:*
             Repository: ${{ github.repository }}
             Workflow: ${{ github.workflow }}
-           
+
             [View Build Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-           
+
             ⏰ ${{ steps.current-time.outputs.time }}
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
-   
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
-         
+
       - name: Install SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -157,7 +155,7 @@ jobs:
               mkdir -p ~/onforkhub-deploy
             fi
           "
-         
+
       - name: Copy Deployment Files
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
@@ -169,18 +167,23 @@ jobs:
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
+          SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x install-services.sh &&
-            if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
+            if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
               echo 'Installing Docker and dependencies...'
+              export SUDO_PASSWORD='$SUDO_PASSWORD'
               bash ./install-services.sh
+              sudo systemctl status docker --no-pager || true
             else
               echo 'Docker and dependencies already installed'
+              docker --version
+              docker compose version
             fi
           "
-         
+
       - name: Set Execute Permissions and Verify
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
@@ -189,13 +192,11 @@ jobs:
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x *.sh &&
-            echo 'Permissions set, verifying:' &&
             ls -la *.sh &&
-            echo 'Testing executability:' &&
             test -x cleanup-services.sh && echo '✅ cleanup-services.sh is executable' || echo '❌ cleanup-services.sh is NOT executable' &&
             test -x start-services.sh && echo '✅ start-services.sh is executable' || echo '❌ start-services.sh is NOT executable'
           "
-         
+
       - name: Deploy Services
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
@@ -206,11 +207,11 @@ jobs:
             cd ~/onforkhub-deploy &&
             echo 'Starting cleanup...' &&
             bash ./cleanup-services.sh &&
-            echo 'Starting services in ${{ github.ref_name == 'main' && 'PRODUCTION' || 'DEVELOPMENT' }} environment...' &&
-            export ASPNETCORE_ENVIRONMENT=${{ github.ref_name == 'main' && 'Production' || 'Development' }} &&
+            echo 'Starting services in $ENVIRONMENT environment...' &&
+            export ASPNETCORE_ENVIRONMENT=$ENVIRONMENT &&
             bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
           "
-         
+
       - name: Verify Deployment Status
         if: success()
         env:
@@ -219,48 +220,12 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
-            echo '=== Container Status ===' &&
             docker ps &&
-            echo '=== API Logs ===' &&
             docker logs onforkhub-api --tail 10 2>/dev/null || true &&
-            echo '=== Web Logs ===' &&
             docker logs onforkhub-web --tail 10 2>/dev/null || true &&
-            echo '=== Proxy Logs ===' &&
             docker logs reverse-proxy --tail 10 2>/dev/null || true
           "
 
       - name: Get current UTC time
         id: current-time
         run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
-
-      - name: Cleanup on Failure
-        if: failure()
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy &&
-            echo 'Deployment failed, cleaning up...' &&
-            bash ./cleanup-services.sh
-          "
-
-      - name: Notify Deployment Status
-        if: always()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          format: markdown
-          disable_web_page_preview: true
-          message: |
-            🔔 *Deployment Status Notification*
-           
-            🚀 *Deployment ${{ job.status == 'success' && 'Succeeded' || 'Failed' }}*
-            Branch: `${{ github.ref_name }}`
-            Environment: `${{ github.ref_name == 'main' && 'Production' || 'Development' }}`
-            Commit: `${{ github.sha }}`
-            
-            [View Deployment Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
-            ⏰ ${{ steps.current-time.outputs.time }}
