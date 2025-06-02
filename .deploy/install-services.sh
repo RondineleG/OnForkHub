@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 # Helper to run sudo with or without password
@@ -17,21 +16,27 @@ run_sudo apt-get update && run_sudo apt-get upgrade -y
 echo "📦 Installing dependencies..."
 run_sudo apt-get install -y ca-certificates curl gnupg lsb-release apt-transport-https software-properties-common
 
+echo "🧹 Removing old Docker installations if any..."
+run_sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
+
 echo "🔑 Adding Docker's official GPG key..."
 run_sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | run_sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-run_sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Download and install Docker's GPG key with better error handling
+curl -fsSL https://download.docker.com/linux/debian/gpg | run_sudo tee /etc/apt/keyrings/docker.asc > /dev/null
+run_sudo chmod a+r /etc/apt/keyrings/docker.asc
 
 echo "📋 Setting up Docker repository..."
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   run_sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 echo "🔄 Updating package list with Docker repo..."
 run_sudo apt-get update
 
 echo "🐳 Installing Docker engine and Compose plugin..."
-run_sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+run_sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 echo "🔄 Enabling and starting Docker service..."
 run_sudo systemctl enable docker
@@ -45,7 +50,6 @@ run_sudo systemctl stop nginx || true
 run_sudo systemctl disable nginx || true
 
 echo "✅ Installation completed! Printing debug info and versions..."
-
 export PATH="/usr/bin:/usr/local/bin:$PATH"
 hash -r
 
