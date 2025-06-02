@@ -14,46 +14,55 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Removendo global.json existente
+      - name: Print environment variables (debug)
+        run: printenv | sort
+
       - name: Remove global.json if exists
         run: rm -f global.json
         continue-on-error: true
-          
-      # Configurando .NET 9
+
+      # ✅ Configurando .NET 9
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-            
-      # Criando novo global.json com versão mais recente
+
       - name: Create global.json
         run: |
           dotnet new globaljson --roll-forward feature --force
           cat global.json
-          
+
       - name: Verify .NET installation
         run: |
           dotnet --version
           dotnet --info
-        
-      - name: Create tools manifest
+
+      - name: Set NuGet and DotNet CLI cache folders
         run: |
-          dotnet new tool-manifest --force
-          
+          echo "NUGET_PACKAGES=$HOME/.nuget/packages" >> $GITHUB_ENV
+          echo "DOTNET_CLI_HOME=$HOME" >> $GITHUB_ENV
+
+      - name: Create tools manifest
+        run: dotnet new tool-manifest --force
+
       - name: Install tools
         run: |
           dotnet tool install --local Husky
           dotnet tool install --local CSharpier
           dotnet tool install --local dotnet-format
-          
+
       - name: Verify tools installation
         run: dotnet tool list
+
+      - name: List workspace directories
+        run: find . -type d
 
       - name: Create analysis branch
         if: github.event_name == 'pull_request'
@@ -62,19 +71,21 @@ jobs:
           BRANCH_NAME="bugfix/qodana-${PR_NUMBER}"
           git checkout -b "$BRANCH_NAME"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-      
+
       - name: Run CSharpier
         run: dotnet csharpier .
         continue-on-error: true
-        
+
       - name: Run dotnet format
         run: dotnet format
         continue-on-error: true
-        
+
       - name: Check for changes
         id: git-check
         run: |
-          git diff --exit-code || echo "has_changes=true" >> $GITHUB_OUTPUT
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit changes
         if: steps.git-check.outputs.has_changes == 'true'
@@ -83,7 +94,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add .
           git commit -m "style: apply code fixes for PR #${{ github.event.pull_request.number }}"
-          
+
       - name: Push branch
         if: steps.git-check.outputs.has_changes == 'true' && github.event_name == 'pull_request'
         uses: ad-m/github-push-action@master
@@ -99,36 +110,33 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const branchName = `bugfix/qodana-${prNumber}`;
-            
+
             try {
               const newPr = await github.rest.pulls.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title: `fix: 🔍 Code quality fixes for PR #${prNumber}`,
                 body: `This PR contains automated code quality fixes for PR #${prNumber}.
-                
+
                 Changes include:
                 - Code formatting with CSharpier
                 - Style improvements with dotnet format
-                - Best practices applications
-                
+
                 These changes are automated to help maintain code quality standards.
-                
+
                 > Using .NET 9.0 for all formatting and analysis tools.`,
                 head: branchName,
                 base: context.payload.pull_request.head.ref,
                 maintainer_can_modify: true
               });
-              
-              // Add labels
+
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: newPr.data.number,
                 labels: ['automated-fixes', 'code-quality']
               });
-              
-              // Add comment to original PR
+
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -157,7 +165,7 @@ jobs:
                 description: 'Code quality improvements'
               }
             ];
-            
+
             for (const label of labels) {
               try {
                 await github.rest.issues.getLabel({

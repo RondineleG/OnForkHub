@@ -2,9 +2,9 @@ using OnForkHub.Web.Components.Models;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
 
-public partial class Player
+public partial class Player : ComponentBase, IAsyncDisposable
 {
-    private DotNetObjectReference<Player> objectRef = null!;
+    private DotNetObjectReference<Player> _objectRef = null!;
 
     [Parameter]
     public bool AirplayControl { get; set; } = false;
@@ -23,6 +23,9 @@ public partial class Player
 
     [Parameter]
     public bool DurationControl { get; set; } = false;
+
+    [Parameter]
+    public bool EnableTorrentFileUpload { get; set; } = false;
 
     [Parameter]
     public bool FastForwardControl { get; set; } = false;
@@ -47,6 +50,15 @@ public partial class Player
 
     [Parameter]
     public EventCallback OnPlayVideo { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnTorrentError { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnTorrentProgress { get; set; }
+
+    [Parameter]
+    public EventCallback OnTorrentReady { get; set; }
 
     [Parameter]
     public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
@@ -85,10 +97,31 @@ public partial class Player
     public bool Speed { get; set; } = false;
 
     [Parameter]
+    public string TorrentFilePath { get; set; } = string.Empty;
+
+    [Parameter]
     public List<Track> Tracks { get; set; } = [];
 
     [Parameter]
     public bool VolumeControl { get; set; } = false;
+    private string ErrorMessage { get; set; } = string.Empty;
+    private int TorrentProgress { get; set; }
+
+    public ValueTask DisposeAsync()
+    {
+        _objectRef?.Dispose();
+
+        try
+        {
+            // Add any additional asynchronous disposal logic here if needed.
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao fazer dispose do VideoPlayerService: {ex.Message}");
+        }
+
+        return default;
+    }
 
     [JSInvokable]
     public async Task OnEnded()
@@ -108,47 +141,88 @@ public partial class Player
         await OnVideoTimeUpdate.InvokeAsync((currentTime, duration));
     }
 
+    [JSInvokable]
+    public async Task OnTorrentErrorCallback(string error)
+    {
+        ErrorMessage = error;
+        TorrentProgress = 0;
+        await InvokeAsync(StateHasChanged);
+        await OnTorrentError.InvokeAsync(error);
+    }
+
+    [JSInvokable]
+    public async Task OnTorrentProgressUpdate(int progress)
+    {
+        TorrentProgress = progress;
+        await InvokeAsync(StateHasChanged);
+        await OnTorrentProgress.InvokeAsync(progress);
+    }
+
+    [JSInvokable]
+    public async Task OnTorrentReadyCallback()
+    {
+        ErrorMessage = string.Empty;
+        await InvokeAsync(StateHasChanged);
+        await OnTorrentReady.InvokeAsync();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        objectRef = DotNetObjectReference.Create(this);
+
+        _objectRef = DotNetObjectReference.Create(this);
 
         if (
             InputAttributes == null
-            || !InputAttributes.Any(p => p.Key == "id")
-            || InputAttributes.FirstOrDefault(p => p.Key == "id").Value == null
-            || string.IsNullOrWhiteSpace(InputAttributes.FirstOrDefault(p => p.Key == "id").Value.ToString())
+            || !InputAttributes.TryGetValue("id", out var idValue)
+            || idValue == null
+            || string.IsNullOrWhiteSpace(idValue.ToString())
         )
         {
-            throw new ArgumentException("id (HTML) can not be null or empty");
+            throw new ArgumentException("O atributo 'id' é obrigatório e não pode ser nulo ou vazio");
         }
 
-        var elementId = InputAttributes.FirstOrDefault(p => p.Key == "id").Value.ToString();
+        var elementId = idValue.ToString()!;
 
-        await VideoPlayerService.Initialize(
-            elementId!,
-            objectRef,
-            MagnetUri,
-            Captions,
-            Quality,
-            Speed,
-            Loop,
-            PlayLargeControl,
-            RestartControl,
-            RewindControl,
-            PlayControl,
-            FastForwardControl,
-            ProgressControl,
-            CurrentTimeControl,
-            DurationControl,
-            MuteControl,
-            VolumeControl,
-            CaptionsControl,
-            SettingsControl,
-            PIPControl,
-            AirplayControl,
-            DownloadControl,
-            FullscreenControl
-        );
+        try
+        {
+            await VideoPlayerService.Initialize(
+                elementId,
+                _objectRef,
+                MagnetUri,
+                TorrentFilePath,
+                EnableTorrentFileUpload,
+                Captions,
+                Quality,
+                Speed,
+                Loop,
+                PlayLargeControl,
+                RestartControl,
+                RewindControl,
+                PlayControl,
+                FastForwardControl,
+                ProgressControl,
+                CurrentTimeControl,
+                DurationControl,
+                MuteControl,
+                VolumeControl,
+                CaptionsControl,
+                SettingsControl,
+                PIPControl,
+                AirplayControl,
+                DownloadControl,
+                FullscreenControl
+            );
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erro ao inicializar player: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void HandleTorrentFile(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }
