@@ -1,0 +1,95 @@
+@page "/torrent-player"
+@using OnForkHub.Web.Components.VideoPlayer
+
+<PageTitle>Upload de Arquivo Torrent</PageTitle>
+
+<h3>Reprodutor com Upload de Torrent</h3>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <Player id="torrent-file-player"
+                    EnableTorrentFileUpload="true"
+                    OnTorrentProgress="HandleProgress"
+                    OnTorrentError="HandleError"
+                    OnTorrentReady="HandleReady"
+                    PlayControl="true"
+                    FullscreenControl="true"
+                    VolumeControl="true"
+                    ProgressControl="true"
+                    CurrentTimeControl="true"
+                    DurationControl="true"
+                    MuteControl="true"
+                    SettingsControl="true"
+                    Quality="true"
+                    Speed="true" />
+        </div>
+    </div>
+
+    @if (progress > 0)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="progress">
+                    <div class="progress-bar @(progress >= 100 ? "bg-success" : "bg-primary")"
+                         role="progressbar"
+                         style="width: @(progress)%">
+                        @progress%
+                    </div>
+                </div>
+                <small class="text-muted">Download do torrent: @progress%</small>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="alert @(isError ? "alert-danger" : "alert-success")">
+                    @message
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private int progress = 0;
+    private string message = "";
+    private bool isError = false;
+
+    private async Task HandleProgress(int progressValue)
+    {
+        progress = progressValue;
+        isError = false;
+
+        if (progress >= 100)
+        {
+            message = "Download concluído com sucesso!";
+        }
+        else if (progress > 0)
+        {
+            message = $"Fazendo download... {progress}%";
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleError(string error)
+    {
+        message = $"Erro: {error}";
+        isError = true;
+        progress = 0;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleReady()
+    {
+        message = "Torrent carregado, iniciando reprodução...";
+        isError = false;
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

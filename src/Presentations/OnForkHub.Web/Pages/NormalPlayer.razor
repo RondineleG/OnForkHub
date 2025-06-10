@@ -1,0 +1,102 @@
+@page "/normal-player"
+@using OnForkHub.Web.Components.VideoPlayer
+@using OnForkHub.Web.Components.Models
+
+<PageTitle>Player de Vídeo Normal</PageTitle>
+
+<h3>Player de Vídeo Tradicional</h3>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <Player id="normal-video-player"
+                    Sources="@videoSources"
+                    Tracks="@videoTracks"
+                    Poster="@posterUrl"
+                    OnPlayVideo="HandlePlay"
+                    OnEndedVideo="HandleEnded"
+                    OnVideoTimeUpdate="HandleTimeUpdate"
+                    PlayControl="true"
+                    FullscreenControl="true"
+                    VolumeControl="true"
+                    ProgressControl="true"
+                    CurrentTimeControl="true"
+                    DurationControl="true"
+                    MuteControl="true"
+                    SettingsControl="true"
+                    CaptionsControl="true"
+                    Quality="true"
+                    Speed="true"
+                    PIPControl="true" />
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <p><strong>Status:</strong> @playbackStatus</p>
+            @if (currentTime > 0 && duration > 0)
+            {
+                <p><strong>Tempo:</strong> @FormatTime(currentTime) / @FormatTime(duration)</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Source> videoSources = new();
+    private List<Track> videoTracks = new();
+    private string posterUrl = "";
+    private string playbackStatus = "Pronto para reprodução";
+    private float currentTime = 0;
+    private float duration = 0;
+
+    protected override void OnInitialized()
+    {
+        // Configurar fontes de vídeo
+        videoSources = new List<Source>
+        {
+            new Source { Src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", Type = "video/mp4" },
+            new Source { Src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.webm", Type = "video/webm" }
+        };
+
+        // Configurar legendas (opcional)
+        videoTracks = new List<Track>
+        {
+            new Track
+            {
+                Kind = "captions",
+                Label = "English",
+                Src = "/path/to/captions-en.vtt",
+                SrcLang = "en",
+                IsDefault = true
+            }
+        };
+
+        posterUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg";
+    }
+
+    private async Task HandlePlay()
+    {
+        playbackStatus = "Reproduzindo...";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleEnded()
+    {
+        playbackStatus = "Reprodução finalizada";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleTimeUpdate((float currentTime, float duration) timeInfo)
+    {
+        currentTime = timeInfo.currentTime;
+        duration = timeInfo.duration;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string FormatTime(float seconds)
+    {
+        var time = TimeSpan.FromSeconds(seconds);
+        return time.ToString(@"mm\:ss");
+    }
+}
