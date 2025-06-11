@@ -1,6 +1,8 @@
-@page "/"
+@page "/home"
 @implements IAsyncDisposable
 @inject IJSRuntime JS
+@using OnForkHub.Web.Components.VideoPlayer
+@using OnForkHub.Web.Components.Models
 
 <div class="shorts-container">
     <div class="main-content">
@@ -17,21 +19,32 @@
                         <div class="video-overlay rounded">Now Playing</div>
                     </div>
                 }
-                <video @ref="videoPlayer"
-                       controls
-                       id="videoPlayer"
-                       class="shorts-video"
-                       poster="/images/videoPoster.png">
-                    <source src="/Videos/SkateBros.mp4" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
 
+                <Player id="shorts-video-player"
+                        Sources="@GetCurrentVideoSources()"
+                        Tracks="@videoTracks"
+                        Poster="@GetCurrentPosterUrl()"
+                        OnPlayVideo="HandlePlay"
+                        OnEndedVideo="HandleEnded"
+                        OnVideoTimeUpdate="HandleTimeUpdate"
+                        PlayControl="true"
+                        FullscreenControl="true"
+                        VolumeControl="true"
+                        ProgressControl="true"
+                        CurrentTimeControl="true"
+                        DurationControl="true"
+                        MuteControl="true"
+                        SettingsControl="false"
+                        CaptionsControl="false"
+                        Quality="false"
+                        Speed="false"
+                        PIPControl="true"
+                        class="shorts-video" />
             </div>
 
             <button class="nav-button next-button" @onclick="NextVideo">
                 <i class="bi bi-caret-right-fill"></i>
             </button>
-
         </div>
 
         <div class="interaction-buttons">
@@ -41,6 +54,15 @@
             <button class="action-btn share-btn">
                 <i class="bi bi-share"></i>
             </button>
+            @if (currentTime > 0 && duration > 0)
+            {
+                <div class="time-info">
+                    @FormatTime(currentTime) / @FormatTime(duration)
+                </div>
+                <div class="time-info">
+                    @playbackStatus
+                </div>
+            }
         </div>
     </div>
 
@@ -51,7 +73,7 @@
             {
                 <VideoCard Video="item"
                            OnPlayCallBack="async () => await PlayVideo(item)"
-                           NowPlayingVideo="@nowPlayingVideo?.Title"/>
+                           NowPlayingVideo="@nowPlayingVideo?.Title" />
             }
         </div>
     </div>
@@ -60,65 +82,95 @@
 @code {
     private readonly List<Video> videos = new();
     private Video? nowPlayingVideo;
-    private ElementReference videoPlayer;
-    private IJSObjectReference? module;
+    private List<Track> videoTracks = new();
     private int currentIndex;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Pages/Home.razor.js");
-            if (nowPlayingVideo is not null)
-            {
-                await PlayVideo(nowPlayingVideo);
-            }
-        }
-    }
+    private float currentTime = 0;
+    private float duration = 0;
+    private string playbackStatus = "Pronto para reprodução";
 
     protected override void OnInitialized()
     {
         getMovies();
         nowPlayingVideo = videos.FirstOrDefault();
+        setupVideoTracks();
+    }
+
+    private void setupVideoTracks()
+    {
+        videoTracks = new List<Track>();
+    }
+
+    private List<Source> GetCurrentVideoSources()
+    {
+        if (nowPlayingVideo == null) return new List<Source>();
+
+        return new List<Source>
+        {
+            new Source { Src = $"/Videos/{nowPlayingVideo.Name}", Type = "video/mp4" }
+        };
+    }
+
+    private string GetCurrentPosterUrl()
+    {
+        if (nowPlayingVideo == null) return "/images/videoPoster.png";
+
+        return $"/images/{nowPlayingVideo.Thumbnail}";
     }
 
     private async Task NextVideo()
     {
         currentIndex = (currentIndex + 1) % videos.Count;
         nowPlayingVideo = videos[currentIndex];
-        await PlayVideo(nowPlayingVideo);
+        await RefreshPlayer();
     }
 
     private async Task PreviousVideo()
     {
         currentIndex = (currentIndex - 1 + videos.Count) % videos.Count;
         nowPlayingVideo = videos[currentIndex];
-        await PlayVideo(nowPlayingVideo);
+        await RefreshPlayer();
     }
 
     private async Task PlayVideo(Video video)
     {
-        if (module is not null && videoPlayer.Context != null)
-        {
-            nowPlayingVideo = video;
-            try
-            {
-                await module.InvokeVoidAsync("playVideo", video.Name, videoPlayer);
-                StateHasChanged();
-            }
-            catch (JSException ex)
-            {
-                Console.Error.WriteLine($"Error playing video: {ex.Message}");
-            }
-        }
+        nowPlayingVideo = video;
+        currentIndex = videos.IndexOf(video);
+        await RefreshPlayer();
+    }
+
+    private async Task RefreshPlayer()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandlePlay()
+    {
+        playbackStatus = "Reproduzindo...";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleEnded()
+    {
+        playbackStatus = "Reprodução finalizada";
+        await NextVideo();
+    }
+
+    private async Task HandleTimeUpdate((float currentTime, float duration) timeInfo)
+    {
+        currentTime = timeInfo.currentTime;
+        duration = timeInfo.duration;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string FormatTime(float seconds)
+    {
+        var time = TimeSpan.FromSeconds(seconds);
+        return time.ToString(@"mm\:ss");
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (module is not null)
-        {
-            await module.DisposeAsync();
-        }
+        await Task.CompletedTask;
     }
 
     private void getMovies()
@@ -130,5 +182,4 @@
         videos.Add(new Video { Title = "Cyber City 2045", Thumbnail = "Cyber2045.png", Name = "Cyber2045.mp4" });
         videos.Add(new Video { Title = "Zero Hour", Thumbnail = "DestinyZeroHour.png", Name = "DestinyZeroHour.mp4" });
     }
-
 }

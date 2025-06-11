@@ -17,25 +17,29 @@
     <Message Importance="high" Text="npm build exit code: $(NpmBuildExitCode)" />
   </Target>
   <ItemGroup>
+    <Compile Remove="wwwroot\npm\**" />
     <Content Remove="wwwroot/npm/**/node_modules/**" />
+    <Content Remove="wwwroot\npm\**" />
+    <EmbeddedResource Remove="wwwroot\npm\**" />
     <None Remove="wwwroot/npm/**/node_modules/**" />
+    <None Remove="wwwroot\npm\**" />
+    <TypeScriptCompile Remove="wwwroot\npm\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.*" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.*" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.8.*">
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.8.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot/Videos/" />
-    <Folder Include="wwwroot/npm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="wwwroot/npm/src/modules/torrent.ts" />
+    <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
   </ItemGroup>
 </Project>
