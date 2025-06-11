@@ -1,7 +1,5 @@
-#!/bin/bash
 set -e
 
-# Helper to run sudo with or without password
 run_sudo() {
     if [ -n "$SUDO_PASSWORD" ]; then
         echo "$SUDO_PASSWORD" | sudo -S "$@"
@@ -13,8 +11,16 @@ run_sudo() {
 echo "🔄 Updating system packages..."
 run_sudo apt-get update && run_sudo apt-get upgrade -y
 
-echo "📦 Installing dependencies..."
-run_sudo apt-get install -y ca-certificates curl gnupg lsb-release apt-transport-https software-properties-common
+echo "📦 Installing dependencies for HTTPS support..."
+run_sudo apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    apt-transport-https \
+    software-properties-common \
+    openssl \
+    wget
 
 echo "🧹 Removing old Docker installations if any..."
 run_sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
@@ -22,7 +28,6 @@ run_sudo apt-get remove -y docker docker-engine docker.io containerd runc || tru
 echo "🔑 Adding Docker's official GPG key..."
 run_sudo install -m 0755 -d /etc/apt/keyrings
 
-# Download and install Docker's GPG key with better error handling
 curl -fsSL https://download.docker.com/linux/debian/gpg | run_sudo tee /etc/apt/keyrings/docker.asc > /dev/null
 run_sudo chmod a+r /etc/apt/keyrings/docker.asc
 
@@ -48,6 +53,11 @@ run_sudo usermod -aG docker $USER
 echo "⏹️ Stopping and disabling nginx (if running)..."
 run_sudo systemctl stop nginx || true
 run_sudo systemctl disable nginx || true
+
+echo "🔐 Setting up SSL certificate directories..."
+run_sudo mkdir -p /etc/ssl/zerossl
+run_sudo chown -R $USER:$USER /etc/ssl/zerossl
+run_sudo chmod 755 /etc/ssl/zerossl
 
 echo "✅ Installation completed! Printing debug info and versions..."
 export PATH="/usr/bin:/usr/local/bin:$PATH"
@@ -77,22 +87,9 @@ else
     exit 1
 fi
 
-if command -v nginx &> /dev/null; then
-    echo "✅ Nginx version:"
-    nginx -v
-elif [ -x "/usr/sbin/nginx" ]; then
-    echo "✅ Nginx version (/usr/sbin/nginx):"
-    /usr/sbin/nginx -v
-else
-    echo "⚠️ Nginx not found - installing..."
-    run_sudo apt-get install -y nginx
-    if [ -x "/usr/sbin/nginx" ]; then
-        echo "✅ Nginx installed successfully:"
-        /usr/sbin/nginx -v
-    else
-        echo "❌ Nginx installation failed"
-    fi
-fi
+echo "🔐 Checking SSL certificate directory:"
+ls -la /etc/ssl/zerossl/ || echo "SSL directory created but empty (certificates need to be installed)"
 
 echo "🎉 All services installed successfully!"
 echo "⚠️ IMPORTANT: You must log out and log in again for docker group membership to take effect for your user."
+echo "🔐 IMPORTANT: Install your SSL certificates in /etc/ssl/zerossl/ before running the application."
