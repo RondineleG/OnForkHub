@@ -16,6 +16,8 @@
     "vite": "^5.4.10"
   },
   "dependencies": {
+    "@types/react-plyr": "^2.1.4",
+    "plyr": "^3.7.8",
     "webtorrent": "^2.5.6"
   }
 }

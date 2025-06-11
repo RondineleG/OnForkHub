@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Web;
+
 using OnForkHub.Web.Components.Models;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
@@ -104,7 +106,9 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
     [Parameter]
     public bool VolumeControl { get; set; } = false;
+
     private string ErrorMessage { get; set; } = string.Empty;
+
     private int TorrentProgress { get; set; }
 
     public ValueTask DisposeAsync()
@@ -113,7 +117,18 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
         try
         {
-            // Add any additional asynchronous disposal logic here if needed.
+            // Cleanup JavaScript resources
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await VideoPlayerService.CleanupTorrent();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro ao limpar recursos do torrent: {ex.Message}");
+                }
+            });
         }
         catch (Exception ex)
         {
@@ -221,8 +236,20 @@ public partial class Player : ComponentBase, IAsyncDisposable
         }
     }
 
-    private void HandleTorrentFile(Microsoft.AspNetCore.Components.Web.MouseEventArgs e)
+    private async Task HandleTorrentFile(MouseEventArgs e)
     {
-        throw new NotImplementedException();
+        try
+        {
+            if (InputAttributes != null && InputAttributes.TryGetValue("id", out var idValue))
+            {
+                var elementId = idValue.ToString()!;
+                await VideoPlayerService.StartTorrentFromFile(elementId, _objectRef);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erro ao carregar arquivo torrent: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }
