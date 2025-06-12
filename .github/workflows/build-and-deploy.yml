@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       branch_type:
-        description: 'Branch type'
+        description: 'Select branch type'
         required: true
         type: choice
         options:
@@ -33,60 +33,21 @@ env:
   DOCKER_BUILDKIT: 1
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    outputs:
-      full_branch: ${{ steps.set_branch.outputs.full_branch }}
-      environment: ${{ steps.set_env.outputs.environment }}
-
-    steps:
-      - name: Calculate full branch
-        id: set_branch
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            TYPE="${{ github.event.inputs.branch_type }}"
-            NAME="${{ github.event.inputs.branch_name }}"
-
-            if [[ "$TYPE" == "dev" || "$TYPE" == "main" || "$TYPE" == "uat" ]]; then
-              echo "full_branch=$TYPE" >> $GITHUB_OUTPUT
-            else
-              if [[ -z "$NAME" ]]; then
-                echo "Branch name required for $TYPE"
-                exit 1
-              fi
-              TYPE_CLEAN=$(echo "$TYPE" | sed 's#/$##')
-              echo "full_branch=${TYPE_CLEAN}/${NAME}" >> $GITHUB_OUTPUT
-            fi
-          else
-            REF=${GITHUB_REF#refs/heads/}
-            echo "full_branch=$REF" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Set environment
-        id: set_env
-        run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
-          else
-            echo "environment=development" >> $GITHUB_OUTPUT
-          fi
-
   build:
-    needs: prepare
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
-    env:
-      FULL_BRANCH: ${{ needs.prepare.outputs.full_branch }}
+    outputs:
+      full_branch: ${{ steps.set-branch.outputs.full_branch }}
 
     steps:
       - name: Set full branch name
+        id: set-branch
         if: github.event_name == 'workflow_dispatch'
         run: |
           if [[ "${{ github.event.inputs.branch_type }}" == "dev" || "${{ github.event.inputs.branch_type }}" == "main" || "${{ github.event.inputs.branch_type }}" == "uat" ]]; then
-            echo "FULL_BRANCH=${{ github.event.inputs.branch_type }}" >> $GITHUB_ENV
+            FULL_BRANCH="${{ github.event.inputs.branch_type }}"
           else
             if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
               echo "❌ Branch name is required for ${{ github.event.inputs.branch_type }} branches"
@@ -94,28 +55,31 @@ jobs:
             fi
             BRANCH_TYPE=$(echo "${{ github.event.inputs.branch_type }}" | sed 's#/$##')
             BRANCH_NAME=$(echo "${{ github.event.inputs.branch_name }}" | sed 's#^/##')
-            echo "FULL_BRANCH=${BRANCH_TYPE}/${BRANCH_NAME}" >> $GITHUB_ENV
+            FULL_BRANCH="${BRANCH_TYPE}/${BRANCH_NAME}"
           fi
+          echo "FULL_BRANCH=${FULL_BRANCH}" >> $GITHUB_ENV
+          echo "full_branch=${FULL_BRANCH}" >> $GITHUB_OUTPUT
+          echo "✅ Full branch set to: ${FULL_BRANCH}"
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.FULL_BRANCH }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && steps.set-branch.outputs.full_branch || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Authenticate to GitHub Container Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set lowercase repo owner
+      - name: Set lowercase repository owner
         run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Build and push API
+      - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -127,7 +91,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Web
+      - name: Build and push Web image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -169,19 +133,15 @@ jobs:
             ⏰ ${{ steps.current-time.outputs.time }}
 
   deploy:
-    needs: [prepare, build]
+    needs: build
     runs-on: ubuntu-latest
-    environment: ${{ needs.prepare.outputs.environment }}
-
-    env:
-      ENVIRONMENT: ${{ needs.prepare.outputs.environment }}
-      FULL_BRANCH: ${{ needs.prepare.outputs.full_branch }}
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.FULL_BRANCH }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && needs.build.outputs.full_branch || github.ref }}
 
       - name: Install SSH Key
         run: |
@@ -189,6 +149,14 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          echo "✅ SSH key installed successfully"
+
+      - name: Test SSH Connection
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 $SSH_USER@$SSH_HOST "echo '✅ SSH connection successful'"
 
       - name: Check SSL Certificate Status
         env:
@@ -230,7 +198,15 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
+          scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+
+      - name: Install Services if Needed
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x install-services.sh &&
             if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
@@ -250,7 +226,7 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             chmod +x *.sh &&
             ls -la *.sh &&
@@ -264,7 +240,7 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           ENVIRONMENT: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
             echo '🧹 Starting cleanup...' &&
             bash ./cleanup-services.sh &&
