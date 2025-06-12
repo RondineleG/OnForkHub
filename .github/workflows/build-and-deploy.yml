@@ -1,10 +1,10 @@
-name: Build and Deploy to VPS
+name: CI/CD Pipeline - Build and Deploy
 
 on:
   workflow_dispatch:
     inputs:
       branch_type:
-        description: 'Select branch type'
+        description: 'Branch type'
         required: true
         type: choice
         options:
@@ -16,7 +16,7 @@ on:
           - main
           - uat
       branch_name:
-        description: 'Branch name (required for feature/bugfix/hotfix/release, e.g. for feature/user-auth enter user-auth)'
+        description: 'Branch name (for feature/bugfix/hotfix/release only)'
         required: false
         type: string
         default: ''
@@ -33,46 +33,74 @@ env:
   DOCKER_BUILDKIT: 1
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      full_branch: ${{ steps.set_branch.outputs.full_branch }}
+      environment: ${{ steps.set_env.outputs.environment }}
+
+    steps:
+      - name: Calculate full branch
+        id: set_branch
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TYPE="${{ github.event.inputs.branch_type }}"
+            NAME="${{ github.event.inputs.branch_name }}"
+
+            if [[ "$TYPE" == "dev" || "$TYPE" == "main" || "$TYPE" == "uat" ]]; then
+              echo "full_branch=$TYPE" >> $GITHUB_OUTPUT
+            else
+              if [[ -z "$NAME" ]]; then
+                echo "Branch name required for $TYPE"
+                exit 1
+              fi
+              TYPE_CLEAN=$(echo "$TYPE" | sed 's#/$##')
+              echo "full_branch=${TYPE_CLEAN}/${NAME}" >> $GITHUB_OUTPUT
+            fi
+          else
+            REF=${GITHUB_REF#refs/heads/}
+            echo "full_branch=$REF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set environment
+        id: set_env
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+          fi
+
   build:
+    needs: prepare
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
-    steps:
-      - name: Set full branch name
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          if [[ "${{ github.event.inputs.branch_type }}" == "dev" || "${{ github.event.inputs.branch_type }}" == "main" || "${{ github.event.inputs.branch_type }}" == "uat" ]]; then
-            echo "FULL_BRANCH=${{ github.event.inputs.branch_type }}" >> $GITHUB_ENV
-          else
-            if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
-              exit 1
-            fi
-            BRANCH_TYPE=$(echo "${{ github.event.inputs.branch_type }}" | sed 's#/$##')
-            BRANCH_NAME=$(echo "${{ github.event.inputs.branch_name }}" | sed 's#^/##')
-            echo "FULL_BRANCH=${BRANCH_TYPE}/${BRANCH_NAME}" >> $GITHUB_ENV
-          fi
+    env:
+      FULL_BRANCH: ${{ needs.prepare.outputs.full_branch }}
 
-      - name: Checkout repository
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
+          ref: ${{ env.FULL_BRANCH }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Authenticate to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set lowercase repository owner
+      - name: Set lowercase repo owner
         run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Build and push API image
+      - name: Build and push API
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -84,7 +112,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Web image
+      - name: Build and push Web
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -96,129 +124,61 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Get current UTC time
-        id: current-time
-        if: failure()
-        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
-
-      - name: Notify Build Failure
-        if: failure()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          format: markdown
-          disable_web_page_preview: true
-          message: |
-            🚨 *Build Failed*
-
-            Branch: `${{ github.ref_name }}`
-            Commit: `${{ github.sha }}`
-            Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
-
-            [View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-            ⏰ ${{ steps.current-time.outputs.time }}
-
   deploy:
-    needs: build
+    needs: [prepare, build]
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    environment: ${{ needs.prepare.outputs.environment }}
+
+    env:
+      ENVIRONMENT: ${{ needs.prepare.outputs.environment }}
+      FULL_BRANCH: ${{ needs.prepare.outputs.full_branch }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
+          ref: ${{ env.FULL_BRANCH }}
 
       - name: Install SSH Key
         run: |
-          set -e
-          set -x
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then exit 1; fi
-          if [ -z "${{ secrets.SSH_HOST }}" ]; then exit 1; fi
           mkdir -p ~/.ssh
           printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Check and Install Dependencies
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Transfer deployment files
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
-              mkdir -p ~/onforkhub-deploy
-            fi
-          "
+          scp -v -i ~/.ssh/deploy_key -r .deploy/* ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:~/onforkhub-deploy/
 
-      - name: Copy Deployment Files
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Install services if missing
         run: |
-          scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
-
-      - name: Install Services if Needed
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
             cd ~/onforkhub-deploy &&
             chmod +x install-services.sh &&
             if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
-              export SUDO_PASSWORD='$SUDO_PASSWORD'
+              export SUDO_PASSWORD='${{ secrets.SUDO_PASSWORD }}'
               bash ./install-services.sh
-              sudo systemctl status docker --no-pager || true
-            else
-              docker --version
-              docker compose version
             fi
           "
 
-      - name: Set Execute Permissions
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Set permissions for scripts
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
             cd ~/onforkhub-deploy &&
-            chmod +x *.sh &&
-            ls -la *.sh &&
-            test -x cleanup-services.sh && echo 'cleanup-services.sh OK' || echo 'cleanup-services.sh NOT EXECUTABLE' &&
-            test -x start-services.sh && echo 'start-services.sh OK' || echo 'start-services.sh NOT EXECUTABLE'
+            chmod +x *.sh
           "
 
-      - name: Deploy Services
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          ENVIRONMENT: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
+      - name: Execute deployment
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
             cd ~/onforkhub-deploy &&
             bash ./cleanup-services.sh &&
-            export ASPNETCORE_ENVIRONMENT=$ENVIRONMENT &&
+            export ASPNETCORE_ENVIRONMENT=${ENVIRONMENT} &&
             bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
           "
 
-      - name: Verify Deployment Status
-        if: success()
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Check containers
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy &&
-            docker ps &&
-            docker logs onforkhub-api --tail 10 2>/dev/null || true &&
-            docker logs onforkhub-web --tail 10 2>/dev/null || true &&
-            docker logs reverse-proxy --tail 10 2>/dev/null || true
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
+            docker ps
           "
-
-      - name: Get current UTC time
-        id: current-time
-        run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
