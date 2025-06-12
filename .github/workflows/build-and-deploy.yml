@@ -1,4 +1,4 @@
-name: Build and Deploy to VPS with HTTPS
+name: Build and Deploy to VPS
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ on:
           - main
           - uat
       branch_name:
-        description: 'Branch name (required for feature/bugfix/hotfix/release, ex: for feature/user-auth just type user-auth)'
+        description: 'Branch name (required for feature/bugfix/hotfix/release, e.g. for feature/user-auth enter user-auth)'
         required: false
         type: string
         default: ''
@@ -47,7 +47,6 @@ jobs:
             echo "FULL_BRANCH=${{ github.event.inputs.branch_type }}" >> $GITHUB_ENV
           else
             if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
-              echo "❌ Branch name is required for ${{ github.event.inputs.branch_type }} branches"
               exit 1
             fi
             BRANCH_TYPE=$(echo "${{ github.event.inputs.branch_type }}" | sed 's#/$##')
@@ -60,7 +59,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
 
-      - name: Set up Docker Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
@@ -111,18 +110,13 @@ jobs:
           format: markdown
           disable_web_page_preview: true
           message: |
-            🔔 *Build Failure Notification*
+            🚨 *Build Failed*
 
-            📦 *Build Job Failed*
             Branch: `${{ github.ref_name }}`
             Commit: `${{ github.sha }}`
             Author: [${{ github.actor }}](https://github.com/${{ github.actor }})
 
-            🏗️ *Build Details:*
-            Repository: ${{ github.repository }}
-            Workflow: ${{ github.workflow }}
-
-            [View Build Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             ⏰ ${{ steps.current-time.outputs.time }}
 
@@ -139,33 +133,14 @@ jobs:
 
       - name: Install SSH Key
         run: |
+          set -e
+          set -x
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then exit 1; fi
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then exit 1; fi
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Check SSL Certificate Status
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            echo '🔐 Checking SSL certificate status...'
-            if [ -f '/etc/ssl/zerossl/fullchain.crt' ]; then
-              echo '✅ SSL certificate found'
-              echo 'Certificate details:'
-              openssl x509 -in /etc/ssl/zerossl/fullchain.crt -subject -dates -noout
-              if openssl x509 -in /etc/ssl/zerossl/fullchain.crt -checkend 86400 -noout; then
-                echo '✅ Certificate is valid for more than 24 hours'
-              else
-                echo '⚠️ Certificate expires within 24 hours!'
-              fi
-            else
-              echo '❌ SSL certificate not found at /etc/ssl/zerossl/fullchain.crt'
-              echo 'Please install SSL certificates before deployment'
-              exit 1
-            fi
-          "
 
       - name: Check and Install Dependencies
         env:
@@ -174,7 +149,6 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
-              echo 'Installing dependencies...'
               mkdir -p ~/onforkhub-deploy
             fi
           "
@@ -196,18 +170,16 @@ jobs:
             cd ~/onforkhub-deploy &&
             chmod +x install-services.sh &&
             if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
-              echo 'Installing Docker and dependencies...'
               export SUDO_PASSWORD='$SUDO_PASSWORD'
               bash ./install-services.sh
               sudo systemctl status docker --no-pager || true
             else
-              echo 'Docker and dependencies already installed'
               docker --version
               docker compose version
             fi
           "
 
-      - name: Set Execute Permissions and Verify
+      - name: Set Execute Permissions
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -216,11 +188,11 @@ jobs:
             cd ~/onforkhub-deploy &&
             chmod +x *.sh &&
             ls -la *.sh &&
-            test -x cleanup-services.sh && echo '✅ cleanup-services.sh is executable' || echo '❌ cleanup-services.sh is NOT executable' &&
-            test -x start-services.sh && echo '✅ start-services.sh is executable' || echo '❌ start-services.sh is NOT executable'
+            test -x cleanup-services.sh && echo 'cleanup-services.sh OK' || echo 'cleanup-services.sh NOT EXECUTABLE' &&
+            test -x start-services.sh && echo 'start-services.sh OK' || echo 'start-services.sh NOT EXECUTABLE'
           "
 
-      - name: Deploy Services with HTTPS
+      - name: Deploy Services
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -228,14 +200,12 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
-            echo '🧹 Starting cleanup...' &&
             bash ./cleanup-services.sh &&
-            echo '🚀 Starting services in $ENVIRONMENT environment with HTTPS...' &&
             export ASPNETCORE_ENVIRONMENT=$ENVIRONMENT &&
             bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
           "
 
-      - name: Verify HTTPS Deployment
+      - name: Verify Deployment Status
         if: success()
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
@@ -243,60 +213,12 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
-            echo '📋 Container status:' &&
             docker ps &&
-            echo '📝 Container logs:' &&
             docker logs onforkhub-api --tail 10 2>/dev/null || true &&
             docker logs onforkhub-web --tail 10 2>/dev/null || true &&
-            docker logs reverse-proxy --tail 10 2>/dev/null || true &&
-            echo '🌐 Testing HTTPS endpoints...' &&
-            echo 'Testing Web HTTPS:' &&
-            curl -k -s -o /dev/null -w 'HTTP Status: %{http_code}\n' https://172.245.152.43 || echo 'Web test failed' &&
-            echo 'Testing API HTTPS:' &&
-            curl -k -s -o /dev/null -w 'HTTP Status: %{http_code}\n' https://172.245.152.43:9443/health || echo 'API test failed'
+            docker logs reverse-proxy --tail 10 2>/dev/null || true
           "
 
       - name: Get current UTC time
         id: current-time
         run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
-
-      - name: Notify Successful HTTPS Deployment
-        if: success()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          format: markdown
-          disable_web_page_preview: true
-          message: |
-            🎉 *HTTPS Deployment Successful*
-
-            🔐 *Secure Deployment Completed*
-            Branch: `${{ github.ref_name }}`
-            Commit: `${{ github.sha }}`
-            Environment: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
-
-            🌐 *HTTPS Access URLs:*
-            • Web: https://172.245.152.43
-            • API: https://172.245.152.43:9443
-
-            ⏰ ${{ steps.current-time.outputs.time }}
-
-      - name: Notify Deployment Failure
-        if: failure()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          format: markdown
-          disable_web_page_preview: true
-          message: |
-            🚨 *HTTPS Deployment Failed*
-
-            ❌ *Deployment Error*
-            Branch: `${{ github.ref_name }}`
-            Commit: `${{ github.sha }}`
-
-            [View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-            ⏰ ${{ steps.current-time.outputs.time }}
