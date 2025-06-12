@@ -33,8 +33,4 @@ ENV COMPlus_GCConserveMemory=9 \
     ASPNETCORE_HTTPSREDIRECTION_ENABLED=false \
     DOTNET_USE_POLLING_FILE_WATCHER=true \
     DOTNET_RUNNING_IN_CONTAINER=true
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80/health || exit 1
-
 ENTRYPOINT ["dotnet", "OnForkHub.Api.dll"]
