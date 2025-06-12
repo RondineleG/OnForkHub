@@ -79,6 +79,13 @@ jobs:
       - name: Set lowercase repository owner
         run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      - name: Debug image names
+        run: |
+          echo "Repository owner: ${{ github.repository_owner }}"
+          echo "Lowercase repo owner: $REPO_OWNER"
+          echo "API Image: ${{ env.REGISTRY }}/$REPO_OWNER/${{ env.API_IMAGE_NAME }}"
+          echo "Web Image: ${{ env.REGISTRY }}/$REPO_OWNER/${{ env.WEB_IMAGE_NAME }}"
+
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
@@ -234,6 +241,21 @@ jobs:
             test -x start-services.sh && echo '✅ start-services.sh is executable' || echo '❌ start-services.sh is NOT executable'
           "
 
+      - name: Update Docker Compose with correct image names
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            cd ~/onforkhub-deploy &&
+            GITHUB_USERNAME_LOWER=\$(echo '${{ github.actor }}' | tr '[:upper:]' '[:lower:]') &&
+            echo '🔄 Using lowercase username: \$GITHUB_USERNAME_LOWER' &&
+            sed -i \"s|ghcr.io/.*/onforkhub-api:latest|ghcr.io/\$GITHUB_USERNAME_LOWER/onforkhub-api:latest|g\" docker-compose.yml &&
+            sed -i \"s|ghcr.io/.*/onforkhub-web:latest|ghcr.io/\$GITHUB_USERNAME_LOWER/onforkhub-web:latest|g\" docker-compose.yml &&
+            echo '✅ Docker compose updated with correct image names' &&
+            grep 'image:' docker-compose.yml
+          "
+
       - name: Deploy Services with HTTPS
         env:
           SSH_USER: ${{ secrets.SSH_USERNAME }}
@@ -249,6 +271,26 @@ jobs:
             bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
           "
 
+      - name: Wait for services to be ready
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            cd ~/onforkhub-deploy &&
+            echo '⏳ Waiting for services to be ready...' &&
+            for i in {1..30}; do
+              echo \"Attempt \$i/30 - Checking service status...\" &&
+              if docker compose ps --format 'table {{.Service}}\t{{.Status}}' | grep -q 'healthy'; then
+                echo '✅ Some services are healthy' &&
+                break
+              fi &&
+              sleep 10
+            done &&
+            echo '📋 Final container status:' &&
+            docker compose ps
+          "
+
       - name: Verify HTTPS Deployment
         if: success()
         env:
@@ -257,17 +299,44 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
             cd ~/onforkhub-deploy &&
-            echo '📋 Container status:' &&
-            docker ps &&
             echo '📝 Container logs:' &&
-            docker logs onforkhub-api --tail 10 2>/dev/null || true &&
-            docker logs onforkhub-web --tail 10 2>/dev/null || true &&
-            docker logs reverse-proxy --tail 10 2>/dev/null || true &&
+            echo '=== API Logs ===' &&
+            docker logs onforkhub-api --tail 20 2>/dev/null || echo 'API container not running' &&
+            echo '=== Web Logs ===' &&
+            docker logs onforkhub-web --tail 20 2>/dev/null || echo 'Web container not running' &&
+            echo '=== Reverse Proxy Logs ===' &&
+            docker logs reverse-proxy --tail 20 2>/dev/null || echo 'Reverse proxy container not running' &&
             echo '🌐 Testing HTTPS endpoints...' &&
             echo 'Testing Web HTTPS:' &&
-            curl -k -s -o /dev/null -w 'HTTP Status: %{http_code}\n' https://172.245.152.43 || echo 'Web test failed' &&
+            timeout 10 curl -k -s -o /dev/null -w 'HTTP Status: %{http_code}\n' https://172.245.152.43 || echo 'Web test failed' &&
             echo 'Testing API HTTPS:' &&
-            curl -k -s -o /dev/null -w 'HTTP Status: %{http_code}\n' https://172.245.152.43:9443/health || echo 'API test failed'
+            timeout 10 curl -k -s -o /dev/null -w 'HTTP Status: %{http_code}\n' https://172.245.152.43:9443/health || echo 'API health test failed' &&
+            timeout 10 curl -k -s -o /dev/null -w 'HTTP Status: %{http_code}\n' https://172.245.152.43:9443/ || echo 'API root test failed'
+          "
+
+      - name: Debug API Container Issues
+        if: failure()
+        env:
+          SSH_USER: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
+            cd ~/onforkhub-deploy &&
+            echo '🔍 Debugging container issues...' &&
+            echo 'All containers status:' &&
+            docker ps -a &&
+            echo '=== API Container Detailed Logs ===' &&
+            docker logs onforkhub-api --tail 100 2>&1 || true &&
+            echo '=== API Container Health Check ===' &&
+            docker inspect onforkhub-api | grep -A 15 -B 5 Health || true &&
+            echo '=== Manual Health Check Test ===' &&
+            docker exec onforkhub-api curl -v http://localhost:80/health 2>&1 || true &&
+            docker exec onforkhub-api curl -v http://localhost:80/ 2>&1 || true &&
+            echo '=== Container Resources ===' &&
+            docker stats --no-stream || true &&
+            echo '=== Network Information ===' &&
+            docker network ls &&
+            docker network inspect onforkhub-deploy_onforkhub-network || true
           "
 
       - name: Get current UTC time

@@ -10,16 +10,18 @@ if [ -z "$REGISTRY_TOKEN" ] || [ -z "$GITHUB_USERNAME" ]; then
     exit 1
 fi
 
+GITHUB_USERNAME_LOWER=$(echo "$GITHUB_USERNAME" | tr '[:upper:]' '[:lower:]')
+
 echo "🔐 Logging into GitHub Container Registry..."
 echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
 
 echo "📥 Pulling latest images..."
-docker pull ghcr.io/rondineleG/onforkhub-api:latest || {
+docker pull ghcr.io/${GITHUB_USERNAME_LOWER}/onforkhub-api:latest || {
     echo "❌ Failed to pull API image"
     exit 1
 }
 
-docker pull ghcr.io/rondineleG/onforkhub-web:latest || {
+docker pull ghcr.io/${GITHUB_USERNAME_LOWER}/onforkhub-web:latest || {
     echo "❌ Failed to pull Web image"
     exit 1
 }

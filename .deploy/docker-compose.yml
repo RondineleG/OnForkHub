@@ -6,7 +6,7 @@ networks:
 
 services:
   onforkhub-api:
-    image: ghcr.io/rondineleG/onforkhub-api:latest
+    image: ghcr.io/rondinelеg/onforkhub-api:latest
     container_name: onforkhub-api
     restart: unless-stopped
     networks:
@@ -30,7 +30,7 @@ services:
           memory: 256M
 
   onforkhub-web:
-    image: ghcr.io/rondineleG/onforkhub-web:latest
+    image: ghcr.io/rondinelеg/onforkhub-web:latest
     container_name: onforkhub-web
     restart: unless-stopped
     networks:
