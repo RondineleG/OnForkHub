@@ -1,12 +1,10 @@
-version: '3.8'
-
 networks:
   onforkhub-network:
     driver: bridge
 
 services:
   onforkhub-api:
-    image: ghcr.io/rondinelеg/onforkhub-api:latest
+    image: ghcr.io/rondineleg/onforkhub-api:latest
     container_name: onforkhub-api
     restart: unless-stopped
     networks:
@@ -17,11 +15,11 @@ services:
       - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
       - ASPNETCORE_HTTPSREDIRECTION_ENABLED=false
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health", "||", "curl", "-f", "http://localhost:80/", "||", "exit", "1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || curl -f http://localhost:80/ || exit 1"]
       interval: 30s
       timeout: 15s
-      retries: 5
-      start_period: 60s
+      retries: 3
+      start_period: 120s
     deploy:
       resources:
         limits:
@@ -30,17 +28,17 @@ services:
           memory: 256M
 
   onforkhub-web:
-    image: ghcr.io/rondinelеg/onforkhub-web:latest
+    image: ghcr.io/rondineleg/onforkhub-web:latest
     container_name: onforkhub-web
     restart: unless-stopped
     networks:
       - onforkhub-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -64,12 +62,12 @@ services:
       - onforkhub-network
     depends_on:
       onforkhub-api:
-        condition: service_healthy
+        condition: service_started
       onforkhub-web:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 30s
