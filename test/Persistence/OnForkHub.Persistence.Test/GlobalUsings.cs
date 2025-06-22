@@ -1,5 +1,3 @@
-global using FluentAssertions;
-
 global using Microsoft.EntityFrameworkCore;
 
 global using NSubstitute;
@@ -13,3 +11,5 @@ global using OnForkHub.Persistence.Exceptions;
 global using OnForkHub.Persistence.Repositories;
 
 global using System.ComponentModel;
+
+global using Xunit;

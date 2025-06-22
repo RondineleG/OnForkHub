@@ -4,6 +4,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-    <ProjectReference Include="..\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GraphQL" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GraphQL.Server.Core" />
   </ItemGroup>
 </Project>

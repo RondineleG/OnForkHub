@@ -9,7 +9,7 @@
     <Content Include="Properties\launchSettings.json" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\OnForkHub.Application\OnForkHub.Application.csproj" />

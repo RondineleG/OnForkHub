@@ -1,4 +1,3 @@
-global using FluentAssertions;
 global using FluentAssertions.Specialized;
 
 global using OnForkHub.Core.Exceptions;

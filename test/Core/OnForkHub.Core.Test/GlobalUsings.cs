@@ -1,9 +1,3 @@
-global using FluentAssertions;
-
-global using NSubstitute;
-
-global using OnForkHub.Abstractions.Resources.Core.Entities;
-global using OnForkHub.Abstractions.Resources.Core.ValueObjects;
 global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Entities.Base;
 global using OnForkHub.Core.Enums;
