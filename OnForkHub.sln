@@ -27,6 +27,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Abstractions", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Application", "src\Core\OnForkHub.Application\OnForkHub.Application.csproj", "{4DCC3D58-3A32-43BA-A8BD-25E93809F79C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{86DCAE2F-1EB9-437F-A8C7-680ED4D902AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.Infrastructure.FileManager", "src\Infrastructure\OnForkHub.Infrastructure.FileManager\OnForkHub.Infrastructure.FileManager.csproj", "{190D463A-337C-46D9-A984-5421180A3F75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.Infrastructure.Identity", "src\Infrastructure\OnForkHub.Infrastructure.Identity\OnForkHub.Infrastructure.Identity.csproj", "{F022D754-8881-4E1A-A315-419863D59B9B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.Infrastructure.Persistence", "src\Infrastructure\OnForkHub.Infrastructure.Persistence\OnForkHub.Infrastructure.Persistence.csproj", "{20523C47-9CAC-4396-B44F-D6F989F893AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnForkHub.Infrastructure.Resources", "src\Infrastructure\OnForkHub.Infrastructure.Resources\OnForkHub.Infrastructure.Resources.csproj", "{50698670-5FBB-4D7F-ACD2-74BFD50D2EE6}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence", "src\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj", "{1E0F83AD-286C-4D15-BCAD-356650E13ACA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnForkHub.Persistence.Test", "test\Persistence\OnForkHub.Persistence.Test\OnForkHub.Persistence.Test.csproj", "{F6B680D6-1B24-4459-A86C-7DB6E72A71C1}"

@@ -1,6 +1,6 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
-public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase) : BaseEndpoint<Category>, IEndpointAsync
+public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase) : BaseEndPoint<Category>, IEndpointAsync
 {
     private const int V1 = 1;
 

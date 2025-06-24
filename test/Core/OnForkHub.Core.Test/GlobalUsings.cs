@@ -1,3 +1,9 @@
+global using FluentAssertions;
+
+global using NSubstitute;
+
+global using OnForkHub.Abstractions.Resources.Core.Entities;
+global using OnForkHub.Abstractions.Resources.Core.ValueObjects;
 global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Entities.Base;
 global using OnForkHub.Core.Enums;
@@ -12,3 +18,5 @@ global using OnForkHub.TestExtensions.Constants;
 global using System.ComponentModel;
 global using System.Linq.Expressions;
 global using System.Text.Json;
+
+global using Xunit;

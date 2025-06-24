@@ -2,18 +2,18 @@ namespace OnForkHub.Application.Test.Services;
 
 public class CategoryServiceTest
 {
-    private readonly ICategoryRepositoryEF _categoryRepository;
-
-    private readonly CategoryService _categoryService;
-
-    private readonly IValidationService<Category> _validationService;
-
     public CategoryServiceTest()
     {
         _categoryRepository = Substitute.For<ICategoryRepositoryEF>();
         _validationService = Substitute.For<IValidationService<Category>>();
         _categoryService = new CategoryService(_categoryRepository, _validationService);
     }
+
+    private readonly ICategoryRepositoryEF _categoryRepository;
+
+    private readonly CategoryService _categoryService;
+
+    private readonly IValidationService<Category> _validationService;
 
     [Fact]
     [Trait("Category", "Unit")]

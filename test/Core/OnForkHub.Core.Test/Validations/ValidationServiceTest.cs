@@ -2,6 +2,15 @@ namespace OnForkHub.Core.Test.Validations;
 
 public class ValidationServiceTest
 {
+    public ValidationServiceTest()
+    {
+        _builder = Substitute.For<IValidationBuilder<TestEntity>>();
+        _validator = Substitute.For<IEntityValidator<TestEntity>>();
+        _builder.Validate().Returns(ValidationResult.Success());
+        _validator.Validate(Arg.Any<TestEntity>()).Returns(ValidationResult.Success());
+        _service = new TestValidationService(_builder, _validator);
+    }
+
     private readonly IValidationBuilder<TestEntity> _builder;
 
     private readonly TestValidationService _service;
@@ -121,15 +130,6 @@ public class ValidationServiceTest
 
         result.IsValid.Should().BeFalse();
         result.ErrorMessage.Should().Contain("TestEntity cannot be null").And.Contain("TestEntity ID is required for updates");
-    }
-
-    public ValidationServiceTest()
-    {
-        _builder = Substitute.For<IValidationBuilder<TestEntity>>();
-        _validator = Substitute.For<IEntityValidator<TestEntity>>();
-        _builder.Validate().Returns(ValidationResult.Success());
-        _validator.Validate(Arg.Any<TestEntity>()).Returns(ValidationResult.Success());
-        _service = new TestValidationService(_builder, _validator);
     }
 
     public class TestEntity : BaseEntity

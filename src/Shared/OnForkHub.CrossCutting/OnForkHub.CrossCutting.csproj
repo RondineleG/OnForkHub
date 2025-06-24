@@ -7,8 +7,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="GraphQL" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="GraphQL.Server.Core" />
   </ItemGroup>
 </Project>

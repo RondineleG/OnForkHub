@@ -144,17 +144,14 @@ public static class CommonServicesExtension
         ServiceLifetime lifetime = ServiceLifetime.Transient
     )
     {
-        markerType
-            .Assembly.GetTypes()
-            .Where(x => x.DoesImplementInterfaceType(interfaceType))
-            .ForEach(x =>
-                services.Add(
-                    new ServiceDescriptor(
-                        x.GetInterfaces().First(y => y.IsGenericType ? y.GetGenericTypeDefinition() == interfaceType : y == interfaceType),
-                        x,
-                        lifetime
-                    )
-                )
-            );
+        var types = markerType.Assembly.GetTypes().Where(x => x.DoesImplementInterfaceType(interfaceType));
+
+        foreach (var type in types)
+        {
+            var implementedInterface = type.GetInterfaces()
+                .First(y => y.IsGenericType ? y.GetGenericTypeDefinition() == interfaceType : y == interfaceType);
+
+            services.Add(new ServiceDescriptor(implementedInterface, type, lifetime));
+        }
     }
 }

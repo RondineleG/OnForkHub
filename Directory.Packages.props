@@ -38,6 +38,8 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+    <PackageVersion Include="Asp.Versioning.Http" Version="8.1.0" />
+    <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
     <PackageVersion Include="HotChocolate" Version="15.1.5" />
     <PackageVersion Include="HotChocolate.AspNetCore" Version="15.1.5" />
     <PackageVersion Include="HotChocolate.Subscriptions.InMemory" Version="15.1.0" />
