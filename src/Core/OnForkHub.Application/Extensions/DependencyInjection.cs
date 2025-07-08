@@ -6,7 +6,6 @@ using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.Core.Validations.Categories;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
-using OnForkHub.Persistence.Repositories;
 
 namespace OnForkHub.Application.Extensions;
 
