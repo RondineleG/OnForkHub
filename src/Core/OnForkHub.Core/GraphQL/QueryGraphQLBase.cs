@@ -1,5 +1,3 @@
-using HotChocolate.Types;
-
 using OnForkHub.Core.Interfaces.GraphQL;
 
 namespace OnForkHub.Core.GraphQL;

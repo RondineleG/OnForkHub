@@ -15,7 +15,7 @@ public class GraphQLNetConfigurator : IGraphQLConfigurator
             return (Schema)schemaBuilder.Build();
         });
 
-        services.AddGraphQL();
+        services.AddGraphQLServer();
         services.Configure<ExecutionOptions>(options =>
         {
             options.EnableMetrics = true;

@@ -45,6 +45,7 @@
     <Error Condition="'$(RunExitCode)' != '0'" Text="RunScript failed with exit code $(RunExitCode). Check the logs for more details." />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 </Project>

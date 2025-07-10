@@ -1,4 +1,3 @@
-
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 80
@@ -16,17 +15,22 @@ COPY ["src/Persistence/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src
 RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .
 WORKDIR "/src/src/Presentations/OnForkHub.Api"
-RUN dotnet build "./OnForkHub.Api.csproj" -c Debug -o /app/build
+RUN dotnet build "./OnForkHub.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "./OnForkHub.Api.csproj" -c Debug -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./OnForkHub.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
 ENV COMPlus_GCConserveMemory=9 \
     COMPlus_HeapHardLimit=500000000 \
     DOTNET_GCHeapHardLimit=500000000 \
     ASPNETCORE_ENVIRONMENT=Production \
-    ASPNETCORE_URLS=http://+:80
+    ASPNETCORE_URLS=http://+:80 \
+    ASPNETCORE_FORWARDEDHEADERS_ENABLED=true \
+    ASPNETCORE_HTTPSREDIRECTION_ENABLED=false \
+    DOTNET_USE_POLLING_FILE_WATCHER=true \
+    DOTNET_RUNNING_IN_CONTAINER=true
 ENTRYPOINT ["dotnet", "OnForkHub.Api.dll"]

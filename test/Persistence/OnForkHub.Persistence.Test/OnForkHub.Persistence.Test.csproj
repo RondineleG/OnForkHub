@@ -8,21 +8,26 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
-    <PackageReference Include="coverlet.collector" Version="6.*" />
-    <PackageReference Include="xunit" Version="2.*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.*">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\src\Infrastructure\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
     <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
   </ItemGroup>
+  <ItemGroup></ItemGroup>
   <ItemGroup>
-    <Using Include="Xunit" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" />
+    <PackageReference Include="RavenDB.Client" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="FluentAssertions" />
   </ItemGroup>
 </Project>

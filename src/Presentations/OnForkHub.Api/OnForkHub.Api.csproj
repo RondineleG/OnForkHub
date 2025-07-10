@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <UserSecretsId>40a7ca1a-6a59-48a7-a884-674b6a58a756</UserSecretsId>
@@ -9,11 +9,17 @@
     <Content Include="Properties\launchSettings.json" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+    <PackageReference Include="Asp.Versioning.Http" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\OnForkHub.Application\OnForkHub.Application.csproj" />
-    <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
     <ProjectReference Include="..\..\Shared\OnForkHub.CrossCutting\OnForkHub.CrossCutting.csproj" />
   </ItemGroup>
 </Project>

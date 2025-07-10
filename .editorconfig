@@ -350,3 +350,9 @@ dotnet_diagnostic.SA1517.severity = none
 
 [*.{cs,vb}]
 dotnet_diagnostic.IDE0073.severity = none
+
+[*.cs]
+dotnet_style_require_accessibility_modifiers = none
+
+[*.{cs,vb}]
+dotnet_analyzer_diagnostic.category-Style.severity = none
