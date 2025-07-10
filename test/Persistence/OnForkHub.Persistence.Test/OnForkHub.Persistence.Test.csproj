@@ -17,7 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\src\Infrastructure\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
     <ProjectReference Include="..\..\..\src\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
   </ItemGroup>
   <ItemGroup></ItemGroup>

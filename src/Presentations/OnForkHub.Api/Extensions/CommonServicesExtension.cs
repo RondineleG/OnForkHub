@@ -1,3 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+
+using OnForkHub.Persistence.Configurations;
+using OnForkHub.Persistence.Contexts;
+using OnForkHub.Persistence.Contexts.Base;
+using OnForkHub.Persistence.Repositories;
+
+using Raven.Client.Documents;
+
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]

@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
-    <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
     <ProjectReference Include="..\..\Shared\OnForkHub.CrossCutting\OnForkHub.CrossCutting.csproj" />
   </ItemGroup>
 </Project>
