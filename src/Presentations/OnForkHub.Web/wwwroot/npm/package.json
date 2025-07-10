@@ -1,0 +1,12 @@
+{
+  "name": "onforkhub-web",
+  "version": "1.0.0",
+  "description": "OnForkHub Web Application",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Build script'",
+    "dev": "echo 'Development script'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -43,13 +43,7 @@ public static class RouteGroupExtension
 
     private static IEndpointRouteBuilder MapGraphQLNetGraphQL(this IEndpointRouteBuilder builder, string path)
     {
-        builder.MapGraphQL(
-            path,
-            options =>
-            {
-                options.AuthorizationRequired = false;
-            }
-        );
+        builder.MapGraphQL(path);
         return builder;
     }
 

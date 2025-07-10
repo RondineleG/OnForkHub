@@ -1,6 +1,6 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
-public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndpoint<Category>, IEndpointAsync
+public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
 {
     private const int V1 = 1;
 
