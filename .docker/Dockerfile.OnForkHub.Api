@@ -11,7 +11,7 @@ COPY ["src/Core/OnForkHub.Application/OnForkHub.Application.csproj", "src/Core/O
 COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/"]
 COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
 COPY ["src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj", "src/Shared/OnForkHub.Dependencies/"]
-COPY ["src/Persistence/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src/Persistence/OnForkHub.Persistence/"]
+COPY ["src/Infrastructure/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src/Infrastructure/OnForkHub.Persistence/"]
 RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .
 WORKDIR "/src/src/Presentations/OnForkHub.Api"
