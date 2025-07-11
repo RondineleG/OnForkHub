@@ -1,4 +1,5 @@
 using OnForkHub.Api.Middlewares;
+using OnForkHub.Application.DependencyInjection;
 using OnForkHub.Application.Extensions;
 using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.CrossCutting.Extensions;
@@ -13,6 +14,13 @@ builder.Services.AddEntityFrameworkServices(builder.Configuration);
 builder.Services.AddCustomServices();
 builder.Services.AddGraphQLFromCrossCutting();
 builder.Services.AddGraphQLAdapters();
+builder.Services.AddAutoRegisteredServices();
+
+builder.Services.AddAutoRegisteredServices(typeof(Program).Assembly, typeof(CategoryValidator).Assembly);
+
+builder.Services.Scan(scan =>
+    scan.FromAssemblyOf<Program>().AddClassesEndingWith("Service", "Repository").AsImplementedInterfaces().WithScopedLifetime()
+);
 
 var app = builder.Build();
 

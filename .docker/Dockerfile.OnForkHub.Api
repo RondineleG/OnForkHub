@@ -10,7 +10,6 @@ COPY ["src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj", "src/Presentations
 COPY ["src/Core/OnForkHub.Application/OnForkHub.Application.csproj", "src/Core/OnForkHub.Application/"]
 COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/"]
 COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
-COPY ["src/Shared/OnForkHub.Dependencies/OnForkHub.Dependencies.csproj", "src/Shared/OnForkHub.Dependencies/"]
 COPY ["src/Infrastructure/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src/Infrastructure/OnForkHub.Persistence/"]
 RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .

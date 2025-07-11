@@ -1,12 +1,14 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
-public class GetAll(ILogger<GetAll> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase) : BaseEndPoint<Category>, IEndpointAsync
+public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
+    : BaseEndPoint<Category>,
+        IEndpointAsync
 {
     private const int V1 = 1;
 
     private static readonly string Route = GetVersionedRoute(V1);
 
-    private readonly ILogger<GetAll> _logger = logger;
+    private readonly ILogger<GetAllEndpoint> _logger = logger;
 
     private readonly IUseCase<PaginationRequestDto, IEnumerable<Category>> _useCase = useCase;
 

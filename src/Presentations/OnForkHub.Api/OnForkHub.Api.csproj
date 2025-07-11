@@ -9,6 +9,9 @@
     <Content Include="Properties\launchSettings.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Endpoints\Rest\V1\Categories\CreateEndpoint.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="Asp.Versioning.Http" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
