@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 using OnForkHub.Core.Interfaces.DependencyInjection;
 
+using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -15,10 +16,17 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
 {
     public AssemblyScanner(IServiceCollection services, ILogger<AssemblyScanner>? logger = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        _services = services;
+        _services = services ?? throw new ArgumentNullException(nameof(services));
         _logger = logger;
     }
+
+    private static readonly FrozenSet<Type> IgnoredInterfaces = new[] { typeof(IDisposable), typeof(IAsyncDisposable) }.ToFrozenSet();
+
+    private static readonly ConcurrentCache<string, Regex> RegexCache = new(maxSize: 100);
+
+    private static readonly FrozenSet<string> SystemNamespaces = new[] { "System", "Microsoft", "mscorlib" }.ToFrozenSet(StringComparer.Ordinal);
+
+    #region LoggerMessages - Compilados estaticamente para melhor performance
 
     private static readonly Action<ILogger, string, Exception?> LogAssemblyAdded = LoggerMessage.Define<string>(
         LogLevel.Debug,
@@ -62,6 +70,8 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         "Erro ao registrar o tipo '{TypeName}': {InnerErrorMessage}"
     );
 
+    #endregion LoggerMessages - Compilados estaticamente para melhor performance
+
     private readonly HashSet<Assembly> _assemblies = new();
 
     private readonly ILogger<AssemblyScanner>? _logger;
@@ -76,11 +86,11 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
 
     private Func<IServiceProvider, object>? _factory;
 
-    private RegistrationMode _registrationMode = RegistrationMode.Default;
+    private ERegistrationMode _registrationMode = ERegistrationMode.Default;
 
     private Type[]? _serviceTypes;
 
-    private RegistrationStrategyType _strategy = RegistrationStrategyType.AsImplementedInterfaces;
+    private ERegistrationStrategyType _strategy = ERegistrationStrategyType.AsImplementedInterfaces;
 
     public IRegistrationStrategy AddClasses(Func<Type, bool>? predicate = null)
     {
@@ -92,11 +102,10 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
             .WithDegreeOfParallelism(Environment.ProcessorCount)
             .SelectMany(assembly => AssemblyCache.GetTypes(assembly))
             .Where(predicate)
-            .Where(t => t.GetCustomAttribute<ExcludeFromRegistrationAttribute>() == null)
-            .ToList();
+            .Where(t => t.GetCustomAttribute<ExcludeFromRegistrationAttribute>() is null)
+            .ToArray();
 
-        if (_logger is not null)
-            LogDiscoveredTypes(_logger, discovered.Count, null);
+        _logger?.Let(logger => LogDiscoveredTypes(logger, discovered.Length, null));
 
         _typesToRegister.AddRange(discovered);
         return this;
@@ -136,13 +145,13 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         if (string.IsNullOrWhiteSpace(namespaceName))
             throw new ArgumentException("Namespace não pode ser nulo ou vazio", nameof(namespaceName));
 
-        return AddClasses(type => IsValidClass(type) && (type.Namespace?.StartsWith(namespaceName, StringComparison.Ordinal) == true));
+        return AddClasses(type => IsValidClass(type) && type.Namespace?.StartsWith(namespaceName, StringComparison.Ordinal) == true);
     }
 
     public IRegistrationStrategy AddClassesWithAttribute<TAttribute>()
         where TAttribute : Attribute
     {
-        return AddClasses(type => IsValidClass(type) && type.GetCustomAttribute<TAttribute>() != null);
+        return AddClasses(type => IsValidClass(type) && type.GetCustomAttribute<TAttribute>() is not null);
     }
 
     public IRegistrationStrategy AddClassesWithAutoRegisterAttribute()
@@ -152,16 +161,18 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         var discoveredTypes = _assemblies
             .AsParallel()
             .SelectMany(assembly => AssemblyCache.GetTypes(assembly))
-            .Where(type => IsValidClass(type) && type.GetCustomAttribute<AutoRegisterAttribute>() != null)
-            .ToList();
+            .Where(type => IsValidClass(type) && type.GetCustomAttribute<AutoRegisterAttribute>() is not null)
+            .ToArray();
 
-        if (_logger is not null)
-            LogDiscoveredTypes(_logger, discoveredTypes.Count, null);
+        _logger?.Let(logger => LogDiscoveredTypes(logger, discoveredTypes.Length, null));
 
         foreach (var type in discoveredTypes)
         {
-            var attribute = type.GetCustomAttribute<AutoRegisterAttribute>()!;
-            RegisterTypeWithAttribute(type, attribute);
+            var attribute = type.GetCustomAttribute<AutoRegisterAttribute>();
+            if (attribute is not null)
+            {
+                RegisterTypeWithAttribute(type, attribute);
+            }
         }
 
         return this;
@@ -183,8 +194,8 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
 
     public ILifetimeConfigurator As<TService>()
     {
-        _strategy = RegistrationStrategyType.AsSpecificTypes;
-        _serviceTypes = new[] { typeof(TService) };
+        _strategy = ERegistrationStrategyType.AsSpecificTypes;
+        _serviceTypes = [typeof(TService)];
         return this;
     }
 
@@ -194,20 +205,20 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         if (serviceTypes.Length == 0)
             throw new ArgumentException("Pelo menos um tipo de serviço deve ser especificado", nameof(serviceTypes));
 
-        _strategy = RegistrationStrategyType.AsSpecificTypes;
+        _strategy = ERegistrationStrategyType.AsSpecificTypes;
         _serviceTypes = serviceTypes;
         return this;
     }
 
     public ILifetimeConfigurator AsImplementedInterfaces()
     {
-        _strategy = RegistrationStrategyType.AsImplementedInterfaces;
+        _strategy = ERegistrationStrategyType.AsImplementedInterfaces;
         return this;
     }
 
     public ILifetimeConfigurator AsSelf()
     {
-        _strategy = RegistrationStrategyType.AsSelf;
+        _strategy = ERegistrationStrategyType.AsSelf;
         return this;
     }
 
@@ -217,7 +228,10 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         {
             foreach (var assembly in assemblies)
             {
-                AddAssembly(assembly);
+                if (assembly is not null)
+                {
+                    AddAssembly(assembly);
+                }
             }
         }
         return this;
@@ -229,22 +243,24 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         {
             foreach (var name in assemblyNames)
             {
+                if (string.IsNullOrWhiteSpace(name))
+                    continue;
+
                 try
                 {
                     var assembly = AssemblyCache.GetOrLoad(name);
-                    if (assembly != null)
+                    if (assembly is not null)
                     {
                         AddAssembly(assembly);
                     }
-                    else if (_logger is not null)
+                    else
                     {
-                        LogAssemblyNotFound(_logger, name, null);
+                        _logger?.Let(logger => LogAssemblyNotFound(logger, name, null));
                     }
                 }
                 catch (Exception ex)
                 {
-                    if (_logger is not null)
-                        LogAssemblyLoadFailed(_logger, name, ex.Message, ex);
+                    _logger?.Let(logger => LogAssemblyLoadFailed(logger, name, ex.Message, ex));
                 }
             }
         }
@@ -293,43 +309,64 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         return this;
     }
 
-    public IRegistrationResult TryAddEnumerableScoped() => RegisterAll(ServiceLifetime.Scoped, RegistrationMode.TryAddEnumerable);
+    public IRegistrationResult TryAddEnumerableScoped() => RegisterAll(ServiceLifetime.Scoped, ERegistrationMode.TryAddEnumerable);
 
-    public IRegistrationResult TryAddEnumerableSingleton() => RegisterAll(ServiceLifetime.Singleton, RegistrationMode.TryAddEnumerable);
+    public IRegistrationResult TryAddEnumerableSingleton() => RegisterAll(ServiceLifetime.Singleton, ERegistrationMode.TryAddEnumerable);
 
-    public IRegistrationResult TryAddEnumerableTransient() => RegisterAll(ServiceLifetime.Transient, RegistrationMode.TryAddEnumerable);
+    public IRegistrationResult TryAddEnumerableTransient() => RegisterAll(ServiceLifetime.Transient, ERegistrationMode.TryAddEnumerable);
 
-    public IRegistrationResult TryAddScoped() => RegisterAll(ServiceLifetime.Scoped, RegistrationMode.TryAdd);
+    public IRegistrationResult TryAddScoped() => RegisterAll(ServiceLifetime.Scoped, ERegistrationMode.TryAdd);
 
-    public IRegistrationResult TryAddSingleton() => RegisterAll(ServiceLifetime.Singleton, RegistrationMode.TryAdd);
+    public IRegistrationResult TryAddSingleton() => RegisterAll(ServiceLifetime.Singleton, ERegistrationMode.TryAdd);
 
-    public IRegistrationResult TryAddTransient() => RegisterAll(ServiceLifetime.Transient, RegistrationMode.TryAdd);
+    public IRegistrationResult TryAddTransient() => RegisterAll(ServiceLifetime.Transient, ERegistrationMode.TryAdd);
 
     public ILifetimeConfigurator UsingFactory<TService>(Func<IServiceProvider, TService> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);
 
-        _strategy = RegistrationStrategyType.UsingFactory;
-        _serviceTypes = new[] { typeof(TService) };
-        _factory = provider => factory(provider)!;
+        _strategy = ERegistrationStrategyType.UsingFactory;
+        _serviceTypes = [typeof(TService)];
+        _factory = provider => factory(provider) ?? throw new InvalidOperationException($"Factory retornou null para {typeof(TService).Name}");
         return this;
     }
 
-    public IRegistrationResult WithScopedLifetime() => RegisterAll(ServiceLifetime.Scoped, RegistrationMode.Default);
+    public IRegistrationResult WithScopedLifetime() => RegisterAll(ServiceLifetime.Scoped, ERegistrationMode.Default);
 
-    public IRegistrationResult WithSingletonLifetime() => RegisterAll(ServiceLifetime.Singleton, RegistrationMode.Default);
+    public IRegistrationResult WithSingletonLifetime() => RegisterAll(ServiceLifetime.Singleton, ERegistrationMode.Default);
 
-    public IRegistrationResult WithTransientLifetime() => RegisterAll(ServiceLifetime.Transient, RegistrationMode.Default);
+    public IRegistrationResult WithTransientLifetime() => RegisterAll(ServiceLifetime.Transient, ERegistrationMode.Default);
 
-    private static List<Type> GetImplementedInterfaces(Type type)
+    #region Private Methods
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Type[] GetImplementedInterfaces(Type type)
     {
-        return type.GetInterfaces().Where(i => i != typeof(IDisposable) && i != typeof(IAsyncDisposable) && !IsSystemType(i)).ToList();
+        var interfaces = type.GetInterfaces();
+        var result = new List<Type>(interfaces.Length);
+
+        foreach (var iface in interfaces)
+        {
+            if (!IgnoredInterfaces.Contains(iface) && !IsSystemType(iface))
+            {
+                result.Add(iface);
+            }
+        }
+
+        return result.ToArray();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool ImplementsOpenGenericInterface(Type type, Type openGenericInterface)
     {
-        return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == openGenericInterface);
+        var interfaces = type.GetInterfaces();
+        for (int i = 0; i < interfaces.Length; i++)
+        {
+            var iface = interfaces[i];
+            if (iface.IsGenericType && iface.GetGenericTypeDefinition() == openGenericInterface)
+                return true;
+        }
+        return false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -337,7 +374,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     {
         if (serviceType.IsGenericTypeDefinition)
         {
-            return implementationType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == serviceType);
+            return ImplementsOpenGenericInterface(implementationType, serviceType);
         }
 
         return serviceType.IsAssignableFrom(implementationType);
@@ -345,14 +382,21 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
 
     private static bool IsMatchingPattern(string? name, string? pattern)
     {
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(pattern))
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(pattern))
             return false;
 
-        if (pattern.Contains('*'))
+        if (pattern.Contains('*', StringComparison.Ordinal))
         {
-            var regexPattern = $"^{Regex.Escape(pattern).Replace("\\*", ".*")}$";
+            var regex = RegexCache.GetOrAdd(
+                pattern,
+                p =>
+                {
+                    var regexPattern = $"^{Regex.Escape(p).Replace("\\*", ".*", StringComparison.Ordinal)}$";
+                    return new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+                }
+            );
 
-            return Regex.IsMatch(name, regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            return regex.IsMatch(name);
         }
 
         return name.Contains(pattern, StringComparison.OrdinalIgnoreCase);
@@ -362,23 +406,30 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     private static bool IsSystemAssembly(Assembly assembly)
     {
         var name = assembly.GetName().Name;
-        return name?.StartsWith("System", StringComparison.Ordinal) == true
-            || name?.StartsWith("Microsoft", StringComparison.Ordinal) == true
-            || name?.StartsWith("mscorlib", StringComparison.Ordinal) == true;
+        if (string.IsNullOrEmpty(name))
+            return true;
+
+        return SystemNamespaces.Any(ns => name.StartsWith(ns, StringComparison.Ordinal));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsSystemType(Type type) =>
-        type.Namespace?.StartsWith("System", StringComparison.Ordinal) == true
-        || type.Namespace?.StartsWith("Microsoft", StringComparison.Ordinal) == true;
+    private static bool IsSystemType(Type type)
+    {
+        var ns = type.Namespace;
+        if (string.IsNullOrEmpty(ns))
+            return false;
+
+        return SystemNamespaces.Any(sysNs => ns.StartsWith(sysNs, StringComparison.Ordinal));
+    }
 
     private void AddAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
-        if (_assemblies.Add(assembly) && _logger is not null)
+        if (_assemblies.Add(assembly))
         {
-            LogAssemblyAdded(_logger, assembly.GetName().Name ?? string.Empty, null);
+            var assemblyName = assembly.GetName().Name ?? "Unknown";
+            _logger?.Let(logger => LogAssemblyAdded(logger, assemblyName, null));
         }
     }
 
@@ -386,17 +437,20 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     {
         switch (_registrationMode)
         {
-            case RegistrationMode.Default:
+            case ERegistrationMode.Default:
                 _services.Add(descriptor);
                 break;
 
-            case RegistrationMode.TryAdd:
+            case ERegistrationMode.TryAdd:
                 _services.TryAdd(descriptor);
                 break;
 
-            case RegistrationMode.TryAddEnumerable:
+            case ERegistrationMode.TryAddEnumerable:
                 _services.TryAddEnumerable(descriptor);
                 break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(descriptor), _registrationMode, "Modo de registro inválido");
         }
     }
 
@@ -416,18 +470,17 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         && (_allowOpenGenerics || !type.IsGenericTypeDefinition)
         && !IsSystemType(type);
 
-    private RegistrationResult RegisterAll(ServiceLifetime lifetime, RegistrationMode mode)
+    private RegistrationResult RegisterAll(ServiceLifetime lifetime, ERegistrationMode mode)
     {
         if (_typesToRegister.Count == 0)
         {
-            if (_logger is not null)
-                Console.WriteLine("Nenhum tipo foi descoberto para registro. Verifique os filtros aplicados.");
+            Console.WriteLine("Nenhum tipo foi descoberto para registro. Verifique os filtros aplicados.");
             return new RegistrationResult(Array.Empty<Type>(), TimeSpan.Zero);
         }
 
         _stopwatch.Start();
         _registrationMode = mode;
-        var registeredTypes = new List<Type>();
+        var registeredTypes = new List<Type>(_typesToRegister.Count);
 
         foreach (var implementationType in _typesToRegister)
         {
@@ -440,16 +493,14 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
             }
             catch (Exception ex)
             {
-                if (_logger is not null)
-                    LogErrorRegisteringType(_logger, ex.Message, implementationType.Name, ex);
+                _logger?.Let(logger => LogErrorRegisteringType(logger, ex.Message, implementationType.Name, ex));
                 throw;
             }
         }
 
         _stopwatch.Stop();
 
-        if (_logger is not null)
-            LogDiscoveredTypes(_logger, registeredTypes.Count, null);
+        _logger?.Let(logger => LogDiscoveredTypes(logger, registeredTypes.Count, null));
 
         return new RegistrationResult(registeredTypes.AsReadOnly(), _stopwatch.Elapsed);
     }
@@ -458,7 +509,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     {
         var interfaces = GetImplementedInterfaces(implementationType);
 
-        if (interfaces.Count == 0)
+        if (interfaces.Length == 0)
         {
             return RegisterAsSelf(implementationType, lifetime);
         }
@@ -467,8 +518,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         {
             var descriptor = new ServiceDescriptor(serviceType, implementationType, lifetime);
             AddDescriptor(descriptor);
-            if (_logger is not null)
-                LogDebugTypeRegistered(_logger, implementationType.Name, serviceType.Name, null);
+            _logger?.Let(logger => LogDebugTypeRegistered(logger, implementationType.Name, serviceType.Name, null));
         }
 
         return true;
@@ -478,14 +528,13 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     {
         var descriptor = new ServiceDescriptor(implementationType, implementationType, lifetime);
         AddDescriptor(descriptor);
-        if (_logger is not null)
-            LogDebugTypeRegisteredSelf(_logger, implementationType.Name, null);
+        _logger?.Let(logger => LogDebugTypeRegisteredSelf(logger, implementationType.Name, null));
         return true;
     }
 
     private bool RegisterAsSpecificTypes(Type implementationType, ServiceLifetime lifetime)
     {
-        if (_serviceTypes == null || _serviceTypes.Length == 0)
+        if (_serviceTypes is null || _serviceTypes.Length == 0)
             throw new InvalidOperationException("Tipos de serviço não foram especificados.");
 
         var registered = false;
@@ -495,13 +544,12 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
             {
                 var descriptor = new ServiceDescriptor(serviceType, implementationType, lifetime);
                 AddDescriptor(descriptor);
-                if (_logger is not null)
-                    LogDebugTypeRegistered(_logger, implementationType.Name, serviceType.Name, null);
+                _logger?.Let(logger => LogDebugTypeRegistered(logger, implementationType.Name, serviceType.Name, null));
                 registered = true;
             }
-            else if (_logger is not null)
+            else
             {
-                LogAssemblyNotFound(_logger, serviceType.Name, null);
+                _logger?.Let(logger => LogAssemblyNotFound(logger, serviceType.Name, null));
             }
         }
 
@@ -511,17 +559,17 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     private bool RegisterType(Type implementationType, ServiceLifetime lifetime)
     {
         var autoRegisterAttr = implementationType.GetCustomAttribute<AutoRegisterAttribute>();
-        if (autoRegisterAttr != null)
+        if (autoRegisterAttr is not null)
         {
             return RegisterTypeWithAttribute(implementationType, autoRegisterAttr);
         }
 
         return _strategy switch
         {
-            RegistrationStrategyType.AsImplementedInterfaces => RegisterAsImplementedInterfaces(implementationType, lifetime),
-            RegistrationStrategyType.AsSelf => RegisterAsSelf(implementationType, lifetime),
-            RegistrationStrategyType.AsSpecificTypes => RegisterAsSpecificTypes(implementationType, lifetime),
-            RegistrationStrategyType.UsingFactory => RegisterUsingFactory(implementationType, lifetime),
+            ERegistrationStrategyType.AsImplementedInterfaces => RegisterAsImplementedInterfaces(implementationType, lifetime),
+            ERegistrationStrategyType.AsSelf => RegisterAsSelf(implementationType, lifetime),
+            ERegistrationStrategyType.AsSpecificTypes => RegisterAsSpecificTypes(implementationType, lifetime),
+            ERegistrationStrategyType.UsingFactory => RegisterUsingFactory(implementationType, lifetime),
             _ => false,
         };
     }
@@ -538,15 +586,13 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
                 {
                     if (!IsAssignableFrom(serviceType, implementationType))
                     {
-                        if (_logger is not null)
-                            LogAssemblyNotFound(_logger, serviceType.Name, null);
+                        _logger?.Let(logger => LogAssemblyNotFound(logger, serviceType.Name, null));
                         continue;
                     }
 
                     var descriptor = new ServiceDescriptor(serviceType, implementationType, attribute.Lifetime);
                     AddDescriptor(descriptor);
-                    if (_logger is not null)
-                        LogDebugTypeRegistered(_logger, implementationType.Name, serviceType.Name, null);
+                    _logger?.Let(logger => LogDebugTypeRegistered(logger, implementationType.Name, serviceType.Name, null));
                     registered = true;
                 }
                 return registered;
@@ -560,17 +606,15 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
                 {
                     var descriptor = new ServiceDescriptor(serviceType, implementationType, attribute.Lifetime);
                     AddDescriptor(descriptor);
-                    if (_logger is not null)
-                        LogDebugTypeRegistered(_logger, implementationType.Name, serviceType.Name, null);
+                    _logger?.Let(logger => LogDebugTypeRegistered(logger, implementationType.Name, serviceType.Name, null));
                     registered = true;
                 }
 
-                if (interfaces.Count == 0 && attribute.AsSelf)
+                if (interfaces.Length == 0 && attribute.AsSelf)
                 {
                     var selfDescriptor = new ServiceDescriptor(implementationType, implementationType, attribute.Lifetime);
                     AddDescriptor(selfDescriptor);
-                    if (_logger is not null)
-                        LogDebugTypeRegisteredSelf(_logger, implementationType.Name, null);
+                    _logger?.Let(logger => LogDebugTypeRegisteredSelf(logger, implementationType.Name, null));
                     registered = true;
                 }
             }
@@ -579,8 +623,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
             {
                 var selfDescriptor = new ServiceDescriptor(implementationType, implementationType, attribute.Lifetime);
                 AddDescriptor(selfDescriptor);
-                if (_logger is not null)
-                    LogDebugTypeRegisteredSelf(_logger, implementationType.Name, null);
+                _logger?.Let(logger => LogDebugTypeRegisteredSelf(logger, implementationType.Name, null));
                 registered = true;
             }
 
@@ -588,25 +631,25 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         }
         catch (Exception ex)
         {
-            if (_logger is not null)
-                LogErrorRegisteringType(_logger, ex.Message, implementationType.Name, ex);
+            _logger?.Let(logger => LogErrorRegisteringType(logger, ex.Message, implementationType.Name, ex));
             throw;
         }
     }
 
     private bool RegisterUsingFactory(Type implementationType, ServiceLifetime lifetime)
     {
-        if (_factory == null || _serviceTypes == null || _serviceTypes.Length == 0)
+        if (_factory is null || _serviceTypes is null || _serviceTypes.Length == 0)
             throw new InvalidOperationException("Factory ou tipos de serviço não foram especificados.");
 
         foreach (var serviceType in _serviceTypes)
         {
             var descriptor = new ServiceDescriptor(serviceType, _factory, lifetime);
             AddDescriptor(descriptor);
-            if (_logger is not null)
-                LogDebugTypeRegistered(_logger, implementationType.Name, serviceType.Name, null);
+            _logger?.Let(logger => LogDebugTypeRegistered(logger, implementationType.Name, serviceType.Name, null));
         }
 
         return true;
     }
+
+    #endregion Private Methods
 }

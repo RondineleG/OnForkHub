@@ -1,65 +1,67 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace OnForkHub.Application.DependencyInjection;
 
 internal static class AssemblyCache
 {
-    private static readonly ConcurrentDictionary<string, Assembly?> _assemblyCache = new();
+    private static readonly ConcurrentDictionary<string, Assembly?> _assemblyCache = new(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly object _lock = new();
+    private static readonly Lazy<Dictionary<string, Assembly>> _loadedAssembliesCache = new(() =>
+        AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Where(a => a.GetName().Name != null)
+            .ToDictionary(a => a.GetName().Name!, StringComparer.OrdinalIgnoreCase)
+    );
 
     private static readonly ConcurrentDictionary<Assembly, Type[]> _typeCache = new();
 
-    public static void ClearCache()
-    {
-        _assemblyCache.Clear();
-        _typeCache.Clear();
-    }
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Assembly? GetOrLoad(string assemblyName)
     {
-        return _assemblyCache.GetOrAdd(
-            assemblyName,
-            name =>
-            {
-                lock (_lock)
-                {
-                    var loaded = AppDomain
-                        .CurrentDomain.GetAssemblies()
-                        .FirstOrDefault(a => string.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
+        if (_assemblyCache.TryGetValue(assemblyName, out var cachedAssembly))
+            return cachedAssembly;
 
-                    if (loaded != null)
-                        return loaded;
-
-                    try
-                    {
-                        return Assembly.Load(name);
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }
-            }
-        );
+        return _assemblyCache.GetOrAdd(assemblyName, LoadAssemblyInternal);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Type[] GetTypes(Assembly assembly)
     {
-        return _typeCache.GetOrAdd(
-            assembly,
-            asm =>
+        return _typeCache.GetOrAdd(assembly, GetTypesInternal);
+    }
+
+    private static Type[] GetTypesInternal(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            var validTypes = new List<Type>();
+            foreach (var type in ex.Types)
             {
-                try
-                {
-                    return asm.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    return ex.Types.Where(t => t != null).ToArray()!;
-                }
+                if (type != null)
+                    validTypes.Add(type);
             }
-        );
+            return validTypes.ToArray();
+        }
+    }
+
+    private static Assembly? LoadAssemblyInternal(string assemblyName)
+    {
+        if (_loadedAssembliesCache.Value.TryGetValue(assemblyName, out var loadedAssembly))
+            return loadedAssembly;
+
+        try
+        {
+            return Assembly.Load(assemblyName);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

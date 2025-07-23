@@ -1,6 +1,6 @@
 namespace OnForkHub.Application.DependencyInjection;
 
-internal enum RegistrationStrategyType
+internal enum ERegistrationStrategyType
 {
     AsImplementedInterfaces,
 

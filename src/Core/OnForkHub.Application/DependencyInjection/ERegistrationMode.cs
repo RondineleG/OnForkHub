@@ -1,6 +1,6 @@
 namespace OnForkHub.Application.DependencyInjection;
 
-internal enum RegistrationMode
+internal enum ERegistrationMode
 {
     Default,
 
