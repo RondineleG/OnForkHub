@@ -12,18 +12,14 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAutoRegisteredServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        return services.Scan(scan => scan.FromLoadedAssemblies().AddClassesWithAutoRegisterAttribute());
+        return services.Scan(static scan => scan.FromLoadedAssemblies().AddClassesWithAutoRegisterAttribute());
     }
 
     public static IServiceCollection AddAutoRegisteredServices(this IServiceCollection services, params Assembly[] assemblies)
     {
         ArgumentNullException.ThrowIfNull(services);
-
-        if (assemblies == null || assemblies.Length == 0)
-        {
-            throw new ArgumentException("At least one assembly must be provided", nameof(assemblies));
-        }
+        ArgumentNullException.ThrowIfNull(assemblies);
+        ArgumentOutOfRangeException.ThrowIfZero(assemblies.Length);
 
         return services.Scan(scan => scan.FromAssemblies(assemblies).AddClassesWithAutoRegisterAttribute());
     }
@@ -31,14 +27,10 @@ public static class ServiceCollectionExtensions
     public static IRegistrationStrategy AddClassesEndingWith(this ITypeSelector selector, params string[] suffixes)
     {
         ArgumentNullException.ThrowIfNull(selector);
+        ArgumentNullException.ThrowIfNull(suffixes);
+        ArgumentOutOfRangeException.ThrowIfZero(suffixes.Length);
 
-        if (suffixes == null || suffixes.Length == 0)
-            throw new ArgumentException("At least one suffix should be provided", nameof(suffixes));
-
-        return selector.AddClasses(type =>
-            IsConcreteClass(type)
-            && suffixes.Any(suffix => !string.IsNullOrEmpty(suffix) && type.Name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-        );
+        return selector.AddClasses(type => IsConcreteClass(type) && HasAnySuffix(type.Name.AsSpan(), suffixes.AsSpan()));
     }
 
     public static IServiceCollection Scan(this IServiceCollection services, Action<IAssemblyScanner> configureScanner)
@@ -48,11 +40,21 @@ public static class ServiceCollectionExtensions
 
         var scanner = new AssemblyScanner(services, null);
         configureScanner(scanner);
-
         return services;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsConcreteClass(Type type) =>
-        type != null && type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsNested && type.IsPublic;
+    private static bool HasAnySuffix(ReadOnlySpan<char> typeName, ReadOnlySpan<string> suffixes)
+    {
+        for (var i = 0; i < suffixes.Length; i++)
+        {
+            var suffix = suffixes[i];
+            if (!string.IsNullOrEmpty(suffix) && typeName.EndsWith(suffix.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsConcreteClass(Type type) => type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsNested && type.IsPublic;
 }
