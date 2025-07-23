@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Enums;
 
-internal enum ERegistrationMode
+public enum ERegistrationMode
 {
     Default,
 

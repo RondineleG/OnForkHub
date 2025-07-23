@@ -1,6 +1,6 @@
 namespace OnForkHub.Core.Enums;
 
-internal enum ERegistrationStrategyType
+public enum ERegistrationStrategyType
 {
     AsImplementedInterfaces,
 
