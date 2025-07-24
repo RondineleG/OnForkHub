@@ -37,43 +37,43 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     private static readonly Action<ILogger, string, Exception?> LogAssemblyAdded = LoggerMessage.Define<string>(
         LogLevel.Debug,
         new EventId(2, nameof(LogAssemblyAdded)),
-        "Assembly adicionado: {Assembly}"
+        "Assembly added: {Assembly}"
     );
 
     private static readonly Action<ILogger, string, string, Exception?> LogAssemblyLoadFailed = LoggerMessage.Define<string, string>(
         LogLevel.Error,
         new EventId(2, nameof(LogAssemblyLoadFailed)),
-        "Falha ao carregar o assembly '{AssemblyName}': {ErrorMessage}"
+        "Failure when carrying the assembly'{AssemblyName}': {ErrorMessage}"
     );
 
     private static readonly Action<ILogger, string, Exception?> LogAssemblyNotFound = LoggerMessage.Define<string>(
         LogLevel.Warning,
         new EventId(3, nameof(LogAssemblyNotFound)),
-        "Assembly não encontrado: {AssemblyName}"
+        "Assembly not found: {AssemblyName}"
     );
 
     private static readonly Action<ILogger, string, string, Exception?> LogDebugTypeRegistered = LoggerMessage.Define<string, string>(
         LogLevel.Debug,
         new EventId(6, nameof(LogDebugTypeRegistered)),
-        "Registrado {Type} como {ServiceType}"
+        "Registered {Type} as {Service type}"
     );
 
     private static readonly Action<ILogger, string, Exception?> LogDebugTypeRegisteredSelf = LoggerMessage.Define<string>(
         LogLevel.Debug,
         new EventId(7, nameof(LogDebugTypeRegisteredSelf)),
-        "Registrado {Type} como self"
+        "Registered {Type} as self"
     );
 
     private static readonly Action<ILogger, int, Exception?> LogDiscoveredTypes = LoggerMessage.Define<int>(
         LogLevel.Information,
         new EventId(1, nameof(LogDiscoveredTypes)),
-        "Descobertos {Count} tipos para registro"
+        "Discoveries {Count} Types for registration"
     );
 
     private static readonly Action<ILogger, string, string, Exception?> LogErrorRegisteringType = LoggerMessage.Define<string, string>(
         LogLevel.Error,
         new EventId(3, nameof(LogErrorRegisteringType)),
-        "Erro ao registrar o tipo '{TypeName}': {InnerErrorMessage}"
+        "Error when registering the type'{TypeName}': {InnerErrorMessage}"
     );
 
     private static readonly Action<ILogger, string, Exception?> LogNoTypesDiscovered = LoggerMessage.Define<string>(
@@ -136,7 +136,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     {
         ArgumentNullException.ThrowIfNull(openGenericInterface);
         if (!openGenericInterface.IsInterface)
-            throw new ArgumentException("Tipo deve ser uma interface", nameof(openGenericInterface));
+            throw new ArgumentException("Type must be an interface", nameof(openGenericInterface));
 
         return AddClasses(type =>
             IsValidClassCore(type)
@@ -157,7 +157,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     public IRegistrationStrategy AddClassesInNamespace(string namespaceName)
     {
         if (string.IsNullOrWhiteSpace(namespaceName))
-            throw new ArgumentException("Namespace não pode ser nulo ou vazio", nameof(namespaceName));
+            throw new ArgumentException("Namespace cannot be null or void", nameof(namespaceName));
 
         return AddClasses(type => IsValidClassCore(type) && type.Namespace?.StartsWith(namespaceName, StringComparison.Ordinal) == true);
     }
@@ -195,7 +195,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     public IRegistrationStrategy AddClassesWithNamePattern(string pattern)
     {
         if (string.IsNullOrWhiteSpace(pattern))
-            throw new ArgumentException("Pattern não pode ser nulo ou vazio", nameof(pattern));
+            throw new ArgumentException("Pattern cannot be null or void", nameof(pattern));
 
         return AddClasses(type => IsValidClassCore(type) && IsMatchingPattern(type.Name, pattern));
     }
@@ -217,7 +217,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     {
         ArgumentNullException.ThrowIfNull(serviceTypes);
         if (serviceTypes.Length == 0)
-            throw new ArgumentException("Pelo menos um tipo de serviço deve ser especificado", nameof(serviceTypes));
+            throw new ArgumentException("At least one type of service must be specified", nameof(serviceTypes));
 
         _strategy = ERegistrationStrategyType.AsSpecificTypes;
         _serviceTypes = serviceTypes;
@@ -281,7 +281,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     public ITypeSelector FromAssemblyPattern(string pattern)
     {
         if (string.IsNullOrWhiteSpace(pattern))
-            throw new ArgumentException("Pattern não pode ser nulo ou vazio", nameof(pattern));
+            throw new ArgumentException("Pattern cannot be void or empty", nameof(pattern));
 
         var assemblies = AppDomain.CurrentDomain.GetAssemblies().AsParallel().Where(a => IsMatchingPattern(a.GetName().Name, pattern)).ToArray();
 
@@ -338,7 +338,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
         ArgumentNullException.ThrowIfNull(factory);
         _strategy = ERegistrationStrategyType.UsingFactory;
         _serviceTypes = [typeof(TService)];
-        _factory = provider => factory(provider) ?? throw new InvalidOperationException($"Factory retornou null para {typeof(TService).Name}");
+        _factory = provider => factory(provider) ?? throw new InvalidOperationException($"Factory returned null to {typeof(TService).Name}");
         return this;
     }
 
@@ -473,14 +473,14 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
                 break;
 
             default:
-                throw new ArgumentOutOfRangeException(nameof(descriptor), _registrationMode, "Modo de registro inválido");
+                throw new ArgumentOutOfRangeException(nameof(descriptor), _registrationMode, "Invalid registration mode");
         }
     }
 
     private void EnsureAssemblies()
     {
         if (_assemblies.Count == 0)
-            throw new InvalidOperationException("Nenhum assembly foi especificado. Use FromAssemblyOf<T>() ou FromAssemblies() primeiro.");
+            throw new InvalidOperationException("No assembly has been specified. Use from Assembly of <t> () or from Assemblies () first.");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -566,7 +566,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     {
         if (_typesToRegister is null || _typesToRegister.Count == 0)
         {
-            LogNoTypesDiscoveredIfEnabled("Nenhum tipo foi descoberto para registro. Verifique os filtros aplicados.");
+            LogNoTypesDiscoveredIfEnabled("No type has been discovered for registration. Check the filters applied.");
             return new RegistrationResult(EmptyTypes, TimeSpan.Zero);
         }
 
@@ -621,7 +621,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     private bool RegisterAsSpecificTypes(Type implementationType, ServiceLifetime lifetime)
     {
         if (_serviceTypes is null || _serviceTypes.Length == 0)
-            throw new InvalidOperationException("Tipos de serviço não foram especificados.");
+            throw new InvalidOperationException("Types of service were not specified.");
 
         var registered = false;
         foreach (var serviceType in _serviceTypes)
@@ -710,7 +710,7 @@ internal sealed class AssemblyScanner : IAssemblyScanner, ITypeSelector, IRegist
     private bool RegisterUsingFactory(Type implementationType, ServiceLifetime lifetime)
     {
         if (_factory is null || _serviceTypes is null || _serviceTypes.Length == 0)
-            throw new InvalidOperationException("Factory ou tipos de serviço não foram especificados.");
+            throw new InvalidOperationException("Factory or service types have not been specified.");
 
         foreach (var serviceType in _serviceTypes)
         {
