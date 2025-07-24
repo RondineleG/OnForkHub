@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace OnForkHub.Application.DependencyInjection;
+namespace OnForkHub.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class AutoRegisterAttribute : Attribute
