@@ -46,7 +46,7 @@ public class RegistrationStrategy : IRegistrationStrategy
         foreach (var type in _typesToRegister)
         {
             var implementationType = _implementationResolver?.Invoke(type) ?? type;
-            
+
             var serviceDescriptor = new ServiceDescriptor(type, implementationType, _defaultLifetime);
             services.Add(serviceDescriptor);
         }
