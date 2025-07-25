@@ -24,7 +24,7 @@ public class RegistrationStrategy
     private void RegisterType(IServiceCollection services, Type type)
     {
         var interfaces = type.GetInterfaces();
-        
+
         if (interfaces.Length > 0)
         {
             foreach (var interfaceType in interfaces)
