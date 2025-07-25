@@ -47,7 +47,7 @@ public class TypeSelectorService
     /// <summary>
     /// Gets the types to register based on the current service collection.
     /// </summary>
-    private List<Type> GetTypesToRegister()
+    private static List<Type> GetTypesToRegister()
     {
         // For now, return an empty list - this would be populated based on specific logic
         // In a real scenario, this might scan assemblies or filter existing services
@@ -67,7 +67,7 @@ public class TypeSelectorService
     /// <summary>
     /// Gets all available types for selection.
     /// </summary>
-    private IEnumerable<Type> GetAllAvailableTypes()
+    private static IEnumerable<Type> GetAllAvailableTypes()
     {
         // This would typically scan assemblies or use reflection
         // For now, return empty collection
