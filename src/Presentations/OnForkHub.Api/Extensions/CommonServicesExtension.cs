@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
+using OnForkHub.CrossCutting.DependencyInjection;
 using OnForkHub.Persistence.Configurations;
 using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;
