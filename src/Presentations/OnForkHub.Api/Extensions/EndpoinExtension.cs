@@ -1,3 +1,5 @@
+using OnForkHub.CrossCutting.DependencyInjection;
+
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
@@ -5,8 +7,18 @@ public static class EndpoinExtension
 {
     public static void AddEndpoin(this IServiceCollection services, Type markerType)
     {
-        services.RegisterImplementationsOf<IEndpoint>(markerType);
-        services.RegisterImplementationsOf<IEndpointAsync>(markerType);
+        var scanner = new AssemblyScanner(markerType.Assembly);
+        
+        var endpointTypeSelector = scanner.FindTypesImplementing<IEndpoint>();
+        var endpointAsyncTypeSelector = scanner.FindTypesImplementing<IEndpointAsync>();
+        
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Transient);
+        
+        var endpointStrategy = endpointTypeSelector.CreateRegistrationStrategy(configurator);
+        var endpointAsyncStrategy = endpointAsyncTypeSelector.CreateRegistrationStrategy(configurator);
+        
+        endpointStrategy.Register(services);
+        endpointAsyncStrategy.Register(services);
     }
 
     public static async Task UseEndpointsAsync(this WebApplication app)
