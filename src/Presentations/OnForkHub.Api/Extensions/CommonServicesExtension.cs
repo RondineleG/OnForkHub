@@ -49,9 +49,9 @@ public static class CommonServicesExtension
         var typeSelector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
         var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
         var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-        
+
         strategy.Register(services);
-        
+
         return services;
     }
 
@@ -76,9 +76,9 @@ public static class CommonServicesExtension
         var typeSelector = scanner.FindTypesImplementing(typeof(IUseCase<,>));
         var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
         var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-        
+
         strategy.Register(services);
-        
+
         return services;
     }
 
@@ -88,9 +88,9 @@ public static class CommonServicesExtension
         var typeSelector = scanner.FindTypesImplementing(typeof(IValidationRule<>));
         var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
         var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-        
+
         strategy.Register(services);
-        
+
         return services;
     }
 
@@ -100,7 +100,7 @@ public static class CommonServicesExtension
         var typeSelector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
         var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
         var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-        
+
         strategy.Register(services);
 
         return services;
@@ -133,7 +133,7 @@ public static class CommonServicesExtension
         var typeSelector = scanner.FindTypesImplementing(interfaceType);
         var configurator = new LifetimeConfigurator(lifetime);
         var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-        
+
         strategy.Register(services);
     }
 }
