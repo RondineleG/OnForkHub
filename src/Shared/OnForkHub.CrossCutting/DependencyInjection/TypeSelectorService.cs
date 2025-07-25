@@ -20,7 +20,7 @@ public class TypeSelectorService
     /// <summary>
     /// Creates a registration strategy for the specified types.
     /// </summary>
-    public IRegistrationStrategy CreateStrategy()
+    public static IRegistrationStrategy CreateStrategy()
     {
         var typesToRegister = GetTypesToRegister();
         return new RegistrationStrategy(typesToRegister, ServiceLifetime.Scoped);
@@ -29,7 +29,7 @@ public class TypeSelectorService
     /// <summary>
     /// Creates a registration strategy with custom lifetime.
     /// </summary>
-    public IRegistrationStrategy CreateStrategy(ServiceLifetime lifetime)
+    public static IRegistrationStrategy CreateStrategy(ServiceLifetime lifetime)
     {
         var typesToRegister = GetTypesToRegister();
         return new RegistrationStrategy(typesToRegister, lifetime);
@@ -38,7 +38,7 @@ public class TypeSelectorService
     /// <summary>
     /// Creates a registration strategy with custom implementation resolver.
     /// </summary>
-    public IRegistrationStrategy CreateStrategy(ServiceLifetime lifetime, Func<Type, Type> implementationResolver)
+    public static IRegistrationStrategy CreateStrategy(ServiceLifetime lifetime, Func<Type, Type> implementationResolver)
     {
         var typesToRegister = GetTypesToRegister();
         return new RegistrationStrategy(typesToRegister, lifetime, implementationResolver);
@@ -57,7 +57,7 @@ public class TypeSelectorService
     /// <summary>
     /// Selects types based on a predicate.
     /// </summary>
-    public IRegistrationStrategy CreateStrategy(Func<Type, bool> typeSelector, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+    public static IRegistrationStrategy CreateStrategy(Func<Type, bool> typeSelector, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         var allTypes = GetAllAvailableTypes();
         var selectedTypes = allTypes.Where(typeSelector).ToList();

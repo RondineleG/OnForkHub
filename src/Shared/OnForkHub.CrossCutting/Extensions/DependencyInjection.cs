@@ -36,7 +36,7 @@ public static class DependencyInjection
         var typeSelectorService = new TypeSelectorService(services);
 
         // Create and register a default registration strategy
-        var defaultStrategy = typeSelectorService.CreateStrategy();
+        var defaultStrategy = TypeSelectorService.CreateStrategy();
         services.AddSingleton<IRegistrationStrategy>(defaultStrategy);
 
         return services;
