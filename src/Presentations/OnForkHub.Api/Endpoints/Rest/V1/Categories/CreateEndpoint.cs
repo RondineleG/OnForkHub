@@ -1,12 +1,14 @@
+using OnForkHub.Core.Interfaces.Configuration;
+
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
-public class Create(ILogger<Create> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
+public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
 {
     private const int V1 = 1;
 
     private static readonly string Route = GetVersionedRoute(V1);
 
-    private readonly ILogger<Create> _logger = logger;
+    private readonly ILogger<CreateEndpoint> _logger = logger;
 
     private readonly IUseCase<CategoryRequestDto, Category> _useCase = useCase;
 

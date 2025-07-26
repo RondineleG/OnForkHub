@@ -1,15 +1,13 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace OnForkHub.CrossCutting.DependencyInjection;
 
 public class TypeSelectorService
 {
-    private readonly Type[] _typesToRegister;
-
     public TypeSelectorService(Type[] typesToRegister)
     {
         _typesToRegister = typesToRegister ?? throw new ArgumentNullException(nameof(typesToRegister));
     }
+
+    private readonly Type[] _typesToRegister;
 
     public RegistrationStrategy CreateRegistrationStrategy(ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {

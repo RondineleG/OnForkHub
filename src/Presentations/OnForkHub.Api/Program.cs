@@ -10,9 +10,13 @@ var apiMode = builder.Configuration.GetValue<string>("AppSettings:ApiMode") ?? "
 builder.Services.AddSwaggerServices();
 builder.Services.AddRavenDbServices(builder.Configuration);
 builder.Services.AddEntityFrameworkServices(builder.Configuration);
-builder.Services.AddCustomServices();
+builder.Services.AddCustomServices(builder.Configuration);
 builder.Services.AddGraphQLFromCrossCutting();
 builder.Services.AddGraphQLAdapters();
+builder.Services.AddApplicationServices();
+builder.Services.AddAutoRegisteredServices();
+builder.Services.AddAutoRegisteredServices(typeof(Program).Assembly, typeof(CategoryValidator).Assembly);
+builder.Services.AddEntityFrameworkServices(builder.Configuration);
 
 var app = builder.Build();
 
