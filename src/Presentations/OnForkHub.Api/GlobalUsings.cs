@@ -7,7 +7,6 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.OpenApi.Models;
 
-global using OnForkHub.Api.Configuration;
 global using OnForkHub.Api.Endpoints.Base;
 global using OnForkHub.Api.Endpoints.Rest.V1.Categories;
 global using OnForkHub.Api.Extensions;

@@ -1,4 +1,6 @@
-namespace OnForkHub.Api.Configuration;
+using Microsoft.AspNetCore.Builder;
+
+namespace OnForkHub.Core.Interfaces.Configuration;
 
 public interface IEndpointAsync
 {

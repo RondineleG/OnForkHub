@@ -1,3 +1,5 @@
+using OnForkHub.Core.Interfaces.Configuration;
+
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
 public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
