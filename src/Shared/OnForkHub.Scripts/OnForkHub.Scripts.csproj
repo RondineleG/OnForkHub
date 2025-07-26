@@ -46,4 +46,9 @@
   <ItemGroup>
     <ProjectReference Include="..\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Packages used directly by OnForkHub.Scripts -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
 </Project>
