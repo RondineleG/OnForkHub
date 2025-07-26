@@ -13,24 +13,20 @@ namespace OnForkHub.Api.Extensions;
 [ExcludeFromCodeCoverage]
 public static class CommonServicesExtension
 {
+    private static readonly Action<ILogger, Exception, string> LogRegisterError =
+        (Action<ILogger, Exception, string>)
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, nameof(RegisterServices)), "Error when registering {ServiceName}");
+
     public static IServiceCollection AddCustomServices(this IServiceCollection services)
     {
-        services.AddEndpoin(typeof(Program));
-        services.AddValidators(typeof(CategoryValidator).Assembly);
-        services.AddEntityValidator(typeof(CategoryValidator).Assembly);
-        services.AddUseCases(typeof(GetAllCategoryUseCase).Assembly);
-        services.AddValidationRule(typeof(CategoryNameValidationRule).Assembly);
-
-        services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
-        services.AddScoped<IValidationBuilder<Category>, ValidationBuilder<Category>>();
-        services.AddScoped<IEntityValidator<Category>, CategoryValidator>();
-        services.AddScoped(typeof(IValidationService<>), typeof(ValidationService<>));
-        services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
-        services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
-        services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
-
-        services.AddScoped<ICategoryService, CategoryService>();
-        services.AddScoped<IValidationService<Category>, CategoryValidationService>();
+        services.AddEndpoints();
+        services.AddValidators();
+        services.AddUseCases();
+        services.AddValidationRules();
+        services.AddApplicationServices();
+        services.AddRepositories();
+        services.AddValidationServices();
+        services.AddSpecificServices();
 
         return services;
     }
@@ -38,7 +34,14 @@ public static class CommonServicesExtension
     public static IServiceCollection AddEntityFrameworkServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection String 'DefaultConnection' has not been found or is empty.");
+        }
+
         services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
+
         services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
         return services;
     }
@@ -59,18 +62,35 @@ public static class CommonServicesExtension
     {
         var ravenDbSettings = configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>();
 
+        if (ravenDbSettings is null)
+        {
+            throw new InvalidOperationException("Raven DB settings were not found in the 'RavenDbSettings' section.");
+        }
+
+        if (ravenDbSettings is null || ravenDbSettings.Urls == null || ravenDbSettings.Urls.Length == 0)
+        {
+            throw new InvalidOperationException("Raven DB URLs were not configured.");
+        }
+
+        if (string.IsNullOrWhiteSpace(ravenDbSettings.Database))
+        {
+            throw new InvalidOperationException("Raven DB Database Name has not been configured.");
+        }
+
         services.AddSingleton<IDocumentStore>(serviceProvider =>
         {
-            var store = new DocumentStore { Urls = ravenDbSettings?.Urls, Database = ravenDbSettings?.Database };
+            var store = new DocumentStore { Urls = ravenDbSettings.Urls!, Database = ravenDbSettings.Database! };
+
             store.Initialize();
             return store;
         });
 
         services.AddSingleton<RavenDbDataContext>();
+
         return services;
     }
 
-    public static IServiceCollection AddUseCases(this IServiceCollection services, Assembly assembly)
+    public static IServiceCollection RegisterServices(this IServiceCollection services, string serviceName, Action<IAssemblyScanner> scanAction)
     {
         var scanner = new AssemblyScanner(assembly);
         var typeSelector = scanner.FindTypesImplementing(typeof(IUseCase<,>));
@@ -82,7 +102,7 @@ public static class CommonServicesExtension
         return services;
     }
 
-    public static IServiceCollection AddValidationRule(this IServiceCollection services, Assembly assembly)
+    private static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         var scanner = new AssemblyScanner(assembly);
         var typeSelector = scanner.FindTypesImplementing(typeof(IValidationRule<>));
@@ -94,7 +114,7 @@ public static class CommonServicesExtension
         return services;
     }
 
-    public static IServiceCollection AddValidators(this IServiceCollection services, Assembly assembly)
+    private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         var scanner = new AssemblyScanner(assembly);
         var typeSelector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
@@ -106,20 +126,28 @@ public static class CommonServicesExtension
         return services;
     }
 
-    public static bool DoesImplementInterfaceType(this Type type, Type interfaceType)
+    private static IServiceCollection AddUseCases(this IServiceCollection services)
     {
-        return !type.IsAbstract
-            && type.IsClass
-            && type.GetInterfaces().ToList().Exists(y => y.IsGenericType ? y.GetGenericTypeDefinition() == interfaceType : y == interfaceType);
+        return services.RegisterServices(
+            "use cases",
+            scan =>
+                scan.FromAssemblyOf<GetAllCategoryUseCase>()
+                    .AddClassesImplementing(typeof(IUseCase<,>))
+                    .AsImplementedInterfaces()
+                    .WithScopedLifetime()
+        );
     }
 
-    public static void RegisterImplementationsOf<T>(
-        this IServiceCollection services,
-        Type markerType,
-        ServiceLifetime lifetime = ServiceLifetime.Transient
-    )
+    private static IServiceCollection AddValidationRules(this IServiceCollection services)
     {
-        services.RegisterImplementationsOf(markerType, typeof(T), lifetime);
+        return services.RegisterServices(
+            "validation rules",
+            scan =>
+                scan.FromAssemblyOf<CategoryNameValidationRule>()
+                    .AddClassesImplementing(typeof(IValidationRule<>))
+                    .AsImplementedInterfaces()
+                    .WithScopedLifetime()
+        );
     }
 
     public static void RegisterImplementationsOf(
