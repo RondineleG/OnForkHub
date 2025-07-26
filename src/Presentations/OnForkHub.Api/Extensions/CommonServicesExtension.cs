@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
+using OnForkHub.CrossCutting.DependencyInjection;
 using OnForkHub.Persistence.Configurations;
 using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;
@@ -44,19 +45,13 @@ public static class CommonServicesExtension
 
     public static IServiceCollection AddEntityValidator(this IServiceCollection services, Assembly assembly)
     {
-        var validatorTypes = assembly
-            .GetTypes()
-            .Where(type =>
-                !type.IsAbstract
-                && type.IsClass
-                && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityValidator<>))
-            );
-        foreach (var type in validatorTypes)
-        {
-            var implementedInterface = type.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityValidator<>));
-            services.Add(new ServiceDescriptor(implementedInterface, type, ServiceLifetime.Scoped));
-            Console.WriteLine($"Registered: {implementedInterface} -> {type}");
-        }
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
+
+        strategy.Register(services);
+
         return services;
     }
 
@@ -77,55 +72,36 @@ public static class CommonServicesExtension
 
     public static IServiceCollection AddUseCases(this IServiceCollection services, Assembly assembly)
     {
-        var useCaseTypes = assembly
-            .GetTypes()
-            .Where(type =>
-                !type.IsAbstract
-                && type.IsClass
-                && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IUseCase<,>))
-            );
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IUseCase<,>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
 
-        foreach (var type in useCaseTypes)
-        {
-            var implementedInterface = type.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IUseCase<,>));
-            services.Add(new ServiceDescriptor(implementedInterface, type, ServiceLifetime.Scoped));
-            Console.WriteLine($"Registered UseCase: {type.Name} -> {implementedInterface}");
-        }
+        strategy.Register(services);
+
         return services;
     }
 
     public static IServiceCollection AddValidationRule(this IServiceCollection services, Assembly assembly)
     {
-        var useCaseTypes = assembly
-            .GetTypes()
-            .Where(type =>
-                !type.IsAbstract
-                && type.IsClass
-                && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IValidationRule<>))
-            );
-        foreach (var type in useCaseTypes)
-        {
-            var implementedInterface = type.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IValidationRule<>));
-            services.Add(new ServiceDescriptor(implementedInterface, type, ServiceLifetime.Scoped));
-        }
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IValidationRule<>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
+
+        strategy.Register(services);
+
         return services;
     }
 
     public static IServiceCollection AddValidators(this IServiceCollection services, Assembly assembly)
     {
-        var validatorTypes = assembly
-            .GetTypes()
-            .Where(type =>
-                !type.IsAbstract
-                && type.IsClass
-                && type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityValidator<>))
-            );
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
 
-        foreach (var type in validatorTypes)
-        {
-            var implementedInterface = type.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityValidator<>));
-            services.AddScoped(implementedInterface, type);
-        }
+        strategy.Register(services);
 
         return services;
     }
@@ -153,14 +129,11 @@ public static class CommonServicesExtension
         ServiceLifetime lifetime = ServiceLifetime.Transient
     )
     {
-        var types = markerType.Assembly.GetTypes().Where(x => x.DoesImplementInterfaceType(interfaceType));
+        var scanner = new AssemblyScanner(markerType.Assembly);
+        var typeSelector = scanner.FindTypesImplementing(interfaceType);
+        var configurator = new LifetimeConfigurator(lifetime);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
 
-        foreach (var type in types)
-        {
-            var implementedInterface = type.GetInterfaces()
-                .First(y => y.IsGenericType ? y.GetGenericTypeDefinition() == interfaceType : y == interfaceType);
-
-            services.Add(new ServiceDescriptor(implementedInterface, type, lifetime));
-        }
+        strategy.Register(services);
     }
 }
