@@ -1,3 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+
+using OnForkHub.CrossCutting.DependencyInjection;
+using OnForkHub.Persistence.Configurations;
+using OnForkHub.Persistence.Contexts;
+using OnForkHub.Persistence.Contexts.Base;
+using OnForkHub.Persistence.Repositories;
+
+using Raven.Client.Documents;
+
 namespace OnForkHub.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
@@ -33,6 +43,17 @@ public static class CommonServicesExtension
         services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
 
         services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
+        return services;
+    }
+
+    public static IServiceCollection AddEntityValidator(this IServiceCollection services, Assembly assembly)
+    {
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
+
+        strategy.Register(services);
 
         return services;
     }
@@ -71,59 +92,37 @@ public static class CommonServicesExtension
 
     public static IServiceCollection RegisterServices(this IServiceCollection services, string serviceName, Action<IAssemblyScanner> scanAction)
     {
-        try
-        {
-            services.Scan(scanAction);
-        }
-        catch (Exception ex)
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            var logger = serviceProvider.GetService<ILogger<object>>();
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IUseCase<,>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
 
-            if (logger != null)
-            {
-                LogRegisterError(logger, ex, serviceName);
-            }
-            else
-            {
-                Console.WriteLine($"Error when registering {serviceName}: {ex.Message}");
-            }
-        }
+        strategy.Register(services);
 
         return services;
     }
 
     private static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        return services.RegisterServices(
-            "services",
-            scan => scan.FromAssemblyOf<BaseService>().AddClassesEndingWith("Service").AsImplementedInterfaces().WithScopedLifetime()
-        );
-    }
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IValidationRule<>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
 
-    private static IServiceCollection AddEndpoints(this IServiceCollection services)
-    {
-        return services.RegisterServices(
-            "endpoints",
-            scan => scan.FromAssemblyOf<CreateEndpoint>().AddClassesEndingWith("Endpoint").AsImplementedInterfaces().WithScopedLifetime()
-        );
+        strategy.Register(services);
+
+        return services;
     }
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        return services.RegisterServices(
-            "repositórios",
-            scan =>
-                scan.FromAssemblyOf<EntityFrameworkDataContext>()
-                    .AddClassesEndingWith("Repository", "RepositoryEF", "RepositoryRavenDB")
-                    .AsImplementedInterfaces()
-                    .WithScopedLifetime()
-        );
-    }
+        var scanner = new AssemblyScanner(assembly);
+        var typeSelector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
+        var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
 
-    private static IServiceCollection AddSpecificServices(this IServiceCollection services)
-    {
-        services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
+        strategy.Register(services);
+
         return services;
     }
 
@@ -151,22 +150,18 @@ public static class CommonServicesExtension
         );
     }
 
-    private static IServiceCollection AddValidationServices(this IServiceCollection services)
+    public static void RegisterImplementationsOf(
+        this IServiceCollection services,
+        Type markerType,
+        Type interfaceType,
+        ServiceLifetime lifetime = ServiceLifetime.Transient
+    )
     {
-        services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
-        services.AddScoped(typeof(IValidationService<>), typeof(ValidationService<>));
-        return services;
-    }
+        var scanner = new AssemblyScanner(markerType.Assembly);
+        var typeSelector = scanner.FindTypesImplementing(interfaceType);
+        var configurator = new LifetimeConfigurator(lifetime);
+        var strategy = typeSelector.CreateRegistrationStrategy(configurator);
 
-    private static IServiceCollection AddValidators(this IServiceCollection services)
-    {
-        return services.RegisterServices(
-            "validators",
-            scan =>
-                scan.FromAssemblyOf<CategoryValidator>()
-                    .AddClassesImplementing(typeof(IEntityValidator<>))
-                    .AsImplementedInterfaces()
-                    .WithScopedLifetime()
-        );
+        strategy.Register(services);
     }
 }
