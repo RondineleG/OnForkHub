@@ -1,7 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http.Client" Version="8.*" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.*" />
