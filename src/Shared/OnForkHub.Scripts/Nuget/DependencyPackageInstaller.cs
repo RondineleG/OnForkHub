@@ -47,6 +47,21 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         await ProcessPackageSelections(packages);
     }
 
+    private static XmlElement? FindExistingPackageVersion(XmlElement itemGroup, string packageName)
+    {
+        foreach (XmlNode child in itemGroup.ChildNodes)
+        {
+            if (child is XmlElement element &&
+                element.Name == "PackageVersion" &&
+                element.GetAttribute("Include") == packageName)
+            {
+                return element;
+            }
+        }
+
+        return null;
+    }
+
     private static XmlElement FindOrCreatePackageVersionItemGroup(XmlDocument document, XmlElement projectElement)
     {
         // Look for existing ItemGroup with PackageVersion elements
@@ -69,21 +84,6 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         var newItemGroup = document.CreateElement("ItemGroup");
         projectElement.AppendChild(newItemGroup);
         return newItemGroup;
-    }
-
-    private static XmlElement? FindExistingPackageVersion(XmlElement itemGroup, string packageName)
-    {
-        foreach (XmlNode child in itemGroup.ChildNodes)
-        {
-            if (child is XmlElement element &&
-                element.Name == "PackageVersion" &&
-                element.GetAttribute("Include") == packageName)
-            {
-                return element;
-            }
-        }
-
-        return null;
     }
 
     private static async Task<string> GetLatestPackageVersion(string packageName)
@@ -133,50 +133,6 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         _logger.Log(ELogLevel.Info, $"Successfully installed {packageName} {version}");
     }
 
-    private async Task UpdateDirectoryPackagesProps(string filePath, string packageName, string version)
-    {
-        var document = new XmlDocument();
-        document.Load(filePath);
-
-        var projectElement = document.DocumentElement;
-        if (projectElement?.Name != "Project")
-        {
-            throw new InvalidOperationException("Invalid Directory.Packages.props format: missing Project element");
-        }
-
-        // Find or create ItemGroup for PackageVersion
-        var itemGroup = FindOrCreatePackageVersionItemGroup(document, projectElement);
-
-        // Check if package already exists
-        var existingPackage = FindExistingPackageVersion(itemGroup, packageName);
-        if (existingPackage != null)
-        {
-            // Update existing package version
-            existingPackage.SetAttribute("Version", version);
-            _logger.Log(ELogLevel.Info, $"Updated {packageName} from {existingPackage.GetAttribute("Version")} to {version}");
-        }
-        else
-        {
-            // Add new package
-            var packageVersionElement = document.CreateElement("PackageVersion");
-            packageVersionElement.SetAttribute("Include", packageName);
-            packageVersionElement.SetAttribute("Version", version);
-            itemGroup.AppendChild(packageVersionElement);
-            _logger.Log(ELogLevel.Info, $"Added new package {packageName} with version {version}");
-        }
-
-        // Save the file
-        var settings = new XmlWriterSettings
-        {
-            Indent = true,
-            IndentChars = "  ",
-            NewLineChars = "\n"
-        };
-
-        await using var writer = XmlWriter.Create(filePath, settings);
-        document.Save(writer);
-    }
-
     private async Task ProcessPackageSelections(List<PackageInfo> packages)
     {
         _logger.Log(ELogLevel.Info, "\nEnter selections (format: '0 4.*, 1 6.*'):");
@@ -223,5 +179,49 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         }
 
         return packages;
+    }
+
+    private async Task UpdateDirectoryPackagesProps(string filePath, string packageName, string version)
+    {
+        var document = new XmlDocument();
+        document.Load(filePath);
+
+        var projectElement = document.DocumentElement;
+        if (projectElement?.Name != "Project")
+        {
+            throw new InvalidOperationException("Invalid Directory.Packages.props format: missing Project element");
+        }
+
+        // Find or create ItemGroup for PackageVersion
+        var itemGroup = FindOrCreatePackageVersionItemGroup(document, projectElement);
+
+        // Check if package already exists
+        var existingPackage = FindExistingPackageVersion(itemGroup, packageName);
+        if (existingPackage != null)
+        {
+            // Update existing package version
+            existingPackage.SetAttribute("Version", version);
+            _logger.Log(ELogLevel.Info, $"Updated {packageName} from {existingPackage.GetAttribute("Version")} to {version}");
+        }
+        else
+        {
+            // Add new package
+            var packageVersionElement = document.CreateElement("PackageVersion");
+            packageVersionElement.SetAttribute("Include", packageName);
+            packageVersionElement.SetAttribute("Version", version);
+            itemGroup.AppendChild(packageVersionElement);
+            _logger.Log(ELogLevel.Info, $"Added new package {packageName} with version {version}");
+        }
+
+        // Save the file
+        var settings = new XmlWriterSettings
+        {
+            Indent = true,
+            IndentChars = "  ",
+            NewLineChars = "\n"
+        };
+
+        await using var writer = XmlWriter.Create(filePath, settings);
+        document.Save(writer);
     }
 }

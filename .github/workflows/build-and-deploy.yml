@@ -1,4 +1,4 @@
-name: Build and Deploy to VPS
+name: Build and Deploy to VPS with HTTPS
 
 on:
   workflow_dispatch:
@@ -38,13 +38,16 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      full_branch: ${{ steps.set-branch.outputs.full_branch }}
 
     steps:
       - name: Set full branch name
+        id: set-branch
         if: github.event_name == 'workflow_dispatch'
         run: |
           if [[ "${{ github.event.inputs.branch_type }}" == "dev" || "${{ github.event.inputs.branch_type }}" == "main" || "${{ github.event.inputs.branch_type }}" == "uat" ]]; then
-            echo "FULL_BRANCH=${{ github.event.inputs.branch_type }}" >> $GITHUB_ENV
+            FULL_BRANCH="${{ github.event.inputs.branch_type }}"
           else
             if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
               echo "❌ Branch name is required for ${{ github.event.inputs.branch_type }} branches"
@@ -52,13 +55,16 @@ jobs:
             fi
             BRANCH_TYPE=$(echo "${{ github.event.inputs.branch_type }}" | sed 's#/$##')
             BRANCH_NAME=$(echo "${{ github.event.inputs.branch_name }}" | sed 's#^/##')
-            echo "FULL_BRANCH=${BRANCH_TYPE}/${BRANCH_NAME}" >> $GITHUB_ENV
+            FULL_BRANCH="${BRANCH_TYPE}/${BRANCH_NAME}"
           fi
+          echo "FULL_BRANCH=${FULL_BRANCH}" >> $GITHUB_ENV
+          echo "full_branch=${FULL_BRANCH}" >> $GITHUB_OUTPUT
+          echo "✅ Full branch set to: ${FULL_BRANCH}"
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && steps.set-branch.outputs.full_branch || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -130,102 +136,244 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && env.FULL_BRANCH || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && needs.build.outputs.full_branch || github.ref }}
 
-      - name: Install SSH Key
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Check and Install Dependencies
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+          cat >> ~/.ssh/config << 'EOF'
+          Host deploy-server
+            HostName ${{ secrets.SSH_HOST }}
+            User ${{ secrets.SSH_USERNAME }}
+            IdentityFile ~/.ssh/deploy_key
+            ServerAliveInterval 30
+            ServerAliveCountMax 10
+            ConnectTimeout 10
+          EOF
+
+          echo "✅ SSH configured successfully"
+
+      - name: Test SSH Connection
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            if ! command -v docker &> /dev/null || ! command -v docker compose &> /dev/null; then
-              echo 'Installing dependencies...'
-              mkdir -p ~/onforkhub-deploy
+          ssh deploy-server "echo '✅ SSH connection successful'"
+
+      - name: Check SSL Certificate Status
+        run: |
+          ssh deploy-server "
+            echo '🔐 Checking SSL certificate status...'
+            if [ -f '/etc/ssl/zerossl/fullchain.crt' ]; then
+              echo '✅ SSL certificate found'
+              openssl x509 -in /etc/ssl/zerossl/fullchain.crt -subject -dates -noout
+              if openssl x509 -in /etc/ssl/zerossl/fullchain.crt -checkend 86400 -noout; then
+                echo '✅ Certificate is valid for more than 24 hours'
+              else
+                echo '⚠️ Certificate expires within 24 hours!'
+              fi
+            else
+              echo '❌ SSL certificate not found'
+              exit 1
             fi
           "
 
       - name: Copy Deployment Files
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          scp -v -i ~/.ssh/deploy_key -r .deploy/* $SSH_USER@$SSH_HOST:~/onforkhub-deploy/
+          scp -r .deploy/* deploy-server:~/onforkhub-deploy/
 
       - name: Install Services if Needed
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy &&
-            chmod +x install-services.sh &&
+          ssh deploy-server "
+            cd ~/onforkhub-deploy
+            chmod +x install-services.sh
             if ! command -v docker &> /dev/null || ! docker compose version &> /dev/null; then
               echo 'Installing Docker and dependencies...'
-              export SUDO_PASSWORD='$SUDO_PASSWORD'
-              bash ./install-services.sh
-              sudo systemctl status docker --no-pager || true
+              export SUDO_PASSWORD='${{ secrets.SUDO_PASSWORD }}'
+              timeout 300 bash ./install-services.sh
             else
-              echo 'Docker and dependencies already installed'
+              echo 'Docker already installed'
               docker --version
               docker compose version
             fi
           "
 
-      - name: Set Execute Permissions and Verify
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Cleanup Previous Deployment
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy &&
-            chmod +x *.sh &&
-            ls -la *.sh &&
-            test -x cleanup-services.sh && echo '✅ cleanup-services.sh is executable' || echo '❌ cleanup-services.sh is NOT executable' &&
-            test -x start-services.sh && echo '✅ start-services.sh is executable' || echo '❌ start-services.sh is NOT executable'
+          ssh deploy-server "
+            cd ~/onforkhub-deploy
+            chmod +x cleanup-services.sh
+            echo '🧹 Cleaning up previous deployment...'
+            timeout 120 bash ./cleanup-services.sh || echo 'Cleanup completed or timed out'
           "
 
-      - name: Deploy Services
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          ENVIRONMENT: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
+      - name: Update Docker Compose Configuration
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy &&
-            echo 'Starting cleanup...' &&
-            bash ./cleanup-services.sh &&
-            echo 'Starting services in $ENVIRONMENT environment...' &&
-            export ASPNETCORE_ENVIRONMENT=$ENVIRONMENT &&
-            bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}'
+          ssh deploy-server "
+            cd ~/onforkhub-deploy
+            GITHUB_USERNAME_LOWER=\$(echo '${{ github.actor }}' | tr '[:upper:]' '[:lower:]')
+            echo '🔄 Using lowercase username: \$GITHUB_USERNAME_LOWER'
+
+            # Update docker-compose.yml with correct image names
+            sed -i \"s|ghcr.io/.*/onforkhub-api:latest|ghcr.io/\$GITHUB_USERNAME_LOWER/onforkhub-api:latest|g\" docker-compose.yml
+            sed -i \"s|ghcr.io/.*/onforkhub-web:latest|ghcr.io/\$GITHUB_USERNAME_LOWER/onforkhub-web:latest|g\" docker-compose.yml
+
+            # Remove obsolete version from docker-compose.yml
+            sed -i '/^version:/d' docker-compose.yml
+
+            echo '✅ Docker compose updated'
+            grep 'image:' docker-compose.yml || echo 'No image lines found'
           "
 
-      - name: Verify Deployment Status
-        if: success()
-        env:
-          SSH_USER: ${{ secrets.SSH_USERNAME }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Start Deployment
         run: |
-          ssh -i ~/.ssh/deploy_key $SSH_USER@$SSH_HOST "
-            cd ~/onforkhub-deploy &&
-            docker ps &&
-            docker logs onforkhub-api --tail 10 2>/dev/null || true &&
-            docker logs onforkhub-web --tail 10 2>/dev/null || true &&
-            docker logs reverse-proxy --tail 10 2>/dev/null || true
+          ssh deploy-server "
+            cd ~/onforkhub-deploy
+            chmod +x start-services.sh
+            export ASPNETCORE_ENVIRONMENT='${{ github.ref_name == 'main' && 'Production' || 'Development' }}'
+            echo '🚀 Starting deployment...'
+            timeout 600 bash ./start-services.sh '${{ secrets.CONTAINER_REGISTRY_TOKEN }}' '${{ github.actor }}' || {
+              echo '❌ Deployment timed out or failed'
+              echo 'Container status:'
+              docker ps -a || true
+              exit 1
+            }
+          "
+
+      - name: Monitor Deployment Progress
+        run: |
+          ssh deploy-server "
+            cd ~/onforkhub-deploy
+            echo '⏳ Monitoring deployment progress...'
+
+            for i in {1..20}; do
+              echo \"--- Check \$i/20 ---\"
+              docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+              # Check if containers are running
+              API_STATUS=\$(docker ps --filter 'name=onforkhub-api' --format '{{.Status}}' | head -1)
+              WEB_STATUS=\$(docker ps --filter 'name=onforkhub-web' --format '{{.Status}}' | head -1)
+              PROXY_STATUS=\$(docker ps --filter 'name=reverse-proxy' --format '{{.Status}}' | head -1)
+
+              echo \"API Status: \$API_STATUS\"
+              echo \"Web Status: \$WEB_STATUS\"
+              echo \"Proxy Status: \$PROXY_STATUS\"
+
+              # If all containers are running, break
+              if [[ \"\$API_STATUS\" == *\"Up\"* && \"\$WEB_STATUS\" == *\"Up\"* && \"\$PROXY_STATUS\" == *\"Up\"* ]]; then
+                echo '✅ All containers are running'
+                break
+              fi
+
+              # If any container has exited, show logs and exit
+              if [[ \"\$API_STATUS\" == *\"Exited\"* || \"\$WEB_STATUS\" == *\"Exited\"* ]]; then
+                echo '❌ Some containers have exited'
+                docker logs onforkhub-api --tail 20 2>/dev/null || true
+                docker logs onforkhub-web --tail 20 2>/dev/null || true
+                exit 1
+              fi
+
+              sleep 15
+            done
+          "
+
+      - name: Test Services
+        run: |
+          ssh deploy-server "
+            echo '🧪 Testing services...'
+
+            # Test API health
+            echo 'Testing API health endpoint...'
+            for i in {1..5}; do
+              if curl -f -m 10 -k https://172.245.152.43:9443/health 2>/dev/null; then
+                echo '✅ API health check passed'
+                break
+              elif curl -f -m 10 -k https://172.245.152.43:9443/ 2>/dev/null; then
+                echo '✅ API root endpoint accessible'
+                break
+              else
+                echo \"API test attempt \$i/5 failed, retrying...\"
+                sleep 10
+              fi
+            done
+
+            # Test Web
+            echo 'Testing Web endpoint...'
+            for i in {1..5}; do
+              if curl -f -m 10 -k https://172.245.152.43/ 2>/dev/null; then
+                echo '✅ Web endpoint accessible'
+                break
+              else
+                echo \"Web test attempt \$i/5 failed, retrying...\"
+                sleep 10
+              fi
+            done
+
+            echo '📋 Final status:'
+            docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+          "
+
+      - name: Show Deployment Logs
+        if: always()
+        run: |
+          ssh deploy-server "
+            echo '📝 Deployment logs:'
+            echo '=== API Logs ==='
+            docker logs onforkhub-api --tail 30 2>/dev/null || echo 'API container not found'
+            echo '=== Web Logs ==='
+            docker logs onforkhub-web --tail 30 2>/dev/null || echo 'Web container not found'
+            echo '=== Reverse Proxy Logs ==='
+            docker logs reverse-proxy --tail 30 2>/dev/null || echo 'Reverse proxy container not found'
           "
 
       - name: Get current UTC time
         id: current-time
         run: echo "time=$(date -u '+%d/%m/%Y %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+      - name: Notify Successful Deployment
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          disable_web_page_preview: true
+          message: |
+            🎉 *HTTPS Deployment Successful*
+
+            🔐 *Secure Deployment Completed*
+            Branch: `${{ github.ref_name }}`
+            Commit: `${{ github.sha }}`
+            Environment: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
+
+            🌐 *HTTPS Access URLs:*
+            • Web: https://172.245.152.43
+            • API: https://172.245.152.43:9443
+
+            ⏰ ${{ steps.current-time.outputs.time }}
+
+      - name: Notify Deployment Failure
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          format: markdown
+          disable_web_page_preview: true
+          message: |
+            🚨 *HTTPS Deployment Failed*
+
+            ❌ *Deployment Error*
+            Branch: `${{ github.ref_name }}`
+            Commit: `${{ github.sha }}`
+
+            [View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ⏰ ${{ steps.current-time.outputs.time }}

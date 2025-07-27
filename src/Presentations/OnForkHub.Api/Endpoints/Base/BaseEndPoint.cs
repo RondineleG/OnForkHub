@@ -1,6 +1,6 @@
 namespace OnForkHub.Api.Endpoints.Base;
 
-public abstract class BaseEndpoint<TEntity>
+public abstract class BaseEndPoint<TEntity>
     where TEntity : BaseEntity
 {
     protected static RouteHandlerBuilder ConfigureEndpoint(RouteHandlerBuilder builder)

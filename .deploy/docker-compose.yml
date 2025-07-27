@@ -1,88 +1,73 @@
-services:
- reverse-proxy:
-   image: nginx:alpine
-   container_name: reverse-proxy
-   restart: unless-stopped
-   ports:
-     - 80:80
-     - 9000:9000
-     - 8080:8080
-   deploy:
-     resources:
-       limits:
-         memory: 100M
-         cpus: '0.1'
-   volumes:
-     - ./custom.conf:/etc/nginx/conf.d/default.conf:ro
-     - ./logs/nginx:/var/log/nginx
-   logging:
-     driver: "json-file"
-     options:
-       max-size: "20m"
-       max-file: "5"
-   networks:
-     - onforkhub-network
- onforkhub-api:
-   image: ghcr.io/rondineleg/onforkhub-api:latest
-   container_name: onforkhub-api
-   expose:
-     - 80
-   environment:
-     - ASPNETCORE_ENVIRONMENT=Development
-     - ASPNETCORE_URLS=http://+:80
-     - ASPNETCORE_HTTPS_REDIRECTION_ENABLED=false
-     - COMPlus_GCConserveMemory=1
-     - COMPlus_HeapHardLimit=300000000
-     - DOTNET_GCHeapHardLimit=300000000
-   deploy:
-     resources:
-       limits:
-         memory: 400M
-         cpus: '0.4'
-       reservations:
-         memory: 100M
-         cpus: '0.1'
-   logging:
-     driver: "json-file"
-     options:
-       max-size: "20m"
-       max-file: "5"
-   volumes:
-     - ./logs/api:/app/logs
-   healthcheck:
-     test: ["CMD", "curl", "-f", "http://localhost:80/health"]
-     interval: 30s
-     timeout: 10s
-     retries: 3
-   networks:
-     - onforkhub-network
- onforkhub-web:
-   image: ghcr.io/rondineleg/onforkhub-web:latest
-   container_name: onforkhub-web
-   depends_on:
-     - onforkhub-api
-   expose:
-     - 80
-   environment:
-     - ASPNETCORE_ENVIRONMENT=Development
-     - ASPNETCORE_URLS=http://+:80
-   deploy:
-     resources:
-       limits:
-         memory: 300M
-         cpus: '0.3'
-       reservations:
-         memory: 50M
-         cpus: '0.1'
-   logging:
-     driver: "json-file"
-     options:
-       max-size: "20m"
-       max-file: "5"
-   volumes:
-     - ./logs/web:/app/logs
-   networks:
-     - onforkhub-network
 networks:
- onforkhub-network:
-   name: onforkhub-network
+  onforkhub-network:
+    driver: bridge
+
+services:
+  onforkhub-api:
+    image: ghcr.io/rondineleg/onforkhub-api:latest
+    container_name: onforkhub-api
+    restart: unless-stopped
+    networks:
+      - onforkhub-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+      - ASPNETCORE_HTTPSREDIRECTION_ENABLED=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || curl -f http://localhost:80/ || exit 1"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  onforkhub-web:
+    image: ghcr.io/rondineleg/onforkhub-web:latest
+    container_name: onforkhub-web
+    restart: unless-stopped
+    networks:
+      - onforkhub-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  reverse-proxy:
+    image: nginx:alpine
+    container_name: reverse-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "9443:9443"
+    volumes:
+      - ./custom.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/ssl/zerossl:/etc/ssl/zerossl:ro
+      - /var/log/nginx:/var/log/nginx
+    networks:
+      - onforkhub-network
+    depends_on:
+      onforkhub-api:
+        condition: service_started
+      onforkhub-web:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

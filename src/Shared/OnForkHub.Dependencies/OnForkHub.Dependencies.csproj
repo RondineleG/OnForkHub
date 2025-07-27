@@ -1,5 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <!-- This project is being phased out in favor of Central Package Management -->
-  <!-- All package versions are now managed in Directory.Packages.props -->
-  <!-- Projects that reference this will get packages through Central Package Management -->
-</Project>
