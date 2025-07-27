@@ -1,17 +1,16 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace OnForkHub.CrossCutting.DependencyInjection;
 
 public class RegistrationStrategy
 {
-    private readonly Type[] _typesToRegister;
-    private readonly ServiceLifetime _lifetime;
-
     public RegistrationStrategy(Type[] typesToRegister, ServiceLifetime lifetime = ServiceLifetime.Scoped)
     {
         _typesToRegister = typesToRegister ?? throw new ArgumentNullException(nameof(typesToRegister));
         _lifetime = lifetime;
     }
+
+    private readonly ServiceLifetime _lifetime;
+
+    private readonly Type[] _typesToRegister;
 
     public void Register(IServiceCollection services)
     {

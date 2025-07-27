@@ -21,14 +21,15 @@ public class AssemblyScanner
         var types = _assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type =>
-                !type.IsAbstract
-                && type.IsClass
-                && type.GetInterfaces()
-                    .Any(i =>
-                        i.IsGenericType
-                            ? i.GetGenericTypeDefinition() == (interfaceType.IsGenericTypeDefinition ? interfaceType : i.GetGenericTypeDefinition())
-                            : i == interfaceType
-                    )
+                !type.IsAbstract &&
+                !type.IsInterface &&
+                !type.IsGenericTypeDefinition &&
+                type.IsClass &&
+                type.GetInterfaces().Any(i =>
+                    i.IsGenericType && interfaceType.IsGenericTypeDefinition
+                        ? i.GetGenericTypeDefinition() == interfaceType
+                        : i == interfaceType
+                )
             )
             .ToArray();
 
@@ -38,7 +39,10 @@ public class AssemblyScanner
     public TypeSelectorService FromAssemblies(params Assembly[] assemblies)
     {
         var allAssemblies = _assemblies.Concat(assemblies).ToArray();
-        var types = allAssemblies.SelectMany(assembly => assembly.GetTypes()).Where(type => !type.IsAbstract && type.IsClass).ToArray();
+        var types = allAssemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => !type.IsAbstract && type.IsClass && !type.IsGenericTypeDefinition)
+            .ToArray();
 
         return new TypeSelectorService(types);
     }
@@ -55,7 +59,10 @@ public class AssemblyScanner
 
     public void RegisterServices(IServiceCollection services, LifetimeConfigurator configurator)
     {
-        var types = _assemblies.SelectMany(assembly => assembly.GetTypes()).Where(type => !type.IsAbstract && type.IsClass).ToArray();
+        var types = _assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => !type.IsAbstract && type.IsClass && !type.IsGenericTypeDefinition)
+            .ToArray();
 
         var strategy = new RegistrationStrategy(types, configurator.GetLifetime());
         strategy.Register(services);
