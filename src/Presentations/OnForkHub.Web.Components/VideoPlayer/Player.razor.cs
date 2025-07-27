@@ -63,7 +63,7 @@ public partial class Player : ComponentBase, IAsyncDisposable
     public EventCallback OnTorrentReady { get; set; }
 
     [Parameter]
-    public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
+    public EventCallback<(float CurrentTime, float Duration)> OnVideoTimeUpdate { get; set; }
 
     [Parameter]
     public bool PIPControl { get; set; } = false;

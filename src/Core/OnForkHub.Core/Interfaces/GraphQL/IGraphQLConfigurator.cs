@@ -14,7 +14,8 @@ public interface IGraphQLEndpoint
     string Path { get; }
 }
 
-public interface IGraphQLMutation : IGraphQLOperation { }
+public interface IGraphQLMutation : IGraphQLOperation
+{ }
 
 public interface IGraphQLOperation
 {
@@ -25,7 +26,8 @@ public interface IGraphQLOperation
     void Register(object descriptor);
 }
 
-public interface IGraphQLQuery : IGraphQLOperation { }
+public interface IGraphQLQuery : IGraphQLOperation
+{ }
 
 public interface IGraphQLSchemaBuilder
 {
