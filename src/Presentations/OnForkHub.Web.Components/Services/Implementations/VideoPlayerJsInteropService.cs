@@ -31,9 +31,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         {
             await CleanupTorrent();
         }
-        catch
-        {
-        }
+        catch { }
 
         if (_mainTask.IsValueCreated)
         {
@@ -81,9 +79,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
             var mainModule = await _mainTask.Value;
 
             // Verifica se é para usar WebTorrent
-            var useTorrent = !string.IsNullOrEmpty(magnetUri) ||
-                           !string.IsNullOrEmpty(torrentFilePath) ||
-                           enableTorrentFileUpload;
+            var useTorrent = !string.IsNullOrEmpty(magnetUri) || !string.IsNullOrEmpty(torrentFilePath) || enableTorrentFileUpload;
 
             if (useTorrent)
             {
