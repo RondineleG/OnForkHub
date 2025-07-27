@@ -50,7 +50,11 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
         {
             _logger.Log(ELogLevel.Info, "Checking Git Flow configuration...");
 
-            var workingDir = FindGitRepositoryRoot(Environment.CurrentDirectory) ?? throw new GitOperationException("Não foi possível encontrar a raiz do repositório Git. Certifique-se de que você está em um repositório Git válido.");
+            var workingDir =
+                FindGitRepositoryRoot(Environment.CurrentDirectory)
+                ?? throw new GitOperationException(
+                    "Não foi possível encontrar a raiz do repositório Git. Certifique-se de que você está em um repositório Git válido."
+                );
             _logger.Log(ELogLevel.Debug, $"Working directory: {workingDir}");
 
             if (!Directory.Exists(Path.Combine(workingDir, ".git")))
@@ -209,6 +213,7 @@ public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processR
             throw;
         }
     }
+
     private async Task<string> GetCurrentBranch()
     {
         return (await _processRunner.RunAsync("git", "rev-parse --abbrev-ref HEAD")).Trim();
