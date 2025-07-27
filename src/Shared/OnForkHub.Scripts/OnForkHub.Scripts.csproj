@@ -47,9 +47,4 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
-  <ItemGroup>
-    <!-- Packages used directly by OnForkHub.Scripts -->
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
-  </ItemGroup>
 </Project>

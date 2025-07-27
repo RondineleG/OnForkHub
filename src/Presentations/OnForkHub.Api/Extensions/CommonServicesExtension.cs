@@ -184,7 +184,7 @@ namespace OnForkHub.Api.Extensions
         typeof(IUseCase<,>).Assembly,
         typeof(GetAllCategoryUseCase).Assembly,
         typeof(CreateCategoryUseCase).Assembly
-    };
+            };
 
             return services.AddUseCasesAuto(assemblies);
         }
