@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace OnForkHub.Application.DependencyInjection;
 
@@ -33,7 +34,7 @@ internal sealed class AssemblySelector
         "Assembly not found: {AssemblyName}"
     );
 
-    private static readonly ConcurrentDictionary<string, System.Text.RegularExpressions.Regex> RegexCache = new(Environment.ProcessorCount, 100);
+    private static readonly ConcurrentDictionary<string, Regex> RegexCache = new(Environment.ProcessorCount, 100);
 
     private static readonly FrozenSet<string> SystemNamespaces = new[] { "System", "Microsoft", "mscorlib" }.ToFrozenSet(StringComparer.Ordinal);
 
@@ -133,12 +134,11 @@ internal sealed class AssemblySelector
                 pattern,
                 p =>
                 {
-                    var regexPattern = $"^{System.Text.RegularExpressions.Regex.Escape(p).Replace("\\*", ".*", StringComparison.Ordinal)}$";
-                    return new System.Text.RegularExpressions.Regex(
+                    var escapedPattern = Regex.Escape(p).Replace("\\*", ".*", StringComparison.Ordinal);
+                    var regexPattern = $"^{escapedPattern}$";
+                    return new Regex(
                         regexPattern,
-                        System.Text.RegularExpressions.RegexOptions.IgnoreCase
-                            | System.Text.RegularExpressions.RegexOptions.CultureInvariant
-                            | System.Text.RegularExpressions.RegexOptions.Compiled
+                        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled
                     );
                 }
             );
