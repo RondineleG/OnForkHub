@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Persistence\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\OnForkHub.Persistence\OnForkHub.Persistence.csproj" />
   </ItemGroup>
   <Target Name="RunSharedScripts" AfterTargets="Build">
     <Message Text="Running shared scripts..." Importance="high" />

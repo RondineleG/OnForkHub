@@ -8,9 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 var apiMode = builder.Configuration.GetValue<string>("AppSettings:ApiMode") ?? "All";
 
 builder.Services.AddSwaggerServices();
-builder.Services.AddRavenDbServices(builder.Configuration);
-builder.Services.AddEntityFrameworkServices(builder.Configuration);
-builder.Services.AddCustomServices();
+builder.Services.AddCustomServices(builder.Configuration);
 builder.Services.AddGraphQLFromCrossCutting();
 builder.Services.AddGraphQLAdapters();
 

@@ -13,3 +13,5 @@ global using OnForkHub.Core.Validations;
 global using OnForkHub.Core.ValueObjects;
 
 global using System.ComponentModel;
+
+global using Xunit;
