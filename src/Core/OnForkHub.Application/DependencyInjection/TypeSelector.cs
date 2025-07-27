@@ -181,7 +181,13 @@ internal sealed class TypeSelector
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsValidClassCore(Type type) =>
-        type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsNested && type.IsPublic && !IsSystemType(type);
+        type.IsClass
+        && !type.IsAbstract
+        && !type.IsInterface
+        && !type.IsNested
+        && type.IsPublic
+        && !type.IsGenericTypeDefinition
+        && !IsSystemType(type);
 
     private bool IsValidClass(Type type) => IsValidClassCore(type) && (_allowOpenGenerics || !type.IsGenericTypeDefinition);
 
