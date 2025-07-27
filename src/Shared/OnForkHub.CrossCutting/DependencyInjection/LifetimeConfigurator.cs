@@ -1,11 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace OnForkHub.CrossCutting.DependencyInjection;
 
 public class LifetimeConfigurator
 {
-    private ServiceLifetime _lifetime;
-
     public LifetimeConfigurator(IServiceCollection services)
     {
         _lifetime = ServiceLifetime.Scoped;
@@ -30,6 +26,8 @@ public class LifetimeConfigurator
     {
         _lifetime = lifetime;
     }
+
+    private ServiceLifetime _lifetime;
 
     public LifetimeConfigurator AsScoped()
     {
