@@ -39,10 +39,16 @@
   </Target>
   <Target Name="RunScript" AfterTargets="InstallToolGlobal" Condition="'$(GitStatusExitCode)' == '0'">
     <Message Text="Running script..." Importance="high" />
-    <Exec Command="dotnet OnForkHub.Scripts.dll" WorkingDirectory="$(OutDir)" StandardOutputImportance="High" StandardErrorImportance="High">
+    <Exec
+      Command="dotnet OnForkHub.Scripts.dll"
+      WorkingDirectory="$(OutDir)"
+      StandardOutputImportance="High"
+      StandardErrorImportance="High"
+      ContinueOnError="true"
+    >
       <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
     </Exec>
-    <Error Condition="'$(RunExitCode)' != '0'" Text="RunScript failed with exit code $(RunExitCode). Check the logs for more details." />
+    <Message Condition="'$(RunExitCode)' != '0'" Text="Script execution failed. Continuing..." Importance="high" />
   </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
