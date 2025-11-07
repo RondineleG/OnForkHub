@@ -42,8 +42,8 @@
   <PropertyGroup>
     <Copyright>Copyright © $([System.DateTime]::Now.Year)</Copyright>
     <RepositoryType>git</RepositoryType>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-    <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>

@@ -62,10 +62,10 @@ public sealed class CliHandler(ILogger logger, IPackageInstaller packageInstalle
         var version = string.Empty;
         if (args.Contains("-v"))
         {
-            var vIndex = Array.IndexOf(args, "-v") + 1;
-            if (vIndex < args.Length)
+            var versionIndex = Array.IndexOf(args, "-v") + 1;
+            if (versionIndex < args.Length)
             {
-                version = args[vIndex];
+                version = args[versionIndex];
             }
         }
 
