@@ -22,6 +22,7 @@
       Command="dotnet tool install OnForkHub.Scripts -g --add-source &quot;$(PackageOutputPath)&quot;"
       StandardOutputImportance="high"
       StandardErrorImportance="high"
+      ContinueOnError="true"
     />
     <Message Text="Tool successfully installed globally from $(NugetPackagePath)" Importance="high" />
   </Target>
