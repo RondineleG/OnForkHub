@@ -50,8 +50,8 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
 
     private async Task ConfigureVsCodeAsGitEditor()
     {
-        var vsCodePath = GetVsCodePath();
-        var escapedPath = vsCodePath.Replace("\\", "/");
+        var vscodeEditorPath = GetVsCodePath();
+        var escapedPath = vscodeEditorPath.Replace("\\", "/");
 
         var editorCommand = $"config --local core.editor \"\\\"${escapedPath}\\\" --wait\"";
 
@@ -71,8 +71,8 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
     {
         try
         {
-            var vsCodePath = GetVsCodePath();
-            await _processRunner.RunAsync(vsCodePath, "--version", _projectRoot);
+            var vscodeEditorPath = GetVsCodePath();
+            await _processRunner.RunAsync(vscodeEditorPath, "--version", _projectRoot);
             return true;
         }
         catch

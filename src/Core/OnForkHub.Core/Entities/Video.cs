@@ -5,8 +5,7 @@ public class Video : BaseEntity
     public Video(Id id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
-    protected Video()
-    { }
+    protected Video() { }
 
     private readonly List<Category> _categories = [];
 

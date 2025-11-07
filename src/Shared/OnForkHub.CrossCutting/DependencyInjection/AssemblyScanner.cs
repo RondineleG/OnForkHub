@@ -21,15 +21,14 @@ public class AssemblyScanner
         var types = _assemblies
             .SelectMany(assembly => assembly.GetTypes())
             .Where(type =>
-                !type.IsAbstract &&
-                !type.IsInterface &&
-                !type.IsGenericTypeDefinition &&
-                type.IsClass &&
-                type.GetInterfaces().Any(i =>
-                    i.IsGenericType && interfaceType.IsGenericTypeDefinition
-                        ? i.GetGenericTypeDefinition() == interfaceType
-                        : i == interfaceType
-                )
+                !type.IsAbstract
+                && !type.IsInterface
+                && !type.IsGenericTypeDefinition
+                && type.IsClass
+                && type.GetInterfaces()
+                    .Any(i =>
+                        i.IsGenericType && interfaceType.IsGenericTypeDefinition ? i.GetGenericTypeDefinition() == interfaceType : i == interfaceType
+                    )
             )
             .ToArray();
 

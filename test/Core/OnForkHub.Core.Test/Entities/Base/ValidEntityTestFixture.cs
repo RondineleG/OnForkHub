@@ -2,8 +2,7 @@ namespace OnForkHub.Core.Test.Entities.Base;
 
 public class ValidEntityTestFixture : BaseEntity
 {
-    public ValidEntityTestFixture()
-    { }
+    public ValidEntityTestFixture() { }
 
     public ValidEntityTestFixture(Id id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt)

@@ -136,10 +136,7 @@ internal sealed class AssemblySelector
                 {
                     var escapedPattern = Regex.Escape(p).Replace("\\*", ".*", StringComparison.Ordinal);
                     var regexPattern = $"^{escapedPattern}$";
-                    return new Regex(
-                        regexPattern,
-                        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled
-                    );
+                    return new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
                 }
             );
             return regex.IsMatch(name);
