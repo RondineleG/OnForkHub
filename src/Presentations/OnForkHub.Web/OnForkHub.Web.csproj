@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-          <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <StaticWebAssetCompression>false</StaticWebAssetCompression>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>

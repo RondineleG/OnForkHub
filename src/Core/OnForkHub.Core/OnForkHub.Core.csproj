@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-  </PropertyGroup>
+  <PropertyGroup></PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\OnForkHub.Abstractions\OnForkHub.Abstractions.csproj" />
   </ItemGroup>

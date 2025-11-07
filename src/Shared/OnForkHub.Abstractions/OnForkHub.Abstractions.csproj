@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-  </PropertyGroup>
+  <PropertyGroup></PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Update="Resources\Core\Entities\Base\BaseEntityResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
