@@ -3,7 +3,7 @@ namespace OnForkHub.Scripts;
 public class Startup(
     ILogger logger,
     GitFlowConfiguration gitFlow,
-    GitFlowPullRequestConfiguration prConfig,
+    GitFlowPullRequestConfiguration pullRequestConfig,
     ICliHandler cliHandler,
     IGitAliasConfiguration gitAliasConfiguration
 )
@@ -39,7 +39,7 @@ public class Startup(
             if (args.Contains("-p") || args.Contains("pr-create"))
             {
                 await gitFlow.EnsureCleanWorkingTreeAsync();
-                await prConfig.CreatePullRequestForGitFlowFinishAsync();
+                await pullRequestConfig.CreatePullRequestForGitFlowFinishAsync();
                 return 0;
             }
 

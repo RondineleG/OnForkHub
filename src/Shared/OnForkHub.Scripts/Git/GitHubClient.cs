@@ -13,9 +13,9 @@ public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHu
         { "large", "#010821" },
     };
 
-    public async Task CreatePullRequestAsync(PullRequestInfo prInfo)
+    public async Task CreatePullRequestAsync(PullRequestInfo pullRequestInfo)
     {
-        var createCommand = BuildPullRequestCommand("pr create", null, prInfo);
+        var createCommand = BuildPullRequestCommand("pr create", null, pullRequestInfo);
         await _processRunner.RunAsync("gh", createCommand);
     }
 
@@ -43,25 +43,25 @@ public class GitHubClient(IProcessRunner processRunner, ILogger logger) : IGitHu
         return string.IsNullOrWhiteSpace(existingPRs) ? null : existingPRs.Split('\t')[0];
     }
 
-    public async Task UpdatePullRequestAsync(string prNumber, PullRequestInfo prInfo)
+    public async Task UpdatePullRequestAsync(string pullRequestNumber, PullRequestInfo pullRequestInfo)
     {
-        var editCommand = BuildPullRequestCommand("pr edit", prNumber, prInfo);
+        var editCommand = BuildPullRequestCommand("pr edit", pullRequestNumber, pullRequestInfo);
         await _processRunner.RunAsync("gh", editCommand);
     }
 
-    private static string BuildPullRequestCommand(string action, string? prNumber, PullRequestInfo prInfo)
+    private static string BuildPullRequestCommand(string action, string? pullRequestNumber, PullRequestInfo pullRequestInfo)
     {
         var command = new List<string>
         {
-            prNumber == null ? action : $"{action} {prNumber}",
-            $"--title \"{prInfo.Title}\"",
-            $"--body \"{prInfo.Body}\"",
+            pullRequestNumber == null ? action : $"{action} {pullRequestNumber}",
+            $"--title \"{pullRequestInfo.Title}\"",
+            $"--body \"{pullRequestInfo.Body}\"",
         };
 
         if (action == "pr create")
         {
-            command.Add($"--base {prInfo.BaseBranch}");
-            command.Add($"--head {prInfo.SourceBranch}");
+            command.Add($"--base {pullRequestInfo.BaseBranch}");
+            command.Add($"--head {pullRequestInfo.SourceBranch}");
         }
 
         command.AddRange(["--label \"status:in-review,priority:high,size:large\"", "--assignee @me", "--milestone onforkhub-core-foundation"]);

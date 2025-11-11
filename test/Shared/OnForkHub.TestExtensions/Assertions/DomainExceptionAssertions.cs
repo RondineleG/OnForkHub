@@ -84,7 +84,7 @@ public static class DomainExceptionAssertions
 
     public static void WithValidationErrors(
         this ExceptionAssertions<DomainException> assertion,
-        params (string field, string message)[] expectedErrors
+        params (string Field, string Message)[] expectedErrors
     )
     {
         var exception = assertion.Which;
@@ -93,7 +93,7 @@ public static class DomainExceptionAssertions
             .Select(error =>
             {
                 var parts = error.Split(':', StringSplitOptions.TrimEntries);
-                return (field: parts[0], message: parts[1]);
+                return (Field: parts[0], Message: parts[1]);
             })
             .ToList();
 
