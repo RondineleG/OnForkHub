@@ -9,8 +9,8 @@ public static class PersistenceExceptionHandler
 
     public static PersistenceException HandleDbException(Exception exception, string operation, string entityName)
     {
-        return exception is DbUpdateException dbUpdateException
-            ? HandleDbUpdateException(dbUpdateException, operation, entityName)
+        return exception is DbUpdateException databaseUpdateException
+            ? HandleDbUpdateException(databaseUpdateException, operation, entityName)
             : new DatabaseOperationException(operation, exception.Message);
     }
 

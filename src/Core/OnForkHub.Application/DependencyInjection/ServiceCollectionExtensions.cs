@@ -56,5 +56,6 @@ public static class ServiceCollectionExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsConcreteClass(Type type) => type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsNested && type.IsPublic && !type.IsGenericTypeDefinition;
+    private static bool IsConcreteClass(Type type) =>
+        type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsNested && type.IsPublic && !type.IsGenericTypeDefinition;
 }
