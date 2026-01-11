@@ -1,4 +1,4 @@
-﻿global using Microsoft.Azure.Cosmos;
+global using Microsoft.Azure.Cosmos;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.ChangeTracking;
 global using OnForkHub.Core.Entities;

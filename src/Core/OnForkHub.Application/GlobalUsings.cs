@@ -1,4 +1,4 @@
-﻿global using HotChocolate;
+global using HotChocolate;
 global using HotChocolate.Types;
 global using OnForkHub.Application.Dtos.Base;
 global using OnForkHub.Application.Dtos.Category.Request;
