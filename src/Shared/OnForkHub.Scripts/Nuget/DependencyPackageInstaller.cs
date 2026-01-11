@@ -1,4 +1,4 @@
-namespace OnForkHub.Scripts.NuGet;
+﻿namespace OnForkHub.Scripts.NuGet;
 
 public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRunner, string solutionRoot) : IPackageInstaller
 {
@@ -51,9 +51,7 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
     {
         foreach (XmlNode child in itemGroup.ChildNodes)
         {
-            if (child is XmlElement element &&
-                element.Name == "PackageVersion" &&
-                element.GetAttribute("Include") == packageName)
+            if (child is XmlElement element && element.Name == "PackageVersion" && element.GetAttribute("Include") == packageName)
             {
                 return element;
             }
@@ -218,7 +216,7 @@ public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRu
         {
             Indent = true,
             IndentChars = "  ",
-            NewLineChars = "\n"
+            NewLineChars = "\n",
         };
 
         await using var writer = XmlWriter.Create(filePath, settings);

@@ -1,5 +1,4 @@
-using Microsoft.Extensions.Logging;
-
+﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Reflection;
@@ -136,10 +135,7 @@ internal sealed class AssemblySelector
                 {
                     var escapedPattern = Regex.Escape(p).Replace("\\*", ".*", StringComparison.Ordinal);
                     var regexPattern = $"^{escapedPattern}$";
-                    return new Regex(
-                        regexPattern,
-                        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled
-                    );
+                    return new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
                 }
             );
             return regex.IsMatch(name);

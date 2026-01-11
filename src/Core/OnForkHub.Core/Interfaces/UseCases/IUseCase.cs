@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Interfaces.UseCases;
+﻿namespace OnForkHub.Core.Interfaces.UseCases;
 
 public interface IUseCase<TRequest, TResponse>
 {

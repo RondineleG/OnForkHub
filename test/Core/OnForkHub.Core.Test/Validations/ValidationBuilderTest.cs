@@ -175,6 +175,5 @@ public class ValidationBuilderTest
         result.Metadata["key"].Should().Be("value");
     }
 
-    private sealed class TestEntity : BaseEntity
-    { }
+    private sealed class TestEntity : BaseEntity { }
 }

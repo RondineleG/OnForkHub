@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Interfaces.Repositories.Base;
+﻿namespace OnForkHub.Core.Interfaces.Repositories.Base;
 
 public interface IBaseRepository<TEntity>
     where TEntity : BaseEntity

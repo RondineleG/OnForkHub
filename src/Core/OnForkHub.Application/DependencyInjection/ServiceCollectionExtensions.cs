@@ -1,7 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
-
+﻿using Microsoft.Extensions.DependencyInjection;
 using OnForkHub.Core.Interfaces.DependencyInjection;
-
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -56,5 +54,6 @@ public static class ServiceCollectionExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsConcreteClass(Type type) => type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsNested && type.IsPublic && !type.IsGenericTypeDefinition;
+    private static bool IsConcreteClass(Type type) =>
+        type.IsClass && !type.IsAbstract && !type.IsInterface && !type.IsNested && type.IsPublic && !type.IsGenericTypeDefinition;
 }

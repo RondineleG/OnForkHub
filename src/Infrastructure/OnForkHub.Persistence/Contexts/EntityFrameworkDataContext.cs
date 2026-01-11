@@ -1,4 +1,4 @@
-namespace OnForkHub.Persistence.Contexts;
+﻿namespace OnForkHub.Persistence.Contexts;
 
 public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkDataContext> options) : DbContext(options), IEntityFrameworkDataContext
 {

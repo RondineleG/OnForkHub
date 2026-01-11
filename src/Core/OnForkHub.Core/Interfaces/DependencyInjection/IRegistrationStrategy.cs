@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Interfaces.DependencyInjection;
+﻿namespace OnForkHub.Core.Interfaces.DependencyInjection;
 
 public interface IRegistrationStrategy
 {

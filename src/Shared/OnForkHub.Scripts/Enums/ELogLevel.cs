@@ -1,4 +1,4 @@
-namespace OnForkHub.Scripts.Enums;
+﻿namespace OnForkHub.Scripts.Enums;
 
 public enum ELogLevel
 {

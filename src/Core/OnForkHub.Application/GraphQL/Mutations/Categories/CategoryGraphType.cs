@@ -1,4 +1,4 @@
-using GraphQL.Types;
+﻿using GraphQL.Types;
 
 namespace OnForkHub.Application.GraphQL.Mutations.Categories;
 

@@ -1,12 +1,11 @@
-namespace OnForkHub.Core.Entities;
+﻿namespace OnForkHub.Core.Entities;
 
 public class User : BaseEntity
 {
     protected User(Id id, DateTime createdAt, DateTime? updatedAt = null)
         : base(id, createdAt, updatedAt) { }
 
-    private User()
-    { }
+    private User() { }
 
     private readonly List<Video> _videos = [];
 

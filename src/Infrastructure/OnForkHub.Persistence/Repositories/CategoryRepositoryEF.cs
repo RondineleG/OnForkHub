@@ -1,4 +1,4 @@
-namespace OnForkHub.Persistence.Repositories;
+﻿namespace OnForkHub.Persistence.Repositories;
 
 public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICategoryRepositoryEF
 {

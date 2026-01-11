@@ -1,15 +1,15 @@
-using OnForkHub.Web.Components.Services.Interfaces;
+﻿using OnForkHub.Web.Components.Services.Interfaces;
 
 namespace OnForkHub.Web.Components.Services.Implementations;
 
-public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInteropService
+public class VideoPlayerJsInteropService(IJSRuntime jsRuntimeInstance) : IAsyncDisposable, IVideoPlayerJsInteropService
 {
     private readonly Lazy<Task<IJSObjectReference>> _mainTask = new(() =>
-        jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/js/main.min.js").AsTask()
+        jsRuntimeInstance.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/js/main.min.js").AsTask()
     );
 
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
-        jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
+        jsRuntimeInstance.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
     );
 
     public async Task CleanupTorrent()
@@ -70,7 +70,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         bool volumeControl,
         bool captionsControl,
         bool settingsControl,
-        bool pIPControl,
+        bool pipControl,
         bool airplayControl,
         bool downloadControl,
         bool fullscreenControl
@@ -120,7 +120,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
                     volumeControl,
                     captionsControl,
                     settingsControl,
-                    pIPControl,
+                    pipControl,
                     airplayControl,
                     downloadControl,
                     fullscreenControl

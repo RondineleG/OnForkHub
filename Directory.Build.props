@@ -12,7 +12,6 @@
     <LangVersion>latest</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
-    <CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <!-- NuGet configuration -->
   <PropertyGroup>
@@ -43,9 +42,7 @@
   <PropertyGroup>
     <Copyright>Copyright © $([System.DateTime]::Now.Year)</Copyright>
     <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>.\stylecop.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">

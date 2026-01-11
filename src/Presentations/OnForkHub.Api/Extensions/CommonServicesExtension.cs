@@ -3,7 +3,6 @@ using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Interfaces.Repositories.Base;
 using OnForkHub.CrossCutting.DependencyInjection;
 using OnForkHub.Persistence.Repositories;
-
 using System.Reflection;
 
 namespace OnForkHub.Api.Extensions
@@ -42,8 +41,9 @@ namespace OnForkHub.Api.Extensions
 
         public static IServiceCollection AddEntityFrameworkServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                                   ?? throw new InvalidOperationException("Connection String 'DefaultConnection' has not been found or is empty.");
+            var connectionString =
+                configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection String 'DefaultConnection' has not been found or is empty.");
 
             services.AddDbContext<EntityFrameworkDataContext>(options => options.UseSqlServer(connectionString));
             services.AddScoped<IEntityFrameworkDataContext, EntityFrameworkDataContext>();
@@ -66,8 +66,9 @@ namespace OnForkHub.Api.Extensions
 
         public static IServiceCollection AddRavenDbServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var ravenDbSettings = configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>()
-                                  ?? throw new InvalidOperationException("Raven DB settings were not found in the 'RavenDbSettings' section.");
+            var ravenDbSettings =
+                configuration.GetSection("RavenDbSettings").Get<RavenDbSettings>()
+                ?? throw new InvalidOperationException("Raven DB settings were not found in the 'RavenDbSettings' section.");
 
             if (ravenDbSettings.Urls is null || ravenDbSettings.Urls.Length == 0)
                 throw new InvalidOperationException("Raven DB URLs were not configured.");
@@ -105,13 +106,11 @@ namespace OnForkHub.Api.Extensions
 
             foreach (var assembly in assemblies)
             {
-                var types = assembly.GetTypes()
-                    .Where(t => !t.IsAbstract && !t.IsInterface);
+                var types = assembly.GetTypes().Where(t => !t.IsAbstract && !t.IsInterface);
 
                 foreach (var type in types)
                 {
-                    var interfaces = type.GetInterfaces()
-                        .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == interfaceType);
+                    var interfaces = type.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == interfaceType);
 
                     foreach (var serviceInterface in interfaces)
                     {
@@ -179,12 +178,7 @@ namespace OnForkHub.Api.Extensions
 
         private static IServiceCollection AddUseCases(this IServiceCollection services)
         {
-            var assemblies = new[]
-            {
-        typeof(IUseCase<,>).Assembly,
-        typeof(GetAllCategoryUseCase).Assembly,
-        typeof(CreateCategoryUseCase).Assembly
-            };
+            var assemblies = new[] { typeof(IUseCase<,>).Assembly, typeof(GetAllCategoryUseCase).Assembly, typeof(CreateCategoryUseCase).Assembly };
 
             return services.AddUseCasesAuto(assemblies);
         }

@@ -1,4 +1,4 @@
-namespace OnForkHub.Web.Components.Services.Interfaces;
+﻿namespace OnForkHub.Web.Components.Services.Interfaces;
 
 public interface IVideoPlayerJsInteropService
 {
@@ -26,7 +26,7 @@ public interface IVideoPlayerJsInteropService
         bool volumeControl,
         bool captionsControl,
         bool settingsControl,
-        bool pIPControl,
+        bool pipControl,
         bool airplayControl,
         bool downloadControl,
         bool fullscreenControl

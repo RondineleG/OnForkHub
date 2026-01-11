@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.Dtos.Category.Request;
+﻿namespace OnForkHub.Application.Dtos.Category.Request;
 
 public class CategoryUpdateRequestDto
 {

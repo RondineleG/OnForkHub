@@ -1,12 +1,12 @@
-namespace OnForkHub.Scripts.Interfaces;
+﻿namespace OnForkHub.Scripts.Interfaces;
 
 public interface IGitHubClient
 {
-    Task CreatePullRequestAsync(PullRequestInfo prInfo);
+    Task CreatePullRequestAsync(PullRequestInfo pullRequestInfo);
 
     Task EnsureLabelsExistAsync();
 
     Task<string?> FindExistingPullRequestAsync(string sourceBranch, string baseBranch);
 
-    Task UpdatePullRequestAsync(string prNumber, PullRequestInfo prInfo);
+    Task UpdatePullRequestAsync(string pullRequestNumber, PullRequestInfo pullRequestInfo);
 }

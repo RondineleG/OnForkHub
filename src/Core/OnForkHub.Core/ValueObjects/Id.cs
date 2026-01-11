@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.ValueObjects;
+﻿namespace OnForkHub.Core.ValueObjects;
 
 public sealed class Id : ValueObject
 {
@@ -29,8 +29,8 @@ public sealed class Id : ValueObject
         {
             var parts = value.Split('/');
 
-            var idPart = parts[1].Split('-')[0];
-            if (Guid.TryParse(idPart, out var guid))
+            var identifierValuePart = parts[1].Split('-')[0];
+            if (Guid.TryParse(identifierValuePart, out var guid))
             {
                 return new Id(guid);
             }

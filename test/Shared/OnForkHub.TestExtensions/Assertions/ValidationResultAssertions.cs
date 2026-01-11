@@ -25,19 +25,19 @@ public static class ValidationResultAssertions
         result.Errors.Select(e => e.Message).Should().OnlyHaveUniqueItems();
     }
 
-    public static void HaveErrorsInOrder(this ValidationResult result, params (string field, string message)[] expectedErrors)
+    public static void HaveErrorsInOrder(this ValidationResult result, params (string Field, string Message)[] expectedErrors)
     {
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCount(expectedErrors.Length);
 
         for (var i = 0; i < expectedErrors.Length; i++)
         {
-            result.Errors.ElementAt(i).Field.Should().Be(expectedErrors[i].field);
-            result.Errors.ElementAt(i).Message.Should().Be(expectedErrors[i].message);
+            result.Errors.ElementAt(i).Field.Should().Be(expectedErrors[i].Field);
+            result.Errors.ElementAt(i).Message.Should().Be(expectedErrors[i].Message);
         }
     }
 
-    public static void HaveMultipleErrors(this ValidationResult result, params (string field, string message)[] expectedErrors)
+    public static void HaveMultipleErrors(this ValidationResult result, params (string Field, string Message)[] expectedErrors)
     {
         result.IsValid.Should().BeFalse();
         result.Errors.Should().HaveCount(expectedErrors.Length);
