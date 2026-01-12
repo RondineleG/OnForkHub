@@ -1,7 +1,8 @@
 namespace OnForkHub.Api.IntegrationTests.Middleware;
 
-using System.Net.Http.Headers;
 using OnForkHub.Api.IntegrationTests.Infrastructure;
+
+using System.Net.Http.Headers;
 
 [TestClass]
 [TestCategory("Integration")]

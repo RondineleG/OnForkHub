@@ -1,7 +1,9 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using OnForkHub.Core.Interfaces.DependencyInjection;
+
+using System.Reflection;
 
 namespace OnForkHub.Application.DependencyInjection;
 

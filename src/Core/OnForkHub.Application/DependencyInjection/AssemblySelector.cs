@@ -1,8 +1,9 @@
+using Microsoft.Extensions.Logging;
+
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
 
 namespace OnForkHub.Application.DependencyInjection;
 

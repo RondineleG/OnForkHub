@@ -1,8 +1,9 @@
 namespace OnForkHub.Application.Dtos.Video.Request;
 
-using System.ComponentModel.DataAnnotations;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.ValueObjects;
+
+using System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// Data transfer object for video creation requests.

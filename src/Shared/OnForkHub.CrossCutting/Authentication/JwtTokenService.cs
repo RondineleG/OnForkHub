@@ -1,12 +1,13 @@
 namespace OnForkHub.CrossCutting.Authentication;
 
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 /// <summary>
 /// JWT token service implementation with refresh token support.

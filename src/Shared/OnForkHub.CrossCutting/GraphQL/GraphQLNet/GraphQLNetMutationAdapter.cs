@@ -1,5 +1,6 @@
 using GraphQL;
 using GraphQL.Types;
+
 using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.Core.Requests;
 

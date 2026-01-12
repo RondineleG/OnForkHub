@@ -2,6 +2,7 @@ namespace OnForkHub.CrossCutting.Authorization;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+
 using OnForkHub.CrossCutting.Authorization.Handlers;
 using OnForkHub.CrossCutting.Authorization.Requirements;
 
