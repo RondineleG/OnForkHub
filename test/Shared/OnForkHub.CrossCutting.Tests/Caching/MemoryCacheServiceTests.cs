@@ -172,7 +172,7 @@ public sealed class MemoryCacheServiceTests : IDisposable
     {
         var options = Options.Create(new CacheOptions());
 
-        Assert.ThrowsException<ArgumentNullException>(() => new MemoryCacheService(null!, options));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new MemoryCacheService(null!, options));
     }
 
     [TestMethod]
@@ -181,7 +181,7 @@ public sealed class MemoryCacheServiceTests : IDisposable
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
 
-        Assert.ThrowsException<ArgumentNullException>(() => new MemoryCacheService(cache, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new MemoryCacheService(cache, null!));
     }
 
     private sealed class TestCacheItem

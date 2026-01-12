@@ -65,7 +65,7 @@ public class SecurityHeadersMiddlewareTests
     [TestCategory("Middleware")]
     public void ConstructorWithNullNextThrowsArgumentNullException()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => new SecurityHeadersMiddleware(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new SecurityHeadersMiddleware(null!));
     }
 
     [TestMethod]

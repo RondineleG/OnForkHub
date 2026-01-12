@@ -107,31 +107,27 @@ public class ErrorMessageLocalizerTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void RegisterMessageWithNullErrorCodeThrowsArgumentNullException()
     {
-        _localizer.RegisterMessage(null!, "en", "message");
+        Assert.ThrowsExactly<ArgumentNullException>(() => _localizer.RegisterMessage(null!, "en", "message"));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void GetMessageWithNullErrorCodeThrowsArgumentNullException()
     {
-        _localizer.GetMessage(null!);
+        Assert.ThrowsExactly<ArgumentNullException>(() => _localizer.GetMessage(null!));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void GetValidationMessageWithNullPropertyNameThrowsArgumentNullException()
     {
-        _localizer.GetValidationMessage(null!, "Required");
+        Assert.ThrowsExactly<ArgumentNullException>(() => _localizer.GetValidationMessage(null!, "Required"));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void GetValidationMessageWithNullErrorTypeThrowsArgumentNullException()
     {
-        _localizer.GetValidationMessage("Name", null!);
+        Assert.ThrowsExactly<ArgumentNullException>(() => _localizer.GetValidationMessage("Name", null!));
     }
 
     [TestMethod]

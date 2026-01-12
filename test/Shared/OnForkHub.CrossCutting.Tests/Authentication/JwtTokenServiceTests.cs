@@ -1,7 +1,9 @@
 namespace OnForkHub.CrossCutting.Tests.Authentication;
 
 using Microsoft.Extensions.Options;
+
 using OnForkHub.CrossCutting.Authentication;
+
 using System.Security.Claims;
 
 [TestClass]
@@ -14,7 +16,7 @@ public sealed class JwtTokenServiceTests
     [TestCategory("Authentication")]
     public void ConstructorThrowsWhenOptionsIsNull()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => new JwtTokenService(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new JwtTokenService(null!));
     }
 
     [TestMethod]
@@ -40,7 +42,7 @@ public sealed class JwtTokenServiceTests
     {
         var service = CreateService();
 
-        Assert.ThrowsException<ArgumentNullException>(() => service.GenerateTokens((IEnumerable<Claim>)null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => service.GenerateTokens((IEnumerable<Claim>)null!));
     }
 
     [TestMethod]
@@ -62,7 +64,7 @@ public sealed class JwtTokenServiceTests
     {
         var service = CreateService();
 
-        Assert.ThrowsException<ArgumentNullException>(() => service.GenerateTokens(null!, "testuser"));
+        Assert.ThrowsExactly<ArgumentNullException>(() => service.GenerateTokens(null!, "testuser"));
     }
 
     [TestMethod]
@@ -71,7 +73,7 @@ public sealed class JwtTokenServiceTests
     {
         var service = CreateService();
 
-        Assert.ThrowsException<ArgumentNullException>(() => service.GenerateTokens("user-123", null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => service.GenerateTokens("user-123", null!));
     }
 
     [TestMethod]
