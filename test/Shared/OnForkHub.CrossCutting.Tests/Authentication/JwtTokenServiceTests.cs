@@ -1,10 +1,8 @@
 namespace OnForkHub.CrossCutting.Tests.Authentication;
 
-using Microsoft.Extensions.Options;
-
-using OnForkHub.CrossCutting.Authentication;
-
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
+using OnForkHub.CrossCutting.Authentication;
 
 [TestClass]
 [TestCategory("Unit")]

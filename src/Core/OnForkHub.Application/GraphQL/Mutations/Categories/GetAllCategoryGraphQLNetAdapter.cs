@@ -1,7 +1,5 @@
 ﻿using GraphQL.Types;
-
 using Microsoft.Extensions.DependencyInjection;
-
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 
 namespace OnForkHub.Application.GraphQL.Mutations.Categories;

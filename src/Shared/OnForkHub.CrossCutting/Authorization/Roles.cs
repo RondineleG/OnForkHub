@@ -28,13 +28,7 @@ public static class Roles
     /// <summary>
     /// Gets all available roles.
     /// </summary>
-    public static IReadOnlyList<string> All =>
-    [
-        Admin,
-        Moderator,
-        User,
-        Premium,
-    ];
+    public static IReadOnlyList<string> All => [Admin, Moderator, User, Premium];
 
     /// <summary>
     /// Checks if the role is valid.

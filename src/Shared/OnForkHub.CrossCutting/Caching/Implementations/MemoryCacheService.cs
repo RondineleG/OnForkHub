@@ -1,9 +1,8 @@
 namespace OnForkHub.CrossCutting.Caching.Implementations;
 
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-
-using System.Collections.Concurrent;
 
 /// <summary>
 /// In-memory implementation of the cache service.

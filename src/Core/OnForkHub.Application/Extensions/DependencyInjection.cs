@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-
 using OnForkHub.Application.GraphQL.Handlers;
 using OnForkHub.Application.Services;
 using OnForkHub.Core.Interfaces.GraphQL;

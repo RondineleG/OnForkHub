@@ -1,10 +1,8 @@
 namespace OnForkHub.CrossCutting.Authorization.Handlers;
 
-using Microsoft.AspNetCore.Authorization;
-
-using OnForkHub.CrossCutting.Authorization.Requirements;
-
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using OnForkHub.CrossCutting.Authorization.Requirements;
 
 /// <summary>
 /// Handler for resource ownership authorization requirements.
@@ -12,10 +10,7 @@ using System.Security.Claims;
 public sealed class ResourceOwnerRequirementHandler : AuthorizationHandler<ResourceOwnerRequirement, string>
 {
     /// <inheritdoc/>
-    protected override Task HandleRequirementAsync(
-        AuthorizationHandlerContext context,
-        ResourceOwnerRequirement requirement,
-        string resourceOwnerId)
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, ResourceOwnerRequirement requirement, string resourceOwnerId)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(requirement);
@@ -49,8 +44,6 @@ public sealed class ResourceOwnerRequirementHandler : AuthorizationHandler<Resou
 
     private static bool IsAdmin(ClaimsPrincipal user)
     {
-        return user.Claims
-            .Any(c => c.Type == ClaimTypes.Role &&
-                      c.Value.Equals(Roles.Admin, StringComparison.OrdinalIgnoreCase));
+        return user.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value.Equals(Roles.Admin, StringComparison.OrdinalIgnoreCase));
     }
 }

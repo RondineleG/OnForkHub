@@ -1,7 +1,6 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Auth;
 
 using Microsoft.AspNetCore.Authorization;
-
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Core.Interfaces.Configuration;

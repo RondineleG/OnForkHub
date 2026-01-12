@@ -1,8 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
-
-using OnForkHub.Core.Interfaces.GraphQL;
-
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
+using OnForkHub.Core.Interfaces.GraphQL;
 
 namespace OnForkHub.Core.Extensions;
 

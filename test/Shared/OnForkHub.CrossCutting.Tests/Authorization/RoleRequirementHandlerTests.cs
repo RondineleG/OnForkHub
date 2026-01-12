@@ -1,12 +1,10 @@
 namespace OnForkHub.CrossCutting.Tests.Authorization;
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-
 using OnForkHub.CrossCutting.Authorization;
 using OnForkHub.CrossCutting.Authorization.Handlers;
 using OnForkHub.CrossCutting.Authorization.Requirements;
-
-using System.Security.Claims;
 
 [TestClass]
 [TestCategory("Unit")]
@@ -19,11 +17,7 @@ public sealed class RoleRequirementHandlerTests
     public async Task HandlerSucceedsWhenUserHasMatchingRole()
     {
         var requirement = new RoleRequirement(Roles.Admin);
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, "user-1"),
-            new(ClaimTypes.Role, Roles.Admin),
-        };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "user-1"), new(ClaimTypes.Role, Roles.Admin) };
         var identity = new ClaimsIdentity(claims, "Test");
         var principal = new ClaimsPrincipal(identity);
         var context = new AuthorizationHandlerContext([requirement], principal, null);
@@ -38,11 +32,7 @@ public sealed class RoleRequirementHandlerTests
     public async Task HandlerDoesNotSucceedWhenUserLacksMatchingRole()
     {
         var requirement = new RoleRequirement(Roles.Admin);
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, "user-1"),
-            new(ClaimTypes.Role, Roles.User),
-        };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "user-1"), new(ClaimTypes.Role, Roles.User) };
         var identity = new ClaimsIdentity(claims, "Test");
         var principal = new ClaimsPrincipal(identity);
         var context = new AuthorizationHandlerContext([requirement], principal, null);
@@ -71,11 +61,7 @@ public sealed class RoleRequirementHandlerTests
     public async Task HandlerSucceedsWhenUserHasAnyAllowedRole()
     {
         var requirement = new RoleRequirement(Roles.Admin, Roles.Moderator);
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, "user-1"),
-            new(ClaimTypes.Role, Roles.Moderator),
-        };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "user-1"), new(ClaimTypes.Role, Roles.Moderator) };
         var identity = new ClaimsIdentity(claims, "Test");
         var principal = new ClaimsPrincipal(identity);
         var context = new AuthorizationHandlerContext([requirement], principal, null);
@@ -90,11 +76,7 @@ public sealed class RoleRequirementHandlerTests
     public async Task HandlerSucceedsWithCaseInsensitiveRoleMatch()
     {
         var requirement = new RoleRequirement("ADMIN");
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, "user-1"),
-            new(ClaimTypes.Role, "admin"),
-        };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "user-1"), new(ClaimTypes.Role, "admin") };
         var identity = new ClaimsIdentity(claims, "Test");
         var principal = new ClaimsPrincipal(identity);
         var context = new AuthorizationHandlerContext([requirement], principal, null);
@@ -109,11 +91,7 @@ public sealed class RoleRequirementHandlerTests
     public async Task HandlerDoesNotSucceedWithEmptyRolesRequirement()
     {
         var requirement = new RoleRequirement();
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, "user-1"),
-            new(ClaimTypes.Role, Roles.Admin),
-        };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "user-1"), new(ClaimTypes.Role, Roles.Admin) };
         var identity = new ClaimsIdentity(claims, "Test");
         var principal = new ClaimsPrincipal(identity);
         var context = new AuthorizationHandlerContext([requirement], principal, null);

@@ -1,10 +1,8 @@
 namespace OnForkHub.CrossCutting.Authorization.Handlers;
 
-using Microsoft.AspNetCore.Authorization;
-
-using OnForkHub.CrossCutting.Authorization.Requirements;
-
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using OnForkHub.CrossCutting.Authorization.Requirements;
 
 /// <summary>
 /// Handler for role-based authorization requirements.
@@ -12,9 +10,7 @@ using System.Security.Claims;
 public sealed class RoleRequirementHandler : AuthorizationHandler<RoleRequirement>
 {
     /// <inheritdoc/>
-    protected override Task HandleRequirementAsync(
-        AuthorizationHandlerContext context,
-        RoleRequirement requirement)
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RoleRequirement requirement)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(requirement);
@@ -24,13 +20,9 @@ public sealed class RoleRequirementHandler : AuthorizationHandler<RoleRequiremen
             return Task.CompletedTask;
         }
 
-        var userRoles = context.User.Claims
-            .Where(c => c.Type == ClaimTypes.Role)
-            .Select(c => c.Value)
-            .ToList();
+        var userRoles = context.User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
 
-        if (requirement.AllowedRoles.Any(role =>
-            userRoles.Contains(role, StringComparer.OrdinalIgnoreCase)))
+        if (requirement.AllowedRoles.Any(role => userRoles.Contains(role, StringComparer.OrdinalIgnoreCase)))
         {
             context.Succeed(requirement);
         }

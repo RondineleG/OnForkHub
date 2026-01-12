@@ -1,10 +1,11 @@
+using System.Reflection;
 using OnForkHub.Core.Interfaces.Configuration;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Interfaces.Repositories.Base;
+using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.CrossCutting.DependencyInjection;
+using OnForkHub.CrossCutting.Storage;
 using OnForkHub.Persistence.Repositories;
-
-using System.Reflection;
 
 namespace OnForkHub.Api.Extensions
 {
@@ -95,6 +96,11 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
             services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
             services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
+            services.AddScoped<IVideoRepositoryEF, VideoRepositoryEF>();
+            services.AddScoped<IValidationService<Video>, ValidationService<Video>>();
+            services.AddScoped<IVideoService, VideoService>();
+            services.Configure<FileStorageOptions>(options => { });
+            services.AddScoped<IFileStorageService, LocalFileStorageService>();
             return services;
         }
 

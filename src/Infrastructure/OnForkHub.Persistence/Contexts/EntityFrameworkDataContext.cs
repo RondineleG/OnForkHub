@@ -4,6 +4,8 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
 {
     public DbSet<Category> Categories { get; set; } = null!;
 
+    public DbSet<Video> Videos { get; set; } = null!;
+
     EntityEntry<TEntity> IEntityFrameworkDataContext.Entry<TEntity>(TEntity entity)
     {
         return Entry(entity);
