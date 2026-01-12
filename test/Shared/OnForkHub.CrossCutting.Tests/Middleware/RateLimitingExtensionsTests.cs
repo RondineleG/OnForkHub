@@ -15,7 +15,7 @@ public sealed class RateLimitingExtensionsTests
     {
         var services = new ServiceCollection();
 
-        Assert.ThrowsException<ArgumentNullException>(() => services.AddRateLimitingServices(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => services.AddRateLimitingServices(null!));
     }
 
     [TestMethod]

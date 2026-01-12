@@ -4,6 +4,7 @@
     <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dtn</ToolCommandName>
+    <InstallToolGlobal>false</InstallToolGlobal>
     <PackageOutputPath>$(MSBuildProjectDirectory)\nupkg</PackageOutputPath>
     <Version>0.0.5</Version>
     <Authors>OnForkHub Team</Authors>
@@ -13,7 +14,7 @@
   <Target Name="CreateNuGetFolder" BeforeTargets="GenerateNuspec">
     <MakeDir Directories="$(PackageOutputPath)" />
   </Target>
-  <Target Name="InstallToolGlobal" AfterTargets="Pack">
+  <Target Name="InstallToolGlobal" AfterTargets="Pack" Condition="'$(InstallToolGlobal)' == 'true'">
     <PropertyGroup>
       <NugetPackagePath>$(PackageOutputPath)\OnForkHub.Scripts.$(Version).nupkg</NugetPackagePath>
     </PropertyGroup>
@@ -37,7 +38,7 @@
     </Exec>
     <Message Condition="'$(GitStatusExitCode)' != '0'" Text="Warning: Working tree contains unstaged or uncommitted changes." Importance="high" />
   </Target>
-  <Target Name="RunScript" AfterTargets="InstallToolGlobal" Condition="'$(GitStatusExitCode)' == '0'">
+  <Target Name="RunScript" AfterTargets="InstallToolGlobal" Condition="'$(GitStatusExitCode)' == '0' and '$(InstallToolGlobal)' == 'true'">
     <Message Text="Running script..." Importance="high" />
     <Exec
       Command="dotnet OnForkHub.Scripts.dll"
