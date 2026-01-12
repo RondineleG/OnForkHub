@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts.Git;
+namespace OnForkHub.Scripts.Git;
 
 public class GitEditorService(string projectRoot, IProcessRunner processRunner, ILogger logger) : IGitEditorService
 {
@@ -50,8 +50,8 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
 
     private async Task ConfigureVsCodeAsGitEditor()
     {
-        var vsCodeEditorPath = GetVsCodePath();
-        var escapedPath = vsCodeEditorPath.Replace("\\", "/");
+        var vscodeEditorPath = GetVsCodePath();
+        var escapedPath = vscodeEditorPath.Replace("\\", "/");
 
         var editorCommand = $"config --local core.editor \"\\\"${escapedPath}\\\" --wait\"";
 
@@ -71,8 +71,8 @@ public class GitEditorService(string projectRoot, IProcessRunner processRunner, 
     {
         try
         {
-            var vsCodeEditorPath = GetVsCodePath();
-            await _processRunner.RunAsync(vsCodeEditorPath, "--version", _projectRoot);
+            var vscodeEditorPath = GetVsCodePath();
+            await _processRunner.RunAsync(vscodeEditorPath, "--version", _projectRoot);
             return true;
         }
         catch

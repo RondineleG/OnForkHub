@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts.Git;
+namespace OnForkHub.Scripts.Git;
 
 public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunner processRunner, IGitHubClient githubClient)
 {
@@ -28,14 +28,14 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
             await SwitchToBranchAsync(branchName);
             await ForcePushFeatureBranchWithRetryAsync(branchName);
 
-            var pullRequestDetails = new PullRequestInfo(
+            var pullRequestInfo = new PullRequestInfo(
                 $"feat({GetFeatureName(branchName)}): Merge {branchName} into {DevBranch}",
                 GeneratePullRequestBody(branchName),
                 DevBranch,
                 branchName
             );
 
-            await CreateOrUpdatePullRequestAsync(pullRequestDetails);
+            await CreateOrUpdatePullRequestAsync(pullRequestInfo);
             await AbortMergeAsync();
 
             await SwitchToBranchAsync(branchName);
@@ -89,22 +89,22 @@ public sealed class GitFlowPullRequestConfiguration(ILogger logger, IProcessRunn
         }
     }
 
-    private async Task CreateOrUpdatePullRequestAsync(PullRequestInfo pullRequestDetails)
+    private async Task CreateOrUpdatePullRequestAsync(PullRequestInfo pullRequestInfo)
     {
         try
         {
             await _githubClient.EnsureLabelsExistAsync();
 
-            var existingPrNumber = await _githubClient.FindExistingPullRequestAsync(pullRequestDetails.SourceBranch, pullRequestDetails.BaseBranch);
+            var existingPrNumber = await _githubClient.FindExistingPullRequestAsync(pullRequestInfo.SourceBranch, pullRequestInfo.BaseBranch);
 
             if (existingPrNumber != null)
             {
-                await _githubClient.UpdatePullRequestAsync(existingPrNumber, pullRequestDetails);
+                await _githubClient.UpdatePullRequestAsync(existingPrNumber, pullRequestInfo);
                 _logger.Log(ELogLevel.Info, $"Updated existing PR #{existingPrNumber}");
                 return;
             }
 
-            await _githubClient.CreatePullRequestAsync(pullRequestDetails);
+            await _githubClient.CreatePullRequestAsync(pullRequestInfo);
             _logger.Log(ELogLevel.Info, "Successfully created PR");
         }
         catch (Exception ex)

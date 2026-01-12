@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts.NuGet;
+namespace OnForkHub.Scripts.NuGet;
 
 public class DependencyPackageInstaller(ILogger logger, IProcessRunner processRunner, string solutionRoot) : IPackageInstaller
 {

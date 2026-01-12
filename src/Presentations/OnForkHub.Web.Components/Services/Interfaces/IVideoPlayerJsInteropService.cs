@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Web.Components.Services.Interfaces;
+namespace OnForkHub.Web.Components.Services.Interfaces;
 
 public interface IVideoPlayerJsInteropService
 {

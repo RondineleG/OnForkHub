@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Persistence.Exceptions;
+namespace OnForkHub.Persistence.Exceptions;
 
 public static class PersistenceExceptionHandler
 {

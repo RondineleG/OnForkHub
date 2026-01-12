@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts;
+namespace OnForkHub.Scripts;
 
 public class Startup(
     ILogger logger,
@@ -6,7 +6,7 @@ public class Startup(
     GitFlowPullRequestConfiguration pullRequestConfig,
     ICliHandler cliHandler,
     IGitAliasConfiguration gitAliasConfiguration
-) // Parameter name changed from prConfig to pullRequestConfig for consistency
+)
 {
     public async Task<int> RunAsync(string[] args)
     {

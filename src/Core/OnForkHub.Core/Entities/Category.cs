@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.Entities;
+namespace OnForkHub.Core.Entities;
 
 public class Category : BaseEntity
 {

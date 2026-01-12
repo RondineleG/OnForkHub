@@ -1,15 +1,15 @@
-﻿using OnForkHub.Web.Components.Services.Interfaces;
+using OnForkHub.Web.Components.Services.Interfaces;
 
 namespace OnForkHub.Web.Components.Services.Implementations;
 
-public class VideoPlayerJsInteropService(IJSRuntime jsRuntimeInstance) : IAsyncDisposable, IVideoPlayerJsInteropService
+public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposable, IVideoPlayerJsInteropService
 {
     private readonly Lazy<Task<IJSObjectReference>> _mainTask = new(() =>
-        jsRuntimeInstance.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/js/main.min.js").AsTask()
+        jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/js/main.min.js").AsTask()
     );
 
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() =>
-        jsRuntimeInstance.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
+        jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/OnForkHub.Web.Components/plyr.js").AsTask()
     );
 
     public async Task CleanupTorrent()
