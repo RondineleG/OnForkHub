@@ -158,4 +158,80 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
             throw new DatabaseOperationException("update", ex.Message);
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<RequestResult<(IEnumerable<Video> Items, int TotalCount)>> SearchAsync(
+        string? searchTerm,
+        long? categoryId,
+        string? userId,
+        DateTime? fromDate,
+        DateTime? toDate,
+        int sortBy,
+        bool sortDescending,
+        int page,
+        int pageSize
+    )
+    {
+        try
+        {
+            var query = _context.Videos.Include(v => v.Categories).AsQueryable();
+
+            // Apply search term filter using EF.Functions.Like for case-insensitive search
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var pattern = $"%{searchTerm}%";
+                query = query.Where(v => EF.Functions.Like(v.Title.Value, pattern) || EF.Functions.Like(v.Description, pattern));
+            }
+
+            // Apply category filter
+            if (categoryId.HasValue)
+            {
+                var categoryIdString = categoryId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                query = query.Where(v => v.Categories.Any(c => c.Id.Contains(categoryIdString)));
+            }
+
+            // Apply user filter
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                query = query.Where(v => v.UserId != null && v.UserId.ToString() == userId);
+            }
+
+            // Apply date range filters
+            if (fromDate.HasValue)
+            {
+                query = query.Where(v => v.CreatedAt >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(v => v.CreatedAt <= toDate.Value);
+            }
+
+            // Get total count before pagination
+            var totalCount = await EntityFrameworkQueryableExtensions.CountAsync(query);
+
+            // Apply sorting
+            query = sortBy switch
+            {
+                1 => sortDescending ? query.OrderByDescending(v => v.Title.Value) : query.OrderBy(v => v.Title.Value),
+                2 => sortDescending ? query.OrderByDescending(v => v.UpdatedAt) : query.OrderBy(v => v.UpdatedAt),
+                _ => sortDescending ? query.OrderByDescending(v => v.CreatedAt) : query.OrderBy(v => v.CreatedAt),
+            };
+
+            // Apply pagination
+            var items = await EntityFrameworkQueryableExtensions.ToListAsync(query.Skip((page - 1) * pageSize).Take(pageSize));
+
+            return RequestResult<(IEnumerable<Video> Items, int TotalCount)>.Success((items, totalCount));
+        }
+        catch (Exception ex)
+        {
+            return RequestResult<(IEnumerable<Video> Items, int TotalCount)>.WithError($"Error searching {EntityName}: {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await EntityFrameworkQueryableExtensions.CountAsync(_context.Videos);
+    }
 }

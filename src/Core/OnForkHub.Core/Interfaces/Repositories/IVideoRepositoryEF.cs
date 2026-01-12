@@ -58,4 +58,35 @@ public interface IVideoRepositoryEF
     /// <param name="video">The video to update.</param>
     /// <returns>The updated video.</returns>
     Task<RequestResult<Video>> UpdateAsync(Video video);
+
+    /// <summary>
+    /// Searches videos with filters.
+    /// </summary>
+    /// <param name="searchTerm">The search term for title/description.</param>
+    /// <param name="categoryId">Optional category ID filter.</param>
+    /// <param name="userId">Optional user ID filter.</param>
+    /// <param name="fromDate">Optional minimum creation date.</param>
+    /// <param name="toDate">Optional maximum creation date.</param>
+    /// <param name="sortBy">Sort field (0=CreatedAt, 1=Title, 2=UpdatedAt).</param>
+    /// <param name="sortDescending">Sort direction.</param>
+    /// <param name="page">The page number.</param>
+    /// <param name="pageSize">The page size.</param>
+    /// <returns>A paginated list of videos with total count.</returns>
+    Task<RequestResult<(IEnumerable<Video> Items, int TotalCount)>> SearchAsync(
+        string? searchTerm,
+        long? categoryId,
+        string? userId,
+        DateTime? fromDate,
+        DateTime? toDate,
+        int sortBy,
+        bool sortDescending,
+        int page,
+        int pageSize
+    );
+
+    /// <summary>
+    /// Gets the total count of videos.
+    /// </summary>
+    /// <returns>The total count.</returns>
+    Task<int> GetTotalCountAsync();
 }
