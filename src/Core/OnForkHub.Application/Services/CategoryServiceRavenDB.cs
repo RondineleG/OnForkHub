@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.Services;
+﻿namespace OnForkHub.Application.Services;
 
 public class CategoryServiceRavenDB(ICategoryRepositoryRavenDB categoryRepository, IValidationService<Category> validationService)
     : BaseService,

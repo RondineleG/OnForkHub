@@ -10,4 +10,6 @@ global using OnForkHub.Scripts.Models;
 global using OnForkHub.Scripts.NuGet;
 
 global using System.Diagnostics;
+global using System.Globalization;
 global using System.Text.Json;
+global using System.Xml;

@@ -1,6 +1,4 @@
-using HotChocolate.Types;
-
-using OnForkHub.Core.Interfaces.GraphQL;
+﻿using OnForkHub.Core.Interfaces.GraphQL;
 
 namespace OnForkHub.Core.GraphQL;
 

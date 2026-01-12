@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 
 using OnForkHub.Web.Components.Models;
 
@@ -63,7 +63,7 @@ public partial class Player : ComponentBase, IAsyncDisposable
     public EventCallback OnTorrentReady { get; set; }
 
     [Parameter]
-    public EventCallback<(float currentTime, float duration)> OnVideoTimeUpdate { get; set; }
+    public EventCallback<(float CurrentTime, float Duration)> OnVideoTimeUpdate { get; set; }
 
     [Parameter]
     public bool PIPControl { get; set; } = false;
@@ -189,20 +189,20 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
         if (
             InputAttributes == null
-            || !InputAttributes.TryGetValue("id", out var idValue)
-            || idValue == null
-            || string.IsNullOrWhiteSpace(idValue.ToString())
+            || !InputAttributes.TryGetValue("id", out var elementValue)
+            || elementValue == null
+            || string.IsNullOrWhiteSpace(elementValue.ToString())
         )
         {
             throw new ArgumentException("O atributo 'id' é obrigatório e não pode ser nulo ou vazio");
         }
 
-        var elementId = idValue.ToString()!;
+        var elementIdentifier = elementValue.ToString()!;
 
         try
         {
             await VideoPlayerService.Initialize(
-                elementId,
+                elementIdentifier,
                 _objectRef,
                 MagnetUri,
                 TorrentFilePath,
@@ -240,10 +240,10 @@ public partial class Player : ComponentBase, IAsyncDisposable
     {
         try
         {
-            if (InputAttributes != null && InputAttributes.TryGetValue("id", out var idValue))
+            if (InputAttributes != null && InputAttributes.TryGetValue("id", out var elementValue))
             {
-                var elementId = idValue.ToString()!;
-                await VideoPlayerService.StartTorrentFromFile(elementId, _objectRef);
+                var elementIdentifier = elementValue.ToString()!;
+                await VideoPlayerService.StartTorrentFromFile(elementIdentifier, _objectRef);
             }
         }
         catch (Exception ex)

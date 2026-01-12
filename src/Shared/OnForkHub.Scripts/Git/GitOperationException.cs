@@ -1,4 +1,4 @@
-namespace OnForkHub.Scripts.Git;
+﻿namespace OnForkHub.Scripts.Git;
 
 public class GitOperationException : Exception
 {

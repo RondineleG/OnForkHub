@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.UseCases.Categories;
+﻿namespace OnForkHub.Application.UseCases.Categories;
 
 public class GetByIdCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF) : IUseCase<long, Category>
 {

@@ -5,41 +5,15 @@
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
   </PropertyGroup>
-  <Target Name="NpmInstall" BeforeTargets="Build">
-    <Message Importance="high" Text="Checking NpmInstall target execution..." />
-    <Exec Command="npm install" WorkingDirectory="wwwroot/npm" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="NpmInstallExitCode" />
-    </Exec>
-    <Message Importance="high" Text="npm install exit code: $(NpmInstallExitCode)" />
-    <Exec Command="npm run build" WorkingDirectory="wwwroot/npm" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="NpmBuildExitCode" />
-    </Exec>
-    <Message Importance="high" Text="npm build exit code: $(NpmBuildExitCode)" />
-  </Target>
   <ItemGroup>
-    <Compile Remove="wwwroot\npm\**" />
-    <Content Remove="wwwroot/npm/**/node_modules/**" />
-    <Content Remove="wwwroot\npm\**" />
-    <EmbeddedResource Remove="wwwroot\npm\**" />
-    <None Remove="wwwroot/npm/**/node_modules/**" />
-    <None Remove="wwwroot\npm\**" />
-    <TypeScriptCompile Remove="wwwroot\npm\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.*" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.*" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.8.3">
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="wwwroot/Videos/" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
   </ItemGroup>
 </Project>

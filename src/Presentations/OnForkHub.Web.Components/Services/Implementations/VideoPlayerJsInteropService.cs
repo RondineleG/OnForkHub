@@ -70,7 +70,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         bool volumeControl,
         bool captionsControl,
         bool settingsControl,
-        bool pIPControl,
+        bool pipControl,
         bool airplayControl,
         bool downloadControl,
         bool fullscreenControl
@@ -81,9 +81,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
             var mainModule = await _mainTask.Value;
 
             // Verifica se é para usar WebTorrent
-            var useTorrent = !string.IsNullOrEmpty(magnetUri) ||
-                           !string.IsNullOrEmpty(torrentFilePath) ||
-                           enableTorrentFileUpload;
+            var useTorrent = !string.IsNullOrEmpty(magnetUri) || !string.IsNullOrEmpty(torrentFilePath) || enableTorrentFileUpload;
 
             if (useTorrent)
             {
@@ -122,7 +120,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
                     volumeControl,
                     captionsControl,
                     settingsControl,
-                    pIPControl,
+                    pipControl,
                     airplayControl,
                     downloadControl,
                     fullscreenControl

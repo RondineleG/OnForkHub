@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Interfaces.Validations;
+﻿namespace OnForkHub.Core.Interfaces.Validations;
 
 public interface IValidationService<T>
     where T : BaseEntity

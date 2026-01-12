@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Enums;
+﻿namespace OnForkHub.Core.Enums;
 
 public enum EResultStatus
 {

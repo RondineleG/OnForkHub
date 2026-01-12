@@ -1,16 +1,20 @@
+using OnForkHub.Persistence.Contexts.Base;
+using OnForkHub.Persistence.Exceptions;
+using OnForkHub.Persistence.Repositories;
+
 namespace OnForkHub.Persistence.Test.Repositories;
 
 public class CategoryRepositoryTest
 {
-    private readonly CategoryRepositoryEF _categoryRepository;
-
-    private readonly IEntityFrameworkDataContext _context;
-
     public CategoryRepositoryTest()
     {
         _context = Substitute.For<IEntityFrameworkDataContext>();
         _categoryRepository = new CategoryRepositoryEF(_context);
     }
+
+    private readonly CategoryRepositoryEF _categoryRepository;
+
+    private readonly IEntityFrameworkDataContext _context;
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -19,8 +23,8 @@ public class CategoryRepositoryTest
     {
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
-        var dbSetMock = Substitute.For<DbSet<Category>>();
-        _context.Categories.Returns(dbSetMock);
+        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
+        _context.Categories.Returns(categoryDatabaseSetMock);
 
         var result = await _categoryRepository.CreateAsync(category);
 
@@ -37,9 +41,9 @@ public class CategoryRepositoryTest
         long categoryId = 1;
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
-        var dbSetMock = Substitute.For<DbSet<Category>>();
-        dbSetMock.FindAsync(categoryId).Returns(category);
-        _context.Categories.Returns(dbSetMock);
+        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
+        categoryDatabaseSetMock.FindAsync(categoryId).Returns(category);
+        _context.Categories.Returns(categoryDatabaseSetMock);
 
         var result = await _categoryRepository.DeleteAsync(categoryId);
 
@@ -56,9 +60,9 @@ public class CategoryRepositoryTest
         long categoryId = 1;
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
-        var dbSetMock = Substitute.For<DbSet<Category>>();
-        dbSetMock.FindAsync(categoryId).Returns(category);
-        _context.Categories.Returns(dbSetMock);
+        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
+        categoryDatabaseSetMock.FindAsync(categoryId).Returns(category);
+        _context.Categories.Returns(categoryDatabaseSetMock);
 
         var result = await _categoryRepository.GetByIdAsync(categoryId);
 
@@ -72,9 +76,9 @@ public class CategoryRepositoryTest
     public async Task ShouldReturnErrorWhenCategoryNotFoundForDelete()
     {
         long categoryId = 1;
-        var dbSetMock = Substitute.For<DbSet<Category>>();
-        dbSetMock.FindAsync(categoryId).Returns((Category?)null);
-        _context.Categories.Returns(dbSetMock);
+        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
+        categoryDatabaseSetMock.FindAsync(categoryId).Returns((Category?)null);
+        _context.Categories.Returns(categoryDatabaseSetMock);
 
         var result = await _categoryRepository.DeleteAsync(categoryId);
 
@@ -89,9 +93,9 @@ public class CategoryRepositoryTest
     public async Task ShouldReturnErrorWhenCategoryNotFoundInGetById()
     {
         long categoryId = 1;
-        var dbSetMock = Substitute.For<DbSet<Category>>();
-        dbSetMock.FindAsync(categoryId).Returns((Category?)null);
-        _context.Categories.Returns(dbSetMock);
+        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
+        categoryDatabaseSetMock.FindAsync(categoryId).Returns((Category?)null);
+        _context.Categories.Returns(categoryDatabaseSetMock);
 
         var result = await _categoryRepository.GetByIdAsync(categoryId);
 
@@ -117,8 +121,8 @@ public class CategoryRepositoryTest
     {
         var name = Name.Create("Test Category");
         var category = Category.Create(name, "Test Description").Data!;
-        var dbSetMock = Substitute.For<DbSet<Category>>();
-        _context.Categories.Returns(dbSetMock);
+        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
+        _context.Categories.Returns(categoryDatabaseSetMock);
 
         var innerException = new Exception("duplicate key");
         _context.SaveChangesAsync().ThrowsAsync(new DbUpdateException("Error", innerException));

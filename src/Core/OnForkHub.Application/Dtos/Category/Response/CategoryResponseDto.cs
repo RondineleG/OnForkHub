@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.Dtos.Category.Response;
+﻿namespace OnForkHub.Application.Dtos.Category.Response;
 
 public class CategoryResponseDto
 {

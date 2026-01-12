@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Extensions;
+﻿namespace OnForkHub.Core.Extensions;
 
 public static class EnumExtensions
 {

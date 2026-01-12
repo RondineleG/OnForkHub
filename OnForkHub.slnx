@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/OnForkHub.Application/OnForkHub.Application.csproj" />
+    <Project Path="src/Core/OnForkHub.Core/OnForkHub.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/OnForkHub.Persistence/OnForkHub.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentations/" />
+  <Folder Name="/src/Presentations/Api/">
+    <Project Path="src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentations/Console/">
+    <Project Path="src/Presentations/OnForkHub.App/OnForkHub.App.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentations/Web/">
+    <Project Path="src/Presentations/OnForkHub.Web.Components/OnForkHub.Web.Components.csproj" />
+    <Project Path="src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj" />
+    <Project Path="src/Shared/OnForkHub.CrossCutting/OnForkHub.CrossCutting.csproj" />
+    <Project Path="src/Shared/OnForkHub.Scripts/OnForkHub.Scripts.csproj" />
+  </Folder>
+  <Folder Name="/test/" />
+  <Folder Name="/test/Core/">
+    <Project Path="test/Core/OnForkHub.Application.Test/OnForkHub.Application.Test.csproj" />
+    <Project Path="test/Core/OnForkHub.Core.Test/OnForkHub.Core.Test.csproj" />
+  </Folder>
+  <Folder Name="/test/Persistence/">
+    <Project Path="test/Persistence/OnForkHub.Persistence.Test/OnForkHub.Persistence.Test.csproj" />
+  </Folder>
+  <Folder Name="/test/Presentations/">
+    <Project Path="test/Presentations/OnForkHub.Api.IntegrationTests/OnForkHub.Api.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/test/Shared/">
+    <Project Path="test/Shared/OnForkHub.CrossCutting.Tests/OnForkHub.CrossCutting.Tests.csproj" />
+    <Project Path="test/Shared/OnForkHub.TestExtensions/OnForkHub.TestExtensions.csproj" />
+  </Folder>
+</Solution>

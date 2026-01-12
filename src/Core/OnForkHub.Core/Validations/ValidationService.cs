@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Validations;
+﻿namespace OnForkHub.Core.Validations;
 
 public class ValidationService<T>(IValidationBuilder<T> builder, IEntityValidator<T> validator) : IValidationService<T>
     where T : BaseEntity

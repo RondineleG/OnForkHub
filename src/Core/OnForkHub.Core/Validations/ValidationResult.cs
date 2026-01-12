@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Validations;
+﻿namespace OnForkHub.Core.Validations;
 
 public sealed class ValidationResult : IValidationResult
 {

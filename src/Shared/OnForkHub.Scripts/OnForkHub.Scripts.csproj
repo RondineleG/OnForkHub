@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
     <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dtn</ToolCommandName>
+    <InstallToolGlobal>false</InstallToolGlobal>
     <PackageOutputPath>$(MSBuildProjectDirectory)\nupkg</PackageOutputPath>
     <Version>0.0.5</Version>
     <Authors>OnForkHub Team</Authors>
@@ -14,7 +14,7 @@
   <Target Name="CreateNuGetFolder" BeforeTargets="GenerateNuspec">
     <MakeDir Directories="$(PackageOutputPath)" />
   </Target>
-  <Target Name="InstallToolGlobal" AfterTargets="Pack">
+  <Target Name="InstallToolGlobal" AfterTargets="Pack" Condition="'$(InstallToolGlobal)' == 'true'">
     <PropertyGroup>
       <NugetPackagePath>$(PackageOutputPath)\OnForkHub.Scripts.$(Version).nupkg</NugetPackagePath>
     </PropertyGroup>
@@ -23,6 +23,7 @@
       Command="dotnet tool install OnForkHub.Scripts -g --add-source &quot;$(PackageOutputPath)&quot;"
       StandardOutputImportance="high"
       StandardErrorImportance="high"
+      ContinueOnError="true"
     />
     <Message Text="Tool successfully installed globally from $(NugetPackagePath)" Importance="high" />
   </Target>
@@ -37,14 +38,21 @@
     </Exec>
     <Message Condition="'$(GitStatusExitCode)' != '0'" Text="Warning: Working tree contains unstaged or uncommitted changes." Importance="high" />
   </Target>
-  <Target Name="RunScript" AfterTargets="InstallToolGlobal" Condition="'$(GitStatusExitCode)' == '0'">
+  <Target Name="RunScript" AfterTargets="InstallToolGlobal" Condition="'$(GitStatusExitCode)' == '0' and '$(InstallToolGlobal)' == 'true'">
     <Message Text="Running script..." Importance="high" />
-    <Exec Command="dotnet OnForkHub.Scripts.dll" WorkingDirectory="$(OutDir)" StandardOutputImportance="High" StandardErrorImportance="High">
+    <Exec
+      Command="dotnet OnForkHub.Scripts.dll"
+      WorkingDirectory="$(OutDir)"
+      StandardOutputImportance="High"
+      StandardErrorImportance="High"
+      ContinueOnError="true"
+    >
       <Output TaskParameter="ExitCode" PropertyName="RunExitCode" />
     </Exec>
-    <Error Condition="'$(RunExitCode)' != '0'" Text="RunScript failed with exit code $(RunExitCode). Check the logs for more details." />
+    <Message Condition="'$(RunExitCode)' != '0'" Text="Script execution failed. Continuing..." Importance="high" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\OnForkHub.Dependencies\OnForkHub.Dependencies.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 </Project>

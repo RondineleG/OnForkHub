@@ -29,8 +29,8 @@ public sealed class Id : ValueObject
         {
             var parts = value.Split('/');
 
-            var idPart = parts[1].Split('-')[0];
-            if (Guid.TryParse(idPart, out var guid))
+            var identifierPart = parts[1].Split('-')[0];
+            if (Guid.TryParse(identifierPart, out var guid))
             {
                 return new Id(guid);
             }

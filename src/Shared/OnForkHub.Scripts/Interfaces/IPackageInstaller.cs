@@ -1,4 +1,4 @@
-namespace OnForkHub.Scripts.Interfaces;
+﻿namespace OnForkHub.Scripts.Interfaces;
 
 public interface IPackageInstaller
 {
