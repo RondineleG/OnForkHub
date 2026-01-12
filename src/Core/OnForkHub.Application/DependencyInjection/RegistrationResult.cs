@@ -1,4 +1,4 @@
-using OnForkHub.Core.Interfaces.DependencyInjection;
+﻿using OnForkHub.Core.Interfaces.DependencyInjection;
 
 namespace OnForkHub.Application.DependencyInjection;
 

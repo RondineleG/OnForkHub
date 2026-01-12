@@ -334,6 +334,16 @@ dtn -p
 - The `-p` command requires a clean git working tree
 - Version patterns (like `3.*`) are supported for package installation
 
+## 📚 Documentation
+
+Comprehensive guides and references:
+
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to the project
+- **[API Reference](docs/API_REFERENCE.md)** - Complete API endpoints documentation
+- **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Solutions for common issues
+- **[FAQ](docs/FAQ.md)** - Frequently asked questions
+- **[Architecture](docs/ARCHITECTURE.md)** - System design and improvements
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.

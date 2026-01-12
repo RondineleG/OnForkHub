@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.GraphQL.Mutations.Categories;
+﻿namespace OnForkHub.Application.GraphQL.Mutations.Categories;
 
 public class GetAllCategoryQuery
 {

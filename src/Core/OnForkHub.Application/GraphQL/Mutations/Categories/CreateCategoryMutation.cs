@@ -1,4 +1,4 @@
-using OnForkHub.CrossCutting.GraphQL.HotChocolate;
+﻿using OnForkHub.CrossCutting.GraphQL.HotChocolate;
 
 namespace OnForkHub.Application.GraphQL.Mutations.Categories;
 

@@ -5,6 +5,12 @@
     <DockerfileContext>..\..\..</DockerfileContext>
   </PropertyGroup>
   <ItemGroup>
+<<<<<<< HEAD
+    <InternalsVisibleTo Include="OnForkHub.Api.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
+=======
+>>>>>>> origin/dev
     <Content Include="Properties\launchSettings.json" />
   </ItemGroup>
   <ItemGroup>

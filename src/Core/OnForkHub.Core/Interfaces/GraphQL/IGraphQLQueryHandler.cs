@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Interfaces.GraphQL;
+﻿namespace OnForkHub.Core.Interfaces.GraphQL;
 
 public interface IGraphQLQueryHandler<TRequest, TResponse>
 {

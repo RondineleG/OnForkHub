@@ -1,4 +1,4 @@
-namespace OnForkHub.Scripts.Git;
+﻿namespace OnForkHub.Scripts.Git;
 
 public sealed class GitFlowConfiguration(ILogger logger, IProcessRunner processRunner)
 {

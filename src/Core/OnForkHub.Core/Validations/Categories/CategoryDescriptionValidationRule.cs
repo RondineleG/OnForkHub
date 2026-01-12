@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Validations.Categories;
+﻿namespace OnForkHub.Core.Validations.Categories;
 
 public class CategoryDescriptionValidationRule : IValidationRule<Category>
 {

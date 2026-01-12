@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Converters;
+﻿namespace OnForkHub.Core.Converters;
 
 public class NameConverter : JsonConverter<Name>
 {

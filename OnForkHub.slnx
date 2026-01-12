@@ -31,7 +31,11 @@
   <Folder Name="/test/Persistence/">
     <Project Path="test/Persistence/OnForkHub.Persistence.Test/OnForkHub.Persistence.Test.csproj" />
   </Folder>
+  <Folder Name="/test/Presentations/">
+    <Project Path="test/Presentations/OnForkHub.Api.IntegrationTests/OnForkHub.Api.IntegrationTests.csproj" />
+  </Folder>
   <Folder Name="/test/Shared/">
+    <Project Path="test/Shared/OnForkHub.CrossCutting.Tests/OnForkHub.CrossCutting.Tests.csproj" />
     <Project Path="test/Shared/OnForkHub.TestExtensions/OnForkHub.TestExtensions.csproj" />
   </Folder>
 </Solution>

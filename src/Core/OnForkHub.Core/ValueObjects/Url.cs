@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.ValueObjects;
+﻿namespace OnForkHub.Core.ValueObjects;
 
 public class Url : ValueObject
 {

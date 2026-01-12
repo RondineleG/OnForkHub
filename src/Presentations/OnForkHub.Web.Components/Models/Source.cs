@@ -1,4 +1,4 @@
-namespace OnForkHub.Web.Components.Models;
+﻿namespace OnForkHub.Web.Components.Models;
 
 public class Source
 {

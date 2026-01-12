@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.UseCases.Categories.V3;
+﻿namespace OnForkHub.Application.UseCases.Categories.V3;
 
 public class UpdateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenDB, IEntityValidator<Category> validator)
     : IUseCase<CategoryRequestDto, Category>

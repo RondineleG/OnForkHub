@@ -1,4 +1,4 @@
-namespace OnForkHub.Core.Interfaces.Requests;
+﻿namespace OnForkHub.Core.Interfaces.Requests;
 
 public interface IRequestResult
 {
