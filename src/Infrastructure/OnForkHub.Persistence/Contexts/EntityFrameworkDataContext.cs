@@ -6,6 +6,8 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
 {
     public DbSet<Category> Categories { get; set; } = null!;
 
+    public DbSet<Notification> Notifications { get; set; } = null!;
+
     public DbSet<Video> Videos { get; set; } = null!;
 
     EntityEntry<TEntity> IEntityFrameworkDataContext.Entry<TEntity>(TEntity entity)
@@ -20,5 +22,6 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
         // Apply entity configurations with optimized indexes
         modelBuilder.ApplyConfiguration(new VideoConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationConfiguration());
     }
 }
