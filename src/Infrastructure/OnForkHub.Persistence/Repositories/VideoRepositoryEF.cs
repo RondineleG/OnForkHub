@@ -63,7 +63,13 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
         try
         {
             var videos = await EntityFrameworkQueryableExtensions.ToListAsync(
-                _context.Videos.Include(v => v.Categories).OrderByDescending(v => v.CreatedAt).Skip((page - 1) * size).Take(size)
+                _context
+                    .Videos.AsNoTracking()
+                    .OrderByDescending(v => v.CreatedAt)
+                    .Skip((page - 1) * size)
+                    .Take(size)
+                    .Include(v => v.Categories)
+                    .AsSplitQuery()
             );
 
             return RequestResult<IEnumerable<Video>>.Success(videos);
@@ -80,7 +86,7 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
         try
         {
             var video = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
-                _context.Videos.Include(v => v.Categories),
+                _context.Videos.AsNoTracking().Include(v => v.Categories).AsSplitQuery(),
                 v => v.Id == id.ToString()
             );
 
@@ -100,11 +106,13 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
             var userIdString = userId.ToString();
             var videos = await EntityFrameworkQueryableExtensions.ToListAsync(
                 _context
-                    .Videos.Include(v => v.Categories)
+                    .Videos.AsNoTracking()
                     .Where(v => v.UserId != null && v.UserId.ToString() == userIdString)
                     .OrderByDescending(v => v.CreatedAt)
                     .Skip((page - 1) * size)
                     .Take(size)
+                    .Include(v => v.Categories)
+                    .AsSplitQuery()
             );
 
             return RequestResult<IEnumerable<Video>>.Success(videos);
@@ -123,11 +131,13 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
             var categoryIdString = categoryId.ToString(System.Globalization.CultureInfo.InvariantCulture);
             var videos = await EntityFrameworkQueryableExtensions.ToListAsync(
                 _context
-                    .Videos.Include(v => v.Categories)
+                    .Videos.AsNoTracking()
                     .Where(v => v.Categories.Any(c => c.Id.Contains(categoryIdString)))
                     .OrderByDescending(v => v.CreatedAt)
                     .Skip((page - 1) * size)
                     .Take(size)
+                    .Include(v => v.Categories)
+                    .AsSplitQuery()
             );
 
             return RequestResult<IEnumerable<Video>>.Success(videos);
@@ -174,52 +184,55 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
     {
         try
         {
-            var query = _context.Videos.Include(v => v.Categories).AsQueryable();
+            // Start with base query without Include for filtering (optimized for count)
+            var baseQuery = _context.Videos.AsNoTracking().AsQueryable();
 
             // Apply search term filter using EF.Functions.Like for case-insensitive search
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var pattern = $"%{searchTerm}%";
-                query = query.Where(v => EF.Functions.Like(v.Title.Value, pattern) || EF.Functions.Like(v.Description, pattern));
+                baseQuery = baseQuery.Where(v => EF.Functions.Like(v.Title.Value, pattern) || EF.Functions.Like(v.Description, pattern));
             }
 
             // Apply category filter
             if (categoryId.HasValue)
             {
                 var categoryIdString = categoryId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                query = query.Where(v => v.Categories.Any(c => c.Id.Contains(categoryIdString)));
+                baseQuery = baseQuery.Where(v => v.Categories.Any(c => c.Id.Contains(categoryIdString)));
             }
 
             // Apply user filter
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                query = query.Where(v => v.UserId != null && v.UserId.ToString() == userId);
+                baseQuery = baseQuery.Where(v => v.UserId != null && v.UserId.ToString() == userId);
             }
 
             // Apply date range filters
             if (fromDate.HasValue)
             {
-                query = query.Where(v => v.CreatedAt >= fromDate.Value);
+                baseQuery = baseQuery.Where(v => v.CreatedAt >= fromDate.Value);
             }
 
             if (toDate.HasValue)
             {
-                query = query.Where(v => v.CreatedAt <= toDate.Value);
+                baseQuery = baseQuery.Where(v => v.CreatedAt <= toDate.Value);
             }
 
-            // Get total count before pagination
-            var totalCount = await EntityFrameworkQueryableExtensions.CountAsync(query);
+            // Get total count without Include (optimized count query)
+            var totalCount = await EntityFrameworkQueryableExtensions.CountAsync(baseQuery);
 
             // Apply sorting
-            query = sortBy switch
+            var sortedQuery = sortBy switch
             {
-                1 => sortDescending ? query.OrderByDescending(v => v.Title.Value) : query.OrderBy(v => v.Title.Value),
-                2 => sortDescending ? query.OrderByDescending(v => v.UpdatedAt) : query.OrderBy(v => v.UpdatedAt),
-                _ => sortDescending ? query.OrderByDescending(v => v.CreatedAt) : query.OrderBy(v => v.CreatedAt),
+                1 => sortDescending ? baseQuery.OrderByDescending(v => v.Title.Value) : baseQuery.OrderBy(v => v.Title.Value),
+                2 => sortDescending ? baseQuery.OrderByDescending(v => v.UpdatedAt) : baseQuery.OrderBy(v => v.UpdatedAt),
+                _ => sortDescending ? baseQuery.OrderByDescending(v => v.CreatedAt) : baseQuery.OrderBy(v => v.CreatedAt),
             };
 
-            // Apply pagination
-            var items = await EntityFrameworkQueryableExtensions.ToListAsync(query.Skip((page - 1) * pageSize).Take(pageSize));
+            // Apply pagination and Include categories only for final result (split query for performance)
+            var items = await EntityFrameworkQueryableExtensions.ToListAsync(
+                sortedQuery.Skip((page - 1) * pageSize).Take(pageSize).Include(v => v.Categories).AsSplitQuery()
+            );
 
             return RequestResult<(IEnumerable<Video> Items, int TotalCount)>.Success((items, totalCount));
         }
