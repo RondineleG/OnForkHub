@@ -25,4 +25,10 @@ public static class EndpointLogMessages
         new EventId(3, nameof(LogUseCaseError)),
         "Error executing usecase {UseCaseName}: {ErrorMessage}"
     );
+
+    public static readonly Action<ILogger, string, string, Exception?> LogNotificationError = LoggerMessage.Define<string, string>(
+        LogLevel.Error,
+        new EventId(5, nameof(LogNotificationError)),
+        "Error in notification operation {Operation}: {ErrorMessage}"
+    );
 }

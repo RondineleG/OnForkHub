@@ -1,9 +1,7 @@
 namespace OnForkHub.CrossCutting.Authorization.Handlers;
 
 using Microsoft.AspNetCore.Authorization;
-
 using OnForkHub.CrossCutting.Authorization.Requirements;
-
 using System.Security.Claims;
 
 /// <summary>
