@@ -56,7 +56,7 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
         try
         {
             var categories = await EntityFrameworkQueryableExtensions.ToListAsync(
-                _context.Categories.OrderBy(c => c.Id).Skip((page - 1) * size).Take(size)
+                _context.Categories.AsNoTracking().OrderBy(c => c.Id).Skip((page - 1) * size).Take(size)
             );
 
             return RequestResult<IEnumerable<Category>>.Success(categories);
@@ -100,5 +100,53 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
         {
             throw new DatabaseOperationException("update", ex.Message);
         }
+    }
+
+    /// <inheritdoc/>
+    public async Task<RequestResult<(IEnumerable<Category> Items, int TotalCount)>> SearchAsync(
+        string? searchTerm,
+        int sortBy,
+        bool sortDescending,
+        int page,
+        int pageSize
+    )
+    {
+        try
+        {
+            // Start with AsNoTracking for read-only query optimization
+            var query = _context.Categories.AsNoTracking().AsQueryable();
+
+            // Apply search term filter using EF.Functions.Like for case-insensitive search
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var pattern = $"%{searchTerm}%";
+                query = query.Where(c => EF.Functions.Like(c.Name.Value, pattern));
+            }
+
+            // Get total count before pagination
+            var totalCount = await EntityFrameworkQueryableExtensions.CountAsync(query);
+
+            // Apply sorting
+            var sortedQuery = sortBy switch
+            {
+                1 => sortDescending ? query.OrderByDescending(c => c.CreatedAt) : query.OrderBy(c => c.CreatedAt),
+                _ => sortDescending ? query.OrderByDescending(c => c.Name.Value) : query.OrderBy(c => c.Name.Value),
+            };
+
+            // Apply pagination
+            var items = await EntityFrameworkQueryableExtensions.ToListAsync(sortedQuery.Skip((page - 1) * pageSize).Take(pageSize));
+
+            return RequestResult<(IEnumerable<Category> Items, int TotalCount)>.Success((items, totalCount));
+        }
+        catch (Exception ex)
+        {
+            return RequestResult<(IEnumerable<Category> Items, int TotalCount)>.WithError($"Error searching {EntityName}: {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await EntityFrameworkQueryableExtensions.CountAsync(_context.Categories);
     }
 }
