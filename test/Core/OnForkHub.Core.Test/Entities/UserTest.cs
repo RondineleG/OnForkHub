@@ -8,7 +8,7 @@ public class UserTest
     public void ShouldCreateUserSuccessfully()
     {
         var name = Name.Create("John Silva");
-        var result = User.Create(name, "john@email.com");
+        var result = User.Create(name, "john@email.com", "hashed_password_123");
 
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
@@ -25,7 +25,7 @@ public class UserTest
     {
         var name = Name.Create("John Silva");
 
-        var result = User.Create(name, string.Empty);
+        var result = User.Create(name, string.Empty, "hashed_password_123");
 
         result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError!.Description.Should().Be(EmailResources.EmailCannotBeEmpty);
@@ -41,7 +41,7 @@ public class UserTest
     {
         var name = Name.Create("John Silva");
 
-        var result = User.Create(name, invalidEmail);
+        var result = User.Create(name, invalidEmail, "hashed_password_123");
 
         result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError!.Description.Should().Be(EmailResources.InvalidEmail);
@@ -53,7 +53,7 @@ public class UserTest
     public void ShouldUpdateUserNameAndEmailSuccessfully()
     {
         var name = Name.Create("John Silva");
-        var user = User.Create(name, "john@email.com").Data!;
+        var user = User.Create(name, "john@email.com", "hashed_password_123").Data!;
 
         var updatedName = Name.Create("John Pereira");
         var email = "john.pereira@email.com";

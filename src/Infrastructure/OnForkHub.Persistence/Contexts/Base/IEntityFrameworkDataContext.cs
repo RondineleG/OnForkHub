@@ -6,6 +6,8 @@ public interface IEntityFrameworkDataContext
 
     DbSet<Notification> Notifications { get; set; }
 
+    DbSet<UserEntity> Users { get; set; }
+
     DbSet<Video> Videos { get; set; }
 
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity)

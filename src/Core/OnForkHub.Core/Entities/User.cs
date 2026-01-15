@@ -13,13 +13,20 @@ public class User : BaseEntity
 
     public Name Name { get; private set; } = null!;
 
+    public string PasswordHash { get; private set; } = string.Empty;
+
     public IReadOnlyCollection<Video> Videos => _videos.AsReadOnly();
 
-    public static RequestResult<User> Create(Name name, string email)
+    public static RequestResult<User> Create(Name name, string email, string passwordHash)
     {
         try
         {
-            var user = new User { Name = name ?? throw new ArgumentNullException(nameof(name)), Email = Email.Create(email) };
+            var user = new User
+            {
+                Name = name ?? throw new ArgumentNullException(nameof(name)),
+                Email = Email.Create(email),
+                PasswordHash = passwordHash ?? throw new ArgumentNullException(nameof(passwordHash)),
+            };
 
             user.ValidateEntityState();
             return RequestResult<User>.Success(user);
@@ -30,7 +37,7 @@ public class User : BaseEntity
         }
     }
 
-    public static RequestResult<User> Load(Id id, Name name, string email, DateTime createdAt, DateTime? updatedAt = null)
+    public static RequestResult<User> Load(Id id, Name name, string email, string passwordHash, DateTime createdAt, DateTime? updatedAt = null)
     {
         try
         {
@@ -38,6 +45,7 @@ public class User : BaseEntity
             {
                 Name = name ?? throw new ArgumentNullException(nameof(name)),
                 Email = Email.Create(email),
+                PasswordHash = passwordHash ?? throw new ArgumentNullException(nameof(passwordHash)),
             };
 
             user.ValidateEntityState();
@@ -81,6 +89,25 @@ public class User : BaseEntity
         }
     }
 
+    public RequestResult UpdatePassword(string passwordHash)
+    {
+        try
+        {
+            ValidationResult
+                .Success()
+                .AddErrorIf(() => string.IsNullOrWhiteSpace(passwordHash), "PasswordHash cannot be empty", nameof(PasswordHash))
+                .ThrowIfInvalid();
+
+            PasswordHash = passwordHash;
+            Update();
+            return RequestResult.Success();
+        }
+        catch (DomainException ex)
+        {
+            return RequestResult.WithError(ex.Message);
+        }
+    }
+
     protected override void ValidateEntityState()
     {
         base.ValidateEntityState();
@@ -98,6 +125,8 @@ public class User : BaseEntity
         {
             validationResult.Merge(Email.Validate());
         }
+
+        validationResult.AddErrorIf(() => string.IsNullOrWhiteSpace(PasswordHash), "PasswordHash is required", nameof(PasswordHash));
 
         if (validationResult.HasError)
         {

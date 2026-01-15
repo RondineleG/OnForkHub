@@ -1,9 +1,14 @@
 global using FluentAssertions;
+
 global using Microsoft.EntityFrameworkCore;
+
 global using NSubstitute;
 global using NSubstitute.ExceptionExtensions;
+
 global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Enums;
 global using OnForkHub.Core.ValueObjects;
+
 global using System.ComponentModel;
+
 global using Xunit;

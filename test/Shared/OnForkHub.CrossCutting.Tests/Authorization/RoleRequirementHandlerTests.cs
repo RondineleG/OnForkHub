@@ -1,9 +1,11 @@
 namespace OnForkHub.CrossCutting.Tests.Authorization;
 
 using Microsoft.AspNetCore.Authorization;
+
 using OnForkHub.CrossCutting.Authorization;
 using OnForkHub.CrossCutting.Authorization.Handlers;
 using OnForkHub.CrossCutting.Authorization.Requirements;
+
 using System.Security.Claims;
 
 [TestClass]

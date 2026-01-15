@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;
+using OnForkHub.Core.Entities;
+using OnForkHub.Core.Enums;
 using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.Core.ValueObjects;
 using OnForkHub.CrossCutting.Authentication;
 
 /// <summary>
@@ -56,7 +59,10 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
 
         LogRegistrationAttempt(request.Email);
 
-        var userResult = request.ToUser();
+        // TODO: Replace with UserService.RegisterAsync when implemented
+        // Mock implementation for now
+        var nameResult = Name.Create(request.Name);
+        var userResult = User.Create(nameResult, request.Email, "mock_password_hash_123");
         if (userResult.Status != EResultStatus.Success || userResult.Data is null)
         {
             return Task.FromResult(Results.BadRequest(new { error = userResult.Message }));
