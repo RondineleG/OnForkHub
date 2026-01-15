@@ -4,16 +4,21 @@ using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;
+using OnForkHub.Application.UseCases.Users;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Enums;
 using OnForkHub.Core.Interfaces.Configuration;
-using OnForkHub.Core.ValueObjects;
 using OnForkHub.CrossCutting.Authentication;
+
+using UserEntity = OnForkHub.Core.Entities.User;
 
 /// <summary>
 /// Endpoint for user registration.
 /// </summary>
-public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, ITokenService tokenService) : IEndpointAsync
+public sealed partial class RegisterEndpoint(
+    ILogger<RegisterEndpoint> logger,
+    ITokenService tokenService,
+    IUseCase<UserRegisterRequestDto, UserEntity> registerUserUseCase) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -22,6 +27,8 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
     private readonly ILogger<RegisterEndpoint> _logger = logger;
 
     private readonly ITokenService _tokenService = tokenService;
+
+    private readonly IUseCase<UserRegisterRequestDto, UserEntity> _registerUserUseCase = registerUserUseCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -53,19 +60,18 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
     [LoggerMessage(Level = LogLevel.Information, Message = "Registration attempt for user: {Email}")]
     private partial void LogRegistrationAttempt(string email);
 
-    private Task<IResult> HandleRegisterAsync(UserRegisterRequestDto request)
+    private async Task<IResult> HandleRegisterAsync(UserRegisterRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         LogRegistrationAttempt(request.Email);
 
-        // TODO: Replace with UserService.RegisterAsync when implemented
-        // Mock implementation for now
-        var nameResult = Name.Create(request.Name);
-        var userResult = User.Create(nameResult, request.Email, "mock_password_hash_123");
+        var userResult = await _registerUserUseCase.ExecuteAsync(request);
         if (userResult.Status != EResultStatus.Success || userResult.Data is null)
         {
-            return Task.FromResult(Results.BadRequest(new { error = userResult.Message }));
+            return userResult.Status == EResultStatus.HasError
+                ? Results.BadRequest(new { error = userResult.Message })
+                : Results.Conflict(new { error = userResult.Message });
         }
 
         var user = userResult.Data;
@@ -84,6 +90,6 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
             RefreshTokenExpiration = tokens.RefreshTokenExpiration,
         };
 
-        return Task.FromResult(Results.Created($"/api/v{V1}/users/{user.Id}", response));
+        return Results.Created($"/api/v{V1}/users/{user.Id}", response);
     }
 }

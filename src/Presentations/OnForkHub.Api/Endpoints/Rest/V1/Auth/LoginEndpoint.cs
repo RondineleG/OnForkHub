@@ -4,13 +4,21 @@ using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;
+using OnForkHub.Application.UseCases.Users;
+using OnForkHub.Core.Entities;
+using OnForkHub.Core.Enums;
 using OnForkHub.Core.Interfaces.Configuration;
 using OnForkHub.CrossCutting.Authentication;
+
+using UserEntity = OnForkHub.Core.Entities.User;
 
 /// <summary>
 /// Endpoint for user login.
 /// </summary>
-public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenService tokenService) : IEndpointAsync
+public sealed partial class LoginEndpoint(
+    ILogger<LoginEndpoint> logger,
+    ITokenService tokenService,
+    IUseCase<UserLoginRequestDto, UserEntity> loginUserUseCase) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -19,6 +27,8 @@ public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenS
     private readonly ILogger<LoginEndpoint> _logger = logger;
 
     private readonly ITokenService _tokenService = tokenService;
+
+    private readonly IUseCase<UserLoginRequestDto, UserEntity> _loginUserUseCase = loginUserUseCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -50,34 +60,34 @@ public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenS
     [LoggerMessage(Level = LogLevel.Information, Message = "Login attempt for user: {Email}")]
     private partial void LogLoginAttempt(string email);
 
-    private Task<IResult> HandleLoginAsync(UserLoginRequestDto request)
+    private async Task<IResult> HandleLoginAsync(UserLoginRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         LogLoginAttempt(request.Email);
 
+        var userResult = await _loginUserUseCase.ExecuteAsync(request);
+        if (userResult.Status != EResultStatus.Success || userResult.Data is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var user = userResult.Data;
         var tokens = _tokenService.GenerateTokens(
-            userId: Guid.NewGuid().ToString(),
-            userName: request.Email,
+            userId: user.Id.ToString(),
+            userName: user.Name.Value,
             roles: [CrossCutting.Authorization.Roles.User]
         );
 
         var response = new AuthResponseDto
         {
-            User = new UserResponseDto
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = request.Email.Split('@')[0],
-                Email = request.Email,
-                Roles = [CrossCutting.Authorization.Roles.User],
-                CreatedAt = DateTime.UtcNow,
-            },
+            User = UserResponseDto.FromUser(user, [CrossCutting.Authorization.Roles.User]),
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
             AccessTokenExpiration = tokens.AccessTokenExpiration,
             RefreshTokenExpiration = tokens.RefreshTokenExpiration,
         };
 
-        return Task.FromResult(Results.Ok(response));
+        return Results.Ok(response);
     }
 }
