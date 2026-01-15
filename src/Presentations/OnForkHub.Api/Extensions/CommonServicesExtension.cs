@@ -103,6 +103,8 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<IVideoService, VideoService>();
             services.AddScoped<INotificationRepositoryEF, NotificationRepositoryEF>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IUserRepositoryEF, UserRepositoryEF>();
+            services.AddScoped<IUserService, UserService>();
             services.Configure<FileStorageOptions>(options => { });
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
             return services;
