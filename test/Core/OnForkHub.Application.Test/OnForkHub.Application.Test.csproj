@@ -23,5 +23,6 @@
   <ItemGroup>
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="BCrypt.Net-Next" />
   </ItemGroup>
 </Project>
