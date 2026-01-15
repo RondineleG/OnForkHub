@@ -17,4 +17,5 @@ global using OnForkHub.Core.ValueObjects;
 
 global using System.ComponentModel.DataAnnotations;
 
+global using UserEntity = OnForkHub.Core.Entities.User;
 global using ValidationResult = OnForkHub.Core.Validations.ValidationResult;
