@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.Azure.Cosmos" />
     <PackageReference Include="RavenDB.Client" />
     <PackageReference Include="NSubstitute" />

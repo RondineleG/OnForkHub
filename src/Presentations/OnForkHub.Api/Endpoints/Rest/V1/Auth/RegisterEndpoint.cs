@@ -18,7 +18,8 @@ using UserEntity = OnForkHub.Core.Entities.User;
 public sealed partial class RegisterEndpoint(
     ILogger<RegisterEndpoint> logger,
     ITokenService tokenService,
-    IUseCase<UserRegisterRequestDto, UserEntity> registerUserUseCase) : IEndpointAsync
+    IUseCase<UserRegisterRequestDto, UserEntity> registerUserUseCase
+) : IEndpointAsync
 {
     private const int V1 = 1;
 

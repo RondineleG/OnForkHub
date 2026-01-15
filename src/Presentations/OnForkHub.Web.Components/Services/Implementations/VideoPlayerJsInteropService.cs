@@ -31,9 +31,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         {
             await CleanupTorrent();
         }
-        catch
-        {
-        }
+        catch { }
 
         if (_mainTask.IsValueCreated)
         {
