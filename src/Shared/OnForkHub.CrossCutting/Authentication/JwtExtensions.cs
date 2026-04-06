@@ -1,10 +1,11 @@
 namespace OnForkHub.CrossCutting.Authentication;
 
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+
+using System.Text;
 
 /// <summary>
 /// Extension methods for configuring JWT authentication services.

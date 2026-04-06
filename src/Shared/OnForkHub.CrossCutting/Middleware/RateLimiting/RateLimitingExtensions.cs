@@ -1,12 +1,13 @@
 namespace OnForkHub.CrossCutting.Middleware.RateLimiting;
 
-using System.Globalization;
-using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+using System.Globalization;
+using System.Threading.RateLimiting;
 
 /// <summary>
 /// Extension methods for configuring rate limiting services.
