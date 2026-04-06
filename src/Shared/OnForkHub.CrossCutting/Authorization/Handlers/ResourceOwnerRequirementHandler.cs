@@ -1,10 +1,8 @@
 namespace OnForkHub.CrossCutting.Authorization.Handlers;
 
-using Microsoft.AspNetCore.Authorization;
-
-using OnForkHub.CrossCutting.Authorization.Requirements;
-
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using OnForkHub.CrossCutting.Authorization.Requirements;
 
 /// <summary>
 /// Handler for resource ownership authorization requirements.
