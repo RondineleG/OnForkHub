@@ -1,4 +1,4 @@
-﻿using OnForkHub.Core.Interfaces.Requests;
+using OnForkHub.Core.Interfaces.Requests;
 
 namespace OnForkHub.Core.Requests;
 

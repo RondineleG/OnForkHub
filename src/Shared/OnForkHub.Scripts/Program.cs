@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts;
+namespace OnForkHub.Scripts;
 
 public static class Program
 {

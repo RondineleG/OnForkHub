@@ -30,6 +30,11 @@ public static class RateLimitingExtensions
     public const string AnonymousPolicy = "anonymous";
 
     /// <summary>
+    /// Policy name for authentication endpoints (login/register) to prevent brute force.
+    /// </summary>
+    public const string AuthPolicy = "auth";
+
+    /// <summary>
     /// Adds rate limiting services to the dependency injection container.
     /// </summary>
     /// <param name="services">The service collection.</param>
@@ -83,6 +88,18 @@ public static class RateLimitingExtensions
                     windowOptions.Window = TimeSpan.FromSeconds(options.WindowSeconds);
                     windowOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                     windowOptions.QueueLimit = options.QueueLimit / 2;
+                }
+            );
+
+            // SECURITY: Restrictive rate limit for auth endpoints to prevent brute force attacks
+            limiterOptions.AddFixedWindowLimiter(
+                AuthPolicy,
+                windowOptions =>
+                {
+                    windowOptions.PermitLimit = options.AuthPermitLimitPerMinute;
+                    windowOptions.Window = TimeSpan.FromMinutes(1);
+                    windowOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    windowOptions.QueueLimit = 2;
                 }
             );
 

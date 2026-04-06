@@ -1,6 +1,8 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.CrossCutting.Interfaces;
+
+using System.Security.Claims;
 
 /// <summary>
 /// Endpoint for marking a notification as read.
@@ -25,11 +27,19 @@ public class MarkAsReadEndpoint(ILogger<MarkAsReadEndpoint> logger, INotificatio
         ConfigureEndpoint(
                 app.MapPut(
                     Route,
-                    async ([FromRoute] string id, CancellationToken cancellationToken = default) =>
+                    async (HttpContext httpContext, [FromRoute] string id, CancellationToken cancellationToken = default) =>
                     {
+                        // SECURITY: Extract userId from JWT Claims to validate ownership
+                        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            return Results.Unauthorized();
+                        }
+
                         try
                         {
-                            var result = await _notificationService.MarkAsReadAsync(id);
+                            var result = await _notificationService.MarkAsReadAsync(id, userId);
                             return MapToResult(result);
                         }
                         catch (Exception ex)

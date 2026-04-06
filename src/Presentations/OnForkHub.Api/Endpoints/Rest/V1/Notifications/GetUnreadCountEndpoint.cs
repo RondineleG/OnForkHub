@@ -1,7 +1,9 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.Core.Interfaces.Configuration;
 using OnForkHub.Core.ValueObjects;
+using OnForkHub.CrossCutting.Interfaces;
+
+using System.Security.Claims;
 
 /// <summary>
 /// Endpoint for getting the count of unread notifications for a user.
@@ -26,8 +28,16 @@ public class GetUnreadCountEndpoint(ILogger<GetUnreadCountEndpoint> logger, INot
         ConfigureEndpoint(
                 app.MapGet(
                     Route,
-                    async ([FromQuery] string userId, CancellationToken cancellationToken = default) =>
+                    async (HttpContext httpContext, CancellationToken cancellationToken = default) =>
                     {
+                        // SECURITY: Extract userId from JWT Claims instead of query parameter
+                        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            return Results.Unauthorized();
+                        }
+
                         try
                         {
                             Id userIdValue = userId;
@@ -36,7 +46,7 @@ public class GetUnreadCountEndpoint(ILogger<GetUnreadCountEndpoint> logger, INot
                         }
                         catch (Exception ex)
                         {
-                            EndpointLogMessages.LogNotificationError(_logger, $"GetUnreadCount:{userId}", ex.Message, ex);
+                            EndpointLogMessages.LogNotificationError(_logger, "GetUnreadCount", ex.Message, ex);
                             return Results.Problem(title: "Error", detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
                         }
                     }

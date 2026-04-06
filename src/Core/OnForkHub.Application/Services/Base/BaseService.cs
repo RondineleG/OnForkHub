@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Application.Services.Base;
+namespace OnForkHub.Application.Services.Base;
 
 public abstract class BaseService
 {

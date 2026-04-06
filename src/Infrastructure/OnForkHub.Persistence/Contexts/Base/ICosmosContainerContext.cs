@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Persistence.Contexts.Base;
+namespace OnForkHub.Persistence.Contexts.Base;
 
 public interface ICosmosContainerContext<T>
     where T : BaseEntity

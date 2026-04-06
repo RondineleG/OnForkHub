@@ -1,0 +1,491 @@
+@page "/admin/categories"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@inject ICategoryService CategoryService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Gerenciar Categorias - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-gear me-2"></i>Gerenciar Categorias
+        </h1>
+        <button class="btn btn-primary" @onclick="OpenCreateModal">
+            <i class="bi bi-plus-lg me-1"></i>Nova Categoria
+        </button>
+    </div>
+
+    @* Alert Messages *@
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = string.Empty"></button>
+        </div>
+    }
+
+    @* Search *@
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text"
+                       class="form-control"
+                       placeholder="Buscar categorias..."
+                       @bind="searchText"
+                       @oninput="OnSearchInput" />
+            </div>
+        </div>
+    </div>
+
+    @* Categories Table *@
+    @if (isLoading)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th class="text-center">Vídeos</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <tr>
+                                <td><div class="skeleton" style="height: 20px; width: 80%;"></div></td>
+                                <td><div class="skeleton" style="height: 20px; width: 60%;"></div></td>
+                                <td><div class="skeleton" style="height: 20px; width: 40px; margin: 0 auto;"></div></td>
+                                <td><div class="skeleton" style="height: 36px; width: 120px; margin: 0 auto;"></div></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else if (categories.TotalCount == 0)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-folder display-1 text-muted"></i>
+                <h3 class="mt-3">Nenhuma categoria encontrada</h3>
+                <p class="text-muted">Crie a primeira categoria para começar.</p>
+                <button class="btn btn-primary" @onclick="OpenCreateModal">
+                    <i class="bi bi-plus-lg me-1"></i>Criar Categoria
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Descrição</th>
+                                <th class="text-center">Vídeos</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in categories.Items)
+                            {
+                                <tr>
+                                    @if (editingCategory?.Id == category.Id)
+                                    {
+                                        @* Inline Edit Mode *@
+                                        <td>
+                                            <input type="text"
+                                                   class="form-control form-control-sm"
+                                                   @bind="editingCategory.Name" />
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   class="form-control form-control-sm"
+                                                   @bind="editingCategory.Description" />
+                                        </td>
+                                        <td class="text-center align-middle">@category.VideoCount</td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-success" @onclick="() => SaveEditAsync(category.Id)">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary" @onclick="CancelEdit">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        @* Display Mode *@
+                                        <td class="align-middle fw-semibold">@category.Name</td>
+                                        <td class="align-middle text-truncate" style="max-width: 300px;" title="@category.Description">
+                                            @category.Description
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <span class="badge bg-secondary">@category.VideoCount</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary" @onclick="() => OpenEditModal(category)" title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-outline-danger" @onclick="() => ConfirmDeleteAsync(category)" title="Excluir">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* Pagination *@
+        @if (categories.TotalPages > 1)
+        {
+            <nav class="mt-3" aria-label="Paginação de categorias">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(categories.HasPreviousPage ? "" : "disabled")">
+                        <button class="page-link" @onclick="() => GoToPageAsync(categories.Page - 1)">&laquo;</button>
+                    </li>
+                    @for (int i = 1; i <= categories.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == categories.Page ? "active" : "")">
+                            <button class="page-link" @onclick="() => GoToPageAsync(i)">@i</button>
+                        </li>
+                    }
+                    <li class="page-item @(categories.HasNextPage ? "" : "disabled")">
+                        <button class="page-link" @onclick="() => GoToPageAsync(categories.Page + 1)">&raquo;</button>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+@* Create/Edit Modal *@
+@if (showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @onclick="CloseModal">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        @(isEditing ? "Editar Categoria" : "Nova Categoria")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="categoryModel" OnValidSubmit="SaveCategoryAsync">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label fw-semibold">
+                                Nome <span class="text-danger">*</span>
+                            </label>
+                            <InputText id="categoryName"
+                                       class="form-control"
+                                       @bind-Value="categoryModel.Name"
+                                       placeholder="Nome da categoria"
+                                       maxlength="100" />
+                            <ValidationMessage For="@(() => categoryModel.Name)" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="categoryDescription" class="form-label fw-semibold">Descrição</label>
+                            <InputTextArea id="categoryDescription"
+                                           class="form-control"
+                                           @bind-Value="categoryModel.Description"
+                                           placeholder="Descrição da categoria"
+                                           rows="3"
+                                           maxlength="500" />
+                            <ValidationMessage For="@(() => categoryModel.Description)" class="text-danger small" />
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" disabled="isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                <i class="bi bi-check-lg me-1"></i>@(isSaving ? "Salvando..." : "Salvar")
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Delete Confirmation Modal *@
+@if (showDeleteModal && categoryToDelete != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" @onclick="CloseDeleteModal">
+        <div class="modal-dialog modal-dialog-centered" @onclick:stopPropagation="true">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir a categoria <strong>@categoryToDelete.Name</strong>?</p>
+                    @if (categoryToDelete.VideoCount > 0)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Esta categoria possui <strong>@categoryToDelete.VideoCount vídeo(s)</strong>.
+                            Os vídeos não serão excluídos, mas ficarão sem categoria.
+                        </div>
+                    }
+                    <p class="text-muted small mb-0">Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseDeleteModal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteCategoryAsync" disabled="isDeleting">
+                        @if (isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        <i class="bi bi-trash me-1"></i>Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private PagedResult<CategoryDto> categories = new();
+    private bool isLoading = true;
+    private bool showModal;
+    private bool showDeleteModal;
+    private bool isEditing;
+    private bool isSaving;
+    private bool isDeleting;
+    private string searchText = string.Empty;
+    private string? errorMessage;
+    private string? successMessage;
+    private CategoryDto? categoryToDelete;
+    private CategoryDto? editingCategory;
+    private readonly CategoryCreateModel categoryModel = new();
+    private int currentPage = 1;
+    private const int pageSize = 20;
+    private System.Timers.Timer? searchDebounceTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            categories = await CategoryService.GetCategoriesAsync(
+                page: currentPage,
+                pageSize: pageSize,
+                search: string.IsNullOrWhiteSpace(searchText) ? null : searchText);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao carregar categorias: {ex.Message}";
+            categories = new PagedResult<CategoryDto>();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs args)
+    {
+        searchText = args.Value?.ToString() ?? string.Empty;
+
+        searchDebounceTimer?.Stop();
+        searchDebounceTimer?.Dispose();
+
+        searchDebounceTimer = new System.Timers.Timer(500);
+        searchDebounceTimer.Elapsed += async (sender, e) =>
+        {
+            searchDebounceTimer.Stop();
+            currentPage = 1;
+            await InvokeAsync(async () => await LoadCategoriesAsync());
+        };
+        searchDebounceTimer.AutoReset = false;
+        searchDebounceTimer.Start();
+    }
+
+    private async Task GoToPageAsync(int page)
+    {
+        if (page < 1 || page > categories.TotalPages || page == currentPage)
+            return;
+
+        currentPage = page;
+        await LoadCategoriesAsync();
+    }
+
+    private void OpenCreateModal()
+    {
+        isEditing = false;
+        categoryModel.Name = string.Empty;
+        categoryModel.Description = string.Empty;
+        showModal = true;
+    }
+
+    private void OpenEditModal(CategoryDto category)
+    {
+        isEditing = true;
+        editingCategory = category;
+        categoryModel.Name = category.Name;
+        categoryModel.Description = category.Description;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        editingCategory = null;
+    }
+
+    private async Task SaveCategoryAsync()
+    {
+        isSaving = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            if (isEditing && editingCategory != null)
+            {
+                await CategoryService.UpdateCategoryAsync(
+                    editingCategory.Id,
+                    categoryModel.Name,
+                    categoryModel.Description);
+
+                successMessage = $"Categoria \"{categoryModel.Name}\" atualizada com sucesso!";
+            }
+            else
+            {
+                await CategoryService.CreateCategoryAsync(
+                    categoryModel.Name,
+                    categoryModel.Description);
+
+                successMessage = $"Categoria \"{categoryModel.Name}\" criada com sucesso!";
+            }
+
+            CloseModal();
+            await LoadCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao salvar categoria: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveEditAsync(long categoryId)
+    {
+        if (editingCategory == null) return;
+
+        try
+        {
+            await CategoryService.UpdateCategoryAsync(
+                categoryId,
+                editingCategory.Name,
+                editingCategory.Description);
+
+            successMessage = $"Categoria \"{editingCategory.Name}\" atualizada com sucesso!";
+            editingCategory = null;
+            await LoadCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao salvar categoria: {ex.Message}";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editingCategory = null;
+    }
+
+    private void ConfirmDeleteAsync(CategoryDto category)
+    {
+        categoryToDelete = category;
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+        categoryToDelete = null;
+    }
+
+    private async Task DeleteCategoryAsync()
+    {
+        if (categoryToDelete == null) return;
+
+        isDeleting = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var categoryName = categoryToDelete.Name;
+            await CategoryService.DeleteCategoryAsync(categoryToDelete.Id);
+
+            successMessage = $"Categoria \"{categoryName}\" excluída com sucesso!";
+            CloseDeleteModal();
+            await LoadCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao excluir categoria: {ex.Message}";
+        }
+        finally
+        {
+            isDeleting = false;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        searchDebounceTimer?.Dispose();
+    }
+}

@@ -27,7 +27,7 @@ public static class JwtExtensions
 
         var jwtOptions = jwtSection.Get<JwtOptions>() ?? new JwtOptions();
 
-        services.AddSingleton<ITokenService, JwtTokenService>();
+        services.AddScoped<ITokenService, JwtTokenService>();
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey));
 

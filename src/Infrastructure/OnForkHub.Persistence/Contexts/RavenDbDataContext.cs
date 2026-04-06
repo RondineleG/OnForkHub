@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Persistence.Contexts;
+namespace OnForkHub.Persistence.Contexts;
 
 public class RavenDbDataContext(IDocumentStore documentStore)
 {

@@ -1,10 +1,12 @@
-﻿namespace OnForkHub.Persistence.Contexts.Base;
+namespace OnForkHub.Persistence.Contexts.Base;
 
 public interface IEntityFrameworkDataContext
 {
     DbSet<Category> Categories { get; set; }
 
     DbSet<Notification> Notifications { get; set; }
+
+    DbSet<RefreshToken> RefreshTokens { get; set; }
 
     DbSet<UserEntity> Users { get; set; }
 

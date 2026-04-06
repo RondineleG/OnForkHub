@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts.Logger;
+namespace OnForkHub.Scripts.Logger;
 
 public class ConsoleLogger : ILogger
 {

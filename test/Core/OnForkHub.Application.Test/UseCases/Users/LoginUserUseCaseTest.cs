@@ -114,4 +114,65 @@ public class LoginUserUseCaseTest
         result.Status.Should().Be(EResultStatus.HasError);
         await _userService.Received(1).LoginAsync(request.Email, request.Password);
     }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error when email is empty")]
+    public async Task ShouldReturnErrorWhenEmailIsEmpty()
+    {
+        var request = new UserLoginRequestDto
+        {
+            Email = string.Empty,
+            Password = "Password123!"
+        };
+
+        _userService.LoginAsync(request.Email, request.Password)
+            .Returns(RequestResult<UserEntity>.WithError("Email is required"));
+
+        var result = await _loginUserUseCase.ExecuteAsync(request);
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.Message.Should().Be("Email is required");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error when password is empty")]
+    public async Task ShouldReturnErrorWhenPasswordIsEmpty()
+    {
+        var request = new UserLoginRequestDto
+        {
+            Email = "john@email.com",
+            Password = string.Empty
+        };
+
+        _userService.LoginAsync(request.Email, request.Password)
+            .Returns(RequestResult<UserEntity>.WithError("Password is required"));
+
+        var result = await _loginUserUseCase.ExecuteAsync(request);
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.Message.Should().Be("Password is required");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error with service message on failure")]
+    public async Task ShouldReturnErrorWithServiceMessageOnFailure()
+    {
+        var request = new UserLoginRequestDto
+        {
+            Email = "john@email.com",
+            Password = "Password123!"
+        };
+
+        _userService.LoginAsync(request.Email, request.Password)
+            .Returns(RequestResult<UserEntity>.WithError("Database connection timeout"));
+
+        var result = await _loginUserUseCase.ExecuteAsync(request);
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.Message.Should().Be("Database connection timeout");
+        await _userService.Received(1).LoginAsync(request.Email, request.Password);
+    }
 }

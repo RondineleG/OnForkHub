@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts.Husky;
+namespace OnForkHub.Scripts.Husky;
 
 public sealed class HuskyConfiguration(
     string projectRoot,

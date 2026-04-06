@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Application.UseCases.Categories;
+namespace OnForkHub.Application.UseCases.Categories;
 
 public class DeleteCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF) : IUseCase<long, Category>
 {

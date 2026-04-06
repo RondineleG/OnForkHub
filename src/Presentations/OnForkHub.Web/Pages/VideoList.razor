@@ -1,0 +1,313 @@
+@page "/videos"
+@inject IVideoService VideoService
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Vídeos - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    @* Header *@
+    <div class="row mb-4 align-items-center">
+        <div class="col-12 col-md-6 mb-2 mb-md-0">
+            <h1 class="h3 mb-0">Vídeos</h1>
+        </div>
+        <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
+            <AuthorizeView>
+                <Authorized>
+                    <a href="/upload" class="btn btn-primary">
+                        <i class="bi bi-upload me-1"></i> Upload
+                    </a>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </div>
+
+    @* Search and Filters *@
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Buscar vídeos..."
+                               @bind="searchText"
+                               @oninput="OnSearchInput" />
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <select class="form-select" @bind="selectedCategoryId">
+                        <option value="">Todas categorias</option>
+                        @foreach (var category in categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-6 col-md-3">
+                    <select class="form-select" @bind="selectedSort">
+                        <option value="newest">Mais recentes</option>
+                        <option value="most_viewed">Mais assistidos</option>
+                        <option value="title_asc">Título (A-Z)</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <select class="form-select" @bind="pageSize">
+                        <option value="12">12 por pág.</option>
+                        <option value="24">24 por pág.</option>
+                        <option value="48">48 por pág.</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Loading Skeleton *@
+    @if (isLoading)
+    {
+        <div class="row g-4">
+            @for (int i = 0; i < pageSize; i++)
+            {
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 skeleton-card">
+                        <div class="skeleton skeleton-thumb"></div>
+                        <div class="card-body">
+                            <div class="skeleton skeleton-text w-75 mb-2"></div>
+                            <div class="skeleton skeleton-text w-50"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @* Error State *@
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @errorMessage
+            <button type="button" class="btn btn-sm btn-outline-danger ms-3" @onclick="LoadVideosAsync">
+                <i class="bi bi-arrow-clockwise"></i> Tentar novamente
+            </button>
+        </div>
+    }
+
+    @* Empty State *@
+    else if (videos.TotalCount == 0)
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-camera-video-off display-1 text-muted"></i>
+            <h3 class="mt-3">Nenhum vídeo encontrado</h3>
+            <p class="text-muted">Tente ajustar seus filtros ou faça upload de um vídeo.</p>
+            <AuthorizeView>
+                <Authorized>
+                    <a href="/upload" class="btn btn-primary mt-2">
+                        <i class="bi bi-upload me-1"></i> Fazer Upload
+                    </a>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    }
+
+    @* Video Grid *@
+    else
+    {
+        <div class="row g-4">
+            @foreach (var video in videos.Items)
+            {
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 shadow-sm video-card" @onclick="() => NavigateToVideo(video.Id)">
+                        <div class="position-relative">
+                            <img src="@video.ThumbnailUrl"
+                                 class="card-img-top video-thumbnail"
+                                 alt="@video.Title"
+                                 @onerror="HandleImageError" />
+                            <span class="badge bg-dark position-absolute bottom-0 end-0 m-2">
+                                @FormatViewCount(video.ViewCount)
+                            </span>
+                        </div>
+                        <div class="card-body p-3">
+                            <h6 class="card-title text-truncate mb-1" title="@video.Title">@video.Title</h6>
+                            <p class="card-text small text-muted text-truncate mb-2">@video.CategoryName</p>
+                            <div class="d-flex justify-content-between align-items-center small text-muted">
+                                <span>@video.UploadedBy</span>
+                                <span>@FormatDate(video.CreatedAt)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Pagination *@
+        @if (videos.TotalPages > 1)
+        {
+            <nav class="mt-4" aria-label="Paginação de vídeos">
+                <ul class="pagination justify-content-center">
+                    @* Previous Button *@
+                    <li class="page-item @(videos.HasPreviousPage ? "" : "disabled")">
+                        <button class="page-link" @onclick="() => GoToPageAsync(videos.Page - 1)" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </button>
+                    </li>
+
+                    @* Page Numbers *@
+                    @for (int i = 1; i <= videos.TotalPages; i++)
+                    {
+                        @* Show first, last, current, and pages around current *@
+                        @if (i == 1 || i == videos.TotalPages || (i >= videos.Page - 2 && i <= videos.Page + 2))
+                        {
+                            <li class="page-item @(i == videos.Page ? "active" : "")">
+                                <button class="page-link" @onclick="() => GoToPageAsync(i)">@i</button>
+                            </li>
+                        }
+                        else if (i == videos.Page - 3 || i == videos.Page + 3)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                    }
+
+                    @* Next Button *@
+                    <li class="page-item @(videos.HasNextPage ? "" : "disabled")">
+                        <button class="page-link" @onclick="() => GoToPageAsync(videos.Page + 1)" aria-label="Próximo">
+                            <span aria-hidden="true">&raquo;</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+@code {
+    private PagedResult<VideoDto> videos = new();
+    private List<CategoryDto> categories = new();
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+
+    private int currentPage = 1;
+    private int pageSize = 12;
+    private string searchText = string.Empty;
+    private long? selectedCategoryId = null;
+    private string selectedSort = "newest";
+    private System.Timers.Timer? searchDebounceTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+        await LoadVideosAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            categories = await CategoryService.GetAllCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar categorias: {ex.Message}");
+            categories = new List<CategoryDto>();
+        }
+    }
+
+    private async Task LoadVideosAsync()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            videos = await VideoService.GetVideosAsync(
+                page: currentPage,
+                pageSize: pageSize,
+                search: string.IsNullOrWhiteSpace(searchText) ? null : searchText,
+                categoryId: selectedCategoryId,
+                sort: selectedSort);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao carregar vídeos: {ex.Message}";
+            videos = new PagedResult<VideoDto>();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs args)
+    {
+        searchText = args.Value?.ToString() ?? string.Empty;
+
+        // Debounce search
+        searchDebounceTimer?.Stop();
+        searchDebounceTimer?.Dispose();
+
+        searchDebounceTimer = new System.Timers.Timer(500);
+        searchDebounceTimer.Elapsed += async (sender, e) =>
+        {
+            searchDebounceTimer.Stop();
+            currentPage = 1;
+            await InvokeAsync(async () => await LoadVideosAsync());
+        };
+        searchDebounceTimer.AutoReset = false;
+        searchDebounceTimer.Start();
+    }
+
+    private async Task GoToPageAsync(int page)
+    {
+        if (page < 1 || page > videos.TotalPages || page == currentPage)
+            return;
+
+        currentPage = page;
+        await LoadVideosAsync();
+        await JSRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+    }
+
+    private void NavigateToVideo(string videoId)
+    {
+        Navigation.NavigateTo($"/videos/{videoId}");
+    }
+
+    private static string FormatViewCount(int count)
+    {
+        if (count >= 1000000)
+            return $"{count / 1000000.0:F1}M visualizações";
+        if (count >= 1000)
+            return $"{count / 1000.0:F1}K visualizações";
+        return $"{count} visualizações";
+    }
+
+    private static string FormatDate(DateTime date)
+    {
+        var timeSpan = DateTime.Now - date;
+        if (timeSpan.TotalDays < 1)
+            return "Hoje";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays}d atrás";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)(timeSpan.TotalDays / 7)}sem atrás";
+        if (timeSpan.TotalDays < 365)
+            return $"{(int)(timeSpan.TotalDays / 30)}m atrás";
+        return $"{(int)(timeSpan.TotalDays / 365)}a atrás";
+    }
+
+    private static void HandleImageError(Microsoft.AspNetCore.Components.Web.ErrorEventArgs args)
+    {
+        // Fallback for image load errors - could set a default thumbnail
+    }
+
+    public void Dispose()
+    {
+        searchDebounceTimer?.Dispose();
+    }
+}

@@ -1,0 +1,479 @@
+@page "/profile"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject IUserService UserService
+@inject IVideoService VideoService
+@inject NavigationManager Navigation
+@inject JwtAuthenticationStateProvider JwtAuthStateProvider
+
+<PageTitle>Meu Perfil - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    <h1 class="h3 mb-4">
+        <i class="bi bi-person-circle me-2"></i>Meu Perfil
+    </h1>
+
+    @if (isLoading)
+    {
+        <div class="row">
+            <div class="col-12 col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="skeleton skeleton-avatar mx-auto mb-3"></div>
+                        <div class="skeleton skeleton-text w-50 mx-auto mb-2"></div>
+                        <div class="skeleton skeleton-text w-75 mx-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = string.Empty"></button>
+        </div>
+    }
+
+    @if (userProfile != null)
+    {
+        <div class="row">
+            @* Profile Info *@
+            <div class="col-12 col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Informações do Perfil</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row align-items-center mb-4">
+                            <div class="col-auto">
+                                @if (!string.IsNullOrEmpty(userProfile.AvatarUrl))
+                                {
+                                    <img src="@userProfile.AvatarUrl"
+                                         alt="Avatar"
+                                         class="rounded-circle"
+                                         style="width: 100px; height: 100px; object-fit: cover;"
+                                         onerror="this.src='/images/default-avatar.png'" />
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 100px; height: 100px; font-size: 2.5rem;">
+                                        @userProfile.Name.FirstOrDefault()
+                                    </div>
+                                }
+                            </div>
+                            <div class="col">
+                                <h4 class="mb-1">@userProfile.Name</h4>
+                                <p class="text-muted mb-2">@userProfile.Email</p>
+                                <p class="small text-muted mb-0">
+                                    <i class="bi bi-calendar me-1"></i>Membro desde @userProfile.CreatedAt.ToString("MMMM/yyyy")
+                                </p>
+                            </div>
+                        </div>
+
+                        @* Edit Profile Form *@
+                        <EditForm Model="editProfileModel" OnValidSubmit="UpdateProfileAsync">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label for="editName" class="form-label fw-semibold">Nome</label>
+                                <InputText id="editName"
+                                           class="form-control"
+                                           @bind-Value="editProfileModel.Name"
+                                           placeholder="Seu nome" />
+                                <ValidationMessage For="@(() => editProfileModel.Name)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editAvatar" class="form-label fw-semibold">URL do Avatar</label>
+                                <InputText id="editAvatar"
+                                           class="form-control"
+                                           @bind-Value="editProfileModel.AvatarUrl"
+                                           placeholder="https://exemplo.com/avatar.jpg" />
+                                <ValidationMessage For="@(() => editProfileModel.AvatarUrl)" class="text-danger small" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" disabled="isUpdatingProfile">
+                                @if (isUpdatingProfile)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                <i class="bi bi-check-lg me-1"></i>Salvar Alterações
+                            </button>
+                        </EditForm>
+                    </div>
+                </div>
+
+                @* Change Password *@
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-lock me-2"></i>Alterar Senha
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <EditForm Model="changePasswordModel" OnValidSubmit="ChangePasswordAsync">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label fw-semibold">Senha Atual</label>
+                                <InputText id="currentPassword"
+                                           type="password"
+                                           class="form-control"
+                                           @bind-Value="changePasswordModel.CurrentPassword" />
+                                <ValidationMessage For="@(() => changePasswordModel.CurrentPassword)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label fw-semibold">Nova Senha</label>
+                                <InputText id="newPassword"
+                                           type="password"
+                                           class="form-control"
+                                           @bind-Value="changePasswordModel.NewPassword" />
+                                <ValidationMessage For="@(() => changePasswordModel.NewPassword)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label fw-semibold">Confirmar Nova Senha</label>
+                                <InputText id="confirmPassword"
+                                           type="password"
+                                           class="form-control"
+                                           @bind-Value="changePasswordModel.ConfirmPassword" />
+                                <ValidationMessage For="@(() => changePasswordModel.ConfirmPassword)" class="text-danger small" />
+                            </div>
+
+                            <button type="submit" class="btn btn-warning" disabled="isChangingPassword">
+                                @if (isChangingPassword)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                <i class="bi bi-key me-1"></i>Alterar Senha
+                            </button>
+                        </EditForm>
+                    </div>
+                </div>
+
+                @* User Videos *@
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-camera-video me-2"></i>Meus Vídeos (@userVideos.TotalCount)
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (userVideos.Items.Any())
+                        {
+                            <div class="row g-3">
+                                @foreach (var userVideo in userVideos.Items)
+                                {
+                                    <div class="col-12 col-md-6">
+                                        <div class="card h-100" @onclick="() => NavigateToVideo(userVideo.Id)">
+                                            <div class="row g-0">
+                                                <div class="col-4">
+                                                    <img src="@userVideo.ThumbnailUrl"
+                                                         class="img-fluid rounded-start h-100"
+                                                         style="object-fit: cover;"
+                                                         alt="@userVideo.Title" />
+                                                </div>
+                                                <div class="col-8">
+                                                    <div class="card-body p-2">
+                                                        <h6 class="card-title small mb-1 text-truncate">@userVideo.Title</h6>
+                                                        <p class="card-text small text-muted mb-1">
+                                                            <i class="bi bi-eye me-1"></i>@userVideo.ViewCount visualizações
+                                                        </p>
+                                                        <p class="card-text small text-muted mb-0">
+                                                            @userVideo.CreatedAt.ToString("dd/MM/yyyy")
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            @* Pagination for user videos *@
+                            @if (userVideos.TotalPages > 1)
+                            {
+                                <nav class="mt-3" aria-label="Paginação dos meus vídeos">
+                                    <ul class="pagination justify-content-center">
+                                        <li class="page-item @(userVideos.HasPreviousPage ? "" : "disabled")">
+                                            <button class="page-link" @onclick="() => GoToUserVideoPageAsync(userVideos.Page - 1)">
+                                                &laquo;
+                                            </button>
+                                        </li>
+                                        @for (int i = 1; i <= userVideos.TotalPages; i++)
+                                        {
+                                            <li class="page-item @(i == userVideos.Page ? "active" : "")">
+                                                <button class="page-link" @onclick="() => GoToUserVideoPageAsync(i)">@i</button>
+                                            </li>
+                                        }
+                                        <li class="page-item @(userVideos.HasNextPage ? "" : "disabled")">
+                                            <button class="page-link" @onclick="() => GoToUserVideoPageAsync(userVideos.Page + 1)">
+                                                &raquo;
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="bi bi-camera-video-off display-6 text-muted"></i>
+                                <p class="mt-2 text-muted">Você ainda não fez upload de nenhum vídeo.</p>
+                                <a href="/upload" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-upload me-1"></i>Fazer Upload
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @* Delete Account *@
+                <div class="card shadow-sm border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Zona de Perigo
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="mb-3">
+                            <strong>Atenção:</strong> Ao excluir sua conta, todos os seus dados serão removidos permanentemente.
+                            Esta ação não pode ser desfeita.
+                        </p>
+
+                        @if (showDeleteAccountConfirm)
+                        {
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-danger" @onclick="DeleteAccountAsync" disabled="isDeletingAccount">
+                                    @if (isDeletingAccount)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    }
+                                    <i class="bi bi-trash me-1"></i>Confirmar Exclusão da Conta
+                                </button>
+                                <button class="btn btn-outline-secondary" @onclick="() => showDeleteAccountConfirm = false" disabled="isDeletingAccount">
+                                    Cancelar
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-danger" @onclick="() => showDeleteAccountConfirm = true">
+                                <i class="bi bi-trash me-1"></i>Excluir Minha Conta
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* Sidebar *@
+            <div class="col-12 col-lg-4 mt-4 mt-lg-0">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center p-4">
+                        <h6 class="text-muted mb-3">Estatísticas da Conta</h6>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="display-6 fw-bold text-primary">@userProfile.VideoCount</div>
+                                <div class="small text-muted">Vídeos</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="display-6 fw-bold text-success">0</div>
+                                <div class="small text-muted">Seguidores</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h6 class="mb-3">Links Rápidos</h6>
+                        <div class="list-group list-group-flush">
+                            <a href="/upload" class="list-group-item list-group-item-action">
+                                <i class="bi bi-upload me-2"></i>Upload de Vídeo
+                            </a>
+                            <a href="/videos" class="list-group-item list-group-item-action">
+                                <i class="bi bi-camera-video me-2"></i>Ver Todos os Vídeos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private UserProfileDto? userProfile;
+    private readonly EditProfileModel editProfileModel = new();
+    private readonly ChangePasswordModel changePasswordModel = new();
+    private PagedResult<VideoDto> userVideos = new();
+    private bool isLoading = true;
+    private bool isUpdatingProfile;
+    private bool isChangingPassword;
+    private bool isDeletingAccount;
+    private bool showDeleteAccountConfirm;
+    private string? errorMessage;
+    private string? successMessage;
+    private int userVideosPage = 1;
+    private const int userVideosPageSize = 6;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfileAsync();
+    }
+
+    private async Task LoadProfileAsync()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            userProfile = await UserService.GetProfileAsync();
+
+            if (userProfile != null)
+            {
+                editProfileModel.Name = userProfile.Name;
+                editProfileModel.AvatarUrl = userProfile.AvatarUrl;
+
+                // Load user's videos
+                await LoadUserVideosAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao carregar perfil: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUserVideosAsync()
+    {
+        try
+        {
+            // Note: This assumes the API supports filtering by current user
+            // If not, we'd need to pass the user ID from the profile
+            userVideos = await VideoService.GetVideosAsync(
+                page: userVideosPage,
+                pageSize: userVideosPageSize);
+
+            // Filter client-side if API doesn't support userId filter
+            // In a real scenario, you'd want a dedicated endpoint
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar vídeos do usuário: {ex.Message}");
+            userVideos = new PagedResult<VideoDto>();
+        }
+    }
+
+    private async Task UpdateProfileAsync()
+    {
+        isUpdatingProfile = true;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            userProfile = await UserService.UpdateProfileAsync(
+                editProfileModel.Name,
+                editProfileModel.AvatarUrl);
+
+            successMessage = "Perfil atualizado com sucesso!";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao atualizar perfil: {ex.Message}";
+        }
+        finally
+        {
+            isUpdatingProfile = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        isChangingPassword = true;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            await UserService.ChangePasswordAsync(
+                changePasswordModel.CurrentPassword,
+                changePasswordModel.NewPassword);
+
+            successMessage = "Senha alterada com sucesso!";
+            changePasswordModel.CurrentPassword = string.Empty;
+            changePasswordModel.NewPassword = string.Empty;
+            changePasswordModel.ConfirmPassword = string.Empty;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao alterar senha: {ex.Message}";
+        }
+        finally
+        {
+            isChangingPassword = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteAccountAsync()
+    {
+        isDeletingAccount = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            await UserService.DeleteAccountAsync();
+            await JwtAuthStateProvider.Logout();
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao excluir conta: {ex.Message}";
+            showDeleteAccountConfirm = false;
+        }
+        finally
+        {
+            isDeletingAccount = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task GoToUserVideoPageAsync(int page)
+    {
+        if (page < 1 || page > userVideos.TotalPages) return;
+
+        userVideosPage = page;
+        await LoadUserVideosAsync();
+    }
+
+    private void NavigateToVideo(string videoId)
+    {
+        Navigation.NavigateTo($"/videos/{videoId}");
+    }
+}

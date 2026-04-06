@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.Video.Request;
 using OnForkHub.Application.Dtos.Video.Response;
-using OnForkHub.Core.Interfaces.Configuration;
 using OnForkHub.Core.ValueObjects;
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for uploading video files.

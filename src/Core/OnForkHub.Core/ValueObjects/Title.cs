@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.ValueObjects;
+namespace OnForkHub.Core.ValueObjects;
 
 public class Title : ValueObject
 {
@@ -8,7 +8,7 @@ public class Title : ValueObject
         Validate();
     }
 
-    public string Value { get; set; }
+    public string Value { get; private set; }
 
     public static Title Create(string value)
     {

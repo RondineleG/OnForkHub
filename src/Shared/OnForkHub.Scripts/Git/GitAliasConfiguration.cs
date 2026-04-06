@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts.Git;
+namespace OnForkHub.Scripts.Git;
 
 public sealed class GitAliasConfiguration(ILogger logger, IProcessRunner processRunner) : IGitAliasConfiguration
 {

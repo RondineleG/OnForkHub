@@ -1,4 +1,4 @@
-using OnForkHub.Core.Interfaces.GraphQL;
+using OnForkHub.CrossCutting.GraphQL.Interfaces;
 
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;
 

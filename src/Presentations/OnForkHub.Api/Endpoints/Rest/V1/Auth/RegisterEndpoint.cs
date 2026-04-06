@@ -7,8 +7,9 @@ using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Application.UseCases.Users;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Enums;
-using OnForkHub.Core.Interfaces.Configuration;
 using OnForkHub.CrossCutting.Authentication;
+using OnForkHub.CrossCutting.Interfaces;
+using OnForkHub.CrossCutting.Middleware.RateLimiting;
 
 using UserEntity = OnForkHub.Core.Entities.User;
 
@@ -44,6 +45,7 @@ public sealed partial class RegisterEndpoint(
                     return await HandleRegisterAsync(request);
                 }
             )
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
             .WithName("RegisterV1")
             .WithApiVersionSet(apiVersionSet)
             .MapToApiVersion(V1)

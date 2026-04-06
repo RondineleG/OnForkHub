@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.Exceptions;
+namespace OnForkHub.Core.Exceptions;
 
 public abstract class CustomException(string message, string errorCode) : Exception(message)
 {

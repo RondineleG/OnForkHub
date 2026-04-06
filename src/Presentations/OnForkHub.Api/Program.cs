@@ -1,8 +1,8 @@
 using OnForkHub.Api.Middlewares;
 using OnForkHub.Application.Extensions;
-using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.CrossCutting.Caching;
 using OnForkHub.CrossCutting.Extensions;
+using OnForkHub.CrossCutting.GraphQL.Interfaces;
 using OnForkHub.CrossCutting.Middleware.RateLimiting;
 using OnForkHub.CrossCutting.Middleware.ResponseCompression;
 using OnForkHub.CrossCutting.Middleware.Security;
@@ -19,7 +19,26 @@ builder.Services.AddResponseCompressionServices();
 builder.Services.AddCachingServices(builder.Configuration);
 builder.Services.AddRateLimitingServices(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        "DefaultPolicy",
+        policy =>
+        {
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5000"];
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        }
+    );
+});
+
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+app.UseCors("DefaultPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseResponseCompressionMiddleware();
 app.UseMiddleware<SecurityHeadersMiddleware>();

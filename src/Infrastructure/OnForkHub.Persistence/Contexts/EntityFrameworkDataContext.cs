@@ -8,6 +8,8 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
 
     public DbSet<Notification> Notifications { get; set; } = null!;
 
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+
     public DbSet<UserEntity> Users { get; set; } = null!;
 
     public DbSet<Video> Videos { get; set; } = null!;
@@ -26,5 +28,6 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
         modelBuilder.ApplyConfiguration(new VideoConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new NotificationConfiguration());
+        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
     }
 }

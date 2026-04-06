@@ -1,15 +1,96 @@
-<nav class="navbar navbar-expand-lg navStyle" data-bs-theme="dark">
-    <div class="container-xxl">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarControl" aria-expaned="false" aria-label="Toggle Navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
-                    </NavLink>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject JwtAuthenticationStateProvider JwtAuthStateProvider
+@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <nav class="navbar navbar-expand-lg navStyle" data-bs-theme="dark">
+            <div class="container-xxl">
+                <a class="navbar-brand" href="/">OnForkHub</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarControl" aria-expanded="false" aria-label="Toggle Navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                                <i class="bi bi-house-door"></i> Home
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/videos">
+                                <i class="bi bi-camera-video"></i> Vídeos
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/upload">
+                                <i class="bi bi-upload"></i> Upload
+                            </NavLink>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/notifications">
+                                <i class="bi bi-bell"></i> Notificações
+                            </NavLink>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> @context.User.Identity?.Name
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" @onclick="HandleLogout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </Authorized>
+    <NotAuthorized>
+        <nav class="navbar navbar-expand-lg navStyle" data-bs-theme="dark">
+            <div class="container-xxl">
+                <a class="navbar-brand" href="/">OnForkHub</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarControl" aria-expanded="false" aria-label="Toggle Navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                                <i class="bi bi-house-door"></i> Home
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/videos">
+                                <i class="bi bi-camera-video"></i> Vídeos
+                            </NavLink>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="/login">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="btn btn-primary btn-sm ms-2" href="/register">
+                                <i class="bi bi-person-plus"></i> Registrar
+                            </NavLink>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async Task HandleLogout()
+    {
+        await JwtAuthStateProvider.Logout();
+        Navigation.NavigateTo("/login");
+    }
+}

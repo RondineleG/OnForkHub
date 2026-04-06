@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Scripts;
+namespace OnForkHub.Scripts;
 
 public class ProcessRunner(ILogger logger) : IProcessRunner
 {

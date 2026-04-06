@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Persistence.Repositories;
+namespace OnForkHub.Persistence.Repositories;
 
 public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICategoryRepositoryEF
 {
@@ -147,6 +147,6 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
     /// <inheritdoc/>
     public async Task<int> GetTotalCountAsync()
     {
-        return await EntityFrameworkQueryableExtensions.CountAsync(_context.Categories);
+        return await EntityFrameworkQueryableExtensions.CountAsync(_context.Categories.AsNoTracking());
     }
 }

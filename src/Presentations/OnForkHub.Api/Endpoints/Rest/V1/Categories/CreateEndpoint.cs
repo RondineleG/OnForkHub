@@ -1,4 +1,4 @@
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.CrossCutting.Interfaces;
 
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 

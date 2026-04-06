@@ -50,6 +50,10 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
         // Index on UpdatedAt for sorting
         builder.HasIndex(v => v.UpdatedAt).HasDatabaseName("IX_Videos_UpdatedAt");
 
+        // Composite index for user's videos ordered by date
+        builder.HasIndex(v => new { v.UserId, v.CreatedAt })
+            .HasDatabaseName("IX_Videos_UserId_CreatedAt");
+
         // Configure relationship with Categories
         builder.HasMany(v => v.Categories).WithMany().UsingEntity(j => j.ToTable("VideoCategories"));
     }

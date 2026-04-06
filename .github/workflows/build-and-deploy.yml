@@ -66,6 +66,20 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && steps.set-branch.outputs.full_branch || github.ref }}
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests with coverage
+        run: dotnet test --no-build --configuration Release --logger "console;verbosity=normal" --collect:"XPlat Code Coverage" --results-directory ./coverage
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

@@ -1,13 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 using OnForkHub.Application.GraphQL.Handlers;
 using OnForkHub.Application.Services;
-using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.Core.Validations.Categories;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
-using OnForkHub.Persistence.Repositories;
-
+using OnForkHub.CrossCutting.GraphQL.Interfaces;
 namespace OnForkHub.Application.Extensions;
 
 public static class DependencyInjection
@@ -16,8 +14,6 @@ public static class DependencyInjection
     {
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
-        services.AddScoped<ICategoryRepositoryEF, CategoryRepositoryEF>();
-        services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
         services.AddScoped<IValidationService<Category>, CategoryValidationService>();
 
         return services;

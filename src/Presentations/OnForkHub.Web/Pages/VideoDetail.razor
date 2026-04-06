@@ -1,0 +1,324 @@
+@page "/videos/{id}"
+@inject IVideoService VideoService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>@(video?.Title ?? "Carregando...") - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    @if (isLoading)
+    {
+        <div class="row">
+            <div class="col-12 col-lg-8">
+                <div class="skeleton" style="height: 400px; border-radius: 0.5rem;"></div>
+                <div class="mt-3">
+                    <div class="skeleton skeleton-text w-75 mb-2"></div>
+                    <div class="skeleton skeleton-text w-50"></div>
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="skeleton" style="height: 200px; border-radius: 0.5rem;"></div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @errorMessage
+            <button type="button" class="btn btn-sm btn-outline-danger ms-3" @onclick="LoadVideoAsync">
+                <i class="bi bi-arrow-clockwise"></i> Tentar novamente
+            </button>
+        </div>
+    }
+    else if (video == null)
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-camera-video-off display-1 text-muted"></i>
+            <h3 class="mt-3">Vídeo não encontrado</h3>
+            <p class="text-muted">O vídeo que você procura não existe ou foi removido.</p>
+            <a href="/videos" class="btn btn-primary mt-2">
+                <i class="bi bi-arrow-left me-1"></i>Ver todos os vídeos
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @* Main Content *@
+            <div class="col-12 col-lg-8">
+                @* Video Player *@
+                <div class="ratio ratio-16x9 bg-dark rounded overflow-hidden mb-3">
+                    @if (!string.IsNullOrEmpty(video.VideoUrl))
+                    {
+                        <video controls autoplay class="w-100 h-100">
+                            <source src="@video.VideoUrl" type="video/mp4" />
+                            Seu navegador não suporta o elemento de vídeo.
+                        </video>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center justify-content-center h-100 text-white">
+                            <div class="text-center">
+                                <i class="bi bi-play-circle display-1"></i>
+                                <p class="mt-2">Player de vídeo</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @* Video Info *@
+                <h1 class="h4 mb-2">@video.Title</h1>
+
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 small text-muted">
+                    <span>
+                        <i class="bi bi-eye me-1"></i>@FormatViewCount(video.ViewCount)
+                    </span>
+                    <span>
+                        <i class="bi bi-calendar me-1"></i>@video.CreatedAt.ToString("dd/MM/yyyy")
+                    </span>
+                    @if (!string.IsNullOrEmpty(video.CategoryName))
+                    {
+                        <span class="badge bg-secondary">@video.CategoryName</span>
+                    }
+                </div>
+
+                @* Action Buttons *@
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <AuthorizeView>
+                        <Authorized>
+                            <button class="btn @(video.IsLikedByCurrentUser ? "btn-primary" : "btn-outline-primary") btn-sm"
+                                    @onclick="ToggleLikeAsync">
+                                <i class="bi @(video.IsLikedByCurrentUser ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up") me-1"></i>
+                                @video.LikeCount
+                            </button>
+                        </Authorized>
+                    </AuthorizeView>
+
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="ShareVideo">
+                        <i class="bi bi-share me-1"></i>Compartilhar
+                    </button>
+
+                    @if (showDeleteConfirm)
+                    {
+                        <div class="btn-group">
+                            <button class="btn btn-danger btn-sm" @onclick="DeleteVideoAsync">
+                                <i class="bi bi-trash me-1"></i>Confirmar Exclusão
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" @onclick="() => showDeleteConfirm = false">
+                                Cancelar
+                            </button>
+                        </div>
+                    }
+                    else if (isOwner)
+                    {
+                        <button class="btn btn-outline-danger btn-sm" @onclick="() => showDeleteConfirm = true">
+                            <i class="bi bi-trash me-1"></i>Excluir
+                        </button>
+                        <a href="/upload" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                    }
+                </div>
+
+                @* Description *@
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title fw-semibold">Descrição</h6>
+                        <p class="card-text">@video.Description</p>
+                        @if (video.Tags.Any())
+                        {
+                            <div class="mt-3">
+                                @foreach (var tag in video.Tags)
+                                {
+                                    <span class="badge bg-light text-dark me-1 mb-1">#@tag</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @* Comments Section (Placeholder) *@
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title fw-semibold mb-3">
+                            <i class="bi bi-chat-dots me-2"></i>Comentários
+                        </h6>
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-chat-square-text display-6"></i>
+                            <p class="mt-2 mb-0">Seção de comentários em desenvolvimento</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Sidebar - Related Videos *@
+            <div class="col-12 col-lg-4 mt-4 mt-lg-0">
+                <h6 class="fw-semibold mb-3">
+                    <i class="bi bi-collection-play me-2"></i>Vídeos Relacionados
+                </h6>
+
+                @if (relatedVideos.Any())
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var relatedVideo in relatedVideos)
+                        {
+                            <div class="card related-video-card" @onclick="() => NavigateToVideo(relatedVideo.Id)">
+                                <div class="row g-0">
+                                    <div class="col-5">
+                                        <img src="@relatedVideo.ThumbnailUrl"
+                                             class="img-fluid rounded-start related-thumbnail"
+                                             alt="@relatedVideo.Title" />
+                                    </div>
+                                    <div class="col-7">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title small mb-1 text-truncate" title="@relatedVideo.Title">
+                                                @relatedVideo.Title
+                                            </h6>
+                                            <p class="card-text small text-muted mb-1">@relatedVideo.UploadedBy</p>
+                                            <p class="card-text small text-muted">
+                                                <i class="bi bi-eye me-1"></i>@FormatViewCount(relatedVideo.ViewCount)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <p>Nenhum vídeo relacionado encontrado</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private VideoDto? video;
+    private List<VideoDto> relatedVideos = new();
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+    private bool isOwner;
+    private bool showDeleteConfirm;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            await LoadVideoAsync();
+        }
+    }
+
+    private async Task LoadVideoAsync()
+    {
+        if (string.IsNullOrEmpty(Id)) return;
+
+        isLoading = true;
+        errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            video = await VideoService.GetVideoByIdAsync(Id);
+
+            if (video != null)
+            {
+                // Check if current user is the owner
+                var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+                var user = authState.User;
+                isOwner = user.Identity?.IsAuthenticated == true &&
+                         user.Claims.Any(c => c.Type == "nameid" && c.Value == video.UploadedById);
+
+                // Load related videos
+                relatedVideos = await VideoService.GetRelatedVideosAsync(Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao carregar vídeo: {ex.Message}";
+            video = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleLikeAsync()
+    {
+        if (video == null) return;
+
+        try
+        {
+            if (video.IsLikedByCurrentUser)
+            {
+                await VideoService.UnlikeVideoAsync(Id!);
+                video.IsLikedByCurrentUser = false;
+                video.LikeCount = Math.Max(0, video.LikeCount - 1);
+            }
+            else
+            {
+                await VideoService.LikeVideoAsync(Id!);
+                video.IsLikedByCurrentUser = true;
+                video.LikeCount++;
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao curtir vídeo: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private async Task ShareVideo()
+    {
+        var url = Navigation.Uri;
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+        await JSRuntime.InvokeVoidAsync("alert", "Link copiado para a área de transferência!");
+    }
+
+    private async Task DeleteVideoAsync()
+    {
+        try
+        {
+            await VideoService.DeleteVideoAsync(Id!);
+            Navigation.NavigateTo("/videos");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao excluir vídeo: {ex.Message}";
+            showDeleteConfirm = false;
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToVideo(string videoId)
+    {
+        Navigation.NavigateTo($"/videos/{videoId}");
+        isLoading = true;
+        Id = videoId;
+        StateHasChanged();
+        _ = LoadVideoAsync();
+    }
+
+    private static string FormatViewCount(int count)
+    {
+        if (count >= 1000000)
+            return $"{count / 1000000.0:F1}M";
+        if (count >= 1000)
+            return $"{count / 1000.0:F1}K";
+        return count.ToString();
+    }
+}

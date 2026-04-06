@@ -1,9 +1,9 @@
 using OnForkHub.Application.Services;
-using OnForkHub.Core.Interfaces.Configuration;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Interfaces.Repositories.Base;
 using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.CrossCutting.DependencyInjection;
+using OnForkHub.CrossCutting.Interfaces;
 using OnForkHub.CrossCutting.Storage;
 using OnForkHub.Persistence.Repositories;
 
@@ -105,6 +105,7 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IUserRepositoryEF, UserRepositoryEF>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRefreshTokenRepositoryEF, RefreshTokenRepositoryEF>();
             services.Configure<FileStorageOptions>(options => { });
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
             return services;

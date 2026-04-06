@@ -1,11 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup></PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="GraphQL" />
     <PackageReference Include="GraphQL.Server.Core" />
+    <PackageReference Include="HotChocolate" />
+    <PackageReference Include="HotChocolate.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
