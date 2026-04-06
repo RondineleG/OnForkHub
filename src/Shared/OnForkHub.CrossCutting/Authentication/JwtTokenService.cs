@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+
 using RefreshTokenEntity = OnForkHub.Core.Entities.RefreshToken;
 
 /// <summary>
@@ -261,7 +262,13 @@ public sealed class JwtTokenService : ITokenService
         return Convert.ToBase64String(randomNumber);
     }
 
-    private void StoreRefreshToken(string refreshToken, DateTime expiration, IEnumerable<Claim> claims, string? ipAddress = null, string? userAgent = null)
+    private void StoreRefreshToken(
+        string refreshToken,
+        DateTime expiration,
+        IEnumerable<Claim> claims,
+        string? ipAddress = null,
+        string? userAgent = null
+    )
     {
         try
         {
@@ -278,7 +285,8 @@ public sealed class JwtTokenService : ITokenService
                 userId,
                 expiration,
                 ipAddress ?? string.Empty,
-                userAgent ?? string.Empty);
+                userAgent ?? string.Empty
+            );
 
             if (refreshTokenEntity.Status == EResultStatus.Success)
             {
