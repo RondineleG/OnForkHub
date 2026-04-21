@@ -122,4 +122,23 @@ public class VideoService(IVideoRepositoryEF videoRepository, IFileStorageServic
             cancellationToken
         );
     }
+
+    /// <inheritdoc/>
+    public async Task<RequestResult> EnableTorrentAsync(Guid videoId, string magnetUri)
+    {
+        return await ExecuteAsync(async () =>
+        {
+            Id id = videoId.ToString();
+            var result = await _videoRepository.GetByIdAsync(id);
+            if (result.Status != EResultStatus.Success || result.Data is null)
+            {
+                return RequestResult.WithError(result.Message ?? "Video not found");
+            }
+
+            var video = result.Data;
+            video.EnableTorrent(magnetUri);
+
+            return await _videoRepository.UpdateAsync(video);
+        });
+    }
 }

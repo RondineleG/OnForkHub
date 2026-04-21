@@ -42,6 +42,10 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
 
         builder.Property(v => v.Description).HasMaxLength(2000);
 
+        builder.Property(v => v.MagnetUri).HasMaxLength(2000);
+
+        builder.Property(v => v.IsTorrentEnabled).IsRequired().HasDefaultValue(false);
+
         // Configure Url value object
         builder.OwnsOne(
             v => v.Url,

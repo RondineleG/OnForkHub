@@ -79,4 +79,12 @@ public interface IVideoService
         Id userId,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Enables torrent for a video.
+    /// </summary>
+    /// <param name="videoId">The video identifier.</param>
+    /// <param name="magnetUri">The magnet URI.</param>
+    /// <returns>A request result.</returns>
+    Task<RequestResult> EnableTorrentAsync(Guid videoId, string magnetUri);
 }

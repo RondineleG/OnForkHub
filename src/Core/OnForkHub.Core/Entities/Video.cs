@@ -19,6 +19,10 @@ public class Video : BaseEntity
 
     public Id? UserId { get; private set; }
 
+    public string? MagnetUri { get; private set; }
+
+    public bool IsTorrentEnabled { get; private set; }
+
     public static RequestResult<Video> Create(string title, string description, string url, Id userId)
     {
         try
@@ -67,6 +71,18 @@ public class Video : BaseEntity
         {
             return RequestResult<Video>.WithError(ex.Message);
         }
+    }
+
+    public void EnableTorrent(string magnetUri)
+    {
+        if (string.IsNullOrWhiteSpace(magnetUri))
+        {
+            throw new DomainException("Magnet URI is required to enable torrent.");
+        }
+
+        MagnetUri = magnetUri;
+        IsTorrentEnabled = true;
+        Update();
     }
 
     public RequestResult AddCategory(Category category)

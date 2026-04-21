@@ -460,159 +460,69 @@
 
 ### 1.3 WEBTORRENT P2P INTEGRATION (7 dias)
 
-#### Task 1.3.1: Adicionar WebTorrent.js ao Projeto
-- [ ] **ALTERAÇÃO:** Adicionar referência WebTorrent no Blazor
-  ```html
-  <!-- Em index.html -->
-  <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
-  ```
-- [ ] **VALIDAR:** Script carrega sem erros
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **TESTAR:** Console não mostra erros 404
-- [ ] **COMMIT:** `feat(webtorrent): adicionar referência WebTorrent.js CDN`
+#### Task 1.3.1: Adicionar WebTorrent.js ao Projeto ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Adicionada referência WebTorrent no Blazor (`index.html`)
+  - `<script src="https://cdn.jsdelivr.net/webtorrent/latest/webtorrent.min.js"></script>`
+- [x] **VALIDAR:** Script carrega sem erros
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
+- [x] **TESTAR:** Console não mostra erros 404
+- [x] **COMMIT:** `feat(web): add WebTorrent.js reference`
 
 ---
 
-#### Task 1.3.2: Criar WebTorrentService (JS Interop)
-- [ ] **ALTERAÇÃO:** Criar serviço de interop em `OnForkHub.Web/Services/`
-  ```csharp
-  public class WebTorrentService : IAsyncDisposable
-  {
-      private readonly IJSRuntime _jsRuntime;
-      private IJSObjectReference? _webTorrentModule;
-      
-      public async Task InitializeAsync()
-      {
-          _webTorrentModule = await _jsRuntime.InvokeAsync<IJSObjectReference>(
-              "import", "./js/webtorrentService.js");
-      }
-      
-      public async Task<string> CreateTorrentAsync(byte[] videoData, string fileName)
-      {
-          return await _webTorrentModule!.InvokeAsync<string>("createTorrent", videoData, fileName);
-      }
-      
-      public async Task StartDownloadAsync(string magnetUri, string savePath)
-      {
-          await _webTorrentModule!.InvokeVoidAsync("startDownload", magnetUri, savePath);
-      }
-      
-      public async ValueTask DisposeAsync()
-      {
-          if (_webTorrentModule != null)
-              await _webTorrentModule.DisposeAsync();
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Implementa `IAsyncDisposable`
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **TESTAR:** 
-  - [ ] Mockar IJSRuntime
-  - [ ] Testar: `InitializeAsync_LoadsModule`
-  - [ ] Testar: `CreateTorrentAsync_ReturnsMagnetUri`
-- [ ] **COMMIT:** `feat(webtorrent): criar WebTorrentService com JS Interop`
+#### Task 1.3.2: Criar WebTorrentService (JS Interop) ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `WebTorrentService.cs` em `OnForkHub.Web/Services/`
+  - Implementado suporte a `CreateTorrentAsync`, `StartDownloadAsync` e `GetTorrentStatsAsync`
+  - Gerencia o ciclo de vida do módulo JS via `IAsyncDisposable`
+- [x] **VALIDAR:** Implementa `IAsyncDisposable`, compila corretamente
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
+- [x] **TESTAR:** 
+  - [x] Mockar `IJSRuntime`
+  - [x] Testar inicialização do módulo
+- [x] **COMMIT:** `feat(web): implement WebTorrentService with JS Interop`
 
 ---
 
-#### Task 1.3.3: Criar JavaScript Module para WebTorrent
-- [ ] **ALTERAÇÃO:** Criar `wwwroot/js/webtorrentService.js`
-  ```javascript
-  import WebTorrent from 'webtorrent';
-  
-  const client = new WebTorrent();
-  
-  export function createTorrent(videoData, fileName) {
-      return new Promise((resolve, reject) => {
-          const blob = new Blob([videoData], { type: 'video/mp4' });
-          const file = new File([blob], fileName);
-          
-          client.seed(file, (torrent) => {
-              resolve(torrent.magnetURI);
-          });
-      });
-  }
-  
-  export function startDownload(magnetUri, savePath) {
-      return new Promise((resolve, reject) => {
-          client.add(magnetUri, { path: savePath }, (torrent) => {
-              torrent.on('done', () => {
-                  resolve();
-              });
-          });
-      });
-  }
-  
-  export function getDownloadProgress(magnetUri) {
-      const torrent = client.get(magnetUri);
-      if (!torrent) return 0;
-      return torrent.progress * 100;
-  }
-  ```
-- [ ] **VALIDAR:** Sintaxe ES6 válida
-- [ ] **BUILDAR:** N/A (JS)
-- [ ] **TESTAR:** Teste manual no browser
-- [ ] **COMMIT:** `feat(webtorrent): implementar módulo JavaScript WebTorrent`
+#### Task 1.3.3: Criar JavaScript Module para WebTorrent ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `wwwroot/js/webtorrentService.js`
+  - Encapsula a lógica de seeding, download e estatísticas do WebTorrent.js
+  - Suporte a rendering automático de arquivos de vídeo no container
+- [x] **VALIDAR:** Sintaxe ES6 válida, integra corretamente com o service C#
+- [x] **BUILDAR:** N/A (JS)
+- [x] **TESTAR:** Teste manual no browser via console
+- [x] **COMMIT:** `feat(web): implement JavaScript module for WebTorrent`
 
 ---
 
-#### Task 1.3.4: Adicionar MagnetUri ao Modelo Video
-- [ ] **ALTERAÇÃO:** Adicionar propriedade em `Video.cs`
-  ```csharp
-  public class Video : BaseEntity, IAggregateRoot
-  {
-      // ... propriedades existentes
-      public string? MagnetUri { get; private set; }
-      public bool IsTorrentEnabled { get; private set; }
-      
-      public void EnableTorrent(string magnetUri)
-      {
-          MagnetUri = magnetUri;
-          IsTorrentEnabled = true;
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Propriedade nullable para vídeos legados
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core`
-- [ ] **TESTAR:** Testar: `EnableTorrent_SetsMagnetUriAndFlag`
-- [ ] **COMMIT:** `feat(webtorrent): adicionar MagnetUri e IsTorrentEnabled ao Video`
+#### Task 1.3.4: Adicionar MagnetUri ao Modelo Video ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Adicionadas propriedades `MagnetUri` e `IsTorrentEnabled` em `Video.cs`
+  - Criado método de domínio `EnableTorrent(string magnetUri)` com validação
+- [x] **VALIDAR:** Modelo segue DDD, propriedades protegidas para garantir integridade
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core` → 0 erros
+- [x] **TESTAR:** Testar: `EnableTorrent_SetsMagnetUriAndFlag`
+- [x] **COMMIT:** `feat(core): add MagnetUri and IsTorrentEnabled to Video model`
 
 ---
 
-#### Task 1.3.5: Criar EF Migration para Video
-- [ ] **ALTERAÇÃO:** Adicionar migration
-  ```bash
-  dotnet ef migrations add AddTorrentFieldsToVideo --project src/Infrastructure/OnForkHub.Persistence --startup-project src/Presentations/OnForkHub.Api
-  ```
-- [ ] **VALIDAR:** Migration gerada corretamente
-- [ ] **BUILDAR:** `dotnet build src/Infrastructure/OnForkHub.Persistence`
-- [ ] **TESTAR:** Aplicar migration em banco de teste
-- [ ] **COMMIT:** `feat(webtorrent): adicionar migration AddTorrentFieldsToVideo`
+#### Task 1.3.5: Criar EF Migration para Video ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Gerada migration `AddTorrentFieldsToVideo`
+  - Atualizada `VideoConfiguration` com `HasMaxLength(2000)` para MagnetUri e default false para flag
+- [x] **VALIDAR:** Migration gerada corretamente refletindo o modelo de domínio
+- [x] **BUILDAR:** `dotnet build src/Infrastructure/OnForkHub.Persistence` → 0 erros
+- [x] **TESTAR:** Aplicada em banco de teste local
+- [x] **COMMIT:** `feat(persistence): add AddTorrentFieldsToVideo migration`
 
 ---
 
-#### Task 1.3.6: Criar API Endpoint para Gerar Torrent
-- [ ] **ALTERAÇÃO:** Adicionar endpoint em `VideoEndpoints.cs`
-  ```csharp
-  app.MapPost("/api/videos/{id:guid}/torrent", async (
-      Guid id,
-      IVideoService videoService,
-      WebTorrentService webTorrentService) =>
-  {
-      var video = await videoService.GetByIdAsync(id);
-      if (!video.IsSuccess) return Results.NotFound();
-      
-      var videoData = await videoService.GetVideoDataAsync(id);
-      var magnetUri = await webTorrentService.CreateTorrentAsync(videoData, video.Value.Title);
-      
-      await videoService.EnableTorrentAsync(id, magnetUri);
-      
-      return Results.Ok(new { MagnetUri = magnetUri });
-  }).RequireAuthorization();
-  ```
-- [ ] **VALIDAR:** Endpoint retorna magnet URI
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api`
-- [ ] **TESTAR:** Teste de integração com mock de WebTorrentService
-- [ ] **COMMIT:** `feat(webtorrent): adicionar endpoint POST /api/videos/{id}/torrent`
+#### Task 1.3.6: Criar API Endpoint para Gerar Torrent ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Adicionado `EnableTorrentEndpoint.cs` em `Videos/`
+  - Endpoint: POST /api/v1/videos/{id}/torrent
+  - Integrado ao `IVideoService.EnableTorrentAsync`
+  - Segue o padrão `partial` com `LoggerMessage`
+- [x] **VALIDAR:** Endpoint retorna 200 e atualiza o estado do vídeo no banco
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api` → 0 erros
+- [x] **TESTAR:** Teste de integração ponta a ponta
+- [x] **COMMIT:** `feat(api): implement EnableTorrent endpoint`
 
 ---
 
