@@ -108,8 +108,21 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRefreshTokenRepositoryEF, RefreshTokenRepositoryEF>();
             services.AddScoped<IVideoUploadRepository, VideoUploadRepositoryEF>();
-            services.Configure<FileStorageOptions>(options => { });
-            services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+            // File Storage Configuration
+            services.Configure<FileStorageOptions>(configuration.GetSection(FileStorageOptions.SectionName));
+            services.Configure<AzureBlobStorageOptions>(configuration.GetSection(AzureBlobStorageOptions.SectionName));
+
+            var storageProvider = configuration.GetValue<string>("FileStorage:Provider") ?? "Local";
+            if (storageProvider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
+            {
+                services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+            }
+            else
+            {
+                services.AddScoped<IFileStorageService, LocalFileStorageService>();
+            }
+
             return services;
         }
 

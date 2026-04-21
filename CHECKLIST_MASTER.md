@@ -406,24 +406,20 @@
 
 ---
 
-#### Task 1.2.8: Configurar Armazenamento (FileStorageService)
-- [ ] **ALTERAÇÃO:** Implementar `IFileStorageService` para Azure Blob/S3
-  ```csharp
-  public class AzureBlobStorageService : IFileStorageService
-  {
-      public async Task<string> UploadAsync(Stream fileStream, string fileName)
-      {
-          // Implementação Azure Blob Storage
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Service implementa interface
-- [ ] **BUILDAR:** `dotnet build src/Infrastructure/OnForkHub.Persistence`
-- [ ] **TESTAR:** 
-  - [ ] Mockar BlobServiceClient
-  - [ ] Testar upload bem-sucedido
-  - [ ] Testar tratamento de erro
-- [ ] **COMMIT:** `feat(video-upload): implementar AzureBlobStorageService`
+#### Task 1.2.8: Configurar Armazenamento (FileStorageService) ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Implementado `AzureBlobStorageService` em `OnForkHub.CrossCutting/Storage/`
+  - Adicionado pacote NuGet `Azure.Storage.Blobs`
+  - Criada classe de configuração `AzureBlobStorageOptions`
+  - Suporte a Upload, Delete e Get via Azure SDK
+  - Implementada validação de arquivos de vídeo (tamanho e formato)
+  - Configuração dinâmica na API permitindo trocar entre Local e Azure via `appsettings.json`
+- [x] **VALIDAR:** Service implementa interface `IFileStorageService`, compila sem erros
+- [x] **BUILDAR:** `dotnet build src/Shared/OnForkHub.CrossCutting` → 0 erros
+- [x] **TESTAR:** 
+  - [x] Mockar `BlobServiceClient`
+  - [x] Testar upload bem-sucedido
+  - [x] Testar tratamento de erro
+- [x] **COMMIT:** `feat(crosscutting): implement AzureBlobStorageService for file storage`
 
 ---
 
