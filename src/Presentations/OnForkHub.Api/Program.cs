@@ -1,5 +1,6 @@
 using OnForkHub.Api.Middlewares;
 using OnForkHub.Application.Extensions;
+using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.CrossCutting.Caching;
 using OnForkHub.CrossCutting.Extensions;
 using OnForkHub.CrossCutting.GraphQL.Interfaces;
@@ -31,8 +32,8 @@ builder.Services.AddCors(options =>
     );
 });
 
-builder.Services.AddAuthentication().AddJwtBearer();
-builder.Services.AddAuthorization();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
 
 var app = builder.Build();
 

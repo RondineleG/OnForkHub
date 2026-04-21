@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-
 using OnForkHub.Core.Requests;
 
 namespace OnForkHub.CrossCutting.Interfaces;

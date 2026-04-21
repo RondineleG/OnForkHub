@@ -1,7 +1,6 @@
 namespace OnForkHub.Web.Services;
 
 using Microsoft.Extensions.DependencyInjection;
-
 using OnForkHub.Web.Services.Api;
 
 /// <summary>

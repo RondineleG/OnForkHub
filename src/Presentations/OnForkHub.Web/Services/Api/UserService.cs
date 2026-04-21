@@ -2,7 +2,6 @@ namespace OnForkHub.Web.Services.Api;
 
 using System.Net.Http.Json;
 using System.Text.Json;
-
 using OnForkHub.Web.Models;
 
 /// <summary>
@@ -58,7 +57,8 @@ public sealed class UserService : IUserService
         var response = await _httpClient.PutAsJsonAsync(
             "/api/v1/users/change-password",
             new { CurrentPassword = currentPassword, NewPassword = newPassword },
-            cancellationToken);
+            cancellationToken
+        );
 
         response.EnsureSuccessStatusCode();
     }

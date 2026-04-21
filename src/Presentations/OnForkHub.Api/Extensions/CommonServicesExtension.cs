@@ -1,5 +1,4 @@
 using System.Reflection;
-
 using OnForkHub.Application.Services;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Interfaces.Repositories.Base;
@@ -32,7 +31,7 @@ namespace OnForkHub.Api.Extensions
 
         public static IServiceCollection AddEndpoints(this IServiceCollection services)
         {
-            var assembly = typeof(IEndpointAsync).Assembly;
+            var assembly = typeof(CommonServicesExtension).Assembly;
             var scanner = new AssemblyScanner(assembly);
             var typeSelector = scanner.FindTypesImplementing<IEndpointAsync>();
             var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);

@@ -1,8 +1,6 @@
 using BCrypt.Net;
-
 using OnForkHub.Application.Services;
 using OnForkHub.Core.Interfaces.Repositories;
-
 using UserEntity = OnForkHub.Core.Entities.User;
 
 namespace OnForkHub.Application.Test.Services;

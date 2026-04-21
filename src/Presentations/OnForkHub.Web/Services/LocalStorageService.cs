@@ -1,7 +1,6 @@
 namespace OnForkHub.Web.Services;
 
 using System.Threading.Tasks;
-
 using Microsoft.JSInterop;
 
 /// <summary>

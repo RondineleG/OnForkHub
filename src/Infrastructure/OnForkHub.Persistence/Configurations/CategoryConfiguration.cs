@@ -2,7 +2,6 @@ namespace OnForkHub.Persistence.Configurations;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 using OnForkHub.Core.Entities;
 
 /// <summary>

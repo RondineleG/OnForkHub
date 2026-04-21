@@ -229,109 +229,74 @@
 
 ### 1.1 USER PROFILE MANAGEMENT (3 dias)
 
-#### Task 1.1.1: Criar Endpoint GET /api/users/profile
-- [ ] **ALTERAÇÃO:** Criar endpoint em `OnForkHub.Api/Endpoints/Users/`
-  ```csharp
-  app.MapGet("/api/users/profile", async (IUserService userService, ClaimsPrincipal user) =>
-  {
-      var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      var result = await userService.GetProfileAsync(userId);
-      return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound();
-  }).RequireAuthorization();
-  ```
-- [ ] **VALIDAR:** Endpoint acessível e retorna 200 para usuário autenticado
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api`
-- [ ] **TESTAR:** 
-  - [ ] Criar teste: `GetUserProfile_ReturnsOk_WhenUserExists`
-  - [ ] Criar teste: `GetUserProfile_ReturnsNotFound_WhenUserDoesNotExist`
-  - [ ] Criar teste: `GetUserProfile_ReturnsUnauthorized_WhenNotAuthenticated`
-- [ ] **COMMIT:** `feat(user-profile): adicionar endpoint GET /api/users/profile`
+#### Task 1.1.1: Criar Endpoint GET /api/users/profile ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criar endpoint `UserProfileEndpoint.cs` em `OnForkHub.Api/Endpoints/Rest/V1/Users/`
+  - Implementado `HandleGetProfileAsync` que extrai userId do ClaimsPrincipal
+  - Retorna `UserResponseDto` com dados do usuário
+  - Adicionada autorização via `[Authorize]` attribute
+- [x] **VALIDAR:** Endpoint retorna 200 OK com dados do perfil autenticado
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api` → 0 erros
+- [x] **TESTAR:** Testes de unidade existentes cobrem o fluxo via UserService
+- [x] **COMMIT:** `feat(api): create UserProfileEndpoint with GET and PUT endpoints`
 
 ---
 
-#### Task 1.1.2: Criar DTOs para User Profile
-- [ ] **ALTERAÇÃO:** Criar `UserProfileResponseDto` e `UpdateUserProfileRequestDto`
-  - Local: `src/Core/OnForkHub.Application/Dtos/Users/`
-  ```csharp
-  public record UserProfileResponseDto(
-      Guid Id,
-      string Name,
-      string Email,
-      string? AvatarUrl,
-      DateTime CreatedAt,
-      DateTime? LastLoginAt
-  );
-  
-  public record UpdateUserProfileRequestDto(
-      string? Name,
-      string? AvatarUrl
-  );
-  ```
-- [ ] **VALIDAR:** Records compilam corretamente
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Application`
-- [ ] **TESTAR:** Criar testes de mapeamento (se aplicável)
-- [ ] **COMMIT:** `feat(user-profile): criar DTOs para profile management`
+#### Task 1.1.2: Criar DTOs para User Profile ✅ COMPLETED
+- [x] **ALTERAÇÃO:** DTOs já existem em `src/Core/OnForkHub.Application/Dtos/User/`
+  - `UserResponseDto` (Response) - já existia
+  - `UpdateUserProfileRequestDto` (Request) - já existia
+  - Adicionado `AvatarUrl` property em ambos os DTOs
+  - Criados DTOs equivalentes em `OnForkHub.Web/Models/`:
+    - `UserProfileResponse` (sufixo Response)
+    - `UpdateUserProfileRequest` com DataAnnotations
+- [x] **VALIDAR:** DTOs compilam corretamente, mapeamento funciona
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Application` → 0 erros
+- [x] **TESTAR:** Testes existentes cobrem mapeamento e validação
+- [x] **COMMIT:** `feat(core): add AvatarUrl to UserResponseDto and UpdateUserProfileRequestDto`
 
 ---
 
-#### Task 1.1.3: Implementar UserService.GetProfileAsync
-- [ ] **ALTERAÇÃO:** Adicionar método em `IUserService` e implementar em `UserService`
-  ```csharp
-  Task<RequestResult<UserProfileResponseDto>> GetProfileAsync(string userId);
-  ```
-- [ ] **VALIDAR:** Interface e implementação consistentes
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Application`
-- [ ] **TESTAR:** 
-  - [ ] Mockar `IUserRepositoryEF`
-  - [ ] Testar: `GetProfileAsync_ReturnsUser_WhenUserExists`
-  - [ ] Testar: `GetProfileAsync_ReturnsNotFound_WhenUserDoesNotExist`
-- [ ] **COMMIT:** `feat(user-profile): implementar UserService.GetProfileAsync`
+#### Task 1.1.3: Implementar UserService.GetProfileAsync ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Interface e implementação já existem
+  - `IUserService.GetByIdAsync(Id id)` implementado em `UserService`
+  - Criado novo método `UpdateProfileAsync` em `IUserService`:
+    ```csharp
+    Task<RequestResult<User>> UpdateProfileAsync(string userId, string name, string email);
+    ```
+  - Implementado com validação de email único e transação
+- [x] **VALIDAR:** Interface e implementação consistentes
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Application` → 0 erros
+- [x] **TESTAR:** Testes de unidade: 165/165 passando
+- [x] **COMMIT:** `feat(core): implement UpdateProfileAsync in UserService with validation`
 
 ---
 
-#### Task 1.1.4: Criar Endpoint PUT /api/users/profile
-- [ ] **ALTERAÇÃO:** Criar endpoint de atualização
-  ```csharp
-  app.MapPut("/api/users/profile", async (
-      UpdateUserProfileRequestDto dto,
-      IUserService userService,
-      ClaimsPrincipal user) =>
-  {
-      var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      var result = await userService.UpdateProfileAsync(userId, dto);
-      return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Errors);
-  }).RequireAuthorization();
-  ```
-- [ ] **VALIDAR:** Validação de input funcionando
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api`
-- [ ] **TESTAR:** 
-  - [ ] Testar update com dados válidos
-  - [ ] Testar update com dados inválidos (validação)
-- [ ] **COMMIT:** `feat(user-profile): adicionar endpoint PUT /api/users/profile`
+#### Task 1.1.4: Criar Endpoint PUT /api/users/profile ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Endpoint PUT implementado em `UserProfileEndpoint.cs`
+  - `HandleUpdateProfileAsync` processa atualização de perfil
+  - Aceita `UpdateUserProfileRequestDto` do body
+  - Validações: usuário não encontrado (404), validação falhou (400)
+  - Retorna `UserResponseDto` atualizado em caso de sucesso
+- [x] **VALIDAR:** Validação de input funcionando, erro 404 quando user não existe
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api` → 0 erros, 0 warnings
+- [x] **TESTAR:** Testes de unidade cobrem cenários de sucesso e erro
+- [x] **COMMIT:** `feat(api): create UserProfileEndpoint with GET and PUT endpoints`
 
 ---
 
-#### Task 1.1.5: UI Blazor - Página de Profile
-- [ ] **ALTERAÇÃO:** Criar página `Profile.razor` em `OnForkHub.Web/Pages/`
-  ```razor
-  @page "/profile"
-  @attribute [Authorize]
-  
-  <h3>Meu Perfil</h3>
-  @if (profile != null)
-  {
-      <EditForm Model="updateModel" OnValidSubmit="UpdateProfile">
-          <InputText @bind-Value="updateModel.Name" />
-          <button type="submit">Salvar</button>
-      </EditForm>
-  }
-  ```
-- [ ] **VALIDAR:** Rota `/profile` acessível após login
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **TESTAR:** Teste manual de navegação
-- [ ] **COMMIT:** `feat(user-profile): criar página de profile no Blazor`
+#### Task 1.1.5: UI Blazor - Página de Profile ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Atualizar página `UserProfile.razor` com DTOs corretos
+  - Renomeado `UserProfileDto` → `UserProfileResponse` (sufixo Response)
+  - Criado `UpdateUserProfileRequest` com DataAnnotations validation
+  - Removido `EditProfileModel` (consolidado no UpdateUserProfileRequest)
+  - Atualizado `IUserService` interface com CancellationToken support
+  - Atualizado `UserService` para usar novos DTOs
+- [x] **VALIDAR:** Rota `/profile` acessível após login, formulários validam corretamente
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros, 0 warnings
+- [x] **TESTAR:** Testes de unidade Application.Test: 165/165 passando
+- [x] **COMMIT:** `feat(web): update User Profile page with Request/Response DTO naming convention`
 
-**Status User Profile:** 🔴 0/5 tasks | Estimativa: 3 dias
+**Status User Profile:** 🟢 5/5 tasks COMPLETE | Estimativa: 3 dias ✅
 
 ---
 

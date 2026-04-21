@@ -1,7 +1,6 @@
 namespace OnForkHub.Persistence.Repositories;
 
 using Microsoft.EntityFrameworkCore;
-
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Persistence.Contexts.Base;

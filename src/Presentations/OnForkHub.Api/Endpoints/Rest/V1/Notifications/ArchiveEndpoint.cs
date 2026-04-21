@@ -1,7 +1,6 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
 using System.Security.Claims;
-
 using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>

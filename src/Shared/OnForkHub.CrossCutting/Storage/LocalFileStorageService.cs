@@ -1,12 +1,9 @@
 namespace OnForkHub.CrossCutting.Storage;
 
 using System.IO;
-
 using Microsoft.Extensions.Options;
-
 using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.Core.Requests;
-
 using Path = System.IO.Path;
 
 /// <summary>

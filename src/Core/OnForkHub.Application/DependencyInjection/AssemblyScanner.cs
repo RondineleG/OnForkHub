@@ -1,8 +1,6 @@
 using System.Reflection;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
 using OnForkHub.Core.Interfaces.DependencyInjection;
 
 namespace OnForkHub.Application.DependencyInjection;
