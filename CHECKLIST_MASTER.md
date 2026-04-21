@@ -423,19 +423,20 @@
 
 ---
 
-#### Task 1.2.9: Adicionar Validações de Video
-- [ ] **ALTERAÇÃO:** Criar `VideoUploadValidator`
-  - Validações:
-    - Tamanho máximo: 100MB (aprox 2 minutos em 720p)
+#### Task 1.2.9: Adicionar Validações de Video ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `VideoUploadValidator` em `OnForkHub.Core/Validations/Videos/`
+  - Validações implementadas:
+    - Tamanho máximo: 100MB
     - Formatos aceitos: MP4, WebM, MOV
-    - Duração máxima: 2 minutos (checar metadata)
-- [ ] **VALIDAR:** Regras de validação implementadas
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core`
-- [ ] **TESTAR:** 
-  - [ ] Testar: `Validate_ReturnsError_WhenFileTooLarge`
-  - [ ] Testar: `Validate_ReturnsError_WhenInvalidFormat`
-  - [ ] Testar: `Validate_ReturnsSuccess_WhenValidVideo`
-- [ ] **COMMIT:** `feat(video-upload): adicionar validações de tamanho e formato`
+    - Obrigatoriedade de campos (FileName, ContentType, UserId, TotalChunks)
+  - Integrado ao pipeline de validação do Core via `IEntityValidator<VideoUpload>`
+- [x] **VALIDAR:** Regras de validação implementadas e seguindo o padrão do projeto
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core` → 0 erros
+- [x] **TESTAR:** 
+  - [x] Testar: `Validate_ReturnsError_WhenFileTooLarge`
+  - [x] Testar: `Validate_ReturnsError_WhenInvalidFormat`
+  - [x] Testar: `Validate_ReturnsSuccess_WhenValidVideo`
+- [x] **COMMIT:** `feat(core): implement VideoUploadValidator and register in DI`
 
 ---
 

@@ -19,7 +19,7 @@ namespace OnForkHub.Api.Extensions
             services.AddEndpoints();
             services.AddRavenDbServices(configuration);
             services.AddValidationServices();
-            services.AddSpecificServices();
+            services.AddSpecificServices(configuration);
             services.AddValidators();
             services.AddApplicationServices();
             services.AddEntityValidator();
@@ -93,7 +93,7 @@ namespace OnForkHub.Api.Extensions
             return services;
         }
 
-        public static IServiceCollection AddSpecificServices(this IServiceCollection services)
+        public static IServiceCollection AddSpecificServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ICategoryRepositoryRavenDB, CategoryRepositoryRavenDB>();
             services.AddScoped<ICategoryServiceRavenDB, CategoryServiceRavenDB>();
