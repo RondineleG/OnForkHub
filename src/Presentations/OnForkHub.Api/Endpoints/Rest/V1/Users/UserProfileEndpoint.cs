@@ -9,20 +9,17 @@ using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Core.Enums;
 using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.Core.ValueObjects;
-using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for user profile management.
 /// </summary>
-public sealed class UserProfileEndpoint(ILogger<UserProfileEndpoint> logger, IUserService userService) : IEndpointAsync
+public sealed class UserProfileEndpoint(IUserService userService) : IEndpointAsync
 {
     private const int V1 = 1;
 
     private static readonly string GetProfileRoute = $"/api/v{V1}/users/profile";
 
     private static readonly string UpdateProfileRoute = $"/api/v{V1}/users/profile";
-
-    private readonly ILogger<UserProfileEndpoint> _logger = logger;
 
     private readonly IUserService _userService = userService;
 
@@ -113,8 +110,6 @@ public sealed class UserProfileEndpoint(ILogger<UserProfileEndpoint> logger, IUs
         {
             return Results.BadRequest(new { Message = "Request body is required" });
         }
-
-        _logger.LogInformation("Updating profile for user {UserId}", userId);
 
         var result = await _userService.UpdateProfileAsync(userId, request.Name, request.Email);
 

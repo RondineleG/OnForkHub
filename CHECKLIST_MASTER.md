@@ -83,11 +83,11 @@
 ---
 
 ### Task 0.2: Corrigir GlobalUsings - OnForkHub.TestExtensions
-- [ ] **ALTERAÇÃO:** Ordenar usings em `test/Shared/OnForkHub.TestExtensions/GlobalUsings.cs`
-- [ ] **VALIDAR:** Ordem alfabética por namespace
-- [ ] **BUILDAR:** `dotnet build test/Shared/OnForkHub.TestExtensions`
-- [ ] **TESTAR:** N/A
-- [ ] **COMMIT:** `style(fix): ordenar usings em TestExtensions (SA1210)`
+- [x] **ALTERAÇÃO:** Ordenar usings em `test/Shared/OnForkHub.TestExtensions/GlobalUsings.cs`
+- [x] **VALIDAR:** Ordem alfabética por namespace
+- [x] **BUILDAR:** `dotnet build test/Shared/OnForkHub.TestExtensions`
+- [x] **TESTAR:** N/A
+- [x] **COMMIT:** `style(fix): ordenar usings em TestExtensions (SA1210)`
 
 ---
 

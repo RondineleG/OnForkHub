@@ -23,17 +23,6 @@ public abstract class BaseEndPoint<TEntity>
         return $"/api/v{version}/{route}";
     }
 
-    private static string GetDefaultRestRoute()
-    {
-        return typeof(TEntity).Name switch
-        {
-            nameof(Category) => "rest/categories",
-            nameof(Video) => "rest/videos",
-            nameof(Notification) => "rest/notifications",
-            var entityName => $"rest/{entityName.ToLowerInvariant()}",
-        };
-    }
-
     protected static async Task<IResult> HandleCreateUseCase<TRequest, TResponse>(
         IUseCase<TRequest, TResponse> useCase,
         ILogger logger,
@@ -150,6 +139,17 @@ public abstract class BaseEndPoint<TEntity>
             EResultStatus.EntityAlreadyExists => Results.Conflict(response),
             EResultStatus.HasError or EResultStatus.EntityHasError => Results.BadRequest(response),
             _ => Results.BadRequest(response),
+        };
+    }
+
+    private static string GetDefaultRestRoute()
+    {
+        return typeof(TEntity).Name switch
+        {
+            nameof(Category) => "rest/categories",
+            nameof(Video) => "rest/videos",
+            nameof(Notification) => "rest/notifications",
+            var entityName => $"rest/{entityName.ToLowerInvariant()}",
         };
     }
 }
