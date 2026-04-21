@@ -1,5 +1,4 @@
 using GraphQL.Types;
-
 using OnForkHub.CrossCutting.GraphQL.Interfaces;
 
 namespace OnForkHub.CrossCutting.GraphQL.GraphQLNet;

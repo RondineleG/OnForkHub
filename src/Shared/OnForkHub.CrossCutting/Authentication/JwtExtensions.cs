@@ -1,7 +1,6 @@
 namespace OnForkHub.CrossCutting.Authentication;
 
 using System.Text;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

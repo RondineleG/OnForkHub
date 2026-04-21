@@ -1,7 +1,6 @@
 namespace OnForkHub.CrossCutting.Caching.Implementations;
 
 using System.Text.Json;
-
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 

@@ -1,7 +1,6 @@
 namespace OnForkHub.CrossCutting.Caching.Implementations;
 
 using System.Collections.Concurrent;
-
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 

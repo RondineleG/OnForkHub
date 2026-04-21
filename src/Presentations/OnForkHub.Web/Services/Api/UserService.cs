@@ -2,7 +2,6 @@ namespace OnForkHub.Web.Services.Api;
 
 using System.Net.Http.Json;
 using System.Text.Json;
-
 using OnForkHub.Web.Models;
 
 /// <summary>

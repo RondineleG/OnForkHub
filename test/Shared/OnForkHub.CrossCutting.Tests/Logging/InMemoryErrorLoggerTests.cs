@@ -1,10 +1,8 @@
 namespace OnForkHub.CrossCutting.Test.Logging;
 
 using FluentAssertions;
-
 using OnForkHub.CrossCutting.Logging;
 using OnForkHub.CrossCutting.Logging.Implementations;
-
 using Xunit;
 
 [Trait("Category", "Unit")]

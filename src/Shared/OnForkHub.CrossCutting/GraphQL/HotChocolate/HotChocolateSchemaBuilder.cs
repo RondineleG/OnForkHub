@@ -1,5 +1,4 @@
 using HotChocolate.Execution.Configuration;
-
 using OnForkHub.CrossCutting.GraphQL.Interfaces;
 
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;

@@ -1,11 +1,8 @@
 namespace OnForkHub.CrossCutting.Tests.Authentication;
 
 using System.Security.Claims;
-
 using Microsoft.Extensions.Options;
-
 using NSubstitute;
-
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Requests;

@@ -2,10 +2,8 @@ global using System.Diagnostics;
 global using System.Globalization;
 global using System.Text.Json;
 global using System.Xml;
-
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
-
 global using OnForkHub.Scripts.Enums;
 global using OnForkHub.Scripts.Git;
 global using OnForkHub.Scripts.Husky;

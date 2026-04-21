@@ -92,11 +92,11 @@
 ---
 
 ### Task 0.3: Corrigir GlobalUsings - OnForkHub.Persistence.Test
-- [ ] **ALTERAÇÃO:** Ordenar usings em `test/Persistence/OnForkHub.Persistence.Test/GlobalUsings.cs`
-- [ ] **VALIDAR:** SA1210 compliance
-- [ ] **BUILDAR:** `dotnet build test/Persistence/OnForkHub.Persistence.Test`
-- [ ] **TESTAR:** N/A
-- [ ] **COMMIT:** `style(fix): ordenar usings em Persistence.Test (SA1210)`
+- [x] **ALTERAÇÃO:** Ordenar usings em `test/Persistence/OnForkHub.Persistence.Test/GlobalUsings.cs`
+- [x] **VALIDAR:** SA1210 compliance
+- [x] **BUILDAR:** `dotnet build test/Persistence/OnForkHub.Persistence.Test`
+- [x] **TESTAR:** N/A
+- [x] **COMMIT:** `style(fix): ordenar usings em Persistence.Test (SA1210)`
 
 ---
 

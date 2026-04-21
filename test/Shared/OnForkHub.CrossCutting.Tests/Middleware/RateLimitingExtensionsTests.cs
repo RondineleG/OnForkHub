@@ -2,7 +2,6 @@ namespace OnForkHub.CrossCutting.Tests.Middleware;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using OnForkHub.CrossCutting.Middleware.RateLimiting;
 
 [TestClass]
