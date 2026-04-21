@@ -3,7 +3,6 @@ namespace OnForkHub.CrossCutting.Middleware.ResponseCompression;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
-
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 
