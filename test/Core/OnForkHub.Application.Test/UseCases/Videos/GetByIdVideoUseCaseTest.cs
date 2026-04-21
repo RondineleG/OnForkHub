@@ -22,8 +22,7 @@ public class GetByIdVideoUseCaseTest
         var videoId = Guid.NewGuid().ToString();
         var video = CreateValidVideo(videoId);
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(video));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
 
         // Act
         var result = await _useCase.ExecuteAsync(videoId);
@@ -108,8 +107,7 @@ public class GetByIdVideoUseCaseTest
         // Arrange
         var videoId = Guid.NewGuid().ToString();
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.WithError("Video not found"));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.WithError("Video not found"));
 
         // Act
         var result = await _useCase.ExecuteAsync(videoId);
@@ -128,8 +126,7 @@ public class GetByIdVideoUseCaseTest
         // Arrange
         var videoId = Guid.NewGuid().ToString();
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(null!));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(videoId);
@@ -141,9 +138,9 @@ public class GetByIdVideoUseCaseTest
 
     private static Video CreateValidVideo(string id)
     {
-        var videoId = Id.Create(Guid.Parse(id));
-        var userId = Id.Create(Guid.NewGuid());
-        var video = Video.Create("Test Video", "Test Description", "https://example.com/video.mp4", userId).Data!;
+        Id videoId = id;
+        var userId = Id.Create();
+        var video = Video.Load(videoId, "Test Video", "Test Description", "https://example.com/video.mp4", userId, DateTime.UtcNow).Data!;
         return video;
     }
 }

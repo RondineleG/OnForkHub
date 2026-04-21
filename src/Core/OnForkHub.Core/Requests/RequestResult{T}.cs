@@ -48,7 +48,12 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> WithError(string message)
     {
-        return new RequestResult<T> { Status = EResultStatus.HasError, RequestError = new RequestError(message) };
+        return new RequestResult<T>
+        {
+            Status = EResultStatus.HasError,
+            Message = message,
+            RequestError = new RequestError(message),
+        };
     }
 
     public static new RequestResult<T> WithError(Exception exception)
@@ -58,7 +63,12 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> WithError(List<string> generalErrors)
     {
-        return new RequestResult<T> { Status = EResultStatus.HasError, _generalErrors = generalErrors };
+        return new RequestResult<T>
+        {
+            Status = EResultStatus.HasError,
+            Message = string.Join("; ", generalErrors),
+            _generalErrors = generalErrors,
+        };
     }
 
     public static new RequestResult<T> WithError(Dictionary<string, List<string>> entityErrors)
@@ -68,7 +78,12 @@ public class RequestResult<T> : RequestResult, IRequestCustomResult<T>
 
     public static new RequestResult<T> WithError(RequestError error)
     {
-        return new RequestResult<T> { Status = EResultStatus.HasError, RequestError = error };
+        return new RequestResult<T>
+        {
+            Status = EResultStatus.HasError,
+            Message = error.Description,
+            RequestError = error,
+        };
     }
 
     public static new RequestResult<T> WithNoContent()

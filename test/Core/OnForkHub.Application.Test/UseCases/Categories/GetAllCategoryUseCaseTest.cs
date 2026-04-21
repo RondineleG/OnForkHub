@@ -23,8 +23,9 @@ public class GetAllCategoryUseCaseTest
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
         var categories = CreateValidCategoriesList(3);
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Category>>.Success(categories));
+        _categoryService
+            .GetAllAsync(request.Page, request.ItemsPerPage)
+            .Returns((RequestResult<IEnumerable<Category>>?)RequestResult<IEnumerable<Category>>.Success(categories));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -44,8 +45,7 @@ public class GetAllCategoryUseCaseTest
         // Arrange
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Category>>.Success(null!));
+        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -63,8 +63,7 @@ public class GetAllCategoryUseCaseTest
         // Arrange
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns((RequestResult<IEnumerable<Category>>?)null);
+        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns((RequestResult<IEnumerable<Category>>?)null);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -83,8 +82,7 @@ public class GetAllCategoryUseCaseTest
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
         var emptyList = Enumerable.Empty<Category>().ToList();
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Category>>.Success(emptyList));
+        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(emptyList));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -121,8 +119,7 @@ public class GetAllCategoryUseCaseTest
         var request = new PaginationRequestDto { Page = 5, ItemsPerPage = 50 };
         var categories = CreateValidCategoriesList(10);
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Category>>.Success(categories));
+        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(categories));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);

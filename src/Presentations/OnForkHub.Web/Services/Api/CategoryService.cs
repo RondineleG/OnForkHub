@@ -1,7 +1,7 @@
 namespace OnForkHub.Web.Services.Api;
 
 using OnForkHub.Web.Models;
-using System.Globalization;
+
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -20,10 +20,7 @@ public sealed class CategoryService : ICategoryService
     public CategoryService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
+        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     }
 
     /// <inheritdoc/>
@@ -78,11 +75,7 @@ public sealed class CategoryService : ICategoryService
     /// <inheritdoc/>
     public async Task<CategoryDto> CreateCategoryAsync(string name, string description)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/categories", new
-        {
-            Name = name,
-            Description = description
-        });
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/categories", new { Name = name, Description = description });
 
         response.EnsureSuccessStatusCode();
 
@@ -93,11 +86,7 @@ public sealed class CategoryService : ICategoryService
     /// <inheritdoc/>
     public async Task<CategoryDto> UpdateCategoryAsync(long id, string name, string description)
     {
-        var response = await _httpClient.PutAsJsonAsync($"/api/v1/categories/{id}", new
-        {
-            Name = name,
-            Description = description
-        });
+        var response = await _httpClient.PutAsJsonAsync($"/api/v1/categories/{id}", new { Name = name, Description = description });
 
         response.EnsureSuccessStatusCode();
 

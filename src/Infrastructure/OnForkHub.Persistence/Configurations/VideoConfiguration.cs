@@ -42,17 +42,20 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
 
         builder.Property(v => v.Description).HasMaxLength(2000);
 
-        builder.Property(v => v.Url).HasMaxLength(500).IsRequired();
+        // Configure Url value object
+        builder.OwnsOne(
+            v => v.Url,
+            url =>
+            {
+                url.Property(u => u.Value).HasColumnName("Url").HasMaxLength(500).IsRequired();
+            }
+        );
 
         // Index on CreatedAt for sorting and date range filtering
         builder.HasIndex(v => v.CreatedAt).HasDatabaseName("IX_Videos_CreatedAt");
 
         // Index on UpdatedAt for sorting
         builder.HasIndex(v => v.UpdatedAt).HasDatabaseName("IX_Videos_UpdatedAt");
-
-        // Composite index for user's videos ordered by date
-        builder.HasIndex(v => new { v.UserId, v.CreatedAt })
-            .HasDatabaseName("IX_Videos_UserId_CreatedAt");
 
         // Configure relationship with Categories
         builder.HasMany(v => v.Categories).WithMany().UsingEntity(j => j.ToTable("VideoCategories"));

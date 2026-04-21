@@ -48,9 +48,7 @@ public class RefreshToken : BaseEntity
     /// Initializes a new instance of the <see cref="RefreshToken"/> class.
     /// Private constructor for EF Core.
     /// </summary>
-    private RefreshToken()
-    {
-    }
+    private RefreshToken() { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RefreshToken"/> class with the specified parameters.
@@ -80,12 +78,7 @@ public class RefreshToken : BaseEntity
     /// <param name="createdByIp">The IP address that created this token.</param>
     /// <param name="userAgent">The user agent string.</param>
     /// <returns>A request result containing the created refresh token.</returns>
-    public static RequestResult<RefreshToken> Create(
-        string token,
-        string userId,
-        DateTime expiresAt,
-        string createdByIp,
-        string userAgent)
+    public static RequestResult<RefreshToken> Create(string token, string userId, DateTime expiresAt, string createdByIp, string userAgent)
     {
         if (string.IsNullOrWhiteSpace(token))
         {

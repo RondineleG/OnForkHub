@@ -42,8 +42,5 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
 
         // Index on CreatedAt for sorting
         builder.HasIndex(u => u.CreatedAt).HasDatabaseName("IX_Users_CreatedAt");
-
-        // Configure relationship with Videos
-        builder.HasMany(u => u.Videos).WithOne().HasForeignKey("UserId").OnDelete(DeleteBehavior.Cascade);
     }
 }

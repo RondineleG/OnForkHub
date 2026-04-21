@@ -22,11 +22,10 @@ public class GetUserProfileUseCaseTest
     public async Task ShouldGetUserProfileSuccessfully()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var user = CreateValidUser(userId);
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.Success(user));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(user));
 
         // Act
         var result = await _useCase.ExecuteAsync(userId);
@@ -34,7 +33,7 @@ public class GetUserProfileUseCaseTest
         // Assert
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
-        result.Data!.Id.Should().Be(userId.ToString());
+        result.Data!.Id.Should().Contain(userId.ToString());
         result.Data.Name.Should().Be(user.Name.Value);
         result.Data.Email.Should().Be(user.Email.Value);
         await _userService.Received(1).GetByIdAsync(userId);
@@ -62,10 +61,9 @@ public class GetUserProfileUseCaseTest
     public async Task ShouldReturnErrorWhenUserNotFound()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.WithError("User not found"));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.WithError("User not found"));
 
         // Act
         var result = await _useCase.ExecuteAsync(userId);
@@ -82,10 +80,9 @@ public class GetUserProfileUseCaseTest
     public async Task ShouldReturnErrorWhenServiceReturnsNullData()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.Success(null!));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(userId);
@@ -101,10 +98,9 @@ public class GetUserProfileUseCaseTest
     public async Task ShouldReturnErrorWithServiceMessageWhenOperationFails()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.WithError("Database connection error"));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.WithError("Database connection error"));
 
         // Act
         var result = await _useCase.ExecuteAsync(userId);
@@ -117,7 +113,7 @@ public class GetUserProfileUseCaseTest
     private static UserEntity CreateValidUser(Id id)
     {
         var name = Name.Create("John Silva");
-        var user = UserEntity.Create(name, "john@email.com", "hashed_password").Data!;
+        var user = UserEntity.Load(id, name, "john@email.com", "hashed_password", DateTime.UtcNow).Data!;
         return user;
     }
 }

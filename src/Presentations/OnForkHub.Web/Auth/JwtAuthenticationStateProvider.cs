@@ -1,7 +1,9 @@
 namespace OnForkHub.Web.Auth;
 
 using Microsoft.AspNetCore.Components.Authorization;
+
 using OnForkHub.Web.Services;
+
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Security.Claims;
@@ -31,10 +33,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         _httpClient = httpClient;
     }
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     /// <inheritdoc/>
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -74,6 +73,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     /// </summary>
     /// <param name="token">The JWT access token.</param>
     /// <param name="refreshToken">The refresh token.</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     public async Task MarkUserAsAuthenticated(string token, string refreshToken)
     {
         await _localStorage.SetItemAsync(AccessTokenKey, token);
@@ -89,6 +89,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     /// <summary>
     /// Logs out the user by clearing stored tokens.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     public async Task Logout()
     {
         await ClearAuth();
@@ -132,8 +133,12 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     {
         switch (base64.Length % 4)
         {
-            case 2: base64 += "=="; break;
-            case 3: base64 += "="; break;
+            case 2:
+                base64 += "==";
+                break;
+            case 3:
+                base64 += "=";
+                break;
         }
 
         return Convert.FromBase64String(base64);
@@ -143,11 +148,10 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/refresh", new
-            {
-                AccessToken = expiredAccessToken,
-                RefreshToken = refreshToken
-            });
+            var response = await _httpClient.PostAsJsonAsync(
+                "/api/v1/auth/refresh",
+                new { AccessToken = expiredAccessToken, RefreshToken = refreshToken }
+            );
 
             if (!response.IsSuccessStatusCode)
             {

@@ -54,24 +54,19 @@ app.UseGlobalExceptionHandler();
 
 app.UseMiddleware<ApiTypeDetectionMiddleware>();
 
-if (apiMode is "Rest")
+if (apiMode is "Rest" or "All")
 {
-    app.MapGroup("/api/v1/rest").MapRestEndpoints();
+    await app.MapRegisteredEndpointsAsync();
 }
 
-if (apiMode is "HotChocolate")
+if (apiMode is "HotChocolate" or "All")
 {
     app.MapGroup("/api/v1/graph/hc").MapHotChocolateEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
 }
 
-if (apiMode is "GraphQLNet")
+if (apiMode is "GraphQLNet" or "All")
 {
     app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
 }
 
 await app.RunAsync();
-
-/// <summary>
-/// Partial class declaration for integration tests.
-/// </summary>
-public partial class Program { }

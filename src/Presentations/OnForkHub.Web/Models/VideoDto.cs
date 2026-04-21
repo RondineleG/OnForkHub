@@ -44,7 +44,7 @@ public class VideoDto
     /// <summary>Gets or sets the like count.</summary>
     public int LikeCount { get; set; }
 
-    /// <summary>Gets or sets whether the current user has liked this video.</summary>
+    /// <summary>Gets or sets a value indicating whether gets or sets whether the current user has liked this video.</summary>
     public bool IsLikedByCurrentUser { get; set; }
 
     /// <summary>Gets or sets the tags associated with the video.</summary>

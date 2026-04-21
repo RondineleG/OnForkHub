@@ -2,6 +2,12 @@ namespace OnForkHub.Core.ValueObjects;
 
 public class Url : ValueObject
 {
+    // Parameterless constructor for EF Core
+    private Url()
+    {
+        Value = string.Empty;
+    }
+
     private Url(string value)
     {
         Value = value;

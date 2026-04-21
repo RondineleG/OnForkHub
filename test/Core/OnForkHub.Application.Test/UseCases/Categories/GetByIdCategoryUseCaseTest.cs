@@ -22,8 +22,7 @@ public class GetByIdCategoryUseCaseTest
         const long categoryId = 1;
         var category = CreateValidCategory(categoryId);
 
-        _categoryRepository.GetByIdAsync(categoryId)
-            .Returns(RequestResult<Category>.Success(category));
+        _categoryRepository.GetByIdAsync(categoryId).Returns((RequestResult<Category>?)RequestResult<Category>.Success(category));
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);
@@ -43,8 +42,7 @@ public class GetByIdCategoryUseCaseTest
         // Arrange
         const long categoryId = 999;
 
-        _categoryRepository.GetByIdAsync(categoryId)
-            .Returns(RequestResult<Category>.WithNoContent());
+        _categoryRepository.GetByIdAsync(categoryId).Returns(RequestResult<Category>.WithNoContent());
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);
@@ -62,8 +60,7 @@ public class GetByIdCategoryUseCaseTest
         // Arrange
         const long categoryId = 1;
 
-        _categoryRepository.GetByIdAsync(categoryId)
-            .Returns((RequestResult<Category>?)null);
+        _categoryRepository.GetByIdAsync(categoryId).Returns((RequestResult<Category>?)null);
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);
@@ -81,8 +78,7 @@ public class GetByIdCategoryUseCaseTest
         // Arrange
         const long categoryId = 1;
 
-        _categoryRepository.GetByIdAsync(categoryId)
-            .Returns(RequestResult<Category>.Success(null!));
+        _categoryRepository.GetByIdAsync(categoryId).Returns(RequestResult<Category>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);

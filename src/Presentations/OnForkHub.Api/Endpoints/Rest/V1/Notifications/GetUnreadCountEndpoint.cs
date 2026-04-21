@@ -14,7 +14,7 @@ public class GetUnreadCountEndpoint(ILogger<GetUnreadCountEndpoint> logger, INot
 {
     private const int V1 = 1;
 
-    private static readonly string Route = GetVersionedRoute(V1) + "/unread/count";
+    private static readonly string Route = GetVersionedRoute(V1) + "/unread-count";
 
     private readonly ILogger<GetUnreadCountEndpoint> _logger = logger;
 

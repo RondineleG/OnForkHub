@@ -1,5 +1,10 @@
 namespace OnForkHub.Persistence.Configurations;
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+using UserEntity = OnForkHub.Core.Entities.User;
+
 /// <summary>
 /// EF Core configuration for Notification entity with optimized indexes.
 /// </summary>
@@ -39,9 +44,5 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
         builder.HasIndex(n => n.Status).HasDatabaseName("IX_Notifications_Status");
         builder.HasIndex(n => n.Type).HasDatabaseName("IX_Notifications_Type");
         builder.HasIndex(n => n.ReadAt).HasDatabaseName("IX_Notifications_ReadAt");
-
-        // Composite index for user's active notifications ordered by date
-        builder.HasIndex(n => new { n.UserId, n.Status, n.CreatedAt })
-            .HasDatabaseName("IX_Notifications_UserId_Status_CreatedAt");
     }
 }

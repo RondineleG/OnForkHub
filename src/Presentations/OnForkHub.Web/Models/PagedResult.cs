@@ -21,9 +21,9 @@ public class PagedResult<T>
     /// <summary>Gets the total number of pages.</summary>
     public int TotalPages => PageSize > 0 ? (int)Math.Ceiling(TotalCount / (double)PageSize) : 0;
 
-    /// <summary>Gets whether there is a next page.</summary>
+    /// <summary>Gets a value indicating whether gets whether there is a next page.</summary>
     public bool HasNextPage => Page < TotalPages;
 
-    /// <summary>Gets whether there is a previous page.</summary>
+    /// <summary>Gets a value indicating whether gets whether there is a previous page.</summary>
     public bool HasPreviousPage => Page > 1;
 }

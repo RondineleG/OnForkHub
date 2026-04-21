@@ -267,7 +267,8 @@ public sealed class JwtTokenServiceTests
         var mockRepository = Substitute.For<IRefreshTokenRepositoryEF>();
 
         // Setup CreateAsync
-        mockRepository.CreateAsync(Arg.Any<RefreshToken>())
+        mockRepository
+            .CreateAsync(Arg.Any<RefreshToken>())
             .Returns(callInfo =>
             {
                 var token = callInfo.Arg<RefreshToken>();
@@ -276,7 +277,8 @@ public sealed class JwtTokenServiceTests
             });
 
         // Setup GetByTokenAsync
-        mockRepository.GetByTokenAsync(Arg.Any<string>())
+        mockRepository
+            .GetByTokenAsync(Arg.Any<string>())
             .Returns(callInfo =>
             {
                 var token = callInfo.Arg<string>();
@@ -284,7 +286,8 @@ public sealed class JwtTokenServiceTests
             });
 
         // Setup RevokeAsync
-        mockRepository.RevokeAsync(Arg.Any<string>())
+        mockRepository
+            .RevokeAsync(Arg.Any<string>())
             .Returns(callInfo =>
             {
                 var token = callInfo.Arg<string>();

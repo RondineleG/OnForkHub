@@ -22,17 +22,12 @@ public class LoginUserUseCaseTest
     [DisplayName("Should login user successfully")]
     public async Task ShouldLoginUserSuccessfully()
     {
-        var request = new UserLoginRequestDto
-        {
-            Email = "john@email.com",
-            Password = "Password123!"
-        };
+        var request = new UserLoginRequestDto { Email = "john@email.com", Password = "Password123!" };
 
         var userName = Name.Create("John Silva");
         var user = UserEntity.Create(userName, request.Email, "hashed_password").Data!;
 
-        _userService.LoginAsync(request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.Success(user));
+        _userService.LoginAsync(request.Email, request.Password).Returns(RequestResult<UserEntity>.Success(user));
 
         var result = await _loginUserUseCase.ExecuteAsync(request);
 
@@ -47,14 +42,9 @@ public class LoginUserUseCaseTest
     [DisplayName("Should return error when credentials are invalid")]
     public async Task ShouldReturnErrorWhenCredentialsAreInvalid()
     {
-        var request = new UserLoginRequestDto
-        {
-            Email = "john@email.com",
-            Password = "WrongPassword"
-        };
+        var request = new UserLoginRequestDto { Email = "john@email.com", Password = "WrongPassword" };
 
-        _userService.LoginAsync(request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.WithError("Invalid email or password"));
+        _userService.LoginAsync(request.Email, request.Password).Returns(RequestResult<UserEntity>.WithError("Invalid email or password"));
 
         var result = await _loginUserUseCase.ExecuteAsync(request);
 
@@ -80,14 +70,9 @@ public class LoginUserUseCaseTest
     [DisplayName("Should return error when service returns null user")]
     public async Task ShouldReturnErrorWhenServiceReturnsNullUser()
     {
-        var request = new UserLoginRequestDto
-        {
-            Email = "john@email.com",
-            Password = "Password123!"
-        };
+        var request = new UserLoginRequestDto { Email = "john@email.com", Password = "Password123!" };
 
-        _userService.LoginAsync(request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.Success(null!));
+        _userService.LoginAsync(request.Email, request.Password).Returns(RequestResult<UserEntity>.Success(null!));
 
         var result = await _loginUserUseCase.ExecuteAsync(request);
 
@@ -100,14 +85,9 @@ public class LoginUserUseCaseTest
     [DisplayName("Should return error when user is not found")]
     public async Task ShouldReturnErrorWhenUserIsNotFound()
     {
-        var request = new UserLoginRequestDto
-        {
-            Email = "nonexistent@email.com",
-            Password = "Password123!"
-        };
+        var request = new UserLoginRequestDto { Email = "nonexistent@email.com", Password = "Password123!" };
 
-        _userService.LoginAsync(request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.WithError("User not found"));
+        _userService.LoginAsync(request.Email, request.Password).Returns(RequestResult<UserEntity>.WithError("User not found"));
 
         var result = await _loginUserUseCase.ExecuteAsync(request);
 
@@ -120,14 +100,9 @@ public class LoginUserUseCaseTest
     [DisplayName("Should return error when email is empty")]
     public async Task ShouldReturnErrorWhenEmailIsEmpty()
     {
-        var request = new UserLoginRequestDto
-        {
-            Email = string.Empty,
-            Password = "Password123!"
-        };
+        var request = new UserLoginRequestDto { Email = string.Empty, Password = "Password123!" };
 
-        _userService.LoginAsync(request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.WithError("Email is required"));
+        _userService.LoginAsync(request.Email, request.Password).Returns(RequestResult<UserEntity>.WithError("Email is required"));
 
         var result = await _loginUserUseCase.ExecuteAsync(request);
 
@@ -140,14 +115,9 @@ public class LoginUserUseCaseTest
     [DisplayName("Should return error when password is empty")]
     public async Task ShouldReturnErrorWhenPasswordIsEmpty()
     {
-        var request = new UserLoginRequestDto
-        {
-            Email = "john@email.com",
-            Password = string.Empty
-        };
+        var request = new UserLoginRequestDto { Email = "john@email.com", Password = string.Empty };
 
-        _userService.LoginAsync(request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.WithError("Password is required"));
+        _userService.LoginAsync(request.Email, request.Password).Returns(RequestResult<UserEntity>.WithError("Password is required"));
 
         var result = await _loginUserUseCase.ExecuteAsync(request);
 
@@ -160,14 +130,9 @@ public class LoginUserUseCaseTest
     [DisplayName("Should return error with service message on failure")]
     public async Task ShouldReturnErrorWithServiceMessageOnFailure()
     {
-        var request = new UserLoginRequestDto
-        {
-            Email = "john@email.com",
-            Password = "Password123!"
-        };
+        var request = new UserLoginRequestDto { Email = "john@email.com", Password = "Password123!" };
 
-        _userService.LoginAsync(request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.WithError("Database connection timeout"));
+        _userService.LoginAsync(request.Email, request.Password).Returns(RequestResult<UserEntity>.WithError("Database connection timeout"));
 
         var result = await _loginUserUseCase.ExecuteAsync(request);
 

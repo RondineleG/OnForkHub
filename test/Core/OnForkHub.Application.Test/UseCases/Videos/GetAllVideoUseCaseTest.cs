@@ -23,8 +23,9 @@ public class GetAllVideoUseCaseTest
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
         var videos = CreateValidVideosList(3);
 
-        _videoService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Video>>.Success(videos));
+        _videoService
+            .GetAllAsync(request.Page, request.ItemsPerPage)
+            .Returns((RequestResult<IEnumerable<Video>>?)RequestResult<IEnumerable<Video>>.Success(videos));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -44,8 +45,7 @@ public class GetAllVideoUseCaseTest
         // Arrange
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
 
-        _videoService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Video>>.Success(null!));
+        _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Video>>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -63,8 +63,7 @@ public class GetAllVideoUseCaseTest
         // Arrange
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
 
-        _videoService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns((RequestResult<IEnumerable<Video>>?)null);
+        _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns((RequestResult<IEnumerable<Video>>?)null);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -83,8 +82,7 @@ public class GetAllVideoUseCaseTest
         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
         var emptyList = Enumerable.Empty<Video>().ToList();
 
-        _videoService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Video>>.Success(emptyList));
+        _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Video>>.Success(emptyList));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -121,8 +119,7 @@ public class GetAllVideoUseCaseTest
         var request = new PaginationRequestDto { Page = 5, ItemsPerPage = 50 };
         var videos = CreateValidVideosList(10);
 
-        _videoService.GetAllAsync(request.Page, request.ItemsPerPage)
-            .Returns(RequestResult<IEnumerable<Video>>.Success(videos));
+        _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Video>>.Success(videos));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -136,7 +133,7 @@ public class GetAllVideoUseCaseTest
     private static List<Video> CreateValidVideosList(int count)
     {
         var videos = new List<Video>();
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         for (var i = 0; i < count; i++)
         {
             var video = Video.Create($"Video {i + 1}", $"Description {i + 1}", $"https://example.com/video{i + 1}.mp4", userId).Data!;

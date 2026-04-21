@@ -42,9 +42,7 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     {
         try
         {
-            var refreshToken = await _context.RefreshTokens
-                .AsNoTracking()
-                .FirstOrDefaultAsync(rt => rt.Token == token);
+            var refreshToken = await _context.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(rt => rt.Token == token);
 
             return refreshToken;
         }
@@ -59,8 +57,8 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     {
         try
         {
-            var tokens = await _context.RefreshTokens
-                .AsNoTracking()
+            var tokens = await _context
+                .RefreshTokens.AsNoTracking()
                 .Where(rt => rt.UserId == userId && !rt.RevokedAt.HasValue && rt.ExpiresAt > DateTime.UtcNow)
                 .OrderByDescending(rt => rt.CreatedAt)
                 .ToListAsync();
@@ -78,8 +76,7 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     {
         try
         {
-            var refreshToken = await _context.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.Token == token);
+            var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == token);
 
             if (refreshToken == null)
             {
@@ -106,9 +103,7 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     {
         try
         {
-            var tokens = await _context.RefreshTokens
-                .Where(rt => rt.UserId == userId && !rt.RevokedAt.HasValue)
-                .ToListAsync();
+            var tokens = await _context.RefreshTokens.Where(rt => rt.UserId == userId && !rt.RevokedAt.HasValue).ToListAsync();
 
             foreach (var token in tokens)
             {
@@ -133,9 +128,7 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     {
         try
         {
-            var expiredTokens = await _context.RefreshTokens
-                .Where(rt => rt.ExpiresAt <= DateTime.UtcNow || rt.RevokedAt.HasValue)
-                .ToListAsync();
+            var expiredTokens = await _context.RefreshTokens.Where(rt => rt.ExpiresAt <= DateTime.UtcNow || rt.RevokedAt.HasValue).ToListAsync();
 
             _context.RefreshTokens.RemoveRange(expiredTokens);
             return await _context.SaveChangesAsync();

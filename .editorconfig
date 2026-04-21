@@ -280,6 +280,7 @@ dotnet_diagnostic.IDE2003.severity = none
 dotnet_diagnostic.IDE2004.severity = none
 dotnet_diagnostic.CA1824.severity = none
 dotnet_diagnostic.CA1602.severity = none
+dotnet_diagnostic.CS8620.severity = none
 
 # StyleCop Analyzers suppressions
 dotnet_diagnostic.SA1010.severity = none
@@ -359,3 +360,9 @@ dotnet_analyzer_diagnostic.category-Style.severity = none
 
 [*.cs]
 dotnet_diagnostic.SA1503.severity = none
+
+# Test projects keep descriptive method names and framework-managed fixture lifetimes.
+[test/**/*.cs]
+dotnet_diagnostic.CA1001.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.SA1202.severity = none

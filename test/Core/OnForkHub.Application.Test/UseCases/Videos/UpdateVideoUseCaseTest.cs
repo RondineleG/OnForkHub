@@ -25,12 +25,9 @@ public class UpdateVideoUseCaseTest
         var request = CreateValidUpdateRequest();
         var existingVideo = CreateValidVideo(request.Id);
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(existingVideo));
-        _validator.ValidateUpdate(existingVideo)
-            .Returns(new TestVideoValidationResult(true));
-        _videoService.UpdateAsync(existingVideo)
-            .Returns(RequestResult<Video>.Success(existingVideo));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(existingVideo));
+        _validator.ValidateUpdate(existingVideo).Returns(ValidationResult.Success());
+        _videoService.UpdateAsync(existingVideo).Returns(RequestResult<Video>.Success(existingVideo));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -84,8 +81,7 @@ public class UpdateVideoUseCaseTest
         // Arrange
         var request = CreateValidUpdateRequest();
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.WithError("Video not found"));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.WithError("Video not found"));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -105,8 +101,7 @@ public class UpdateVideoUseCaseTest
         // Arrange
         var request = CreateValidUpdateRequest();
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(null!));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -125,11 +120,10 @@ public class UpdateVideoUseCaseTest
         var request = CreateValidUpdateRequest();
         var existingVideo = CreateValidVideo(request.Id);
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(existingVideo));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(existingVideo));
 
         // Force update to fail with empty title
-        request.Title = "";
+        request.Title = string.Empty;
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -147,20 +141,18 @@ public class UpdateVideoUseCaseTest
         var request = CreateValidUpdateRequest();
         var existingVideo = CreateValidVideo(request.Id);
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(existingVideo));
-        _validator.ValidateUpdate(existingVideo)
-            .Returns(new TestVideoValidationResult(false, "Title is required", "Title"));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(existingVideo));
+        _validator.ValidateUpdate(existingVideo).Returns(ValidationResult.Failure("Title is required", "Title"));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
-        result.Status.Should().Be(EResultStatus.HasValidations);
+        result.Status.Should().Be(EResultStatus.HasValidation);
         result.Validations.Should().HaveCount(1);
-        result.Validations.First().Field.Should().Be("Title");
-        result.Validations.First().Message.Should().Be("Title is required");
-        await _validator.Received(1).ValidateUpdate(existingVideo);
+        result.Validations.First().PropertyName.Should().Be("Title");
+        result.Validations.First().Description.Should().Be("Title is required");
+        _validator.Received(1).ValidateUpdate(existingVideo);
         await _videoService.DidNotReceive().UpdateAsync(Arg.Any<Video>());
     }
 
@@ -173,12 +165,9 @@ public class UpdateVideoUseCaseTest
         var request = CreateValidUpdateRequest();
         var existingVideo = CreateValidVideo(request.Id);
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(existingVideo));
-        _validator.ValidateUpdate(existingVideo)
-            .Returns(new TestVideoValidationResult(true));
-        _videoService.UpdateAsync(existingVideo)
-            .Returns(RequestResult<Video>.WithError("Database error"));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(existingVideo));
+        _validator.ValidateUpdate(existingVideo).Returns(ValidationResult.Success());
+        _videoService.UpdateAsync(existingVideo).Returns(RequestResult<Video>.WithError("Database error"));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -198,12 +187,9 @@ public class UpdateVideoUseCaseTest
         var request = CreateValidUpdateRequest();
         var existingVideo = CreateValidVideo(request.Id);
 
-        _videoService.GetByIdAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(existingVideo));
-        _validator.ValidateUpdate(existingVideo)
-            .Returns(new TestVideoValidationResult(true));
-        _videoService.UpdateAsync(existingVideo)
-            .Returns(RequestResult<Video>.Success(null!));
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(existingVideo));
+        _validator.ValidateUpdate(existingVideo).Returns(ValidationResult.Success());
+        _videoService.UpdateAsync(existingVideo).Returns(RequestResult<Video>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -221,45 +207,14 @@ public class UpdateVideoUseCaseTest
             Title = "Updated Video Title",
             Description = "Updated Description",
             Url = "https://example.com/updated-video.mp4",
-            CategoryIds = []
+            CategoryIds = [],
         };
     }
 
     private static Video CreateValidVideo(string id)
     {
-        var videoId = Id.Create(Guid.Parse(id));
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var video = Video.Create("Original Video", "Original Description", "https://example.com/original.mp4", userId).Data!;
         return video;
     }
 }
-
-// Helper class for video validation testing
-public class TestVideoValidationResult : IValidationResult
-{
-    private readonly List<IValidationError> _errors = [];
-
-    public TestVideoValidationResult(bool isValid)
-    {
-        if (!isValid)
-        {
-            _errors.Add(new TestVideoValidationError("Validation failed", "Field"));
-        }
-    }
-
-    public TestVideoValidationResult(bool isValid, string message, string field)
-    {
-        if (!isValid)
-        {
-            _errors.Add(new TestVideoValidationError(message, field));
-        }
-    }
-
-    public bool IsValid => _errors.Count == 0;
-
-    public IEnumerable<IValidationError> Errors => _errors;
-
-    public string ErrorMessage => string.Join(", ", _errors.Select(e => e.Message));
-}
-
-public record TestVideoValidationError(string Message, string Field) : IValidationError;

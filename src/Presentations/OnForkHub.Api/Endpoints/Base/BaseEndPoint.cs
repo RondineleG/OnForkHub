@@ -19,8 +19,19 @@ public abstract class BaseEndPoint<TEntity>
 
     protected static string GetVersionedRoute(int version, string? customRoute = null)
     {
-        var route = customRoute ?? typeof(TEntity).Name.ToLowerInvariant();
+        var route = customRoute ?? GetDefaultRestRoute();
         return $"/api/v{version}/{route}";
+    }
+
+    private static string GetDefaultRestRoute()
+    {
+        return typeof(TEntity).Name switch
+        {
+            nameof(Category) => "rest/categories",
+            nameof(Video) => "rest/videos",
+            nameof(Notification) => "rest/notifications",
+            var entityName => $"rest/{entityName.ToLowerInvariant()}",
+        };
     }
 
     protected static async Task<IResult> HandleCreateUseCase<TRequest, TResponse>(

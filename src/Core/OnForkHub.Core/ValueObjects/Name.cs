@@ -3,6 +3,12 @@ namespace OnForkHub.Core.ValueObjects;
 [JsonConverter(typeof(NameConverter))]
 public class Name : ValueObject
 {
+    // Parameterless constructor for EF Core
+    private Name()
+    {
+        Value = string.Empty;
+    }
+
     private Name(string value)
     {
         Value = value;

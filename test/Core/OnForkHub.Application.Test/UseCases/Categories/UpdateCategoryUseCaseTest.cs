@@ -25,12 +25,9 @@ public class UpdateCategoryUseCaseTest
         var request = CreateValidUpdateRequest(1);
         var existingCategory = CreateValidCategory(1);
 
-        _categoryRepository.GetByIdAsync(request.Id)
-            .Returns(RequestResult<Category>.Success(existingCategory));
-        _validator.ValidateUpdate(existingCategory)
-            .Returns(new TestValidationResult(true));
-        _categoryRepository.UpdateAsync(existingCategory)
-            .Returns(RequestResult<Category>.Success(existingCategory));
+        _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
+        _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
+        _categoryRepository.UpdateAsync(existingCategory).Returns(RequestResult<Category>.Success(existingCategory));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -66,8 +63,7 @@ public class UpdateCategoryUseCaseTest
         // Arrange
         var request = CreateValidUpdateRequest(1);
 
-        _categoryRepository.GetByIdAsync(request.Id)
-            .Returns(RequestResult<Category>.WithError("Category not found"));
+        _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.WithError("Category not found"));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -87,8 +83,7 @@ public class UpdateCategoryUseCaseTest
         // Arrange
         var request = CreateValidUpdateRequest(1);
 
-        _categoryRepository.GetByIdAsync(request.Id)
-            .Returns(RequestResult<Category>.Success(null!));
+        _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -107,11 +102,11 @@ public class UpdateCategoryUseCaseTest
         var request = CreateValidUpdateRequest(1);
         var existingCategory = CreateValidCategory(1);
 
-        _categoryRepository.GetByIdAsync(request.Id)
-            .Returns(RequestResult<Category>.Success(existingCategory));
+        _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
+        _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
+        _categoryRepository.UpdateAsync(existingCategory).Returns(RequestResult<Category>.WithError("Database error"));
 
-        // Act - Tente com nome inválido (vazio) para forçar falha no UpdateCategory
-        request.Category.Name = "";
+        // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
@@ -127,20 +122,18 @@ public class UpdateCategoryUseCaseTest
         var request = CreateValidUpdateRequest(1);
         var existingCategory = CreateValidCategory(1);
 
-        _categoryRepository.GetByIdAsync(request.Id)
-            .Returns(RequestResult<Category>.Success(existingCategory));
-        _validator.ValidateUpdate(existingCategory)
-            .Returns(new TestValidationResult(false, "Name is required", "Name"));
+        _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
+        _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Failure("Name is required", "Name"));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
-        result.Status.Should().Be(EResultStatus.HasValidations);
+        result.Status.Should().Be(EResultStatus.HasValidation);
         result.Validations.Should().HaveCount(1);
-        result.Validations.First().Field.Should().Be("Name");
-        result.Validations.First().Message.Should().Be("Name is required");
-        await _validator.Received(1).ValidateUpdate(existingCategory);
+        result.Validations.First().PropertyName.Should().Be("Name");
+        result.Validations.First().Description.Should().Be("Name is required");
+        _validator.Received(1).ValidateUpdate(existingCategory);
         await _categoryRepository.DidNotReceive().UpdateAsync(Arg.Any<Category>());
     }
 
@@ -153,12 +146,9 @@ public class UpdateCategoryUseCaseTest
         var request = CreateValidUpdateRequest(1);
         var existingCategory = CreateValidCategory(1);
 
-        _categoryRepository.GetByIdAsync(request.Id)
-            .Returns(RequestResult<Category>.Success(existingCategory));
-        _validator.ValidateUpdate(existingCategory)
-            .Returns(new TestValidationResult(true));
-        _categoryRepository.UpdateAsync(existingCategory)
-            .Returns(RequestResult<Category>.WithError("Database error"));
+        _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
+        _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
+        _categoryRepository.UpdateAsync(existingCategory).Returns(RequestResult<Category>.WithError("Database error"));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -178,12 +168,9 @@ public class UpdateCategoryUseCaseTest
         var request = CreateValidUpdateRequest(1);
         var existingCategory = CreateValidCategory(1);
 
-        _categoryRepository.GetByIdAsync(request.Id)
-            .Returns(RequestResult<Category>.Success(existingCategory));
-        _validator.ValidateUpdate(existingCategory)
-            .Returns(new TestValidationResult(true));
-        _categoryRepository.UpdateAsync(existingCategory)
-            .Returns(RequestResult<Category>.Success(null!));
+        _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
+        _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
+        _categoryRepository.UpdateAsync(existingCategory).Returns(RequestResult<Category>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -198,11 +185,7 @@ public class UpdateCategoryUseCaseTest
         return new CategoryUpdateRequestDto
         {
             Id = id,
-            Category = new CategoryRequestDto
-            {
-                Name = "Updated Category",
-                Description = "Updated Description"
-            }
+            Category = new CategoryRequestDto { Name = "Updated Category", Description = "Updated Description" },
         };
     }
 
@@ -213,33 +196,3 @@ public class UpdateCategoryUseCaseTest
         return category;
     }
 }
-
-// Helper class for testing validation
-public class TestValidationResult : IValidationResult
-{
-    private readonly List<IValidationError> _errors = [];
-
-    public TestValidationResult(bool isValid)
-    {
-        if (!isValid)
-        {
-            _errors.Add(new TestValidationError("Validation failed", "Field"));
-        }
-    }
-
-    public TestValidationResult(bool isValid, string message, string field)
-    {
-        if (!isValid)
-        {
-            _errors.Add(new TestValidationError(message, field));
-        }
-    }
-
-    public bool IsValid => _errors.Count == 0;
-
-    public IEnumerable<IValidationError> Errors => _errors;
-
-    public string ErrorMessage => string.Join(", ", _errors.Select(e => e.Message));
-}
-
-public record TestValidationError(string Message, string Field) : IValidationError;

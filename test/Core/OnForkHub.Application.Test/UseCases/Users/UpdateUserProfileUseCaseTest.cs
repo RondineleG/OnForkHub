@@ -23,14 +23,12 @@ public class UpdateUserProfileUseCaseTest
     public async Task ShouldUpdateUserProfileSuccessfully()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var request = CreateValidUpdateRequest();
         var existingUser = CreateValidUser(userId);
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.Success(existingUser));
-        _userService.UpdateAsync(existingUser)
-            .Returns(RequestResult<UserEntity>.Success(existingUser));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
+        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.Success(existingUser));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
@@ -67,7 +65,7 @@ public class UpdateUserProfileUseCaseTest
     public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
 
         // Act
         var act = () => _useCase.ExecuteAsync((userId, null!));
@@ -83,11 +81,10 @@ public class UpdateUserProfileUseCaseTest
     public async Task ShouldReturnErrorWhenUserNotFound()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var request = CreateValidUpdateRequest();
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.WithError("User not found"));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.WithError("User not found"));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
@@ -105,11 +102,10 @@ public class UpdateUserProfileUseCaseTest
     public async Task ShouldReturnErrorWhenServiceReturnsNullDataOnGet()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var request = CreateValidUpdateRequest();
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.Success(null!));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
@@ -125,21 +121,19 @@ public class UpdateUserProfileUseCaseTest
     public async Task ShouldReturnErrorWhenUpdateOperationFails()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var request = CreateValidUpdateRequest();
         var existingUser = CreateValidUser(userId);
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.Success(existingUser));
-
-        // Force update to fail with empty name
-        request.Name = "";
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
+        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.WithError("Database error"));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
 
         // Assert
         result.Status.Should().Be(EResultStatus.HasError);
+        result.Message.Should().Be("Database error");
     }
 
     [Fact]
@@ -148,14 +142,12 @@ public class UpdateUserProfileUseCaseTest
     public async Task ShouldReturnErrorWhenSaveOperationFails()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var request = CreateValidUpdateRequest();
         var existingUser = CreateValidUser(userId);
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.Success(existingUser));
-        _userService.UpdateAsync(existingUser)
-            .Returns(RequestResult<UserEntity>.WithError("Database error"));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
+        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.WithError("Database error"));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
@@ -172,14 +164,12 @@ public class UpdateUserProfileUseCaseTest
     public async Task ShouldReturnErrorWhenSaveReturnsNullData()
     {
         // Arrange
-        var userId = Id.Create(Guid.NewGuid());
+        var userId = Id.Create();
         var request = CreateValidUpdateRequest();
         var existingUser = CreateValidUser(userId);
 
-        _userService.GetByIdAsync(userId)
-            .Returns(RequestResult<UserEntity>.Success(existingUser));
-        _userService.UpdateAsync(existingUser)
-            .Returns(RequestResult<UserEntity>.Success(null!));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
+        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
@@ -191,17 +181,13 @@ public class UpdateUserProfileUseCaseTest
 
     private static UpdateUserProfileRequestDto CreateValidUpdateRequest()
     {
-        return new UpdateUserProfileRequestDto
-        {
-            Name = "Updated Name",
-            Email = "updated@email.com"
-        };
+        return new UpdateUserProfileRequestDto { Name = "Updated Name", Email = "updated@email.com" };
     }
 
     private static UserEntity CreateValidUser(Id id)
     {
         var name = Name.Create("Original Name");
-        var user = UserEntity.Create(name, "original@email.com", "hashed_password").Data!;
+        var user = UserEntity.Load(id, name, "original@email.com", "hashed_password", DateTime.UtcNow).Data!;
         return user;
     }
 }

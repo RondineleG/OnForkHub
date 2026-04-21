@@ -22,8 +22,7 @@ public class DeleteCategoryUseCaseTest
         const long categoryId = 1;
         var category = CreateValidCategory(categoryId);
 
-        _categoryRepository.DeleteAsync(categoryId)
-            .Returns(RequestResult<Category>.Success(category));
+        _categoryRepository.DeleteAsync(categoryId).Returns(RequestResult<Category>.Success(category));
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);
@@ -43,8 +42,7 @@ public class DeleteCategoryUseCaseTest
         // Arrange
         const long categoryId = 999;
 
-        _categoryRepository.DeleteAsync(categoryId)
-            .Returns(RequestResult<Category>.WithError("Category not found"));
+        _categoryRepository.DeleteAsync(categoryId).Returns(RequestResult<Category>.WithError("Category not found"));
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);
@@ -63,8 +61,7 @@ public class DeleteCategoryUseCaseTest
         // Arrange
         const long categoryId = 1;
 
-        _categoryRepository.DeleteAsync(categoryId)
-            .Returns(RequestResult<Category>.WithError("Database error"));
+        _categoryRepository.DeleteAsync(categoryId).Returns(RequestResult<Category>.WithError("Database error"));
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);
@@ -83,8 +80,7 @@ public class DeleteCategoryUseCaseTest
         // Arrange
         const long categoryId = 1;
 
-        _categoryRepository.DeleteAsync(categoryId)
-            .Returns(RequestResult<Category>.Success(null!));
+        _categoryRepository.DeleteAsync(categoryId).Returns(RequestResult<Category>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId);

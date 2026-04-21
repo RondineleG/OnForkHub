@@ -26,14 +26,13 @@ public class RegisterUserUseCaseTest
         {
             Name = "John Silva",
             Email = "john@email.com",
-            Password = "Password123!"
+            Password = "Password123!",
         };
 
         var userName = Name.Create(request.Name);
         var user = UserEntity.Create(userName, request.Email, "hashed_password").Data!;
 
-        _userService.RegisterAsync(request.Name, request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.Success(user));
+        _userService.RegisterAsync(request.Name, request.Email, request.Password).Returns(RequestResult<UserEntity>.Success(user));
 
         var result = await _registerUserUseCase.ExecuteAsync(request);
 
@@ -52,11 +51,10 @@ public class RegisterUserUseCaseTest
         {
             Name = "John Silva",
             Email = "existing@email.com",
-            Password = "Password123!"
+            Password = "Password123!",
         };
 
-        _userService.RegisterAsync(request.Name, request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.WithError("User already exists"));
+        _userService.RegisterAsync(request.Name, request.Email, request.Password).Returns(RequestResult<UserEntity>.WithError("User already exists"));
 
         var result = await _registerUserUseCase.ExecuteAsync(request);
 
@@ -86,11 +84,10 @@ public class RegisterUserUseCaseTest
         {
             Name = "John Silva",
             Email = "john@email.com",
-            Password = "Password123!"
+            Password = "Password123!",
         };
 
-        _userService.RegisterAsync(request.Name, request.Email, request.Password)
-            .Returns(RequestResult<UserEntity>.Success(null!));
+        _userService.RegisterAsync(request.Name, request.Email, request.Password).Returns(RequestResult<UserEntity>.Success(null!));
 
         var result = await _registerUserUseCase.ExecuteAsync(request);
 

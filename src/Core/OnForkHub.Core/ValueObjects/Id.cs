@@ -2,6 +2,13 @@ namespace OnForkHub.Core.ValueObjects;
 
 public sealed class Id : ValueObject
 {
+    // Parameterless constructor for EF Core
+    private Id()
+    {
+        Value = Guid.Empty;
+        _validationResult = new ValidationResult();
+    }
+
     private Id(Guid value)
     {
         Value = value;

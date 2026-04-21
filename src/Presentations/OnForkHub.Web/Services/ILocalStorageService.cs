@@ -21,11 +21,13 @@ public interface ILocalStorageService
     /// <typeparam name="T">The type of the item.</typeparam>
     /// <param name="key">The key of the item.</param>
     /// <param name="value">The value to store.</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task SetItemAsync<T>(string key, T value);
 
     /// <summary>
     /// Removes an item from local storage.
     /// </summary>
     /// <param name="key">The key of the item to remove.</param>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task RemoveItemAsync(string key);
 }

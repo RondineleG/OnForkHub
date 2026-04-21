@@ -1,7 +1,7 @@
 namespace OnForkHub.Web.Services.Api;
 
 using OnForkHub.Web.Models;
-using System.Globalization;
+
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -20,10 +20,7 @@ public sealed class VideoService : IVideoService
     public VideoService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
+        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     }
 
     /// <inheritdoc/>
@@ -32,7 +29,8 @@ public sealed class VideoService : IVideoService
         int pageSize = 12,
         string? search = null,
         long? categoryId = null,
-        string? sort = null)
+        string? sort = null
+    )
     {
         var url = $"/api/v1/videos?page={page}&size={pageSize}";
 
@@ -98,7 +96,8 @@ public sealed class VideoService : IVideoService
         string description,
         long categoryId,
         string tags,
-        IProgress<double>? progress = null)
+        IProgress<double>? progress = null
+    )
     {
         using var content = new MultipartFormDataContent();
 

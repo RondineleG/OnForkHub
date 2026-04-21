@@ -1,7 +1,7 @@
 namespace OnForkHub.Web.Services.Api;
 
 using OnForkHub.Web.Models;
-using System.Globalization;
+
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -20,10 +20,7 @@ public sealed class UserService : IUserService
     public UserService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
+        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     }
 
     /// <inheritdoc/>
@@ -45,11 +42,7 @@ public sealed class UserService : IUserService
     /// <inheritdoc/>
     public async Task<UserProfileDto> UpdateProfileAsync(string name, string? avatarUrl)
     {
-        var response = await _httpClient.PutAsJsonAsync("/api/v1/users/profile", new
-        {
-            Name = name,
-            AvatarUrl = avatarUrl
-        });
+        var response = await _httpClient.PutAsJsonAsync("/api/v1/users/profile", new { Name = name, AvatarUrl = avatarUrl });
 
         response.EnsureSuccessStatusCode();
 
@@ -60,11 +53,10 @@ public sealed class UserService : IUserService
     /// <inheritdoc/>
     public async Task ChangePasswordAsync(string currentPassword, string newPassword)
     {
-        var response = await _httpClient.PutAsJsonAsync("/api/v1/users/change-password", new
-        {
-            CurrentPassword = currentPassword,
-            NewPassword = newPassword
-        });
+        var response = await _httpClient.PutAsJsonAsync(
+            "/api/v1/users/change-password",
+            new { CurrentPassword = currentPassword, NewPassword = newPassword }
+        );
 
         response.EnsureSuccessStatusCode();
     }

@@ -22,8 +22,7 @@ public class DeleteVideoUseCaseTest
         var videoId = Guid.NewGuid().ToString();
         var video = CreateValidVideo(videoId);
 
-        _videoService.DeleteAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.Success(video));
+        _videoService.DeleteAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
 
         // Act
         var result = await _useCase.ExecuteAsync(videoId);
@@ -107,8 +106,7 @@ public class DeleteVideoUseCaseTest
         // Arrange
         var videoId = Guid.NewGuid().ToString();
 
-        _videoService.DeleteAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.WithError("Video not found"));
+        _videoService.DeleteAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.WithError("Video not found"));
 
         // Act
         var result = await _useCase.ExecuteAsync(videoId);
@@ -127,8 +125,7 @@ public class DeleteVideoUseCaseTest
         // Arrange
         var videoId = Guid.NewGuid().ToString();
 
-        _videoService.DeleteAsync(Arg.Any<Id>())
-            .Returns(RequestResult<Video>.WithError("Database error"));
+        _videoService.DeleteAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.WithError("Database error"));
 
         // Act
         var result = await _useCase.ExecuteAsync(videoId);
@@ -140,9 +137,9 @@ public class DeleteVideoUseCaseTest
 
     private static Video CreateValidVideo(string id)
     {
-        var videoId = Id.Create(Guid.Parse(id));
-        var userId = Id.Create(Guid.NewGuid());
-        var video = Video.Create("Test Video", "Test Description", "https://example.com/video.mp4", userId).Data!;
+        Id videoId = id;
+        var userId = Id.Create();
+        var video = Video.Load(videoId, "Test Video", "Test Description", "https://example.com/video.mp4", userId, DateTime.UtcNow).Data!;
         return video;
     }
 }

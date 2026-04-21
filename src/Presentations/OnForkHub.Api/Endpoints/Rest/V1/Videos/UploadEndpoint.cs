@@ -59,7 +59,7 @@ public sealed partial class UploadEndpoint(ILogger<UploadEndpoint> logger, IVide
     private partial void LogUploadStarted(string userId, string fileName);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Video upload completed successfully for user: {UserId}, video ID: {VideoId}")]
-    private partial void LogUploadCompleted(string userId, string videoId);
+    private partial void LogUploadCompleted(string userId, Id videoId);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Video upload failed for user: {UserId}, reason: {Reason}")]
     private partial void LogUploadFailed(string userId, string reason);
@@ -107,7 +107,10 @@ public sealed partial class UploadEndpoint(ILogger<UploadEndpoint> logger, IVide
                 return Results.BadRequest(new { error = result.Message ?? "Failed to upload video" });
             }
 
-            LogUploadCompleted(userId, result.Data.Id.ToString());
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                LogUploadCompleted(userId, result.Data.Id);
+            }
 
             var response = VideoResponseDto.FromVideo(result.Data);
             return Results.Created($"/api/v{V1}/video/{result.Data.Id}", response);

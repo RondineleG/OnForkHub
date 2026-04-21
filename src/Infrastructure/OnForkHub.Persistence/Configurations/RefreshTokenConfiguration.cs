@@ -17,66 +17,42 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
         builder.HasKey(rt => rt.Id);
 
-        builder.Property(rt => rt.Id)
-            .HasColumnName("Id")
-            .HasMaxLength(100)
-            .IsRequired();
+        builder.Property(rt => rt.Id).HasColumnName("Id").HasMaxLength(100).IsRequired();
 
         // Token value - indexed for fast lookups
-        builder.Property(rt => rt.Token)
-            .HasColumnName("Token")
-            .HasMaxLength(500)
-            .IsRequired();
+        builder.Property(rt => rt.Token).HasColumnName("Token").HasMaxLength(500).IsRequired();
 
-        builder.HasIndex(rt => rt.Token)
-            .HasDatabaseName("IX_RefreshTokens_Token")
-            .IsUnique();
+        builder.HasIndex(rt => rt.Token).HasDatabaseName("IX_RefreshTokens_Token").IsUnique();
 
         // User relationship
-        builder.Property(rt => rt.UserId)
-            .HasColumnName("UserId")
-            .HasMaxLength(36)
-            .IsRequired();
+        builder.Property(rt => rt.UserId).HasColumnName("UserId").HasMaxLength(36).IsRequired();
 
-        builder.HasIndex(rt => rt.UserId)
-            .HasDatabaseName("IX_RefreshTokens_UserId");
+        builder.HasIndex(rt => rt.UserId).HasDatabaseName("IX_RefreshTokens_UserId");
 
         // Composite index for user's active tokens
-        builder.HasIndex(rt => new { rt.UserId, rt.RevokedAt })
-            .HasDatabaseName("IX_RefreshTokens_UserId_RevokedAt");
+        builder.HasIndex(rt => new { rt.UserId, rt.RevokedAt }).HasDatabaseName("IX_RefreshTokens_UserId_RevokedAt");
 
         // Expiration
-        builder.Property(rt => rt.ExpiresAt)
-            .HasColumnName("ExpiresAt")
-            .IsRequired();
+        builder.Property(rt => rt.ExpiresAt).HasColumnName("ExpiresAt").IsRequired();
 
-        builder.HasIndex(rt => rt.ExpiresAt)
-            .HasDatabaseName("IX_RefreshTokens_ExpiresAt");
+        builder.HasIndex(rt => rt.ExpiresAt).HasDatabaseName("IX_RefreshTokens_ExpiresAt");
 
         // Revoked timestamp (nullable)
-        builder.Property(rt => rt.RevokedAt)
-            .HasColumnName("RevokedAt")
-            .IsRequired(false);
+        builder.Property(rt => rt.RevokedAt).HasColumnName("RevokedAt").IsRequired(false);
 
         // CreatedByIp
-        builder.Property(rt => rt.CreatedByIp)
+        builder
+            .Property(rt => rt.CreatedByIp)
             .HasColumnName("CreatedByIp")
             .HasMaxLength(45) // IPv6 max length
             .IsRequired(false);
 
         // UserAgent
-        builder.Property(rt => rt.UserAgent)
-            .HasColumnName("UserAgent")
-            .HasMaxLength(500)
-            .IsRequired(false);
+        builder.Property(rt => rt.UserAgent).HasColumnName("UserAgent").HasMaxLength(500).IsRequired(false);
 
         // Base entity properties
-        builder.Property(rt => rt.CreatedAt)
-            .HasColumnName("CreatedAt")
-            .IsRequired();
+        builder.Property(rt => rt.CreatedAt).HasColumnName("CreatedAt").IsRequired();
 
-        builder.Property(rt => rt.UpdatedAt)
-            .HasColumnName("UpdatedAt")
-            .IsRequired(false);
+        builder.Property(rt => rt.UpdatedAt).HasColumnName("UpdatedAt").IsRequired(false);
     }
 }

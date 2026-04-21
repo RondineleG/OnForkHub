@@ -18,7 +18,8 @@ public class EntityFrameworkDataContextFactory : IDesignTimeDbContextFactory<Ent
     {
         var configuration = BuildConfiguration();
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
+        var connectionString =
+            configuration.GetConnectionString("DefaultConnection")
             ?? "Server=localhost;Database=OnForkHub;Trusted_Connection=True;TrustServerCertificate=True;";
 
         var optionsBuilder = new DbContextOptionsBuilder<EntityFrameworkDataContext>();

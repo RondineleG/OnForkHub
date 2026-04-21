@@ -22,11 +22,7 @@ public class AuthService : IAuthService
     /// <inheritdoc/>
     public async Task<AuthResponse> LoginAsync(string email, string password)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/login", new
-        {
-            Email = email,
-            Password = password
-        });
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/login", new { Email = email, Password = password });
 
         response.EnsureSuccessStatusCode();
 
@@ -37,12 +33,15 @@ public class AuthService : IAuthService
     /// <inheritdoc/>
     public async Task<AuthResponse> RegisterAsync(string name, string email, string password)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/register", new
-        {
-            Name = name,
-            Email = email,
-            Password = password
-        });
+        var response = await _httpClient.PostAsJsonAsync(
+            "/api/v1/auth/register",
+            new
+            {
+                Name = name,
+                Email = email,
+                Password = password,
+            }
+        );
 
         response.EnsureSuccessStatusCode();
 
@@ -53,11 +52,7 @@ public class AuthService : IAuthService
     /// <inheritdoc/>
     public async Task<AuthResponse> RefreshTokenAsync(string accessToken, string refreshToken)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/refresh", new
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        });
+        var response = await _httpClient.PostAsJsonAsync("/api/v1/auth/refresh", new { AccessToken = accessToken, RefreshToken = refreshToken });
 
         response.EnsureSuccessStatusCode();
 
