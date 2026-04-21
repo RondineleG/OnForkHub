@@ -1,9 +1,11 @@
 namespace OnForkHub.Application.Dtos.User.Request;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
-/// Data transfer object for user profile update requests.
+/// Request for updating a user's profile.
 /// </summary>
-public sealed class UpdateUserProfileRequestDto
+public sealed class UpdateUserProfileRequest
 {
     /// <summary>
     /// Gets or sets the user's name.

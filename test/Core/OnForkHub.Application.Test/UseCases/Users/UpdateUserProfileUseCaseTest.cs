@@ -179,9 +179,9 @@ public class UpdateUserProfileUseCaseTest
         await _userService.Received(1).UpdateAsync(existingUser);
     }
 
-    private static UpdateUserProfileRequestDto CreateValidUpdateRequest()
+    private static UpdateUserProfileRequest CreateValidUpdateRequest()
     {
-        return new UpdateUserProfileRequestDto { Name = "Updated Name", Email = "updated@email.com" };
+        return new UpdateUserProfileRequest { Name = "Updated Name", Email = "updated@email.com" };
     }
 
     private static UserEntity CreateValidUser(Id id)

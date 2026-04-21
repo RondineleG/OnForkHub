@@ -6,12 +6,12 @@ using OnForkHub.Application.Dtos.User.Response;
 /// <summary>
 /// Use case for updating a user's profile.
 /// </summary>
-public class UpdateUserProfileUseCase(IUserService userService) : IUseCase<(Id UserId, UpdateUserProfileRequestDto Request), UserResponseDto>
+public class UpdateUserProfileUseCase(IUserService userService) : IUseCase<(Id UserId, UpdateUserProfileRequest Request), UserProfileResponse>
 {
     private readonly IUserService _userService = userService;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<UserResponseDto>> ExecuteAsync((Id UserId, UpdateUserProfileRequestDto Request) input)
+    public async Task<RequestResult<UserProfileResponse>> ExecuteAsync((Id UserId, UpdateUserProfileRequest Request) input)
     {
         ArgumentNullException.ThrowIfNull(input.UserId);
         ArgumentNullException.ThrowIfNull(input.Request);
@@ -21,7 +21,7 @@ public class UpdateUserProfileUseCase(IUserService userService) : IUseCase<(Id U
 
         if (getUserResult.Status != EResultStatus.Success || getUserResult.Data is null)
         {
-            return RequestResult<UserResponseDto>.WithError(getUserResult.Message);
+            return RequestResult<UserProfileResponse>.WithError(getUserResult.Message);
         }
 
         var user = getUserResult.Data;
@@ -32,7 +32,7 @@ public class UpdateUserProfileUseCase(IUserService userService) : IUseCase<(Id U
 
         if (updateResult.Status != EResultStatus.Success)
         {
-            return RequestResult<UserResponseDto>.WithError(updateResult.Message);
+            return RequestResult<UserProfileResponse>.WithError(updateResult.Message);
         }
 
         // Save the updated user
@@ -40,10 +40,10 @@ public class UpdateUserProfileUseCase(IUserService userService) : IUseCase<(Id U
 
         if (saveResult.Status != EResultStatus.Success || saveResult.Data is null)
         {
-            return RequestResult<UserResponseDto>.WithError(saveResult.Message);
+            return RequestResult<UserProfileResponse>.WithError(saveResult.Message);
         }
 
-        var userResponse = UserResponseDto.FromUser(saveResult.Data);
-        return RequestResult<UserResponseDto>.Success(userResponse);
+        var userResponse = UserProfileResponse.FromUser(saveResult.Data);
+        return RequestResult<UserProfileResponse>.Success(userResponse);
     }
 }

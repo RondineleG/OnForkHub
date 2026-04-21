@@ -8,7 +8,7 @@ public sealed class AuthResponseDto
     /// <summary>
     /// Gets or sets the user information.
     /// </summary>
-    public UserResponseDto User { get; set; } = null!;
+    public UserProfileResponse User { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the access token.

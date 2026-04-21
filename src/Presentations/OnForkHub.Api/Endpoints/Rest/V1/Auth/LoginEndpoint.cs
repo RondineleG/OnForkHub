@@ -84,7 +84,7 @@ public sealed partial class LoginEndpoint(
 
         var response = new AuthResponseDto
         {
-            User = UserResponseDto.FromUser(user, [CrossCutting.Authorization.Roles.User]),
+            User = UserProfileResponse.FromUser(user, [CrossCutting.Authorization.Roles.User]),
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
             AccessTokenExpiration = tokens.AccessTokenExpiration,

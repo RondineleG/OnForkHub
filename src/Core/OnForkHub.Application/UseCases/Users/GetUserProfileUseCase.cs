@@ -5,12 +5,12 @@ using OnForkHub.Application.Dtos.User.Response;
 /// <summary>
 /// Use case for retrieving a user's profile.
 /// </summary>
-public class GetUserProfileUseCase(IUserService userService) : IUseCase<Id, UserResponseDto>
+public class GetUserProfileUseCase(IUserService userService) : IUseCase<Id, UserProfileResponse>
 {
     private readonly IUserService _userService = userService;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<UserResponseDto>> ExecuteAsync(Id userId)
+    public async Task<RequestResult<UserProfileResponse>> ExecuteAsync(Id userId)
     {
         ArgumentNullException.ThrowIfNull(userId);
 
@@ -18,10 +18,10 @@ public class GetUserProfileUseCase(IUserService userService) : IUseCase<Id, User
 
         if (result.Status != EResultStatus.Success || result.Data is null)
         {
-            return RequestResult<UserResponseDto>.WithError(result.Message);
+            return RequestResult<UserProfileResponse>.WithError(result.Message);
         }
 
-        var userResponse = UserResponseDto.FromUser(result.Data);
-        return RequestResult<UserResponseDto>.Success(userResponse);
+        var userResponse = UserProfileResponse.FromUser(result.Data);
+        return RequestResult<UserProfileResponse>.Success(userResponse);
     }
 }

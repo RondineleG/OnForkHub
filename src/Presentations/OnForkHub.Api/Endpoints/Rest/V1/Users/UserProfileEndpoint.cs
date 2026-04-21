@@ -39,21 +39,21 @@ public sealed class UserProfileEndpoint(IUserService userService) : IEndpointAsy
             )
             .WithName("GetUserProfileV1")
             .WithApiVersionSet(apiVersionSet)
-            .Produces<UserResponseDto>(StatusCodes.Status200OK)
+            .Produces<UserProfileResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status404NotFound);
 
         app.MapPut(
                 UpdateProfileRoute,
                 [Authorize]
-                async ([FromBody] UpdateUserProfileRequestDto request, ClaimsPrincipal user, CancellationToken cancellationToken) =>
+                async ([FromBody] UpdateUserProfileRequest request, ClaimsPrincipal user, CancellationToken cancellationToken) =>
                 {
                     return await HandleUpdateProfileAsync(request, user, cancellationToken);
                 }
             )
             .WithName("UpdateUserProfileV1")
             .WithApiVersionSet(apiVersionSet)
-            .Produces<UserResponseDto>(StatusCodes.Status200OK)
+            .Produces<UserProfileResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized);
 
@@ -83,22 +83,12 @@ public sealed class UserProfileEndpoint(IUserService userService) : IEndpointAsy
         }
 
         var userEntity = result.Data;
-        var response = new UserResponseDto
-        {
-            Id = userEntity.Id.ToString(),
-            Name = userEntity.Name.Value,
-            Email = userEntity.Email.Value,
-            AvatarUrl = userEntity.AvatarUrl,
-        };
+        var response = UserProfileResponse.FromUser(userEntity);
 
         return Results.Ok(response);
     }
 
-    private async Task<IResult> HandleUpdateProfileAsync(
-        UpdateUserProfileRequestDto request,
-        ClaimsPrincipal user,
-        CancellationToken cancellationToken
-    )
+    private async Task<IResult> HandleUpdateProfileAsync(UpdateUserProfileRequest request, ClaimsPrincipal user, CancellationToken cancellationToken)
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -130,13 +120,7 @@ public sealed class UserProfileEndpoint(IUserService userService) : IEndpointAsy
         }
 
         var userEntity = result.Data;
-        var response = new UserResponseDto
-        {
-            Id = userEntity.Id.ToString(),
-            Name = userEntity.Name.Value,
-            Email = userEntity.Email.Value,
-            AvatarUrl = userEntity.AvatarUrl,
-        };
+        var response = UserProfileResponse.FromUser(userEntity);
 
         return Results.Ok(response);
     }

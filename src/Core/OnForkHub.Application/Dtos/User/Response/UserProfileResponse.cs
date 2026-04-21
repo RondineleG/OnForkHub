@@ -1,9 +1,11 @@
 namespace OnForkHub.Application.Dtos.User.Response;
 
+using OnForkHub.Core.Entities;
+
 /// <summary>
-/// Data transfer object for user responses.
+/// Response containing user profile information.
 /// </summary>
-public sealed class UserResponseDto
+public sealed class UserProfileResponse
 {
     /// <summary>
     /// Gets or sets the user identifier.
@@ -36,16 +38,16 @@ public sealed class UserResponseDto
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// Creates a UserResponseDto from a User entity.
+    /// Creates a UserProfileResponse from a User entity.
     /// </summary>
     /// <param name="user">The user entity.</param>
     /// <param name="roles">The user's roles.</param>
-    /// <returns>The user response DTO.</returns>
-    public static UserResponseDto FromUser(Core.Entities.User user, IReadOnlyList<string>? roles = null)
+    /// <returns>The user profile response.</returns>
+    public static UserProfileResponse FromUser(User user, IReadOnlyList<string>? roles = null)
     {
         ArgumentNullException.ThrowIfNull(user);
 
-        return new UserResponseDto
+        return new UserProfileResponse
         {
             Id = user.Id.ToString(),
             Name = user.Name.Value,

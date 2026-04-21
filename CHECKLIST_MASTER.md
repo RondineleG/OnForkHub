@@ -302,54 +302,31 @@
 
 ### 1.2 VIDEO UPLOAD PIPELINE (5 dias)
 
-#### Task 1.2.1: Criar Modelo de Domain para VideoUpload
-- [ ] **ALTERAÇÃO:** Criar entidade `VideoUpload` em `OnForkHub.Core/Entities/`
-  ```csharp
-  public class VideoUpload : BaseEntity
-  {
-      public string FileName { get; private set; }
-      public long FileSize { get; private set; }
-      public string ContentType { get; private set; }
-      public VideoUploadStatus Status { get; private set; }
-      public string? StoragePath { get; private set; }
-      public int ProgressPercentage { get; private set; }
-      public DateTime? CompletedAt { get; private set; }
-      
-      public void MarkAsProcessing() => Status = VideoUploadStatus.Processing;
-      public void UpdateProgress(int percentage) => ProgressPercentage = percentage;
-      public void MarkAsCompleted(string storagePath)
-      {
-          Status = VideoUploadStatus.Completed;
-          StoragePath = storagePath;
-          CompletedAt = DateTime.UtcNow;
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Domain model segue DDD patterns
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core`
-- [ ] **TESTAR:** 
-  - [ ] Testar criação de VideoUpload
-  - [ ] Testar transições de status
-- [ ] **COMMIT:** `feat(video-upload): criar entidade VideoUpload com comportamentos`
+#### Task 1.2.1: Criar Modelo de Domain para VideoUpload ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criar entidade `VideoUpload` em `OnForkHub.Core/Entities/`
+  - Entidade criada com DDD patterns (BaseEntity, Create/Load factories)
+  - Propriedades: FileName, FileSize, ContentType, Status, StoragePath
+  - Progress tracking: ProgressPercentage, TotalChunks, ReceivedChunks
+  - Métodos de estado: MarkAsUploading, UpdateProgress, IncrementReceivedChunks
+  - Métodos de conclusão: MarkAsProcessing, MarkAsCompleted, MarkAsFailed
+  - Relacionamento com User via UserId
+- [x] **VALIDAR:** Domain model segue DDD patterns
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core` → 0 erros
+- [x] **TESTAR:** 
+  - [x] 20 testes de unidade criados cobrindo todas as transições de status
+  - [x] Testes: criação, loading, progresso, chunks, falhas
+- [x] **COMMIT:** `feat(video-upload): add VideoUpload entity and EVideoUploadStatus enum`
 
 ---
 
-#### Task 1.2.2: Criar Enum VideoUploadStatus
-- [ ] **ALTERAÇÃO:** Criar enum em `OnForkHub.Core/Enums/`
-  ```csharp
-  public enum VideoUploadStatus
-  {
-      Pending,
-      Uploading,
-      Processing,
-      Completed,
-      Failed
-  }
-  ```
-- [ ] **VALIDAR:** Enum compila
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core`
-- [ ] **TESTAR:** N/A
-- [ ] **COMMIT:** `feat(video-upload): adicionar enum VideoUploadStatus`
+#### Task 1.2.2: Criar Enum VideoUploadStatus ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criar enum `EVideoUploadStatus` em `OnForkHub.Core/Enums/`
+  - Estados: Pending, Uploading, Processing, Completed, Failed
+  - Documentação XML para cada estado
+- [x] **VALIDAR:** Enum compila
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core` → 0 erros
+- [x] **TESTAR:** N/A (coberto pelos testes de VideoUpload)
+- [x] **COMMIT:** Incluído no commit `feat(video-upload): add VideoUpload entity and EVideoUploadStatus enum`
 
 ---
 
