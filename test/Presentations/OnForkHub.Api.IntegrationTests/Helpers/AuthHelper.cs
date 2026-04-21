@@ -1,6 +1,7 @@
 namespace OnForkHub.Api.IntegrationTests.Helpers;
 
 using System.Net.Http.Json;
+
 using OnForkHub.Api.IntegrationTests.Infrastructure;
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;

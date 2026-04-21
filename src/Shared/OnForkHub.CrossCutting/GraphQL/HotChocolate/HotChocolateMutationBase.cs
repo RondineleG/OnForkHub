@@ -1,4 +1,5 @@
 using HotChocolate.Types;
+
 using OnForkHub.CrossCutting.GraphQL.Interfaces;
 
 namespace OnForkHub.CrossCutting.GraphQL.HotChocolate;

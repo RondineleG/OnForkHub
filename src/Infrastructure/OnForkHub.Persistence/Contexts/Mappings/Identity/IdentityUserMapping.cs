@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 using OnForkHub.Persistence.Models;
 
 namespace OnForkHub.Persistence.Contexts.Mappings.Identity;

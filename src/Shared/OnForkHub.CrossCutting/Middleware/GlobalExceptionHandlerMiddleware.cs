@@ -1,6 +1,7 @@
 namespace OnForkHub.CrossCutting.Middleware;
 
 using Microsoft.AspNetCore.Http;
+
 using OnForkHub.Core.Exceptions;
 
 /// <summary>

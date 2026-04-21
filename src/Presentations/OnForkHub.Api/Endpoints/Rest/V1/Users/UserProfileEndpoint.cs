@@ -1,7 +1,9 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Users;
 
 using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authorization;
+
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Core.Enums;

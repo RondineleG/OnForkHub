@@ -1,6 +1,8 @@
 using System.Reflection;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
 using OnForkHub.Persistence.Models;
 
 namespace OnForkHub.Persistence.Contexts;

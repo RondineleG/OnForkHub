@@ -81,25 +81,25 @@
                         </div>
 
                         @* Edit Profile Form *@
-                        <EditForm Model="editProfileModel" OnValidSubmit="UpdateProfileAsync">
+                        <EditForm Model="editProfileRequest" OnValidSubmit="UpdateProfileAsync">
                             <DataAnnotationsValidator />
 
                             <div class="mb-3">
                                 <label for="editName" class="form-label fw-semibold">Nome</label>
                                 <InputText id="editName"
                                            class="form-control"
-                                           @bind-Value="editProfileModel.Name"
+                                           @bind-Value="editProfileRequest.Name"
                                            placeholder="Seu nome" />
-                                <ValidationMessage For="@(() => editProfileModel.Name)" class="text-danger small" />
+                                <ValidationMessage For="@(() => editProfileRequest.Name)" class="text-danger small" />
                             </div>
 
                             <div class="mb-3">
                                 <label for="editAvatar" class="form-label fw-semibold">URL do Avatar</label>
                                 <InputText id="editAvatar"
                                            class="form-control"
-                                           @bind-Value="editProfileModel.AvatarUrl"
+                                           @bind-Value="editProfileRequest.AvatarUrl"
                                            placeholder="https://exemplo.com/avatar.jpg" />
-                                <ValidationMessage For="@(() => editProfileModel.AvatarUrl)" class="text-danger small" />
+                                <ValidationMessage For="@(() => editProfileRequest.AvatarUrl)" class="text-danger small" />
                             </div>
 
                             <button type="submit" class="btn btn-primary" disabled="isUpdatingProfile">
@@ -314,8 +314,8 @@
 </div>
 
 @code {
-    private UserProfileDto? userProfile;
-    private readonly EditProfileModel editProfileModel = new();
+    private UserProfileResponse? userProfile;
+    private readonly UpdateUserProfileRequest editProfileRequest = new();
     private readonly ChangePasswordModel changePasswordModel = new();
     private PagedResult<VideoDto> userVideos = new();
     private bool isLoading = true;
@@ -345,10 +345,9 @@
 
             if (userProfile != null)
             {
-                editProfileModel.Name = userProfile.Name;
-                editProfileModel.AvatarUrl = userProfile.AvatarUrl;
+                editProfileRequest.Name = userProfile.Name;
+                editProfileRequest.AvatarUrl = userProfile.AvatarUrl;
 
-                // Load user's videos
                 await LoadUserVideosAsync();
             }
         }
@@ -367,14 +366,9 @@
     {
         try
         {
-            // Note: This assumes the API supports filtering by current user
-            // If not, we'd need to pass the user ID from the profile
             userVideos = await VideoService.GetVideosAsync(
                 page: userVideosPage,
                 pageSize: userVideosPageSize);
-
-            // Filter client-side if API doesn't support userId filter
-            // In a real scenario, you'd want a dedicated endpoint
         }
         catch (Exception ex)
         {
@@ -392,10 +386,7 @@
 
         try
         {
-            userProfile = await UserService.UpdateProfileAsync(
-                editProfileModel.Name,
-                editProfileModel.AvatarUrl);
-
+            userProfile = await UserService.UpdateProfileAsync(editProfileRequest);
             successMessage = "Perfil atualizado com sucesso!";
             StateHasChanged();
         }

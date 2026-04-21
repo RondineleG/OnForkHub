@@ -1,6 +1,7 @@
 namespace OnForkHub.CrossCutting.Extensions;
 
 using Microsoft.Extensions.DependencyInjection;
+
 using OnForkHub.CrossCutting.Logging;
 using OnForkHub.CrossCutting.Logging.Implementations;
 

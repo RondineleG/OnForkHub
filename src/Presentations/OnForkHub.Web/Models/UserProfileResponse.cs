@@ -1,11 +1,9 @@
 namespace OnForkHub.Web.Models;
 
-using System.ComponentModel.DataAnnotations;
-
 /// <summary>
-/// Represents a user profile DTO.
+/// Response DTO for user profile data.
 /// </summary>
-public class UserProfileDto
+public class UserProfileResponse
 {
     /// <summary>Gets or sets the user unique identifier.</summary>
     public string Id { get; set; } = string.Empty;

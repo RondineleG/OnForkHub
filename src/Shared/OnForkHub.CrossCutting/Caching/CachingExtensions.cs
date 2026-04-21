@@ -2,6 +2,7 @@ namespace OnForkHub.CrossCutting.Caching;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using OnForkHub.CrossCutting.Caching.Implementations;
 
 /// <summary>
