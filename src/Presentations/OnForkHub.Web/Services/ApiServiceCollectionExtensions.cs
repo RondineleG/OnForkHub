@@ -17,6 +17,7 @@ public static class ApiServiceCollectionExtensions
     {
         // API Services
         services.AddScoped<IVideoService, VideoService>();
+        services.AddScoped<IVideoUploadService, VideoUploadService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IUserService, UserService>();
     }

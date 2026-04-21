@@ -17,5 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OnForkHub.Web.Components\OnForkHub.Web.Components.csproj" />
+    <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
   </ItemGroup>
 </Project>

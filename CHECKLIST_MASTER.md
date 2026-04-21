@@ -393,24 +393,16 @@
 
 ---
 
-#### Task 1.2.7: Criar Componente Blazor de Upload
-- [ ] **ALTERAÇÃO:** Criar `VideoUploader.razor` component
-  ```razor
-  <InputFile OnChange="@LoadFiles" multiple />
-  @if (uploads.Any())
-  {
-      @foreach (var upload in uploads)
-      {
-          <progress value="@upload.Progress" max="100" />
-      }
-  }
-  ```
-  - Implementar lógica de chunking no cliente
-  - Mostrar progresso em tempo real
-- [ ] **VALIDAR:** Componente renderiza e aceita arquivos
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **TESTAR:** Teste manual com arquivo pequeno
-- [ ] **COMMIT:** `feat(video-upload): criar componente VideoUploader com progresso`
+#### Task 1.2.7: Criar Componente Blazor de Upload ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado componente `VideoUploader.razor` em `src/Presentations/OnForkHub.Web/Components/VideoUpload/`
+  - Implementada lógica de chunking no cliente (divisão do arquivo em partes de 1MB)
+  - Uso de `InputFile` para seleção de arquivo e `IBrowserFile` para leitura por chunks
+  - Integração com `IVideoUploadService` (novo serviço Web API)
+  - Feedback de progresso em tempo real e tratamento de erros
+- [x] **VALIDAR:** Componente renderiza corretamente, faz upload por partes e mostra progresso
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
+- [x] **TESTAR:** Teste manual com arquivo de vídeo simulado
+- [x] **COMMIT:** `feat(web): implement VideoUploader component with client-side chunking`
 
 ---
 
