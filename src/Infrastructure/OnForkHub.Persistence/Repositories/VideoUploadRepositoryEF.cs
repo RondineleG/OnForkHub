@@ -74,7 +74,8 @@ public class VideoUploadRepositoryEF(IEntityFrameworkDataContext context) : IVid
         try
         {
             var uploads = await EntityFrameworkQueryableExtensions.ToListAsync(
-                _context.VideoUploads.AsNoTracking()
+                _context
+                    .VideoUploads.AsNoTracking()
                     .Where(x => x.UserId == userId)
                     .OrderByDescending(x => x.CreatedAt)
                     .Skip((page - 1) * pageSize)
@@ -94,9 +95,7 @@ public class VideoUploadRepositoryEF(IEntityFrameworkDataContext context) : IVid
     {
         try
         {
-            return await EntityFrameworkQueryableExtensions.CountAsync(
-                _context.VideoUploads.AsNoTracking().Where(x => x.UserId == userId)
-            );
+            return await EntityFrameworkQueryableExtensions.CountAsync(_context.VideoUploads.AsNoTracking().Where(x => x.UserId == userId));
         }
         catch (Exception)
         {

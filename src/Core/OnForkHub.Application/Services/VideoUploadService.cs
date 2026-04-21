@@ -11,11 +11,9 @@ using OnForkHub.Core.Responses;
 /// <summary>
 /// Service implementation for managing video uploads.
 /// </summary>
-public class VideoUploadService(
-    IVideoUploadRepository repository,
-    IFileStorageService fileStorageService,
-    ILogger<VideoUploadService> logger
-) : BaseService, IVideoUploadService
+public class VideoUploadService(IVideoUploadRepository repository, IFileStorageService fileStorageService, ILogger<VideoUploadService> logger)
+    : BaseService,
+        IVideoUploadService
 {
     private const long MaxFileSize = 100 * 1024 * 1024; // 100MB
 
@@ -24,12 +22,7 @@ public class VideoUploadService(
     private readonly ILogger<VideoUploadService> _logger = logger;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(
-        string fileName,
-        long fileSize,
-        string contentType,
-        string userId
-    )
+    public async Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(string fileName, long fileSize, string contentType, string userId)
     {
         return await ExecuteAsync(async () =>
         {
@@ -55,12 +48,7 @@ public class VideoUploadService(
     }
 
     /// <inheritdoc/>
-    public async Task<RequestResult<bool>> UploadChunkAsync(
-        Guid uploadId,
-        Stream chunk,
-        int chunkIndex,
-        int totalChunks
-    )
+    public async Task<RequestResult<bool>> UploadChunkAsync(Guid uploadId, Stream chunk, int chunkIndex, int totalChunks)
     {
         return await ExecuteAsync(async () =>
         {
@@ -104,11 +92,7 @@ public class VideoUploadService(
     }
 
     /// <inheritdoc/>
-    public async Task<RequestResult<IReadOnlyList<VideoUploadResponse>>> GetUserUploadsAsync(
-        string userId,
-        int page = 1,
-        int pageSize = 20
-    )
+    public async Task<RequestResult<IReadOnlyList<VideoUploadResponse>>> GetUserUploadsAsync(string userId, int page = 1, int pageSize = 20)
     {
         return await ExecuteAsync(async () =>
         {

@@ -16,11 +16,7 @@ public interface IVideoUploadService
     /// <param name="contentType">The content type.</param>
     /// <param name="userId">The user identifier.</param>
     /// <returns>The initiated upload response.</returns>
-    Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(
-        string fileName,
-        long fileSize,
-        string contentType,
-        string userId);
+    Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(string fileName, long fileSize, string contentType, string userId);
 
     /// <summary>
     /// Uploads a chunk of the video file.
@@ -30,11 +26,7 @@ public interface IVideoUploadService
     /// <param name="chunkIndex">The current chunk index.</param>
     /// <param name="totalChunks">The total number of chunks.</param>
     /// <returns>True if the chunk was uploaded successfully.</returns>
-    Task<RequestResult<bool>> UploadChunkAsync(
-        Guid uploadId,
-        Stream chunk,
-        int chunkIndex,
-        int totalChunks);
+    Task<RequestResult<bool>> UploadChunkAsync(Guid uploadId, Stream chunk, int chunkIndex, int totalChunks);
 
     /// <summary>
     /// Gets the current status of an upload.
@@ -50,8 +42,5 @@ public interface IVideoUploadService
     /// <param name="page">The page number.</param>
     /// <param name="pageSize">The page size.</param>
     /// <returns>A list of video upload responses.</returns>
-    Task<RequestResult<IReadOnlyList<VideoUploadResponse>>> GetUserUploadsAsync(
-        string userId,
-        int page = 1,
-        int pageSize = 20);
+    Task<RequestResult<IReadOnlyList<VideoUploadResponse>>> GetUserUploadsAsync(string userId, int page = 1, int pageSize = 20);
 }
