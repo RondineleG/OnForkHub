@@ -1,9 +1,9 @@
 namespace OnForkHub.Web.Services.Api;
 
-using OnForkHub.Web.Models;
-
 using System.Net.Http.Json;
 using System.Text.Json;
+
+using OnForkHub.Web.Models;
 
 /// <summary>
 /// Implementation of IVideoService using HttpClient.

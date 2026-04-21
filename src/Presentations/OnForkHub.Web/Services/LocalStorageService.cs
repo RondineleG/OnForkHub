@@ -1,8 +1,8 @@
 namespace OnForkHub.Web.Services;
 
-using Microsoft.JSInterop;
-
 using System.Threading.Tasks;
+
+using Microsoft.JSInterop;
 
 /// <summary>
 /// Implementation of ILocalStorageService using JavaScript interop.

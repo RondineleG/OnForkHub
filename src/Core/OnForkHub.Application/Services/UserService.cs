@@ -137,4 +137,52 @@ public class UserService(IUserRepositoryEF userRepository) : BaseService, IUserS
     {
         return _userRepository.ExistsByEmailAsync(email);
     }
+
+    /// <inheritdoc/>
+    public Task<RequestResult<UserEntity>> UpdateProfileAsync(string userId, string name, string email)
+    {
+        return ExecuteAsync(async () =>
+        {
+            // Get existing user - implicit conversion from string to Id
+            Id id = userId;
+            var userResult = await _userRepository.GetByIdAsync(id);
+
+            if (userResult.Status != EResultStatus.Success || userResult.Data is null)
+            {
+                return RequestResult<UserEntity>.WithError($"User with id {userId} not found");
+            }
+
+            var user = userResult.Data;
+
+            // Validate name - Name.Create throws DomainException if invalid
+            Name nameValue;
+            try
+            {
+                nameValue = Name.Create(name);
+            }
+            catch (DomainException ex)
+            {
+                return RequestResult<UserEntity>.WithError(ex.Message);
+            }
+
+            // Check if email is being changed and if it already exists
+            if (!user.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase))
+            {
+                if (await _userRepository.ExistsByEmailAsync(email))
+                {
+                    return RequestResult<UserEntity>.WithError($"Email {email} is already in use");
+                }
+            }
+
+            // Update user properties
+            var updateResult = user.UpdateData(nameValue, email);
+            if (updateResult.Status != EResultStatus.Success)
+            {
+                return RequestResult<UserEntity>.WithError(updateResult.Message);
+            }
+
+            // Save to database
+            return await _userRepository.UpdateAsync(user);
+        });
+    }
 }

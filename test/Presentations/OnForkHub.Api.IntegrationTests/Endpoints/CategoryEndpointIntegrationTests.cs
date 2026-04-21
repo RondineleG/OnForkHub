@@ -1,13 +1,13 @@
 namespace OnForkHub.Api.IntegrationTests.Endpoints;
 
+using System.Net;
+using System.Net.Http.Json;
+
 using FluentAssertions;
 
 using OnForkHub.Api.IntegrationTests.Helpers;
 using OnForkHub.Api.IntegrationTests.Infrastructure;
 using OnForkHub.Application.Dtos.Category.Request;
-
-using System.Net;
-using System.Net.Http.Json;
 
 using Xunit;
 
@@ -45,7 +45,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests successful category creation with valid data.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -64,7 +64,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that category creation fails with invalid data.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Theory]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -85,7 +85,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that duplicate category names return conflict.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -108,7 +108,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests getting all categories returns paged result.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -130,7 +130,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests searching categories with search term.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -151,7 +151,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests searching categories with pagination.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -174,7 +174,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests searching categories with sorting.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -199,7 +199,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that creating a category with missing required fields fails.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -218,7 +218,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that categories can be retrieved without authentication.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]
@@ -238,7 +238,7 @@ public sealed class CategoryEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that category creation response contains valid JSON.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Category")]

@@ -35,6 +35,6 @@ public interface IAuthService
     /// <summary>
     /// Logs out the current user.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task LogoutAsync();
 }

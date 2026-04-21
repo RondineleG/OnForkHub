@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using OnForkHub.Application.Services;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Interfaces.Repositories.Base;
@@ -6,8 +8,6 @@ using OnForkHub.CrossCutting.DependencyInjection;
 using OnForkHub.CrossCutting.Interfaces;
 using OnForkHub.CrossCutting.Storage;
 using OnForkHub.Persistence.Repositories;
-
-using System.Reflection;
 
 namespace OnForkHub.Api.Extensions
 {

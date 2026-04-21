@@ -1,9 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using OnForkHub.CrossCutting.GraphQL.Interfaces;
-
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace OnForkHub.CrossCutting.Extensions;
 

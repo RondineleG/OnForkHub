@@ -1,3 +1,6 @@
+global using System.Diagnostics.CodeAnalysis;
+global using System.Text.Json;
+
 global using Asp.Versioning;
 global using Asp.Versioning.Builder;
 
@@ -27,6 +30,3 @@ global using OnForkHub.Persistence.Contexts;
 global using OnForkHub.Persistence.Contexts.Base;
 
 global using Raven.Client.Documents;
-
-global using System.Diagnostics.CodeAnalysis;
-global using System.Text.Json;

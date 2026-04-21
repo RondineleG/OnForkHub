@@ -1,14 +1,14 @@
 namespace OnForkHub.Api.IntegrationTests.Endpoints;
 
+using System.Net;
+using System.Net.Http.Json;
+
 using FluentAssertions;
 
 using OnForkHub.Api.IntegrationTests.Helpers;
 using OnForkHub.Api.IntegrationTests.Infrastructure;
 using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Application.Dtos.Video.Request;
-
-using System.Net;
-using System.Net.Http.Json;
 
 using Xunit;
 
@@ -62,7 +62,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests successful video creation with valid data and authentication.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -89,7 +89,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that video creation fails without authentication.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -108,7 +108,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that video creation fails with invalid data.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -140,7 +140,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests getting all videos with pagination.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -156,7 +156,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests getting video by ID when it exists.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -191,7 +191,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests getting video by ID when it doesn't exist.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -210,7 +210,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests updating a video with valid data.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -244,7 +244,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that updating a video fails without authentication.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -264,7 +264,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests deleting a video.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -296,7 +296,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that deleting a video fails without authentication.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]
@@ -315,7 +315,7 @@ public sealed class VideoEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that deleting a non-existent video returns not found.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Video")]

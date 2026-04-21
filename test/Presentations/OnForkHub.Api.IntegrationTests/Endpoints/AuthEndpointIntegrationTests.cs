@@ -1,14 +1,14 @@
 namespace OnForkHub.Api.IntegrationTests.Endpoints;
 
+using System.Net;
+using System.Net.Http.Json;
+
 using FluentAssertions;
 
 using OnForkHub.Api.IntegrationTests.Helpers;
 using OnForkHub.Api.IntegrationTests.Infrastructure;
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;
-
-using System.Net;
-using System.Net.Http.Json;
 
 using Xunit;
 
@@ -47,7 +47,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// Tests the complete user lifecycle: register → login → refresh → revoke.
     /// This is the critical authentication flow test.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -103,7 +103,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests successful user registration with valid data.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -131,7 +131,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that duplicate email registration returns conflict.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -154,7 +154,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that invalid registration data returns bad request.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Theory]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -183,7 +183,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests successful login with valid credentials.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -212,7 +212,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that login fails with invalid credentials.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -237,7 +237,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// Tests that login returns too many requests when rate limited.
     /// Note: Rate limiting is disabled in test configuration, so this test verifies the endpoint behavior.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -265,7 +265,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that token refresh returns new tokens with valid refresh token.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -296,7 +296,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that token refresh fails with invalid token.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]
@@ -315,7 +315,7 @@ public sealed class AuthEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that token refresh fails with missing fields.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Authentication")]

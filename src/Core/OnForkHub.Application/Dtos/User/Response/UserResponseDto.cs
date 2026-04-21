@@ -21,6 +21,11 @@ public sealed class UserResponseDto
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the user's avatar URL.
+    /// </summary>
+    public string? AvatarUrl { get; set; }
+
+    /// <summary>
     /// Gets or sets the user's roles.
     /// </summary>
     public IReadOnlyList<string> Roles { get; set; } = [];
@@ -45,6 +50,7 @@ public sealed class UserResponseDto
             Id = user.Id.ToString(),
             Name = user.Name.Value,
             Email = user.Email.Value,
+            AvatarUrl = user.AvatarUrl,
             Roles = roles ?? [],
             CreatedAt = user.CreatedAt,
         };

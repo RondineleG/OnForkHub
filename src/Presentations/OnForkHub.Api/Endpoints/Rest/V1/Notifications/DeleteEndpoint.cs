@@ -1,8 +1,8 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.CrossCutting.Interfaces;
-
 using System.Security.Claims;
+
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for deleting a notification.

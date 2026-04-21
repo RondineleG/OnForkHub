@@ -1,8 +1,8 @@
 namespace OnForkHub.Web.Models;
 
-using Microsoft.AspNetCore.Components.Forms;
-
 using System.ComponentModel.DataAnnotations;
+
+using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Model for video upload form.

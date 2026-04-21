@@ -1,12 +1,12 @@
 namespace OnForkHub.Api.Factories;
 
+using System.IO;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
 using OnForkHub.Persistence.Contexts;
-
-using System.IO;
 
 /// <summary>
 /// Factory for creating EntityFrameworkDataContext at design time (for migrations).

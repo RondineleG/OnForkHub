@@ -1,13 +1,13 @@
 namespace OnForkHub.Api.IntegrationTests.Endpoints;
 
+using System.Net;
+using System.Net.Http.Json;
+
 using FluentAssertions;
 
 using OnForkHub.Api.IntegrationTests.Helpers;
 using OnForkHub.Api.IntegrationTests.Infrastructure;
 using OnForkHub.Application.Dtos.User.Response;
-
-using System.Net;
-using System.Net.Http.Json;
 
 using Xunit;
 
@@ -60,7 +60,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that users can only access their own notifications (user isolation).
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]
@@ -83,7 +83,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that getting notifications fails without authentication.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]
@@ -99,7 +99,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests getting unread notification count.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]
@@ -118,7 +118,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that marking a notification as read validates ownership.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]
@@ -144,7 +144,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that marking non-existent notification returns not found.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]
@@ -164,7 +164,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests marking all notifications as read for a user.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]
@@ -183,7 +183,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that deleting a notification validates ownership.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]
@@ -209,7 +209,7 @@ public sealed class NotificationEndpointIntegrationTests : IAsyncLifetime
     /// <summary>
     /// Tests that deleting notification fails without authentication.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [TestCategory("Integration")]
     [TestCategory("Notification")]

@@ -73,12 +73,12 @@
 ---
 
 ### Task 0.1: Corrigir GlobalUsings - OnForkHub.Scripts
-- [ ] **ALTERAÇÃO:** Ordenar usings em `src/Shared/OnForkHub.Scripts/GlobalUsings.cs`
+- [x] **ALTERAÇÃO:** Ordenar usings em `src/Shared/OnForkHub.Scripts/GlobalUsings.cs`
   - Ordem: System → Microsoft → Third-party → Project
-- [ ] **VALIDAR:** `dotnet format --verify-no-changes`
-- [ ] **BUILDAR:** `dotnet build src/Shared/OnForkHub.Scripts`
-- [ ] **TESTAR:** N/A (projeto de scripts)
-- [ ] **COMMIT:** `style(fix): ordenar usings em OnForkHub.Scripts (SA1210)`
+- [x] **VALIDAR:** `dotnet format --verify-no-changes`
+- [x] **BUILDAR:** `dotnet build src/Shared/OnForkHub.Scripts`
+- [x] **TESTAR:** N/A (projeto de scripts)
+- [x] **COMMIT:** `style(fix): ordenar usings em OnForkHub.Scripts (SA1210)`
 
 ---
 

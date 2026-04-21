@@ -44,6 +44,15 @@ public interface IUserService
     Task<RequestResult<UserEntity>> UpdateAsync(UserEntity user);
 
     /// <summary>
+    /// Updates a user's profile by ID.
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="name">The new name.</param>
+    /// <param name="email">The new email.</param>
+    /// <returns>The updated user.</returns>
+    Task<RequestResult<UserEntity>> UpdateProfileAsync(string userId, string name, string email);
+
+    /// <summary>
     /// Changes a user's password.
     /// </summary>
     /// <param name="userId">The user ID.</param>

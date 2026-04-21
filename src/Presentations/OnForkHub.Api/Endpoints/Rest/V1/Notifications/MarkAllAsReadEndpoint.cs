@@ -1,9 +1,9 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
+using System.Security.Claims;
+
 using OnForkHub.Core.ValueObjects;
 using OnForkHub.CrossCutting.Interfaces;
-
-using System.Security.Claims;
 
 /// <summary>
 /// Endpoint for marking all notifications as read for a user.
