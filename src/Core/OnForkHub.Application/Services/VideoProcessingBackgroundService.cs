@@ -1,0 +1,101 @@
+namespace OnForkHub.Application.Services;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+using OnForkHub.Core.Enums;
+using OnForkHub.Core.Interfaces.Repositories;
+using OnForkHub.Core.Interfaces.Services;
+
+/// <summary>
+/// Background service for processing video uploads (thumbnails, metadata, etc.).
+/// </summary>
+public partial class VideoProcessingBackgroundService(IServiceScopeFactory scopeFactory, ILogger<VideoProcessingBackgroundService> logger)
+    : BackgroundService
+{
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+    private readonly ILogger<VideoProcessingBackgroundService> _logger = logger;
+
+    /// <inheritdoc/>
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        LogServiceStarting();
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await ProcessPendingUploadsAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                LogProcessingError(ex);
+            }
+
+            // Wait for 30 seconds before next check
+            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+        }
+
+        LogServiceStopping();
+    }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Video Processing Background Service is starting.")]
+    private partial void LogServiceStarting();
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Video Processing Background Service is stopping.")]
+    private partial void LogServiceStopping();
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Error occurred while processing video uploads.")]
+    private partial void LogProcessingError(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Processing video upload {UploadId}...")]
+    private partial void LogProcessingUpload(string uploadId);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Video upload {UploadId} processed successfully.")]
+    private partial void LogUploadProcessed(string uploadId);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to process upload {UploadId}")]
+    private partial void LogUploadFailed(Exception ex, string uploadId);
+
+    private async Task ProcessPendingUploadsAsync(CancellationToken stoppingToken)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IVideoUploadRepository>();
+
+        // Get uploads for processing
+        var result = await repository.GetByUserIdAsync(string.Empty, 1, 100);
+
+        if (result.Status != EResultStatus.Success || result.Data == null)
+        {
+            return;
+        }
+
+        var pendingProcessing = result.Data.Where(x => x.Status == EVideoUploadStatus.Processing);
+
+        foreach (var upload in pendingProcessing)
+        {
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            try
+            {
+                LogProcessingUpload(upload.Id);
+
+                // Process (Mock)
+                upload.MarkAsCompleted("/videos/final/" + upload.FileName);
+                await repository.UpdateAsync(upload);
+
+                LogUploadProcessed(upload.Id);
+            }
+            catch (Exception ex)
+            {
+                LogUploadFailed(ex, upload.Id);
+                upload.MarkAsFailed(ex.Message);
+                await repository.UpdateAsync(upload);
+            }
+        }
+    }
+}

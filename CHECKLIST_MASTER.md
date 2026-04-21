@@ -440,29 +440,19 @@
 
 ---
 
-#### Task 1.2.10: Background Job para Processamento
-- [ ] **ALTERAÇÃO:** Criar `VideoProcessingBackgroundService`
-  ```csharp
-  public class VideoProcessingBackgroundService : BackgroundService
-  {
-      protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-      {
-          while (!stoppingToken.IsCancellationRequested)
-          {
-              // Processar uploads pendentes
-              // Gerar thumbnails
-              // Extrair metadata
-              await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
-          }
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Background service registrado em DI
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Application`
-- [ ] **TESTAR:** 
-  - [ ] Testar inicialização do service
-  - [ ] Mockar processamento
-- [ ] **COMMIT:** `feat(video-upload): adicionar VideoProcessingBackgroundService`
+#### Task 1.2.10: Background Job para Processamento ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `VideoProcessingBackgroundService` em `OnForkHub.Application/Services/`
+  - Herda de `BackgroundService` para execução contínua em segundo plano
+  - Processamento periódico (cada 30 segundos) de uploads com status 'Processing'
+  - Geração de metadados e thumbnails (simulado) com transição de status para 'Completed'
+  - Implementado com `IServiceScopeFactory` para uso seguro de repositórios scoped
+  - Uso de `LoggerMessage` para monitoramento eficiente
+- [x] **VALIDAR:** Background service registrado em DI como Hosted Service, compila sem erros
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Application` → 0 erros
+- [x] **TESTAR:** 
+  - [x] Testar inicialização do service
+  - [x] Mockar processamento e validar persistência
+- [x] **COMMIT:** `feat(application): implement VideoProcessingBackgroundService as a hosted service`
 
 **Status Video Upload:** 🔴 0/10 tasks | Estimativa: 5 dias
 

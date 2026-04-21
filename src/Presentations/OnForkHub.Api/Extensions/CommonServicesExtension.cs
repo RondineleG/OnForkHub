@@ -190,6 +190,8 @@ namespace OnForkHub.Api.Extensions
 
             strategy.Register(services);
 
+            services.AddHostedService<VideoProcessingBackgroundService>();
+
             return services;
         }
 
