@@ -101,11 +101,13 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<IVideoRepositoryEF, VideoRepositoryEF>();
             services.AddScoped<IValidationService<Video>, ValidationService<Video>>();
             services.AddScoped<IVideoService, VideoService>();
+            services.AddScoped<IVideoUploadService, VideoUploadService>();
             services.AddScoped<INotificationRepositoryEF, NotificationRepositoryEF>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IUserRepositoryEF, UserRepositoryEF>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRefreshTokenRepositoryEF, RefreshTokenRepositoryEF>();
+            services.AddScoped<IVideoUploadRepository, VideoUploadRepositoryEF>();
             services.Configure<FileStorageOptions>(options => { });
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
             return services;

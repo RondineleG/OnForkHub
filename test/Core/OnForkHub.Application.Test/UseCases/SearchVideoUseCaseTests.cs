@@ -2,8 +2,8 @@ namespace OnForkHub.Application.Test.UseCases;
 
 using OnForkHub.Application.Dtos.Base;
 using OnForkHub.Application.Dtos.Video.Request;
-using OnForkHub.Application.Dtos.Video.Response;
 using OnForkHub.Application.UseCases.Videos;
+using OnForkHub.Core.Responses;
 using OnForkHub.Core.ValueObjects;
 
 public class SearchVideoUseCaseTests

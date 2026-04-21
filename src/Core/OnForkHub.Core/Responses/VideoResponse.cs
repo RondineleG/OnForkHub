@@ -1,12 +1,14 @@
-namespace OnForkHub.Application.Dtos.Video.Response;
+namespace OnForkHub.Core.Responses;
+
+using OnForkHub.Core.Entities;
 
 /// <summary>
 /// Data transfer object for video responses.
 /// </summary>
-public sealed class VideoResponseDto
+public sealed class VideoResponse
 {
     /// <summary>
-    /// Gets or sets the video ID.
+    /// Gets or sets the video identifier.
     /// </summary>
     public string Id { get; set; } = string.Empty;
 
@@ -26,14 +28,29 @@ public sealed class VideoResponseDto
     public string Url { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the user ID who owns the video.
+    /// Gets or sets the thumbnail URL.
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
+    public string? ThumbnailUrl { get; set; }
 
     /// <summary>
-    /// Gets or sets the category names for the video.
+    /// Gets or sets the duration in seconds.
     /// </summary>
-    public IReadOnlyList<string> Categories { get; set; } = [];
+    public int Duration { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of views.
+    /// </summary>
+    public long ViewCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the owner's identifier.
+    /// </summary>
+    public string OwnerId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the owner's name.
+    /// </summary>
+    public string OwnerName { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the creation date.
@@ -41,29 +58,22 @@ public sealed class VideoResponseDto
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// Gets or sets the last update date.
-    /// </summary>
-    public DateTime? UpdatedAt { get; set; }
-
-    /// <summary>
-    /// Creates a VideoResponseDto from a Video entity.
+    /// Creates a VideoResponse from a Video entity.
     /// </summary>
     /// <param name="video">The video entity.</param>
-    /// <returns>The video response DTO.</returns>
-    public static VideoResponseDto FromVideo(Core.Entities.Video video)
+    /// <returns>The video response.</returns>
+    public static VideoResponse FromVideo(Video video)
     {
         ArgumentNullException.ThrowIfNull(video);
 
-        return new VideoResponseDto
+        return new VideoResponse
         {
             Id = video.Id.ToString(),
             Title = video.Title.Value,
             Description = video.Description,
             Url = video.Url.Value,
-            UserId = video.UserId?.ToString() ?? string.Empty,
-            Categories = video.Categories.Select(c => c.Name.Value).ToList(),
+            OwnerId = video.UserId?.ToString() ?? string.Empty,
             CreatedAt = video.CreatedAt,
-            UpdatedAt = video.UpdatedAt,
         };
     }
 }

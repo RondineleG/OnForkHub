@@ -12,6 +12,8 @@ public interface IEntityFrameworkDataContext
 
     DbSet<Video> Videos { get; set; }
 
+    DbSet<VideoUpload> VideoUploads { get; set; }
+
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         where TEntity : class;
 

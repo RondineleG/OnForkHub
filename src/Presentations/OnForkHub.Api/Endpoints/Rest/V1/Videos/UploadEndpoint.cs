@@ -3,7 +3,7 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.Video.Request;
-using OnForkHub.Application.Dtos.Video.Response;
+using OnForkHub.Core.Responses;
 using OnForkHub.Core.ValueObjects;
 using OnForkHub.CrossCutting.Interfaces;
 
@@ -46,7 +46,7 @@ public sealed partial class UploadEndpoint(ILogger<UploadEndpoint> logger, IVide
             .WithDescription("Uploads a video file and creates a video record")
             .WithSummary("Upload video")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<VideoResponseDto>(StatusCodes.Status201Created)
+            .Produces<VideoResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status413PayloadTooLarge)
@@ -112,7 +112,7 @@ public sealed partial class UploadEndpoint(ILogger<UploadEndpoint> logger, IVide
                 LogUploadCompleted(userId, result.Data.Id);
             }
 
-            var response = VideoResponseDto.FromVideo(result.Data);
+            var response = VideoResponse.FromVideo(result.Data);
             return Results.Created($"/api/v{V1}/video/{result.Data.Id}", response);
         }
         catch (OperationCanceledException)

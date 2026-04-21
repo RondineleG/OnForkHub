@@ -2,13 +2,13 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
 using OnForkHub.Application.Dtos.Base;
 using OnForkHub.Application.Dtos.Video.Request;
-using OnForkHub.Application.Dtos.Video.Response;
+using OnForkHub.Core.Responses;
 using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for searching videos.
 /// </summary>
-public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<VideoSearchRequestDto, PagedResultDto<VideoResponseDto>> useCase)
+public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<VideoSearchRequestDto, PagedResultDto<VideoResponse>> useCase)
     : BaseEndPoint<Video>,
         IEndpointAsync
 {
@@ -18,7 +18,7 @@ public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<VideoSearch
 
     private readonly ILogger<SearchEndpoint> _logger = logger;
 
-    private readonly IUseCase<VideoSearchRequestDto, PagedResultDto<VideoResponseDto>> _useCase = useCase;
+    private readonly IUseCase<VideoSearchRequestDto, PagedResultDto<VideoResponse>> _useCase = useCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -63,7 +63,7 @@ public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<VideoSearch
             .WithDescription("Searches videos with filters and pagination")
             .WithSummary("Search videos")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<RequestResult<PagedResultDto<VideoResponseDto>>>(StatusCodes.Status200OK)
+            .Produces<RequestResult<PagedResultDto<VideoResponse>>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status204NoContent);
 
         return Task.FromResult(RequestResult.Success());
