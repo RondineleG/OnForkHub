@@ -101,19 +101,19 @@
 ---
 
 ### Task 0.4: Corrigir IValidationError - UpdateVideoUseCaseTest (Parte 1)
-- [ ] **ALTERAÇÃO:** Adicionar using faltante em `UpdateVideoUseCaseTest.cs` linha 246
+- [x] **ALTERAÇÃO:** Adicionar using faltante em `UpdateVideoUseCaseTest.cs` linha 246
   ```csharp
   using OnForkHub.Core.Interfaces.Validations;
   ```
-- [ ] **VALIDAR:** IntelliSense reconhece `IValidationError`
-- [ ] **BUILDAR:** `dotnet build test/Core/OnForkHub.Application.Test`
-- [ ] **TESTAR:** N/A (ainda há outros erros)
-- [ ] **COMMIT:** `fix(test): adicionar using IValidationError em UpdateVideoUseCaseTest`
+- [x] **VALIDAR:** IntelliSense reconhece `IValidationError`
+- [x] **BUILDAR:** `dotnet build test/Core/OnForkHub.Application.Test`
+- [x] **TESTAR:** N/A (ainda há outros erros)
+- [x] **COMMIT:** `fix(test): adicionar using IValidationError em UpdateVideoUseCaseTest`
 
 ---
 
 ### Task 0.5: Corrigir TestVideoValidationResult - Interface Completa (Parte 2)
-- [ ] **ALTERAÇÃO:** Implementar todos os membros de `IValidationResult` em `TestVideoValidationResult`
+- [x] **ALTERAÇÃO:** Implementar todos os membros de `IValidationResult` em `TestVideoValidationResult`
   ```csharp
   public class TestVideoValidationResult : IValidationResult
   {
@@ -134,42 +134,42 @@
       public Task ValidateAsync(Func<Task<bool>> predicate, string propertyName, string message) => Task.CompletedTask;
   }
   ```
-- [ ] **VALIDAR:** Interface completamente implementada
-- [ ] **BUILDAR:** `dotnet build test/Core/OnForkHub.Application.Test`
-  - [ ] Esperado: 0 erros
-- [ ] **TESTAR:** `dotnet test test/Core/OnForkHub.Application.Test --filter "Video"`
-- [ ] **COMMIT:** `fix(test): implementar interface IValidationResult completa em TestVideoValidationResult`
+- [x] **VALIDAR:** Interface completamente implementada
+- [x] **BUILDAR:** `dotnet build test/Core/OnForkHub.Application.Test`
+  - [x] Esperado: 0 erros
+- [x] **TESTAR:** `dotnet test test/Core/OnForkHub.Application.Test --filter "Video"`
+- [x] **COMMIT:** `fix(test): implementar interface IValidationResult completa em TestVideoValidationResult`
 
 ---
 
 ### Task 0.6: Instalar Workload WASM Tools
-- [ ] **ALTERAÇÃO:** Instalar/Atualizar workload para Blazor WebAssembly
+- [x] **ALTERAÇÃO:** Instalar/Atualizar workload para Blazor WebAssembly
   ```bash
   dotnet workload restore
   dotnet workload install wasm-tools
   ```
-- [ ] **VALIDAR:** `dotnet workload list` mostra `wasm-tools` instalado
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-  - [ ] Esperado: Build sem NETSDK1147
-- [ ] **TESTAR:** N/A
-- [ ] **COMMIT:** `chore(fix): instalar workload wasm-tools para Blazor WASM`
+- [x] **VALIDAR:** `dotnet workload list` mostra `wasm-tools` instalado
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
+  - [x] Esperado: Build sem NETSDK1147
+- [x] **TESTAR:** N/A
+- [x] **COMMIT:** `chore(fix): instalar workload wasm-tools para Blazor WASM`
 
 ---
 
 ### Task 0.7: Build Completo - Validação
-- [ ] **ALTERAÇÃO:** Limpar e rebuildar solução completa
+- [x] **ALTERAÇÃO:** Limpar e rebuildar solução completa
   ```bash
   dotnet clean
   dotnet restore
   dotnet build --no-restore -p:TreatWarningsAsErrors=true 2>&1 | Tee-Object build-after-fixes.log
   ```
-- [ ] **VALIDAR:** 
-  - [ ] 0 erros
-  - [ ] 0 warnings
-- [ ] **BUILDAR:** ✅ Build limpo
-- [ ] **TESTAR:** `dotnet test --verbosity minimal`
-  - [ ] Validar: 372 testes passando
-- [ ] **COMMIT:** `docs(fix): documentar baseline pós-correções de build`
+- [x] **VALIDAR:** 
+  - [x] 0 erros
+  - [x] 0 warnings
+- [x] **BUILDAR:** ✅ Build limpo
+- [x] **TESTAR:** `dotnet test --verbosity minimal`
+  - [x] Validar: 372 testes passando
+- [x] **COMMIT:** `docs(fix): documentar baseline pós-correções de build`
 
 ---
 

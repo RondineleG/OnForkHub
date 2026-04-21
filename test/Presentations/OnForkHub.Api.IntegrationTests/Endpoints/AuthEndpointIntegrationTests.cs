@@ -2,11 +2,14 @@ namespace OnForkHub.Api.IntegrationTests.Endpoints;
 
 using System.Net;
 using System.Net.Http.Json;
+
 using FluentAssertions;
+
 using OnForkHub.Api.IntegrationTests.Helpers;
 using OnForkHub.Api.IntegrationTests.Infrastructure;
 using OnForkHub.Application.Dtos.User.Request;
 using OnForkHub.Application.Dtos.User.Response;
+
 using Xunit;
 
 /// <summary>
