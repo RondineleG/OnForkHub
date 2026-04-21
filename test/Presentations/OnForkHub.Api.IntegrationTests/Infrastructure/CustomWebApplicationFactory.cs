@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using OnForkHub.Api.Extensions;
 using OnForkHub.Persistence.Contexts;
 
 using Xunit;
@@ -64,6 +65,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
+            services.AddEndpoints();
+
             // Remove all DbContext and DbContextOptions registrations
             var descriptorsToRemove = services
                 .Where(d =>

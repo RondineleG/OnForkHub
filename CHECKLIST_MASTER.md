@@ -376,27 +376,20 @@
 
 ---
 
-#### Task 1.2.6: Criar API Endpoints para Upload
-- [ ] **ALTERAÇÃO:** Criar `UploadEndpoints.cs`
-  ```csharp
-  public static class UploadEndpoints
-  {
-      public static IEndpointRouteBuilder MapUploadEndpoints(this IEndpointRouteBuilder app)
-      {
-          app.MapPost("/api/videos/upload/initiate", ...);
-          app.MapPost("/api/videos/upload/chunk/{uploadId}", ...);
-          app.MapGet("/api/videos/upload/{uploadId}/status", ...);
-          app.MapGet("/api/videos/uploads", ...);
-          return app;
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Endpoints registrados em Program.cs
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api`
-- [ ] **TESTAR:** 
-  - [ ] Criar testes de integração para cada endpoint
-  - [ ] Testar fluxo completo de upload
-- [ ] **COMMIT:** `feat(video-upload): adicionar API endpoints para chunked upload`
+#### Task 1.2.6: Criar API Endpoints para Upload ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criados/Corrigidos endpoints individuais em `OnForkHub.Api/Endpoints/Rest/V1/Videos/`
+  - `InitiateUploadEndpoint.cs` - POST /api/v1/videos/upload/initiate
+  - `UploadChunkEndpoint.cs` - POST /api/v1/videos/upload/chunk/{uploadId}
+  - `GetUploadStatusEndpoint.cs` - GET /api/v1/videos/upload/{uploadId}/status
+  - `GetUserUploadsEndpoint.cs` - GET /api/v1/videos/uploads
+  - Implementado padrão `partial` com `LoggerMessage` para alta performance de log
+  - Uso de injeção de dependência para `IVideoUploadService`
+- [x] **VALIDAR:** Endpoints registrados automaticamente via scan, rotas seguem o padrão REST
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api` → 0 erros
+- [x] **TESTAR:** 
+  - [x] Criar testes de integração para cada endpoint
+  - [x] Testar fluxo completo de upload
+- [x] **COMMIT:** `feat(api): implement chunked upload endpoints with high-performance logging`
 
 ---
 
