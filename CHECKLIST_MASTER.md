@@ -526,119 +526,57 @@
 
 ---
 
-#### Task 1.3.7: Criar Componente de Download P2P
-- [ ] **ALTERAÇÃO:** Criar `P2PVideoPlayer.razor`
-  ```razor
-  @inject WebTorrentService WebTorrentService
-  @inject IJSRuntime JSRuntime
-  
-  <div class="p2p-player">
-      <video id="videoPlayer" controls></video>
-      <div class="p2p-stats">
-          <span>Peers: @peerCount</span>
-          <span>Progress: @progress%</span>
-          <span>Download: @formatSpeed(downloadSpeed)/s</span>
-          <span>Upload: @formatSpeed(uploadSpeed)/s</span>
-      </div>
-  </div>
-  
-  @code {
-      [Parameter] public string MagnetUri { get; set; } = default!;
-      
-      private int peerCount;
-      private double progress;
-      private double downloadSpeed;
-      private double uploadSpeed;
-      
-      protected override async Task OnInitializedAsync()
-      {
-          await WebTorrentService.InitializeAsync();
-          await WebTorrentService.StartDownloadAsync(MagnetUri, "/videos/temp");
-          _ = UpdateStatsAsync();
-      }
-      
-      private async Task UpdateStatsAsync()
-      {
-          while (true)
-          {
-              var stats = await JSRuntime.InvokeAsync<P2PStats>("getTorrentStats", MagnetUri);
-              peerCount = stats.Peers;
-              progress = stats.Progress;
-              downloadSpeed = stats.DownloadSpeed;
-              uploadSpeed = stats.UploadSpeed;
-              StateHasChanged();
-              await Task.Delay(1000);
-          }
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Componente renderiza stats em tempo real
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **TESTAR:** Teste manual com torrent de teste
-- [ ] **COMMIT:** `feat(webtorrent): criar componente P2PVideoPlayer com estatísticas`
+#### Task 1.3.7: Criar Componente de Download P2P ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `P2PVideoPlayer.razor` em `OnForkHub.Web/Components/VideoPlayer/`
+  - Componente que utiliza o `WebTorrentService` para baixar e renderizar vídeos via P2P
+  - Exibição de estatísticas em tempo real: número de peers, progresso, velocidades de download e upload
+- [x] **VALIDAR:** Componente renderiza corretamente e integra com o módulo JS
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
+- [x] **TESTAR:** Teste manual com torrent de teste
+- [x] **COMMIT:** `feat(web): implement P2PVideoPlayer component`
 
 ---
 
-#### Task 1.3.8: Implementar Seeding Management
-- [ ] **ALTERAÇÃO:** Adicionar controle de seeding no backend
-  ```csharp
-  public interface ITorrentTrackerService
-  {
-      Task<int> GetPeerCountAsync(string magnetUri);
-      Task<bool> IsHealthyAsync(string magnetUri);
-      Task ReannounceAsync(string magnetUri);
-  }
-  ```
-- [ ] **VALIDAR:** Interface define métricas de saúde
-- [ ] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core`
-- [ ] **TESTAR:** Mockar tracker e testar
-- [ ] **COMMIT:** `feat(webtorrent): definir interface ITorrentTrackerService`
+#### Task 1.3.8: Implementar Seeding Management ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criada interface `ITorrentTrackerService` em `OnForkHub.Core/Interfaces/Services/`
+  - Métodos definidos: `GetPeerCountAsync`, `IsHealthyAsync`, `ReannounceAsync`, `GetStatsAsync`
+- [x] **VALIDAR:** Interface define métricas de saúde essenciais para P2P
+- [x] **BUILDAR:** `dotnet build src/Core/OnForkHub.Core` → 0 erros
+- [x] **TESTAR:** Mockar tracker e testar contratos
+- [x] **COMMIT:** `feat(core): define ITorrentTrackerService interface`
 
 ---
 
-#### Task 1.3.9: Adicionar Fallback CDN quando P2P Falha
-- [ ] **ALTERAÇÃO:** Modificar `P2PVideoPlayer` para fallback
-  ```csharp
-  private async Task InitializePlayerAsync()
-  {
-      try
-      {
-          await WebTorrentService.StartDownloadAsync(MagnetUri, "/videos/temp");
-          var stats = await JSRuntime.InvokeAsync<P2PStats>("getTorrentStats", MagnetUri);
-          
-          if (stats.Peers == 0 && !string.IsNullOrEmpty(CdnUrl))
-          {
-              // Fallback para CDN
-              await JSRuntime.InvokeVoidAsync("setVideoSource", "videoPlayer", CdnUrl);
-          }
-      }
-      catch
-      {
-          if (!string.IsNullOrEmpty(CdnUrl))
-          {
-              await JSRuntime.InvokeVoidAsync("setVideoSource", "videoPlayer", CdnUrl);
-          }
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Fallback funciona quando P2P indisponível
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **TESTAR:** Simular falha de P2P
-- [ ] **COMMIT:** `feat(webtorrent): implementar fallback para CDN quando P2P falha`
+#### Task 1.3.9: Adicionar Fallback CDN quando P2P Falha ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Modificado `P2PVideoPlayer` para suporte a fallback
+  - Implementada lógica de timeout (5 segundos): se nenhum peer for encontrado, alterna para streaming HTTP convencional (CDN)
+  - Uso de parâmetro `FallbackUrl` para URL de streaming direto
+- [x] **VALIDAR:** Fallback funciona quando P2P está indisponível ou lento
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
+- [x] **TESTAR:** Simular falha de P2P e validar carregamento via CDN
+- [x] **COMMIT:** `feat(web): implement CDN fallback in P2P player`
 
 ---
 
-#### Task 1.3.10: Documentar WebTorrent Integration
-- [ ] **ALTERAÇÃO:** Criar `docs/WEBTORRENT_INTEGRATION.md`
-  - Como funciona o P2P no OnForkHub
-  - Configuração de trackers
-  - Troubleshooting
-- [ ] **VALIDAR:** Documento claro e completo
-- [ ] **BUILDAR:** N/A
-- [ ] **TESTAR:** N/A
-- [ ] **COMMIT:** `docs(webtorrent): adicionar documentação de integração WebTorrent`
+#### Task 1.3.10: Documentar WebTorrent Integration ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `docs/WEBTORRENT_INTEGRATION.md`
+  - Descrição da arquitetura (JS Interop + WebTorrent.js)
+  - Fluxo de funcionamento (Seed, Download, Fallback)
+  - Guia de configuração e benefícios do P2P
+- [x] **VALIDAR:** Documento claro, completo e seguindo o padrão do projeto
+- [x] **BUILDAR:** N/A
+- [x] **TESTAR:** N/A
+- [x] **COMMIT:** `docs(webtorrent): add P2P integration documentation`
 
-**Status WebTorrent:** 🔴 0/10 tasks | Estimativa: 7 dias
+**Status WebTorrent:** 🟢 10/10 tasks | Estimativa: 7 dias
+
+---
+
+#### Task 1.4.1: Configurar WebApplicationFactory para API
+- [ ] **ALTERAÇÃO:** Criar `CustomWebApplicationFactory.cs`
+...
+
+**Status WebTorrent:** 🟢 10/10 tasks | Estimativa: 7 dias
 
 ---
 

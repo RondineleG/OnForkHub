@@ -22,7 +22,7 @@ public sealed class WebTorrentService : IAsyncDisposable
     /// <summary>
     /// Initializes the WebTorrent module.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task InitializeAsync()
     {
         if (_module == null)
@@ -34,7 +34,7 @@ public sealed class WebTorrentService : IAsyncDisposable
     /// <summary>
     /// Creates a torrent from video data.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<string> CreateTorrentAsync(byte[] videoData, string fileName)
     {
         await InitializeAsync();
@@ -44,7 +44,7 @@ public sealed class WebTorrentService : IAsyncDisposable
     /// <summary>
     /// Starts downloading a torrent from a magnet URI.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task StartDownloadAsync(string magnetUri, string containerId)
     {
         await InitializeAsync();
@@ -54,7 +54,7 @@ public sealed class WebTorrentService : IAsyncDisposable
     /// <summary>
     /// Gets stats for a specific torrent.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<P2PStats?> GetTorrentStatsAsync(string magnetUri)
     {
         await InitializeAsync();
