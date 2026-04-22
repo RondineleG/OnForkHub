@@ -9,7 +9,7 @@ using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Interfaces.Services;
 
 /// <summary>
-/// Background service for processing video uploads (thumbnails, metadata, etc.).
+/// Background service for processing video uploads (thumbnails, metadata, transcoding, etc.).
 /// </summary>
 public partial class VideoProcessingBackgroundService(IServiceScopeFactory scopeFactory, ILogger<VideoProcessingBackgroundService> logger)
     : BackgroundService
@@ -58,10 +58,14 @@ public partial class VideoProcessingBackgroundService(IServiceScopeFactory scope
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to process upload {UploadId}")]
     private partial void LogUploadFailed(Exception ex, string uploadId);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Starting transcoding for upload {UploadId}...")]
+    private partial void LogTranscodingStarted(string uploadId);
+
     private async Task ProcessPendingUploadsAsync(CancellationToken stoppingToken)
     {
         using var scope = _scopeFactory.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IVideoUploadRepository>();
+        var transcodingService = scope.ServiceProvider.GetRequiredService<IVideoTranscodingService>();
 
         // Get uploads for processing
         var result = await repository.GetByUserIdAsync(string.Empty, 1, 100);
@@ -84,7 +88,21 @@ public partial class VideoProcessingBackgroundService(IServiceScopeFactory scope
             {
                 LogProcessingUpload(upload.Id);
 
-                // Process (Mock)
+                // 1. Transcoding
+                if (upload.StoragePath != null)
+                {
+                    LogTranscodingStarted(upload.Id);
+                    var outputDir = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(upload.StoragePath) ?? "videos", "transcoded", upload.Id);
+
+                    var transResult = await transcodingService.TranscodeToAdaptiveBitrateAsync(upload.StoragePath, outputDir, stoppingToken);
+
+                    if (!transResult.Success)
+                    {
+                        throw new Exception($"Transcoding failed: {transResult.ErrorMessage}");
+                    }
+                }
+
+                // 2. Mark as Completed
                 upload.MarkAsCompleted("/videos/final/" + upload.FileName);
                 await repository.UpdateAsync(upload);
 

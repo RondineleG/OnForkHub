@@ -41,7 +41,7 @@
 |------|-------|------------|-----------|--------|
 | **FASE 0** - Correções Imediatas | 10 | 10 | 100% | 🟢 Concluído |
 | **FASE 1** - Features em Progresso | 20 | 20 | 100% | 🟢 Concluído |
-| **FASE 2** - Must Have | 28 | 0 | 0% | 🔴 Não Iniciado |
+| **FASE 2** - Must Have | 28 | 11 | 39% | 🟡 Em Progresso |
 | **FASE 3** - Should Have | 16 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 4** - Nice to Have | 12 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 5** - Arquitetura & DevOps | 24 | 0 | 0% | 🔴 Não Iniciado |

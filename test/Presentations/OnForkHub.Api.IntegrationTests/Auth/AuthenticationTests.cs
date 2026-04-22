@@ -91,12 +91,12 @@ public class AuthenticationTests(CustomWebApplicationFactory factory) : IClassFi
     {
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, userId), new Claim(ClaimTypes.Name, userName) };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TestSecretKey_ForIntegrationTests_Only_32chars!!"));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("DevOnly_ThisIsADevelopmentKeyThatShouldNeverBeUsedInProduction_32chars!"));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: "TestIssuer",
-            audience: "TestAudience",
+            issuer: "OnForkHub.Api",
+            audience: "OnForkHub.Client",
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: credentials

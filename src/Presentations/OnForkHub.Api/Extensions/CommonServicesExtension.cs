@@ -108,6 +108,7 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<IValidationService<Video>, ValidationService<Video>>();
             services.AddScoped<IVideoService, VideoService>();
             services.AddScoped<IVideoUploadService, VideoUploadService>();
+            services.AddScoped<IVideoTranscodingService, VideoTranscodingService>();
             services.AddScoped<INotificationRepositoryEF, NotificationRepositoryEF>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IUserRepositoryEF, UserRepositoryEF>();

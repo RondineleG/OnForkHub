@@ -31,6 +31,12 @@ using Xunit;
 /// </summary>
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private const string JwtSecret = "DevOnly_ThisIsADevelopmentKeyThatShouldNeverBeUsedInProduction_32chars!";
+
+    private const string JwtIssuer = "OnForkHub.Api";
+
+    private const string JwtAudience = "OnForkHub.Client";
+
     private readonly string _databaseId;
 
     /// <summary>
@@ -63,11 +69,11 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                         ["RateLimiting:Enabled"] = "false",
                         ["RateLimiting:PermitLimit"] = "10000",
                         ["RateLimiting:WindowSeconds"] = "60",
-                        ["Jwt:SecretKey"] = "TestSecretKey_ForIntegrationTests_Only_32chars!!",
-                        ["Jwt:Issuer"] = "TestIssuer",
-                        ["Jwt:Audience"] = "TestAudience",
-                        ["Jwt:ValidateIssuer"] = "false",
-                        ["Jwt:ValidateAudience"] = "false",
+                        ["Jwt:SecretKey"] = JwtSecret,
+                        ["Jwt:Issuer"] = JwtIssuer,
+                        ["Jwt:Audience"] = JwtAudience,
+                        ["Jwt:ValidateIssuer"] = "true",
+                        ["Jwt:ValidateAudience"] = "true",
                         ["Jwt:ValidateLifetime"] = "true",
                         ["Jwt:ValidateIssuerSigningKey"] = "true",
                         ["Jwt:AccessTokenExpirationMinutes"] = "15",
@@ -156,12 +162,12 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             new Claim(ClaimTypes.Role, "User"),
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TestSecretKey_ForIntegrationTests_Only_32chars!!"));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSecret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: "TestIssuer",
-            audience: "TestAudience",
+            issuer: JwtIssuer,
+            audience: JwtAudience,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(30),
             signingCredentials: credentials
