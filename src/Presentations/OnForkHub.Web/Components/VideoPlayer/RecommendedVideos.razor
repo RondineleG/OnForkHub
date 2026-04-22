@@ -1,0 +1,76 @@
+@using OnForkHub.Web.Services.Api
+@using OnForkHub.Core.Responses
+@inject IRecommendationService RecommendationService
+
+<div class="recommended-videos">
+    <h4 class="mb-3">Recomendados para você</h4>
+    
+    @if (isLoading)
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="skeleton card-img-top" style="height: 160px;"></div>
+                        <div class="card-body">
+                            <div class="skeleton mb-2" style="height: 20px; width: 80%;"></div>
+                            <div class="skeleton" style="height: 15px; width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (videos.Count == 0)
+    {
+        <p class="text-muted">Nenhuma recomendação disponível no momento.</p>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            @foreach (var video in videos)
+            {
+                <div class="col">
+                    <VideoCard Video="MapToWebModel(video)" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<VideoResponse> videos = [];
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            videos = await RecommendationService.GetRecommendationsAsync(4);
+        }
+        catch
+        {
+            videos = [];
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private OnForkHub.Web.Models.Video MapToWebModel(VideoResponse response)
+    {
+        return new OnForkHub.Web.Models.Video
+        {
+            Id = Guid.TryParse(response.Id, out var guid) ? guid : Guid.Empty,
+            Title = response.Title,
+            Name = response.Title, // Mapping Name to Title
+            Description = response.Description,
+            Url = response.Url,
+            Thumbnail = response.ThumbnailUrl,
+            Duration = response.Duration,
+            CreatedAt = response.CreatedAt
+        };
+    }
+}

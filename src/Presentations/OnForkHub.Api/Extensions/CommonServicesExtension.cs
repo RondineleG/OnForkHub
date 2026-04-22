@@ -109,6 +109,7 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<IVideoService, VideoService>();
             services.AddScoped<IVideoUploadService, VideoUploadService>();
             services.AddScoped<IVideoTranscodingService, VideoTranscodingService>();
+            services.AddScoped<IRecommendationService, RecommendationService>();
             services.AddScoped<INotificationRepositoryEF, NotificationRepositoryEF>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IUserRepositoryEF, UserRepositoryEF>();
@@ -149,7 +150,13 @@ namespace OnForkHub.Api.Extensions
 
                 foreach (var type in types)
                 {
-                    var interfaces = type.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == interfaceType);
+                    var interfaces = type.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == interfaceType).ToArray();
+                    if (interfaces.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    services.Add(new ServiceDescriptor(type, type, lifetime));
 
                     foreach (var serviceInterface in interfaces)
                     {

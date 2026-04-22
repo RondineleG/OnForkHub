@@ -1,8 +1,9 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
+using OnForkHub.Application.UseCases.Categories;
 using OnForkHub.CrossCutting.Interfaces;
 
-public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, IUseCase<long, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
+public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, DeleteCategoryUseCase useCase) : BaseEndPoint<Category>, IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -10,7 +11,7 @@ public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, IUseCase<long, Categ
 
     private readonly ILogger<DeleteEndpoint> _logger = logger;
 
-    private readonly IUseCase<long, Category> _useCase = useCase;
+    private readonly DeleteCategoryUseCase _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
