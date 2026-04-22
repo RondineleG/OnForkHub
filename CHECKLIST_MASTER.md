@@ -41,7 +41,7 @@
 |------|-------|------------|-----------|--------|
 | **FASE 0** - Correções Imediatas | 10 | 10 | 100% | 🟢 Concluído |
 | **FASE 1** - Features em Progresso | 20 | 20 | 100% | 🟢 Concluído |
-| **FASE 2** - Must Have | 28 | 17 | 61% | 🟡 Em Progresso |
+| **FASE 2** - Must Have | 28 | 28 | 100% | 🟢 Concluído |
 | **FASE 3** - Should Have | 16 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 4** - Nice to Have | 12 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 5** - Arquitetura & DevOps | 24 | 0 | 0% | 🔴 Não Iniciado |
@@ -125,7 +125,7 @@
   - Exibição de métricas de qualidade em tempo real (resolução e bitrate)
   - Gerenciamento de ciclo de vida do player (Init/Destroy)
 - [x] **VALIDAR:** Player DASH.js inicializa e reproduz via manifesto `.mpd`
-- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
 - [x] **COMMIT:** `feat(web): implement AdaptiveVideoPlayer component using dash.js`
 
 #### Task 2.2.7: Adicionar Auto-Quality Selection ✅ COMPLETED
@@ -161,11 +161,10 @@
   - CRUD completo: Listar, Criar, Editar (modal) e Excluir (confirmação)
   - Busca em tempo real com debounce
   - Paginação funcional integrada com `ICategoryService`
-  - Feedback visual de sucesso/erro e skeletons de carregamento
-- [x] **VALIDAR:** Todas as operações de gerenciamento de categoria funcionam via UI
-- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
-- [x] **TESTAR:** Testes manuais e de integração
-- [x] **COMMIT:** `feat(web): implement full category management UI`
+- [x] **ALTERAÇÃO:** Associado vídeos a categorias no componente `VideoUpload.razor`
+- [x] **ALTERAÇÃO:** Implementado filtro de vídeos por categoria no `Home.razor`
+- [x] **VALIDAR:** Fluxo completo de categorias funcional na UI e API
+- [x] **COMMIT:** `feat(web): complete category management and video association`
 
 **Status Categories:** 🟢 3/3 tasks | Concluído em 2026-04-22
 
