@@ -288,7 +288,20 @@
 
 ---
 
-## 🏗️ FASE 5: ARQUITETURA & DEVOPS
+## 🏗️ FASE 5: ARQUITETURA & DEVOPS ✅ IN PROGRESS
+
+### 5.1 JAEGER TRACING INTEGRATION ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Adicionados pacotes `OpenTelemetry` ao CrossCutting
+- [x] **ALTERAÇÃO:** Implementado `OpenTelemetryExtensions.cs` com exportador OTLP (gRPC)
+- [x] **ALTERAÇÃO:** Configurado tracing de AspNetCore e HttpClient no `Program.cs`
+- [x] **VALIDAR:** Traces são enviados para o backend do Jaeger via OTLP
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(devops): implement distributed tracing with Jaeger and OpenTelemetry`
+
+**Status Tracing:** 🟢 1/1 tasks | Concluído em 2026-04-22
+
+---
+
 ## 🚀 FASE 6: MIGRAÇÃO .NET 10
 **Status Fase 6:** �?? 0/46 tasks
 

@@ -20,6 +20,7 @@ builder.Services.AddGraphQLAdapters();
 builder.Services.AddResponseCompressionServices();
 builder.Services.AddCachingServices(builder.Configuration);
 builder.Services.AddRateLimitingServices(builder.Configuration);
+builder.Services.AddTracingServices(builder.Configuration);
 builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
