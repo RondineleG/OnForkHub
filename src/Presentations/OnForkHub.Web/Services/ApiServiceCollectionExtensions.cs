@@ -20,6 +20,7 @@ public static class ApiServiceCollectionExtensions
         services.AddScoped<IVideoUploadService, VideoUploadService>();
         services.AddScoped<IRecommendationService, RecommendationService>();
         services.AddScoped<ICommentService, CommentService>();
+        services.AddScoped<IRatingService, RatingService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IUserService, UserService>();
     }

@@ -208,22 +208,16 @@
 ---
 
 ### 3.2 COMMENTS & RATING SYSTEM ✅ COMPLETED
-- [x] **ALTERAÇÃO:** Criadas entidades `Comment.cs` e `VideoRating.cs` no Core
-  - Suporte a comentários, respostas (replies) e sistema de Like/Dislike
-  - Validação de estado e integridade de domínio
-- [x] **ALTERAÇÃO:** Configurada persistência EF Core com `CommentConfiguration` e `VideoRatingConfiguration`
-  - Garantido índice único para um voto por usuário por vídeo
-  - Gerada migration `AddCommentsAndRatings`
-- [x] **ALTERAÇÃO:** Criados endpoints na API:
-  - `CommentEndpoint.cs`: POST e GET paginado para comentários
-  - `RatingEndpoint.cs`: POST (set) e DELETE para likes/dislikes
-- [x] **ALTERAÇÃO:** Implementado componente `CommentsSection.razor` no Web
-  - Exibição de lista, feedback de tempo ("há X min") e formulário para novos comentários
-  - Integração com `ICommentService` (Web API)
-- [x] **VALIDAR:** Sistema completo funcional da UI ao banco de dados
-- [x] **COMMIT:** `feat(social): implement comments and rating system`
+- [x] **ALTERAÇÃO:** Criadas entidades `Comment.cs` e `VideoRating.cs` no Core com validações de domínio
+- [x] **ALTERAÇÃO:** Configurada persistência EF Core e gerada migration `AddCommentsAndRatings`
+- [x] **ALTERAÇÃO:** Criados endpoints na API (`CommentEndpoint`, `RatingEndpoint` e `TorrentStatsEndpoint`)
+- [x] **ALTERAÇÃO:** Implementados componentes `CommentsSection.razor` e `VideoRating.razor` no Blazor
+- [x] **ALTERAÇÃO:** Criados serviços de API `CommentService` e `RatingService` no projeto Web
+- [x] **VALIDAR:** Fluxo completo de interação social (comentar, curtir/descurtir) funcional
+- [x] **COMMIT:** `feat(social): implement comments and rating system with UI integration`
 
 **Status Comments/Ratings:** 🟢 5/5 tasks | Concluído em 2026-04-22
+
 
 
 ---
