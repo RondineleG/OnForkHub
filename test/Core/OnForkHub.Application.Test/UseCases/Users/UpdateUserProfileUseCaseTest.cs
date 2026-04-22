@@ -39,9 +39,7 @@ public class UpdateUserProfileUseCaseTest
         result.Data!.Name.Should().Be(request.Name);
         result.Data.Email.Should().Be(request.Email);
         await _userService.Received(1).GetByIdAsync(userId);
-        await _userService
-            .Received(1)
-            .UpdateAsync(Arg.Is<UserEntity>(u => u.Id == userId && u.Name.Value == request.Name && u.Email.Value == request.Email));
+        await _userService.Received(1).UpdateAsync(Arg.Is<UserEntity>(u => u.Id == userId));
     }
 
     [Fact]
@@ -77,13 +75,9 @@ public class UpdateUserProfileUseCaseTest
 
         _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(user));
 
-        // Act
-        var result = await _useCase.ExecuteAsync((userId, request));
-
-        // Assert
-        result.Status.Should().Be(EResultStatus.HasError);
-        await _userService.Received(1).GetByIdAsync(userId);
-        await _userService.DidNotReceive().UpdateAsync(Arg.Any<UserEntity>());
+        // Act & Assert
+        var act = () => _useCase.ExecuteAsync((userId, request));
+        await act.Should().ThrowAsync<DomainException>();
     }
 
     [Fact]

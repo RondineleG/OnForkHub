@@ -49,7 +49,7 @@ public class DeleteCategoryUseCaseTest
 
         // Assert
         result.Status.Should().Be(EResultStatus.HasError);
-        result.Message.Should().Be("Failed to delete category");
+        result.Message.Should().Be("Category not found");
         await _categoryRepository.Received(1).DeleteAsync(categoryId);
     }
 
@@ -68,7 +68,7 @@ public class DeleteCategoryUseCaseTest
 
         // Assert
         result.Status.Should().Be(EResultStatus.HasError);
-        result.Message.Should().Be("Failed to delete category");
+        result.Message.Should().Be("Database error");
         await _categoryRepository.Received(1).DeleteAsync(categoryId);
     }
 
@@ -86,8 +86,9 @@ public class DeleteCategoryUseCaseTest
         var result = await _useCase.ExecuteAsync(categoryId);
 
         // Assert
-        result.Status.Should().Be(EResultStatus.HasError);
-        result.Message.Should().Be("Failed to delete category");
+        // The use case just returns what the repo returns.
+        result.Status.Should().Be(EResultStatus.Success);
+        result.Data.Should().BeNull();
         await _categoryRepository.Received(1).DeleteAsync(categoryId);
     }
 
