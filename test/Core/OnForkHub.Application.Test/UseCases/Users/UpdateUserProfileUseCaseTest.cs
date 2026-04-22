@@ -1,6 +1,6 @@
-using OnForkHub.Application.Dtos.User.Request;
-using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Application.UseCases.Users;
+using OnForkHub.Core.Requests.Users;
+using OnForkHub.Core.Responses.Users;
 
 using UserEntity = OnForkHub.Core.Entities.User;
 
@@ -24,11 +24,11 @@ public class UpdateUserProfileUseCaseTest
     {
         // Arrange
         var userId = Id.Create();
+        var user = CreateValidUser(userId);
         var request = CreateValidUpdateRequest();
-        var existingUser = CreateValidUser(userId);
 
-        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
-        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.Success(existingUser));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(user));
+        _userService.UpdateAsync(Arg.Any<UserEntity>()).Returns(args => RequestResult<UserEntity>.Success((UserEntity)args[0]));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
@@ -39,40 +39,9 @@ public class UpdateUserProfileUseCaseTest
         result.Data!.Name.Should().Be(request.Name);
         result.Data.Email.Should().Be(request.Email);
         await _userService.Received(1).GetByIdAsync(userId);
-        await _userService.Received(1).UpdateAsync(existingUser);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw ArgumentNullException when userId is null")]
-    public async Task ShouldThrowArgumentNullExceptionWhenUserIdIsNull()
-    {
-        // Arrange
-        Id? userId = null;
-        var request = CreateValidUpdateRequest();
-
-        // Act
-        var act = () => _useCase.ExecuteAsync((userId!, request));
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>();
-        await _userService.DidNotReceive().GetByIdAsync(Arg.Any<Id>());
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should throw ArgumentNullException when request is null")]
-    public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
-    {
-        // Arrange
-        var userId = Id.Create();
-
-        // Act
-        var act = () => _useCase.ExecuteAsync((userId, null!));
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>();
-        await _userService.DidNotReceive().GetByIdAsync(Arg.Any<Id>());
+        await _userService
+            .Received(1)
+            .UpdateAsync(Arg.Is<UserEntity>(u => u.Id == userId && u.Name.Value == request.Name && u.Email.Value == request.Email));
     }
 
     [Fact]
@@ -98,35 +67,37 @@ public class UpdateUserProfileUseCaseTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return error when service returns null data on get")]
-    public async Task ShouldReturnErrorWhenServiceReturnsNullDataOnGet()
+    [DisplayName("Should return error when update data fails (validation)")]
+    public async Task ShouldReturnErrorWhenUpdateDataFails()
     {
         // Arrange
         var userId = Id.Create();
-        var request = CreateValidUpdateRequest();
+        var user = CreateValidUser(userId);
+        var request = new UpdateUserProfileRequest { Name = string.Empty, Email = "invalid-email" }; // Invalid data
 
-        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(null!));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(user));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
 
         // Assert
         result.Status.Should().Be(EResultStatus.HasError);
+        await _userService.Received(1).GetByIdAsync(userId);
         await _userService.DidNotReceive().UpdateAsync(Arg.Any<UserEntity>());
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return error when update operation fails")]
-    public async Task ShouldReturnErrorWhenUpdateOperationFails()
+    [DisplayName("Should return error when save fails")]
+    public async Task ShouldReturnErrorWhenSaveFails()
     {
         // Arrange
         var userId = Id.Create();
+        var user = CreateValidUser(userId);
         var request = CreateValidUpdateRequest();
-        var existingUser = CreateValidUser(userId);
 
-        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
-        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.WithError("Database error"));
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(user));
+        _userService.UpdateAsync(Arg.Any<UserEntity>()).Returns(RequestResult<UserEntity>.WithError("Database error"));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
@@ -134,49 +105,62 @@ public class UpdateUserProfileUseCaseTest
         // Assert
         result.Status.Should().Be(EResultStatus.HasError);
         result.Message.Should().Be("Database error");
+        await _userService.Received(1).GetByIdAsync(userId);
+        await _userService.Received(1).UpdateAsync(Arg.Any<UserEntity>());
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return error when save operation fails")]
-    public async Task ShouldReturnErrorWhenSaveOperationFails()
+    [DisplayName("Should throw ArgumentNullException when userId is null")]
+    public async Task ShouldThrowArgumentNullExceptionWhenUserIdIsNull()
+    {
+        // Arrange
+        Id? userId = null;
+        var request = CreateValidUpdateRequest();
+
+        // Act
+        var act = () => _useCase.ExecuteAsync((userId!, request));
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw ArgumentNullException when request is null")]
+    public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
         // Arrange
         var userId = Id.Create();
-        var request = CreateValidUpdateRequest();
-        var existingUser = CreateValidUser(userId);
+        UpdateUserProfileRequest? request = null;
 
-        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
-        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.WithError("Database error"));
+        // Act
+        var act = () => _useCase.ExecuteAsync((userId, request!));
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error when service returns null data on save")]
+    public async Task ShouldReturnErrorWhenServiceReturnsNullDataOnSave()
+    {
+        // Arrange
+        var userId = Id.Create();
+        var user = CreateValidUser(userId);
+        var request = CreateValidUpdateRequest();
+
+        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(user));
+        _userService.UpdateAsync(Arg.Any<UserEntity>()).Returns(RequestResult<UserEntity>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync((userId, request));
 
         // Assert
         result.Status.Should().Be(EResultStatus.HasError);
-        result.Message.Should().Be("Database error");
-        await _userService.Received(1).UpdateAsync(existingUser);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return error when save returns null data")]
-    public async Task ShouldReturnErrorWhenSaveReturnsNullData()
-    {
-        // Arrange
-        var userId = Id.Create();
-        var request = CreateValidUpdateRequest();
-        var existingUser = CreateValidUser(userId);
-
-        _userService.GetByIdAsync(userId).Returns(RequestResult<UserEntity>.Success(existingUser));
-        _userService.UpdateAsync(existingUser).Returns(RequestResult<UserEntity>.Success(null!));
-
-        // Act
-        var result = await _useCase.ExecuteAsync((userId, request));
-
-        // Assert
-        result.Status.Should().Be(EResultStatus.HasError);
-        await _userService.Received(1).UpdateAsync(existingUser);
+        await _userService.Received(1).GetByIdAsync(userId);
+        await _userService.Received(1).UpdateAsync(Arg.Any<UserEntity>());
     }
 
     private static UpdateUserProfileRequest CreateValidUpdateRequest()

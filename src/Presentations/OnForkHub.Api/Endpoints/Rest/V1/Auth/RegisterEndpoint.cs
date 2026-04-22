@@ -3,10 +3,10 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Auth;
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.User.Request;
-using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Application.UseCases.Users;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Enums;
+using OnForkHub.Core.Responses.Users;
 using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.CrossCutting.Interfaces;
 using OnForkHub.CrossCutting.Middleware.RateLimiting;
@@ -53,9 +53,9 @@ public sealed partial class RegisterEndpoint(
             .WithDescription("Registers a new user and returns JWT tokens")
             .WithSummary("User registration")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<AuthResponseDto>(StatusCodes.Status201Created)
+            .Produces<AuthResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
         return Task.FromResult(RequestResult.Success());
     }
@@ -72,9 +72,7 @@ public sealed partial class RegisterEndpoint(
         var userResult = await _registerUserUseCase.ExecuteAsync(request);
         if (userResult.Status != EResultStatus.Success || userResult.Data is null)
         {
-            return userResult.Status == EResultStatus.HasError
-                ? Results.BadRequest(new { error = userResult.Message })
-                : Results.Conflict(new { error = userResult.Message });
+            return Results.BadRequest(new { error = userResult.Message ?? "Registration failed" });
         }
 
         var user = userResult.Data;
@@ -84,7 +82,7 @@ public sealed partial class RegisterEndpoint(
             roles: [CrossCutting.Authorization.Roles.User]
         );
 
-        var response = new AuthResponseDto
+        var response = new AuthResponse
         {
             User = UserProfileResponse.FromUser(user, [CrossCutting.Authorization.Roles.User]),
             AccessToken = tokens.AccessToken,

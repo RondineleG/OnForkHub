@@ -1,6 +1,6 @@
 namespace OnForkHub.Application.UseCases.Users;
 
-using OnForkHub.Application.Dtos.User.Response;
+using OnForkHub.Core.Responses.Users;
 
 /// <summary>
 /// Use case for retrieving a user's profile.

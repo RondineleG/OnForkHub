@@ -42,7 +42,7 @@
 | **FASE 0** - Correções Imediatas | 10 | 10 | 100% | 🟢 Concluído |
 | **FASE 1** - Features em Progresso | 20 | 20 | 100% | 🟢 Concluído |
 | **FASE 2** - Must Have | 28 | 28 | 100% | 🟢 Concluído |
-| **FASE 3** - Should Have | 16 | 0 | 0% | 🔴 Não Iniciado |
+| **FASE 3** - Should Have | 16 | 6 | 37% | 🟡 Em Progresso |
 | **FASE 4** - Nice to Have | 12 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 5** - Arquitetura & DevOps | 24 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 6** - Migração .NET 10 | 46 | 0 | 0% | 🔴 Não Iniciado |
@@ -215,7 +215,7 @@
 #### Task 3.2.4: UI de Comentários
 #### Task 3.2.5: Mostrar Rating no Vídeo
 
-**Status Comments/Ratings:** �?? 0/5 tasks
+**Status Comments/Ratings:** �?? 0/5 tasks
 
 ---
 
@@ -226,7 +226,7 @@
 #### Task 3.3.3: Meta Tags para Preview (Open Graph)
 #### Task 3.3.4: Embeddable Player (IFrame)
 
-**Status Social:** �?? 0/4 tasks
+**Status Social:** �?? 0/4 tasks
 
 ---
 
@@ -237,24 +237,24 @@
 #### Task 3.4.3: Criar Página de Search
 #### Task 3.4.4: Sugestões de Busca (Autocomplete)
 
-**Status Search:** �?? 0/4 tasks
+**Status Search:** �?? 0/4 tasks
 
 ---
 
 ## 🌟 FASE 4: NICE TO HAVE (Features Avançadas)
-**Status Fase 4:** �?? 0/12 tasks
+**Status Fase 4:** �?? 0/12 tasks
 
 ---
 
-## � �️ FASE 5: ARQUITETURA & DEVOPS
-**Status Fase 5:** �?? 0/24 tasks
+## � �️ FASE 5: ARQUITETURA & DEVOPS
+**Status Fase 5:** �?? 0/24 tasks
 
 ---
 
 ## 🚀 FASE 6: MIGRAÇÃO .NET 10
-**Status Fase 6:** �?? 0/46 tasks
+**Status Fase 6:** �?? 0/46 tasks
 
 ---
 
 ## 💎 FASE 7: QUALIDADE & MÉTRICAS
-**Status Fase 7:** �?? 0/14 tasks
+**Status Fase 7:** �?? 0/14 tasks

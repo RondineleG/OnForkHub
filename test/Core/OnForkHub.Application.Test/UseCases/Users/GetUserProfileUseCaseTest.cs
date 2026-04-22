@@ -1,5 +1,5 @@
-using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Application.UseCases.Users;
+using OnForkHub.Core.Responses.Users;
 
 using UserEntity = OnForkHub.Core.Entities.User;
 

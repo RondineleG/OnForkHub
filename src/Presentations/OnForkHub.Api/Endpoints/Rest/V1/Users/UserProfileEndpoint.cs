@@ -4,23 +4,25 @@ using System.Security.Claims;
 
 using Microsoft.AspNetCore.Authorization;
 
-using OnForkHub.Application.Dtos.User.Request;
-using OnForkHub.Application.Dtos.User.Response;
+using OnForkHub.Core.Entities;
 using OnForkHub.Core.Enums;
 using OnForkHub.Core.Interfaces.Services;
+using OnForkHub.Core.Requests.Users;
+using OnForkHub.Core.Responses.Users;
 using OnForkHub.Core.ValueObjects;
 using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for user profile management.
 /// </summary>
-public sealed class UserProfileEndpoint(IUserService userService) : IEndpointAsync
+public sealed class UserProfileEndpoint(ILogger<UserProfileEndpoint> logger, IUserService userService) : IEndpointAsync
 {
     private const int V1 = 1;
 
     private static readonly string GetProfileRoute = $"/api/v{V1}/users/profile";
-
     private static readonly string UpdateProfileRoute = $"/api/v{V1}/users/profile";
+
+    private readonly ILogger<UserProfileEndpoint> _logger = logger;
 
     private readonly IUserService _userService = userService;
 

@@ -1,7 +1,7 @@
 namespace OnForkHub.Application.UseCases.Users;
 
-using OnForkHub.Application.Dtos.User.Request;
-using OnForkHub.Application.Dtos.User.Response;
+using OnForkHub.Core.Requests.Users;
+using OnForkHub.Core.Responses.Users;
 
 /// <summary>
 /// Use case for updating a user's profile.

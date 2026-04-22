@@ -3,10 +3,10 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Auth;
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.User.Request;
-using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Application.UseCases.Users;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Enums;
+using OnForkHub.Core.Responses.Users;
 using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.CrossCutting.Interfaces;
 using OnForkHub.CrossCutting.Middleware.RateLimiting;
@@ -53,7 +53,7 @@ public sealed partial class LoginEndpoint(
             .WithDescription("Authenticates a user and returns JWT tokens")
             .WithSummary("User login")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<AuthResponseDto>(StatusCodes.Status200OK)
+            .Produces<AuthResponse>(StatusCodes.Status200OK)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -82,7 +82,7 @@ public sealed partial class LoginEndpoint(
             roles: [CrossCutting.Authorization.Roles.User]
         );
 
-        var response = new AuthResponseDto
+        var response = new AuthResponse
         {
             User = UserProfileResponse.FromUser(user, [CrossCutting.Authorization.Roles.User]),
             AccessToken = tokens.AccessToken,

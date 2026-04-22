@@ -16,6 +16,10 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
 
     public DbSet<VideoUpload> VideoUploads { get; set; } = null!;
 
+    public DbSet<Comment> Comments { get; set; } = null!;
+
+    public DbSet<VideoRating> VideoRatings { get; set; } = null!;
+
     EntityEntry<TEntity> IEntityFrameworkDataContext.Entry<TEntity>(TEntity entity)
     {
         return Entry(entity);
@@ -32,5 +36,7 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
         modelBuilder.ApplyConfiguration(new NotificationConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new VideoUploadConfiguration());
+        modelBuilder.ApplyConfiguration(new CommentConfiguration());
+        modelBuilder.ApplyConfiguration(new VideoRatingConfiguration());
     }
 }
