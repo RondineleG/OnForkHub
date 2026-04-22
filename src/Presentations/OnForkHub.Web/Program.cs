@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 using OnForkHub.Web.Auth;
 using OnForkHub.Web.Services;
 using OnForkHub.Web.Services.Api;
+using OnForkHub.Web.Services.RealTime;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -18,6 +21,9 @@ builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 builder.Services.AddAuthorizationCore();
+
+// Real-time notifications
+builder.Services.AddScoped<NotificationClient>();
 
 builder.Services.AddComponentServices();
 builder.Services.AddApiServices();

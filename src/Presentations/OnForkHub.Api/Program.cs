@@ -1,3 +1,4 @@
+using OnForkHub.Api.Hubs;
 using OnForkHub.Api.Middlewares;
 using OnForkHub.Application.Extensions;
 using OnForkHub.CrossCutting.Authentication;
@@ -19,6 +20,7 @@ builder.Services.AddGraphQLAdapters();
 builder.Services.AddResponseCompressionServices();
 builder.Services.AddCachingServices(builder.Configuration);
 builder.Services.AddRateLimitingServices(builder.Configuration);
+builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
@@ -26,7 +28,13 @@ builder.Services.AddCors(options =>
         "DefaultPolicy",
         policy =>
         {
-            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5000"];
+            var allowedOrigins =
+                builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ??
+                [
+                    "http://localhost:5000",
+                    "https://localhost:5001",
+                    "http://localhost:3000",
+                ];
             policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         }
     );
@@ -68,5 +76,7 @@ if (apiMode is "GraphQLNet" or "All")
 {
     app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
 }
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 await app.RunAsync();

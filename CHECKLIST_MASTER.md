@@ -263,11 +263,16 @@
 - [x] **BUILDAR:** `dotnet build` → 0 erros
 - [x] **COMMIT:** `feat(user): implement favorite videos system`
 
-**Status Favorites:** 🟢 4/4 tasks | Concluído em 2026-04-22
+### 4.2 NOTIFICAÇÕES EM TEMPO REAL (SignalR) ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `NotificationHub.cs` na API para comunicação via WebSocket
+- [x] **ALTERAÇÃO:** Implementado `RealTimeNotificationService.cs` na API para disparar eventos
+- [x] **ALTERAÇÃO:** Criado `NotificationClient.cs` no Blazor para assinar eventos do Hub
+- [x] **ALTERAÇÃO:** Implementado componente `NotificationToast.razor` no layout principal
+- [x] **VALIDAR:** Notificações aparecem instantaneamente na UI sem refresh
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(notifications): implement real-time notifications with SignalR`
 
----
-
-## 🏗️ FASE 5: ARQUITETURA & DEVOPS
+**Status RealTime:** 🟢 4/4 tasks | Concluído em 2026-04-22
 **Status Fase 5:** �?? 0/24 tasks
 
 ---

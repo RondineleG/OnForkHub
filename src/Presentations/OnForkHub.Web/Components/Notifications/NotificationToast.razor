@@ -1,0 +1,80 @@
+@using OnForkHub.Web.Services.RealTime
+@inject NotificationClient NotificationClient
+@inject ILocalStorageService LocalStorage
+@implements IDisposable
+
+@if (activeNotifications.Any())
+{
+    <div class="notification-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000; max-width: 350px;">
+        @foreach (var note in activeNotifications)
+        {
+            <div class="toast show mb-2 border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header @GetHeaderClass(note.Type) text-white">
+                    <i class="bi @GetIcon(note.Type) me-2"></i>
+                    <strong class="me-auto">Notificação</strong>
+                    <small>@FormatTime(note.CreatedAt)</small>
+                    <button type="button" class="btn-close btn-close-white" @onclick="() => RemoveNotification(note)"></button>
+                </div>
+                <div class="toast-body bg-white rounded-bottom">
+                    @note.Message
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<ToastModel> activeNotifications = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        NotificationClient.OnNotificationReceived += HandleNotification;
+        
+        var token = await LocalStorage.GetItemAsync<string>("accessToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            await NotificationClient.StartAsync(token);
+        }
+    }
+
+    private void HandleNotification(string message, string type, DateTime createdAt)
+    {
+        var model = new ToastModel(message, type, createdAt);
+        activeNotifications.Add(model);
+        StateHasChanged();
+
+        // Auto remove after 10 seconds
+        Task.Delay(10000).ContinueWith(_ => RemoveNotification(model));
+    }
+
+    private void RemoveNotification(ToastModel model)
+    {
+        activeNotifications.Remove(model);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetHeaderClass(string type) => type.ToLower() switch
+    {
+        "success" => "bg-success",
+        "error" => "bg-danger",
+        "warning" => "bg-warning",
+        _ => "bg-primary"
+    };
+
+    private string GetIcon(string type) => type.ToLower() switch
+    {
+        "success" => "bi-check-circle",
+        "error" => "bi-exclamation-octagon",
+        "warning" => "bi-exclamation-triangle",
+        _ => "bi-info-circle"
+    };
+
+    private string FormatTime(DateTime date) => "agora";
+
+    public void Dispose()
+    {
+        NotificationClient.OnNotificationReceived -= HandleNotification;
+    }
+
+    private record ToastModel(string Message, string Type, DateTime CreatedAt);
+}

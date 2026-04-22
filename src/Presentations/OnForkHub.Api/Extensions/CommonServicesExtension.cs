@@ -1,5 +1,7 @@
 using System.Reflection;
 
+using OnForkHub.Api.Hubs;
+using OnForkHub.Api.Services;
 using OnForkHub.Application.Services;
 using OnForkHub.Application.UseCases.Categories;
 using OnForkHub.Core.Interfaces.Repositories;
@@ -117,6 +119,7 @@ namespace OnForkHub.Api.Extensions
             services.AddSingleton<DashManifestGenerator>();
             services.AddScoped<INotificationRepositoryEF, NotificationRepositoryEF>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<RealTimeNotificationService>();
             services.AddScoped<IUserRepositoryEF, UserRepositoryEF>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRefreshTokenRepositoryEF, RefreshTokenRepositoryEF>();
