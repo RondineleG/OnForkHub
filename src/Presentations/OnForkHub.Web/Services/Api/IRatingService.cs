@@ -11,19 +11,19 @@ public interface IRatingService
     /// <summary>
     /// Sets a rating for a video.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<bool> SetRatingAsync(Guid videoId, ERatingType type);
 
     /// <summary>
     /// Removes a user's rating for a video.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<bool> RemoveRatingAsync(Guid videoId);
 
     /// <summary>
     /// Gets rating statistics for a video.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<VideoRatingStats> GetStatsAsync(Guid videoId);
 }
 

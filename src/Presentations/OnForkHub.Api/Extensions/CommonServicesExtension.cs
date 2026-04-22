@@ -113,6 +113,7 @@ namespace OnForkHub.Api.Extensions
             services.AddScoped<IVideoUploadService, VideoUploadService>();
             services.AddScoped<IVideoTranscodingService, VideoTranscodingService>();
             services.AddScoped<IRecommendationService, RecommendationService>();
+            services.AddScoped<IShareService, ShareService>();
             services.AddSingleton<DashManifestGenerator>();
             services.AddScoped<INotificationRepositoryEF, NotificationRepositoryEF>();
             services.AddScoped<INotificationService, NotificationService>();

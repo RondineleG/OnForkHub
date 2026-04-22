@@ -1,0 +1,69 @@
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<div class="share-buttons d-flex gap-2">
+    <button class="btn btn-outline-primary btn-sm rounded-circle" @onclick='() => ShareAsync("twitter")' title="Share on Twitter">
+        <i class="bi bi-twitter"></i>
+    </button>
+    <button class="btn btn-outline-primary btn-sm rounded-circle" @onclick='() => ShareAsync("facebook")' title="Share on Facebook">
+        <i class="bi bi-facebook"></i>
+    </button>
+    <button class="btn btn-outline-success btn-sm rounded-circle" @onclick='() => ShareAsync("whatsapp")' title="Share on WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+    </button>
+    <button class="btn btn-outline-info btn-sm rounded-circle" @onclick='() => ShareAsync("telegram")' title="Share on Telegram">
+        <i class="bi bi-telegram"></i>
+    </button>
+    <button class="btn btn-outline-secondary btn-sm rounded-circle" @onclick="CopyLinkAsync" title="Copy Link">
+        <i class="bi bi-link-45deg"></i>
+    </button>
+</div>
+
+@if (showCopyAlert)
+{
+    <div class="position-fixed bottom-0 start-50 translate-middle-x mb-4" style="z-index: 1050;">
+        <div class="alert alert-dark py-2 px-4 shadow rounded-pill small">
+            Link copiado para a área de transferência!
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid VideoId { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+
+    private bool showCopyAlert = false;
+
+    private async Task ShareAsync(string platform)
+    {
+        var url = $"{Navigation.BaseUri}video/{VideoId}";
+        var text = $"Confira este vídeo no OnForkHub: {Title}";
+        
+        string shareUrl = platform switch
+        {
+            "twitter" => $"https://twitter.com/intent/tweet?text={Uri.EscapeDataString(text)}&url={Uri.EscapeDataString(url)}",
+            "facebook" => $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(url)}",
+            "whatsapp" => $"https://api.whatsapp.com/send?text={Uri.EscapeDataString(text + " " + url)}",
+            "telegram" => $"https://t.me/share/url?url={Uri.EscapeDataString(url)}&text={Uri.EscapeDataString(text)}",
+            _ => string.Empty
+        };
+
+        if (!string.IsNullOrEmpty(shareUrl))
+        {
+            await JSRuntime.InvokeVoidAsync("open", shareUrl, "_blank");
+        }
+    }
+
+    private async Task CopyLinkAsync()
+    {
+        var url = $"{Navigation.BaseUri}video/{VideoId}";
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+        
+        showCopyAlert = true;
+        StateHasChanged();
+        
+        await Task.Delay(3000);
+        showCopyAlert = false;
+        StateHasChanged();
+    }
+}
