@@ -1,5 +1,6 @@
 namespace OnForkHub.Web.Services.Api;
 
+using OnForkHub.Core.Responses;
 using OnForkHub.Web.Models;
 
 /// <summary>
@@ -8,52 +9,29 @@ using OnForkHub.Web.Models;
 public interface IVideoService
 {
     /// <summary>
-    /// Gets a paginated list of videos with optional filters.
+    /// Gets all videos with filtering and pagination.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<PagedResult<VideoDto>> GetVideosAsync(int page = 1, int pageSize = 12, string? search = null, long? categoryId = null, string? sort = null);
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    Task<List<Video>> GetAllAsync(int page = 1, int pageSize = 10, string? search = null, long? categoryId = null, string? sort = null);
 
     /// <summary>
-    /// Gets a single video by its ID.
+    /// Gets a video by identifier.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<VideoDto?> GetVideoByIdAsync(string id);
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    Task<Video?> GetByIdAsync(string id);
 
     /// <summary>
-    /// Gets related videos for a given video ID.
+    /// Searches for videos with advanced filters.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<List<VideoDto>> GetRelatedVideosAsync(string videoId, int count = 6);
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    Task<SearchResponse<Video>> SearchAsync(string? q, long? categoryId = null, int page = 1, int pageSize = 20);
 
-    /// <summary>
-    /// Uploads a new video with metadata.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<VideoDto> UploadVideoAsync(
-        Stream fileStream,
-        string fileName,
-        string title,
-        string description,
-        long categoryId,
-        string tags,
-        IProgress<double>? progress = null
-    );
-
-    /// <summary>
-    /// Deletes a video by its ID.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task DeleteVideoAsync(string id);
-
-    /// <summary>
-    /// Likes a video.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task LikeVideoAsync(string id);
-
-    /// <summary>
-    /// Unlikes a video.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task UnlikeVideoAsync(string id);
+    // Compatibility methods for existing UI components
+    Task<List<Video>> GetVideosAsync(int page = 1, int pageSize = 10);
+    Task<Video?> GetVideoByIdAsync(string id);
+    Task<List<Video>> GetRelatedVideosAsync(string videoId, int count = 5);
+    Task<bool> LikeVideoAsync(string id);
+    Task<bool> UnlikeVideoAsync(string id);
+    Task<bool> DeleteVideoAsync(string id);
+    Task<bool> UploadVideoAsync(Stream fileStream, string fileName, string title, string description, string categoryId);
 }

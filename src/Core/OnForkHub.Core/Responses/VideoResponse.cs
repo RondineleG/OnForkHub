@@ -58,6 +58,11 @@ public sealed class VideoResponse
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether P2P streaming is enabled.
+    /// </summary>
+    public bool IsTorrentEnabled { get; set; }
+
+    /// <summary>
     /// Creates a VideoResponse from a Video entity.
     /// </summary>
     /// <param name="video">The video entity.</param>
@@ -74,6 +79,7 @@ public sealed class VideoResponse
             Url = video.Url.Value,
             OwnerId = video.UserId?.ToString() ?? string.Empty,
             CreatedAt = video.CreatedAt,
+            IsTorrentEnabled = video.IsTorrentEnabled,
         };
     }
 }

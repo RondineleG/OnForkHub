@@ -87,4 +87,20 @@ public interface IVideoService
     /// <param name="magnetUri">The magnet URI.</param>
     /// <returns>A request result.</returns>
     Task<RequestResult> EnableTorrentAsync(Guid videoId, string magnetUri);
+
+    /// <summary>
+    /// Advanced search for videos.
+    /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    Task<RequestResult<(IEnumerable<Video> Items, int TotalCount)>> SearchAsync(
+        string? searchTerm,
+        long? categoryId,
+        string? userId,
+        DateTime? fromDate,
+        DateTime? toDate,
+        int sortBy,
+        bool sortDescending,
+        int page,
+        int pageSize
+    );
 }

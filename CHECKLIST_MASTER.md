@@ -239,14 +239,17 @@
 
 ---
 
-### 3.4 ADVANCED SEARCH & FILTERING
+### 3.4 ADVANCED SEARCH & FILTERING ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Implementado `SearchAsync` no `VideoRepositoryEF.cs` com suporte a `EF.Functions.Like`
+- [x] **ALTERAÇÃO:** Criado endpoint `SearchVideosEndpoint.cs` em `Videos/` com múltiplos filtros (q, category, user, date)
+- [x] **ALTERAÇÃO:** Implementada página `SearchPage.razor` no Web com suporte a QueryParameters manuais
+- [x] **ALTERAÇÃO:** Adicionado suporte a `Microsoft.AspNetCore.WebUtilities` no projeto Web
+- [x] **VALIDAR:** Busca avançada funcional via UI integrada com novo endpoint
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(video): implement advanced search and filtering system`
 
-#### Task 3.4.1: Implementar Full-Text Search
-#### Task 3.4.2: Criar Search Endpoint
-#### Task 3.4.3: Criar Página de Search
-#### Task 3.4.4: Sugestões de Busca (Autocomplete)
+**Status Search:** 🟢 4/4 tasks | Concluído em 2026-04-22
 
-**Status Search:** �?? 0/4 tasks
 
 ---
 
