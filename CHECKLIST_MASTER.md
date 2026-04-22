@@ -42,8 +42,8 @@
 | **FASE 0** - Correções Imediatas | 10 | 10 | 100% | 🟢 Concluído |
 | **FASE 1** - Features em Progresso | 20 | 20 | 100% | 🟢 Concluído |
 | **FASE 2** - Must Have | 28 | 28 | 100% | 🟢 Concluído |
-| **FASE 3** - Should Have | 16 | 6 | 37% | 🟡 Em Progresso |
-| **FASE 4** - Nice to Have | 12 | 0 | 0% | 🔴 Não Iniciado |
+| **FASE 3** - Should Have | 16 | 16 | 100% | 🟢 Concluído |
+| **FASE 4** - Nice to Have | 12 | 4 | 33% | 🟡 Em Progresso |
 | **FASE 5** - Arquitetura & DevOps | 24 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 6** - Migração .NET 10 | 46 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 7** - Qualidade & Métricas | 14 | 0 | 0% | 🔴 Não Iniciado |
@@ -254,11 +254,20 @@
 ---
 
 ## 🌟 FASE 4: NICE TO HAVE (Features Avançadas)
-**Status Fase 4:** �?? 0/12 tasks
+
+### 4.1 SISTEMA DE FAVORITOS (Bookmarks) ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criada entidade `UserFavorite.cs` no Core
+- [x] **ALTERAÇÃO:** Configurada persistência EF Core e gerada migration `AddUserFavorites`
+- [x] **ALTERAÇÃO:** Criado endpoint `UserFavoriteEndpoint.cs` em `Users/` (POST, DELETE, GET)
+- [x] **VALIDAR:** Usuário pode salvar e listar vídeos favoritos
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(user): implement favorite videos system`
+
+**Status Favorites:** 🟢 4/4 tasks | Concluído em 2026-04-22
 
 ---
 
-## � �️ FASE 5: ARQUITETURA & DEVOPS
+## 🏗️ FASE 5: ARQUITETURA & DEVOPS
 **Status Fase 5:** �?? 0/24 tasks
 
 ---

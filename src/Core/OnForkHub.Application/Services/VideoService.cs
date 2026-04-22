@@ -70,24 +70,28 @@ public sealed class VideoService(IVideoRepositoryEF videoRepository, IFileStorag
         CancellationToken cancellationToken = default
     )
     {
-        return await ExecuteAsync(async () =>
-        {
-            // Upload to storage
-            var storageResult = await _fileStorageService.UploadAsync(fileStream, fileName, contentType, cancellationToken);
-            if (storageResult.Status != EResultStatus.Success)
+        return await ExecuteAsync(
+            async () =>
             {
-                return RequestResult<Video>.WithError(storageResult.Message ?? "Failed to upload file");
-            }
+                // Upload to storage
+                var storageResult = await _fileStorageService.UploadAsync(fileStream, fileName, contentType, cancellationToken);
 
-            // Create database record
-            var videoResult = Video.Create(title, description, storageResult.Data!, userId);
-            if (videoResult.Status != EResultStatus.Success)
-            {
-                return videoResult;
-            }
+                if (storageResult.Status != EResultStatus.Success)
+                {
+                    return RequestResult<Video>.WithError(storageResult.Message ?? "Failed to upload file");
+                }
 
-            return await _videoRepository.CreateAsync(videoResult.Data!);
-        }, cancellationToken);
+                // Create database record
+                var videoResult = Video.Create(title, description, storageResult.Data!, userId);
+                if (videoResult.Status != EResultStatus.Success)
+                {
+                    return videoResult;
+                }
+
+                return await _videoRepository.CreateAsync(videoResult.Data!);
+            },
+            cancellationToken
+        );
     }
 
     /// <inheritdoc/>
@@ -120,8 +124,9 @@ public sealed class VideoService(IVideoRepositoryEF videoRepository, IFileStorag
         int pageSize
     )
     {
-        return await ExecuteAsync(async () =>
-            await _videoRepository.SearchAsync(searchTerm, categoryId, userId, fromDate, toDate, sortBy, sortDescending, page, pageSize)
+        return await ExecuteAsync(
+            async () => await _videoRepository.SearchAsync(searchTerm, categoryId, userId, fromDate, toDate, sortBy, sortDescending, page, pageSize),
+            CancellationToken.None
         );
     }
 }

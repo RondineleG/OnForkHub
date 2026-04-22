@@ -18,6 +18,8 @@ public interface IEntityFrameworkDataContext
 
     DbSet<VideoRating> VideoRatings { get; set; }
 
+    DbSet<UserFavorite> UserFavorites { get; set; }
+
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         where TEntity : class;
 

@@ -20,6 +20,8 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
 
     public DbSet<VideoRating> VideoRatings { get; set; } = null!;
 
+    public DbSet<UserFavorite> UserFavorites { get; set; } = null!;
+
     EntityEntry<TEntity> IEntityFrameworkDataContext.Entry<TEntity>(TEntity entity)
     {
         return Entry(entity);
@@ -38,5 +40,6 @@ public sealed class EntityFrameworkDataContext(DbContextOptions<EntityFrameworkD
         modelBuilder.ApplyConfiguration(new VideoUploadConfiguration());
         modelBuilder.ApplyConfiguration(new CommentConfiguration());
         modelBuilder.ApplyConfiguration(new VideoRatingConfiguration());
+        modelBuilder.ApplyConfiguration(new UserFavoriteConfiguration());
     }
 }
