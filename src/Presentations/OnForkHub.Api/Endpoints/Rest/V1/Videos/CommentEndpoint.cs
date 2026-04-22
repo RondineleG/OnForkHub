@@ -13,7 +13,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// <summary>
 /// Endpoint for managing video comments.
 /// </summary>
-public sealed partial class CommentEndpoint(ILogger<CommentEndpoint> logger, IVideoService videoService) : IEndpointAsync
+public sealed partial class CommentEndpoint(ILogger<CommentEndpoint> logger, ICommentService commentService) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -29,7 +29,7 @@ public sealed partial class CommentEndpoint(ILogger<CommentEndpoint> logger, IVi
                 [Authorize]
                 async ([FromRoute] Guid id, [FromBody] CreateCommentRequest request, ClaimsPrincipal user, CancellationToken cancellationToken) =>
                 {
-                    return await HandleCreateCommentAsync(id, request, user, cancellationToken);
+                    return await HandleCreateCommentAsync(id, request, user);
                 }
             )
             .WithName("CreateVideoCommentV1")
@@ -48,7 +48,7 @@ public sealed partial class CommentEndpoint(ILogger<CommentEndpoint> logger, IVi
                 Route,
                 async ([FromRoute] Guid id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default) =>
                 {
-                    return await HandleGetCommentsAsync(id, page, pageSize, cancellationToken);
+                    return await HandleGetCommentsAsync(id, page, pageSize);
                 }
             )
             .WithName("GetVideoCommentsV1")
@@ -68,28 +68,36 @@ public sealed partial class CommentEndpoint(ILogger<CommentEndpoint> logger, IVi
     private static partial void LogCreatingComment(ILogger logger, Guid videoId, string userId);
 
     private readonly ILogger<CommentEndpoint> _logger = logger;
-    private readonly IVideoService _videoService = videoService;
+    private readonly ICommentService _commentService = commentService;
 
-    private static async Task<IResult> HandleGetCommentsAsync(Guid videoId, int page, int pageSize, CancellationToken cancellationToken)
+    private async Task<IResult> HandleGetCommentsAsync(Guid videoId, int page, int pageSize)
     {
-        return await Task.FromResult(
-            Results.Ok(
-                new
+        var result = await _commentService.GetByVideoIdAsync(videoId, page, pageSize);
+        if (result.Status != EResultStatus.Success)
+        {
+            return Results.BadRequest(result.Message);
+        }
+
+        var (items, total) = result.Data;
+        return Results.Ok(
+            new
+            {
+                videoId,
+                comments = items.Select(c => new
                 {
-                    videoId,
-                    comments = new List<object>(),
-                    totalCount = 0,
-                }
-            )
+                    c.Id,
+                    c.Content,
+                    c.UserId,
+                    c.CreatedAt,
+                    c.IsEdited,
+                    c.ParentCommentId,
+                }),
+                totalCount = total,
+            }
         );
     }
 
-    private async Task<IResult> HandleCreateCommentAsync(
-        Guid videoId,
-        CreateCommentRequest request,
-        ClaimsPrincipal user,
-        CancellationToken cancellationToken
-    )
+    private async Task<IResult> HandleCreateCommentAsync(Guid videoId, CreateCommentRequest request, ClaimsPrincipal user)
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -99,7 +107,13 @@ public sealed partial class CommentEndpoint(ILogger<CommentEndpoint> logger, IVi
 
         LogCreatingComment(_logger, videoId, userId);
 
-        // Logic placeholder
-        return await Task.FromResult(Results.Created($"{Route}", new { success = true }));
+        var result = await _commentService.CreateAsync(videoId, userId, request.Content, request.ParentCommentId);
+
+        if (result.Status != EResultStatus.Success)
+        {
+            return Results.BadRequest(result.Message);
+        }
+
+        return Results.Created($"{Route}", result.Data);
     }
 }

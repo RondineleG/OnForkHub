@@ -12,7 +12,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// <summary>
 /// Endpoint for managing video ratings (Like/Dislike).
 /// </summary>
-public sealed partial class RatingEndpoint(ILogger<RatingEndpoint> logger, IVideoService videoService) : IEndpointAsync
+public sealed partial class RatingEndpoint(ILogger<RatingEndpoint> logger, IVideoRatingService ratingService) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -28,7 +28,7 @@ public sealed partial class RatingEndpoint(ILogger<RatingEndpoint> logger, IVide
                 [Authorize]
                 async ([FromRoute] Guid id, [FromBody] SetRatingRequest request, ClaimsPrincipal user, CancellationToken cancellationToken) =>
                 {
-                    return await HandleSetRatingAsync(id, request, user, cancellationToken);
+                    return await HandleSetRatingAsync(id, request, user);
                 }
             )
             .WithName("SetVideoRatingV1")
@@ -48,7 +48,7 @@ public sealed partial class RatingEndpoint(ILogger<RatingEndpoint> logger, IVide
                 [Authorize]
                 async ([FromRoute] Guid id, ClaimsPrincipal user, CancellationToken cancellationToken) =>
                 {
-                    return await HandleRemoveRatingAsync(id, user, cancellationToken);
+                    return await HandleRemoveRatingAsync(id, user);
                 }
             )
             .WithName("RemoveVideoRatingV1")
@@ -62,6 +62,22 @@ public sealed partial class RatingEndpoint(ILogger<RatingEndpoint> logger, IVide
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .RequireAuthorization();
 
+        app.MapGet(
+                Route,
+                async (Guid id, ClaimsPrincipal user) =>
+                {
+                    return await HandleGetStatsAsync(id, user);
+                }
+            )
+            .WithName("GetVideoRatingStatsV1")
+            .WithApiVersionSet(apiVersionSet)
+            .MapToApiVersion(V1)
+            .WithTags("Rating")
+            .WithSummary("Get rating stats")
+            .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return Task.FromResult(RequestResult.Success());
     }
 
@@ -69,19 +85,9 @@ public sealed partial class RatingEndpoint(ILogger<RatingEndpoint> logger, IVide
     private static partial void LogSettingRating(ILogger logger, ERatingType type, Guid videoId, string userId);
 
     private readonly ILogger<RatingEndpoint> _logger = logger;
-    private readonly IVideoService _videoService = videoService;
+    private readonly IVideoRatingService _ratingService = ratingService;
 
-    private static async Task<IResult> HandleRemoveRatingAsync(Guid videoId, ClaimsPrincipal user, CancellationToken cancellationToken)
-    {
-        return await Task.FromResult(Results.NoContent());
-    }
-
-    private async Task<IResult> HandleSetRatingAsync(
-        Guid videoId,
-        SetRatingRequest request,
-        ClaimsPrincipal user,
-        CancellationToken cancellationToken
-    )
+    private async Task<IResult> HandleSetRatingAsync(Guid videoId, SetRatingRequest request, ClaimsPrincipal user)
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -91,7 +97,49 @@ public sealed partial class RatingEndpoint(ILogger<RatingEndpoint> logger, IVide
 
         LogSettingRating(_logger, request.Type, videoId, userId);
 
-        // Logic placeholder
-        return await Task.FromResult(Results.Ok(new { success = true }));
+        var result = await _ratingService.SetRatingAsync(videoId, userId, request.Type);
+        if (result.Status != EResultStatus.Success)
+        {
+            return Results.BadRequest(result.Message);
+        }
+
+        return Results.Ok(result.Data);
+    }
+
+    private async Task<IResult> HandleRemoveRatingAsync(Guid videoId, ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await _ratingService.RemoveRatingAsync(videoId, userId);
+        if (result.Status != EResultStatus.Success)
+        {
+            return Results.BadRequest(result.Message);
+        }
+
+        return Results.NoContent();
+    }
+
+    private async Task<IResult> HandleGetStatsAsync(Guid videoId, ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        OnForkHub.Core.ValueObjects.Id? idObj = null;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            idObj = userId;
+        }
+
+        var result = await _ratingService.GetStatsAsync(videoId, idObj);
+
+        if (result.Status != EResultStatus.Success)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Ok(result.Data);
     }
 }
