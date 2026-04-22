@@ -11,19 +11,19 @@ public interface IVideoRatingRepository
     /// <summary>
     /// Upserts a rating (creates if not exists, updates if it does).
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<RequestResult<VideoRating>> SetRatingAsync(VideoRating rating);
 
     /// <summary>
     /// Removes a rating.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<RequestResult> RemoveRatingAsync(Guid videoId, Id userId);
 
     /// <summary>
     /// Gets rating statistics for a video.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<RequestResult<VideoRatingStats>> GetStatsAsync(Guid videoId, Id? userId = null);
 }
 

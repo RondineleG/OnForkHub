@@ -1,6 +1,7 @@
 namespace OnForkHub.Application.Services;
 
 using System.Diagnostics;
+using System.Globalization;
 
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +30,12 @@ public sealed partial class VideoTranscodingService(ILogger<VideoTranscodingServ
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            // Define resolutions and bitrates
+            // 1. Generate Thumbnail (capture frame at 5s)
+            var thumbnailPath = System.IO.Path.Combine(outputDirectory, "thumbnail.jpg");
+            var thumbArgs = $"-i \"{inputPath}\" -ss 00:00:05 -vframes 1 -q:v 2 -y \"{thumbnailPath}\"";
+            await RunFFmpegAsync(thumbArgs, cancellationToken);
+
+            // 2. Define resolutions and bitrates for DASH/HLS prep
             var profiles = new[]
             {
                 new
@@ -65,7 +71,12 @@ public sealed partial class VideoTranscodingService(ILogger<VideoTranscodingServ
 
             LogTranscodingCompleted(inputPath);
 
-            return new TranscodingResult { Success = true, ManifestPath = System.IO.Path.Combine(outputDirectory, "manifest.mpd") };
+            return new TranscodingResult
+            {
+                Success = true,
+                ManifestPath = System.IO.Path.Combine(outputDirectory, "manifest.mpd"),
+                ThumbnailPath = thumbnailPath,
+            };
         }
         catch (Exception ex)
         {

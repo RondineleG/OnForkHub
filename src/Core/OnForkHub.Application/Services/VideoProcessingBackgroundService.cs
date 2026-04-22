@@ -66,6 +66,7 @@ public partial class VideoProcessingBackgroundService(IServiceScopeFactory scope
         using var scope = _scopeFactory.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IVideoUploadRepository>();
         var transcodingService = scope.ServiceProvider.GetRequiredService<IVideoTranscodingService>();
+        var videoService = scope.ServiceProvider.GetRequiredService<IVideoService>();
 
         // Get uploads for processing
         var result = await repository.GetByUserIdAsync(string.Empty, 1, 100);
@@ -99,6 +100,17 @@ public partial class VideoProcessingBackgroundService(IServiceScopeFactory scope
                     if (!transResult.Success)
                     {
                         throw new Exception($"Transcoding failed: {transResult.ErrorMessage}");
+                    }
+
+                    // Update thumbnail if generated
+                    if (!string.IsNullOrEmpty(transResult.ThumbnailPath))
+                    {
+                        var videoResult = await videoService.GetByIdAsync(upload.Id);
+                        if (videoResult.Status == EResultStatus.Success && videoResult.Data != null)
+                        {
+                            videoResult.Data.UpdateThumbnail("/videos/thumbnails/" + System.IO.Path.GetFileName(transResult.ThumbnailPath));
+                            await videoService.UpdateAsync(videoResult.Data);
+                        }
                     }
                 }
 

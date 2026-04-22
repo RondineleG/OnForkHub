@@ -48,6 +48,8 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
 
         builder.Property(v => v.ViewCount).IsRequired().HasDefaultValue(0);
 
+        builder.Property(v => v.ThumbnailUrl).HasMaxLength(500);
+
         // Configure Url value object
         builder.OwnsOne(
             v => v.Url,

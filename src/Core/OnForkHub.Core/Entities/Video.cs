@@ -17,6 +17,8 @@ public class Video : BaseEntity
 
     public Url Url { get; private set; } = null!;
 
+    public string? ThumbnailUrl { get; private set; }
+
     public Id? UserId { get; private set; }
 
     public string? MagnetUri { get; private set; }
@@ -93,6 +95,16 @@ public class Video : BaseEntity
     public void IncrementViews()
     {
         ViewCount++;
+        Update();
+    }
+
+    /// <summary>
+    /// Updates the video thumbnail URL.
+    /// </summary>
+    /// <param name="thumbnailUrl">The new thumbnail URL.</param>
+    public void UpdateThumbnail(string thumbnailUrl)
+    {
+        ThumbnailUrl = thumbnailUrl;
         Update();
     }
 

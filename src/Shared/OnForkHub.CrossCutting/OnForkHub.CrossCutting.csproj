@@ -7,6 +7,9 @@
     <ProjectReference Include="..\..\Core\OnForkHub.Core\OnForkHub.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.AzureStorage" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" />
+    <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="GraphQL" />
     <PackageReference Include="GraphQL.Server.Core" />
@@ -14,6 +17,7 @@
     <PackageReference Include="HotChocolate.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />

@@ -5,6 +5,21 @@
 
 <PageTitle>@(video?.Title ?? "Carregando...") - OnForkHub</PageTitle>
 
+@if (video != null)
+{
+    <HeadContent>
+        <meta property="og:title" content="@video.Title" />
+        <meta property="og:description" content="@video.Description" />
+        <meta property="og:image" content="@video.Thumbnail" />
+        <meta property="og:type" content="video.other" />
+        <meta property="og:url" content="@Navigation.Uri" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="@video.Title" />
+        <meta name="twitter:description" content="@video.Description" />
+        <meta name="twitter:image" content="@video.Thumbnail" />
+    </HeadContent>
+}
+
 <div class="container-xxl py-4">
     @if (isLoading)
     {

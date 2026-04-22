@@ -21,6 +21,7 @@ builder.Services.AddResponseCompressionServices();
 builder.Services.AddCachingServices(builder.Configuration);
 builder.Services.AddRateLimitingServices(builder.Configuration);
 builder.Services.AddTracingServices(builder.Configuration);
+builder.Services.AddCustomHealthChecks(builder.Configuration);
 builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
@@ -79,5 +80,28 @@ if (apiMode is "GraphQLNet" or "All")
 }
 
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+app.MapHealthChecks(
+    "/health",
+    new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        ResponseWriter = async (context, report) =>
+        {
+            context.Response.ContentType = "application/json";
+            var response = new
+            {
+                status = report.Status.ToString(),
+                checks = report.Entries.Select(x => new
+                {
+                    component = x.Key,
+                    status = x.Value.Status.ToString(),
+                    description = x.Value.Description,
+                }),
+                totalDuration = report.TotalDuration,
+            };
+            await context.Response.WriteAsJsonAsync(response);
+        },
+    }
+);
 
 await app.RunAsync();

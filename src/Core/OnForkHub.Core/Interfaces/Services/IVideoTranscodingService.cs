@@ -23,4 +23,5 @@ public class TranscodingResult
     public bool Success { get; set; }
     public string? ErrorMessage { get; set; }
     public string? ManifestPath { get; set; }
+    public string? ThumbnailPath { get; set; }
 }
