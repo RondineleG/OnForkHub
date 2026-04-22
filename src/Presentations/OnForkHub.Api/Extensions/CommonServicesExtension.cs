@@ -1,13 +1,21 @@
 using System.Reflection;
 
 using OnForkHub.Application.Services;
+using OnForkHub.Application.UseCases.Categories;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Core.Interfaces.Repositories.Base;
 using OnForkHub.Core.Interfaces.Services;
+using OnForkHub.Core.Interfaces.Validations;
+using OnForkHub.Core.Responses;
+using OnForkHub.Core.Validations;
 using OnForkHub.CrossCutting.DependencyInjection;
 using OnForkHub.CrossCutting.Interfaces;
 using OnForkHub.CrossCutting.Storage;
+using OnForkHub.Persistence.Contexts;
+using OnForkHub.Persistence.Contexts.Base;
 using OnForkHub.Persistence.Repositories;
+
+using Raven.Client.Documents;
 
 namespace OnForkHub.Api.Extensions
 {
@@ -18,20 +26,18 @@ namespace OnForkHub.Api.Extensions
         {
             services.AddEndpoints();
             services.AddRavenDbServices(configuration);
-            services.AddValidationServices();
             services.AddSpecificServices(configuration);
             services.AddValidators();
-            services.AddApplicationServices();
-            services.AddEntityValidator();
             services.AddEntityFrameworkServices(configuration);
-            services.AddRepositories();
             services.AddUseCases();
+            services.AddValidationServices();
             services.AddValidationRules();
             return services;
         }
 
         public static IServiceCollection AddEndpoints(this IServiceCollection services)
         {
+            // Only scan the API assembly for endpoints to avoid duplicates
             var assembly = typeof(CommonServicesExtension).Assembly;
             var scanner = new AssemblyScanner(assembly);
             var typeSelector = scanner.FindTypesImplementing<IEndpointAsync>();
@@ -123,6 +129,8 @@ namespace OnForkHub.Api.Extensions
                 services.AddScoped<IFileStorageService, LocalFileStorageService>();
             }
 
+            services.AddHostedService<VideoProcessingBackgroundService>();
+
             return services;
         }
 
@@ -155,54 +163,12 @@ namespace OnForkHub.Api.Extensions
         public static IServiceCollection AddValidators(this IServiceCollection services)
         {
             services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
-            var assembly = typeof(IValidationBuilder<>).Assembly;
-            var scanner = new AssemblyScanner(assembly);
-            var selector = scanner.FindTypesImplementing(typeof(IValidationBuilder<>));
+
+            // Scan for IEntityValidator<> implementations in Core
+            var coreAssembly = typeof(IEntityValidator<>).Assembly;
+            var scanner = new AssemblyScanner(coreAssembly);
+            var selector = scanner.FindTypesImplementing(typeof(IEntityValidator<>));
             var strategy = selector.CreateRegistrationStrategy(new LifetimeConfigurator(ServiceLifetime.Scoped));
-
-            strategy.Register(services);
-
-            return services;
-        }
-
-        public static void RegisterImplementationsOf(
-            this IServiceCollection services,
-            Type markerType,
-            Type interfaceType,
-            ServiceLifetime lifetime = ServiceLifetime.Transient
-        )
-        {
-            var scanner = new AssemblyScanner(markerType.Assembly);
-            var typeSelector = scanner.FindTypesImplementing(interfaceType);
-            var configurator = new LifetimeConfigurator(lifetime);
-            var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-
-            strategy.Register(services);
-        }
-
-        private static IServiceCollection AddApplicationServices(this IServiceCollection services)
-        {
-            var assembly = typeof(IValidationRule<>).Assembly;
-            var scanner = new AssemblyScanner(assembly);
-            var typeSelector = scanner.FindTypesImplementing(typeof(IValidationRule<>));
-            var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
-            var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-
-            strategy.Register(services);
-
-            services.AddHostedService<VideoProcessingBackgroundService>();
-
-            return services;
-        }
-
-        private static IServiceCollection AddRepositories(this IServiceCollection services)
-        {
-            var assembly = typeof(IBaseRepository<>).Assembly;
-            var scanner = new AssemblyScanner(assembly);
-            var typeSelector = scanner.FindTypesImplementing(typeof(IBaseRepository<>));
-            var configurator = new LifetimeConfigurator(ServiceLifetime.Scoped);
-            var strategy = typeSelector.CreateRegistrationStrategy(configurator);
-
             strategy.Register(services);
 
             return services;
@@ -210,7 +176,7 @@ namespace OnForkHub.Api.Extensions
 
         private static IServiceCollection AddUseCases(this IServiceCollection services)
         {
-            var assemblies = new[] { typeof(IUseCase<,>).Assembly, typeof(GetAllCategoryUseCase).Assembly, typeof(CreateCategoryUseCase).Assembly };
+            var assemblies = new[] { typeof(IUseCase<,>).Assembly, typeof(GetAllCategoryUseCase).Assembly };
 
             return services.AddUseCasesAuto(assemblies);
         }

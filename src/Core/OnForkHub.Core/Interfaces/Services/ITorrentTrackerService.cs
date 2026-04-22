@@ -8,25 +8,25 @@ public interface ITorrentTrackerService
     /// <summary>
     /// Gets the peer count for a specific torrent.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<int> GetPeerCountAsync(string magnetUri);
 
     /// <summary>
     /// Checks if a torrent is healthy (has seeds).
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<bool> IsHealthyAsync(string magnetUri);
 
     /// <summary>
     /// Reannounces a torrent to the trackers.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task ReannounceAsync(string magnetUri);
 
     /// <summary>
     /// Gets detailed stats for a torrent.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<TorrentHealthStats> GetStatsAsync(string magnetUri);
 }
 

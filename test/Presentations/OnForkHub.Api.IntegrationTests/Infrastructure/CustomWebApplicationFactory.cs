@@ -1,13 +1,28 @@
 namespace OnForkHub.Api.IntegrationTests.Infrastructure;
 
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
-using OnForkHub.Api.Extensions;
+using NSubstitute;
+
+using OnForkHub.Application.Dtos.User.Response;
+using OnForkHub.Core.Entities;
+using OnForkHub.Core.Interfaces.Services;
+using OnForkHub.Core.Requests;
+using OnForkHub.Core.ValueObjects;
+using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.Persistence.Contexts;
+using OnForkHub.Persistence.Contexts.Base;
+
+using Raven.Client.Documents;
 
 using Xunit;
 
@@ -58,6 +73,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                         ["Jwt:ValidateIssuerSigningKey"] = "true",
                         ["Jwt:AccessTokenExpirationMinutes"] = "15",
                         ["Jwt:RefreshTokenExpirationDays"] = "7",
+                        ["RavenDbSettings:Urls:0"] = "http://localhost:8080",
+                        ["RavenDbSettings:Database"] = "OnForkHub_Test",
                     }
                 );
             }
@@ -65,14 +82,15 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            services.AddEndpoints();
-
-            // Remove all DbContext and DbContextOptions registrations
             var descriptorsToRemove = services
                 .Where(d =>
                     d.ServiceType.Name.Contains("DbContext")
                     || d.ServiceType.Name.Contains("DbContextOptions")
                     || d.ServiceType == typeof(EntityFrameworkDataContext)
+                    || d.ServiceType == typeof(IDocumentStore)
+                    || d.ServiceType == typeof(ICategoryServiceRavenDB)
+                    || d.ServiceType == typeof(IUserService)
+                    || d.ServiceType == typeof(ITokenService)
                 )
                 .ToList();
 
@@ -81,28 +99,88 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // Add in-memory database for testing with unique database per factory
             services.AddDbContext<EntityFrameworkDataContext>(options =>
             {
                 options.UseInMemoryDatabase($"TestDatabase_{_databaseId}");
             });
+
+            var mockStore = Substitute.For<IDocumentStore>();
+            services.AddSingleton(mockStore);
+
+            var mockRavenService = Substitute.For<ICategoryServiceRavenDB>();
+            mockRavenService.CreateAsync(Arg.Any<Category>()).Returns(args => Task.FromResult(RequestResult<Category>.Success((Category)args[0])));
+            services.AddScoped(_ => mockRavenService);
+
+            var mockTokenService = Substitute.For<ITokenService>();
+            var tokenResult = new TokenResult
+            {
+                AccessToken = GenerateTestJwt(),
+                RefreshToken = "test-refresh-token",
+                AccessTokenExpiration = DateTime.UtcNow.AddHours(1),
+                RefreshTokenExpiration = DateTime.UtcNow.AddDays(7),
+            };
+            mockTokenService.GenerateTokens(Arg.Any<IEnumerable<System.Security.Claims.Claim>>()).Returns(tokenResult);
+            mockTokenService.GenerateTokens(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IEnumerable<string>>()).Returns(tokenResult);
+            mockTokenService.RefreshToken(Arg.Any<string>(), Arg.Is<string>(x => x == "test-refresh-token")).Returns(tokenResult);
+            mockTokenService.RefreshToken(Arg.Any<string>(), Arg.Is<string>(x => x != "test-refresh-token")).Returns((TokenResult?)null);
+            services.AddScoped(_ => mockTokenService);
+
+            var mockUserService = Substitute.For<IUserService>();
+            mockUserService
+                .LoginAsync(Arg.Any<string>(), Arg.Is<string>(x => x == "Password123!"))
+                .Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
+            mockUserService
+                .LoginAsync(Arg.Any<string>(), Arg.Is<string>(x => x != "Password123!"))
+                .Returns(Task.FromResult(RequestResult<User>.WithError("Invalid credentials")));
+            mockUserService
+                .RegisterAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
+                .Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
+            mockUserService.GetByIdAsync(Arg.Any<Id>()).Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
+            services.AddScoped(_ => mockUserService);
         });
     }
 
+    private static User CreateTestUser()
+    {
+        var id = Id.Create();
+        var name = Name.Create("Test User");
+        return User.Load(id, name, "test@example.com", "hashed_password", DateTime.UtcNow).Data!;
+    }
+
+    private static string GenerateTestJwt()
+    {
+        var userId = Guid.NewGuid().ToString();
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim(ClaimTypes.Name, "Integration Test User"),
+            new Claim(ClaimTypes.Role, "User"),
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TestSecretKey_ForIntegrationTests_Only_32chars!!"));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: "TestIssuer",
+            audience: "TestAudience",
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(30),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
     /// <summary>
-    /// Creates a scoped HTTP client with optional default authorization header.
+    /// Creates a scoped HTTP client with a valid test authentication header.
     /// </summary>
-    /// <param name="accessToken">Optional JWT access token.</param>
-    /// <returns>Configured HttpClient.</returns>
+    /// <param name="accessToken">Optional access token.</param>
+    /// <returns>Configured HttpClient with Authorization header.</returns>
     public HttpClient CreateClientWithAuth(string? accessToken = null)
     {
         var client = CreateClient();
-
-        if (!string.IsNullOrEmpty(accessToken))
-        {
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        }
-
+        var token = string.IsNullOrWhiteSpace(accessToken) ? GenerateTestJwt() : accessToken;
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         return client;
     }
 
@@ -119,7 +197,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     /// <inheritdoc/>
     public async Task InitializeAsync()
     {
-        // Ensure the application is built
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<EntityFrameworkDataContext>();
         await dbContext.Database.EnsureCreatedAsync();
@@ -128,7 +205,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     /// <inheritdoc/>
     Task IAsyncLifetime.DisposeAsync()
     {
-        // Clean up in-memory database
         try
         {
             using var scope = Services.CreateScope();
@@ -137,7 +213,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         }
         catch
         {
-            // Ignore cleanup errors during disposal
         }
 
         return Task.CompletedTask;

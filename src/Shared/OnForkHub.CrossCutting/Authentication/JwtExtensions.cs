@@ -39,6 +39,7 @@ public static class JwtExtensions
             })
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = jwtOptions.ValidateIssuer,

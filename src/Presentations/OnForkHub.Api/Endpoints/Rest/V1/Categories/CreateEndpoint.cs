@@ -1,3 +1,5 @@
+using OnForkHub.Application.Dtos.Category.Request;
+using OnForkHub.Core.Responses.Categories;
 using OnForkHub.CrossCutting.Interfaces;
 
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
@@ -21,7 +23,25 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryReq
                     Route,
                     async ([FromBody] CategoryRequestDto request, CancellationToken cancellationToken) =>
                     {
-                        return await HandleCreateUseCase(_useCase, _logger, request);
+                        return await HandleUseCaseAsync(
+                            _useCase,
+                            _logger,
+                            request,
+                            result =>
+                            {
+                                var response = new
+                                {
+                                    data = result.Data != null ? CategoryResponse.FromEntity(result.Data) : null,
+                                    message = result.Message,
+                                    date = result.Date,
+                                    id = result.Id,
+                                };
+
+                                return Results.Created($"{Route}/{result.Data?.Id}", response);
+                            },
+                            "Failed to create category",
+                            cancellationToken
+                        );
                     }
                 )
             )
@@ -31,10 +51,10 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryReq
             .WithDescription("Creates a new category")
             .WithSummary("Create category")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<RequestResult<Category>>(StatusCodes.Status201Created)
+            .Produces<CategoryResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .RequireAuthorization();
 
         return Task.FromResult(RequestResult.Success());
     }
