@@ -20,6 +20,8 @@ public interface IEntityFrameworkDataContext
 
     DbSet<UserFavorite> UserFavorites { get; set; }
 
+    DbSet<ViewHistory> ViewHistories { get; set; }
+
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         where TEntity : class;
 

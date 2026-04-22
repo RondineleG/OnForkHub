@@ -274,16 +274,17 @@
 
 **Status RealTime:** 🟢 4/4 tasks | Concluído em 2026-04-22
 
-### 4.3 ANALYTICS - VIEW COUNT ✅ COMPLETED
-- [x] **ALTERAÇÃO:** Adicionado `ViewCount` e método `IncrementViews()` à entidade `Video`
-- [x] **ALTERAÇÃO:** Configurada persistência e gerada migration `AddVideoViewCount`
-- [x] **ALTERAÇÃO:** Criado endpoint `IncrementViewsEndpoint.cs` em `Videos/` (POST)
-- [x] **ALTERAÇÃO:** Atualizada UI (`VideoCard`, `VideoService`) para exibir e contabilizar visualizações
-- [x] **VALIDAR:** Visualizações são incrementadas e exibidas corretamente
+### 4.4 HISTÓRICO DE VISUALIZAÇÃO ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criada entidade `ViewHistory.cs` no Core
+- [x] **ALTERAÇÃO:** Configurada persistência EF Core e gerada migration `AddViewHistory`
+- [x] **ALTERAÇÃO:** Criado endpoint `ViewHistoryEndpoint.cs` em `Users/` (POST, GET)
+- [x] **VALIDAR:** Registro automático de visualização e consulta de histórico funcional
 - [x] **BUILDAR:** `dotnet build` → 0 erros
-- [x] **COMMIT:** `feat(analytics): implement video view counting system`
+- [x] **COMMIT:** `feat(user): implement video viewing history system`
 
-**Status Analytics:** 🟢 4/4 tasks | Concluído em 2026-04-22
+**Status History:** 🟢 2/2 tasks | Concluído em 2026-04-22
+
+**Status Fase 4:** 🟢 100% (Features solicitadas concluídas)
 
 ---
 

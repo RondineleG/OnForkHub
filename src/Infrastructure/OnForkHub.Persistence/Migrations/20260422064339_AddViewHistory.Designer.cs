@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnForkHub.Persistence.Contexts;
 
@@ -11,9 +12,11 @@ using OnForkHub.Persistence.Contexts;
 namespace OnForkHub.Persistence.Migrations
 {
     [DbContext(typeof(EntityFrameworkDataContext))]
-    partial class EntityFrameworkDataContextModelSnapshot : ModelSnapshot
+    [Migration("20260422064339_AddViewHistory")]
+    partial class AddViewHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
