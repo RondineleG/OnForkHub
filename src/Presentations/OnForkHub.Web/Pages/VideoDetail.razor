@@ -1,5 +1,7 @@
 @page "/video/{Id}"
 @inject IVideoService VideoService
+@inject IFavoriteService FavoriteService
+@inject IHistoryService HistoryService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
@@ -51,10 +53,16 @@
                     <h1 class="h3 mb-2">@video.Title</h1>
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="text-muted small">
-                            <span>@video.CreatedAt.ToShortDateString()</span>
+                            <span>@video.ViewCount views • @video.CreatedAt.ToShortDateString()</span>
                         </div>
-                        <div class="d-flex gap-3 align-items-center">
+                        <div class="d-flex gap-2 align-items-center">
                             <VideoRating VideoId="video.Id" />
+                            
+                            <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 px-3" @onclick="ToggleFavoriteAsync">
+                                <i class="bi @(isFavorite ? "bi-star-fill text-warning" : "bi-star")"></i>
+                                <span>@(isFavorite ? "Salvo" : "Salvar")</span>
+                            </button>
+
                             <ShareButtons VideoId="video.Id" Title="@video.Title" />
                         </div>
                     </div>
@@ -108,6 +116,7 @@
     private OnForkHub.Web.Models.Video? video;
     private List<OnForkHub.Web.Models.Video> relatedVideos = [];
     private bool isLoading = true;
+    private bool isFavorite = false;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -122,7 +131,15 @@
             video = await VideoService.GetVideoByIdAsync(Id);
             if (video != null)
             {
+                // Trigger history and analytics
+                _ = VideoService.IncrementViewCountAsync(video.Id);
+                _ = HistoryService.AddToHistoryAsync(video.Id);
+
                 relatedVideos = await VideoService.GetRelatedVideosAsync(video.Id.ToString(), 6);
+                
+                // Check if favorite (this would need a specific endpoint, mock for now)
+                // var favorites = await FavoriteService.GetFavoritesAsync();
+                // isFavorite = favorites.Any(f => f.Id == video.Id);
             }
         }
         catch (Exception ex)
@@ -132,6 +149,22 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task ToggleFavoriteAsync()
+    {
+        if (video == null) return;
+
+        if (isFavorite)
+        {
+            if (await FavoriteService.RemoveFromFavoritesAsync(video.Id))
+                isFavorite = false;
+        }
+        else
+        {
+            if (await FavoriteService.AddToFavoritesAsync(video.Id))
+                isFavorite = true;
         }
     }
 }

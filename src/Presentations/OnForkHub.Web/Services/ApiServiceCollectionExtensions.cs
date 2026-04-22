@@ -21,6 +21,8 @@ public static class ApiServiceCollectionExtensions
         services.AddScoped<IRecommendationService, RecommendationService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IRatingService, RatingService>();
+        services.AddScoped<IFavoriteService, FavoriteService>();
+        services.AddScoped<IHistoryService, HistoryService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IUserService, UserService>();
     }
