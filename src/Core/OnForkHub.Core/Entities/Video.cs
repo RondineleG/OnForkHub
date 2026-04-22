@@ -21,6 +21,8 @@ public class Video : BaseEntity
 
     public string? MagnetUri { get; private set; }
 
+    public long ViewCount { get; private set; }
+
     public bool IsTorrentEnabled { get; private set; }
 
     public static RequestResult<Video> Create(string title, string description, string url, Id userId)
@@ -82,6 +84,15 @@ public class Video : BaseEntity
 
         MagnetUri = magnetUri;
         IsTorrentEnabled = true;
+        Update();
+    }
+
+    /// <summary>
+    /// Increments the view count of the video.
+    /// </summary>
+    public void IncrementViews()
+    {
+        ViewCount++;
         Update();
     }
 

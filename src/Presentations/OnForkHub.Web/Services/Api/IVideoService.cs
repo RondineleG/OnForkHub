@@ -11,20 +11,26 @@ public interface IVideoService
     /// <summary>
     /// Gets all videos with filtering and pagination.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task<List<Video>> GetAllAsync(int page = 1, int pageSize = 10, string? search = null, long? categoryId = null, string? sort = null);
 
     /// <summary>
     /// Gets a video by identifier.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task<Video?> GetByIdAsync(string id);
 
     /// <summary>
     /// Searches for videos with advanced filters.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
     Task<SearchResponse<Video>> SearchAsync(string? q, long? categoryId = null, int page = 1, int pageSize = 20);
+
+    /// <summary>
+    /// Increments the view count for a video.
+    /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    Task IncrementViewCountAsync(Guid videoId);
 
     // Compatibility methods for existing UI components
     Task<List<Video>> GetVideosAsync(int page = 1, int pageSize = 10);

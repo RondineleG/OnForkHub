@@ -49,6 +49,11 @@ public class Video
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
+    /// Gets or sets the number of views.
+    /// </summary>
+    public long ViewCount { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the video is available via P2P.
     /// </summary>
     public bool IsTorrent { get; set; }

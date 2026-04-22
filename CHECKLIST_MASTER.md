@@ -273,10 +273,21 @@
 - [x] **COMMIT:** `feat(notifications): implement real-time notifications with SignalR`
 
 **Status RealTime:** 🟢 4/4 tasks | Concluído em 2026-04-22
-**Status Fase 5:** �?? 0/24 tasks
+
+### 4.3 ANALYTICS - VIEW COUNT ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Adicionado `ViewCount` e método `IncrementViews()` à entidade `Video`
+- [x] **ALTERAÇÃO:** Configurada persistência e gerada migration `AddVideoViewCount`
+- [x] **ALTERAÇÃO:** Criado endpoint `IncrementViewsEndpoint.cs` em `Videos/` (POST)
+- [x] **ALTERAÇÃO:** Atualizada UI (`VideoCard`, `VideoService`) para exibir e contabilizar visualizações
+- [x] **VALIDAR:** Visualizações são incrementadas e exibidas corretamente
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(analytics): implement video view counting system`
+
+**Status Analytics:** 🟢 4/4 tasks | Concluído em 2026-04-22
 
 ---
 
+## 🏗️ FASE 5: ARQUITETURA & DEVOPS
 ## 🚀 FASE 6: MIGRAÇÃO .NET 10
 **Status Fase 6:** �?? 0/46 tasks
 

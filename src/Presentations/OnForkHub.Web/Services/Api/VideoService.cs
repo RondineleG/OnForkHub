@@ -68,6 +68,12 @@ public sealed class VideoService(HttpClient httpClient) : IVideoService
         };
     }
 
+    /// <inheritdoc/>
+    public async Task IncrementViewCountAsync(Guid videoId)
+    {
+        await _httpClient.PostAsync($"/api/v1/videos/{videoId}/views", null);
+    }
+
     // Compatibility implementations
     public async Task<List<Video>> GetVideosAsync(int page = 1, int pageSize = 10) => await GetAllAsync(page, pageSize);
 
@@ -104,6 +110,7 @@ public sealed class VideoService(HttpClient httpClient) : IVideoService
             Duration = response.Duration,
             CreatedAt = response.CreatedAt,
             IsTorrent = response.IsTorrentEnabled,
+            ViewCount = response.ViewCount,
         };
     }
 }

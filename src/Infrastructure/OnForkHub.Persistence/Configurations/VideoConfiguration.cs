@@ -46,6 +46,8 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
 
         builder.Property(v => v.IsTorrentEnabled).IsRequired().HasDefaultValue(false);
 
+        builder.Property(v => v.ViewCount).IsRequired().HasDefaultValue(0);
+
         // Configure Url value object
         builder.OwnsOne(
             v => v.Url,
