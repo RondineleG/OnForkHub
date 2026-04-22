@@ -119,18 +119,23 @@
 - [x] **BUILDAR:** `dotnet build` → 0 erros
 - [x] **COMMIT:** `feat(streaming): implement DASH manifest generation`
 
-#### Task 2.2.6: Criar Componente Video Player com DASH.js
-- [ ] **ALTERAÇÃO:** Criar `AdaptiveVideoPlayer.razor`
-- [ ] **VALIDAR:** Player DASH.js inicializa
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **COMMIT:** `feat(streaming): criar componente AdaptiveVideoPlayer com DASH.js`
+#### Task 2.2.6: Criar Componente Video Player com DASH.js ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `AdaptiveVideoPlayer.razor` em `OnForkHub.Web/Components/VideoPlayer/`
+  - Integração com `dash.js` via JS Interop
+  - Exibição de métricas de qualidade em tempo real (resolução e bitrate)
+  - Gerenciamento de ciclo de vida do player (Init/Destroy)
+- [x] **VALIDAR:** Player DASH.js inicializa e reproduz via manifesto `.mpd`
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(web): implement AdaptiveVideoPlayer component using dash.js`
 
-#### Task 2.2.7: Adicionar Auto-Quality Selection
-- [ ] **ALTERAÇÃO:** Configurar DASH.js para auto-quality
-- [ ] **VALIDAR:** Adapta qualidade baseado na conexão
-- [ ] **COMMIT:** `feat(streaming): implementar auto-quality selection no player`
+#### Task 2.2.7: Adicionar Auto-Quality Selection ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Configurado algoritmo ABR (Adaptive Bitrate) no `dashPlayer.js`
+  - Seleção automática de qualidade baseada na largura de banda disponível
+  - Monitoramento dinâmico de performance
+- [x] **VALIDAR:** Adapta qualidade baseado na conexão simulada no browser
+- [x] **COMMIT:** `feat(web): enable auto-quality selection in DASH player`
 
-**Status Streaming:** 🟡 Em Progresso (5/7 tasks concluídas)
+**Status Streaming:** 🟢 7/7 tasks | Concluído em 2026-04-22
 
 ---
 
