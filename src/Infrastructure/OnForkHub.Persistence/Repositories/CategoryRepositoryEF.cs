@@ -47,7 +47,7 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
         }
         catch (Exception ex) when (ex is not PersistenceException)
         {
-            throw new DatabaseOperationException("delete", ex.Message);
+            return RequestResult<Category>.WithError($"Error deleting {EntityName}: {ex.Message}");
         }
     }
 

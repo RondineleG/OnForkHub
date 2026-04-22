@@ -142,6 +142,13 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 .Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
             mockUserService.GetByIdAsync(Arg.Any<Id>()).Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
             services.AddScoped(_ => mockUserService);
+
+            var mockTorrentTracker = Substitute.For<ITorrentTrackerService>();
+            mockTorrentTracker.GetPeerCountAsync(Arg.Any<string>()).Returns(0);
+            mockTorrentTracker.IsHealthyAsync(Arg.Any<string>()).Returns(false);
+            mockTorrentTracker.GetStatsAsync(Arg.Any<string>()).Returns(new TorrentHealthStats());
+            mockTorrentTracker.ReannounceAsync(Arg.Any<string>()).Returns(Task.CompletedTask);
+            services.AddScoped(_ => mockTorrentTracker);
         });
     }
 

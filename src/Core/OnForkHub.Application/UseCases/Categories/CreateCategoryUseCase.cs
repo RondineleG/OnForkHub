@@ -11,23 +11,30 @@ public class CreateCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenD
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var name = Name.Create(request.Name);
-        var categoryResult = Category.Create(name, request.Description);
-        if ((categoryResult.Status != EResultStatus.Success) || (categoryResult.Data is null))
+        try
         {
-            return RequestResult<Category>.WithError(categoryResult.ToString());
-        }
+            var name = Name.Create(request.Name);
+            var categoryResult = Category.Create(name, request.Description);
+            if ((categoryResult.Status != EResultStatus.Success) || (categoryResult.Data is null))
+            {
+                return RequestResult<Category>.WithError(categoryResult.ToString());
+            }
 
-        var validationResult = _validator.Validate(categoryResult.Data);
-        if (!validationResult.IsValid)
+            var validationResult = _validator.Validate(categoryResult.Data);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
+                return RequestResult<Category>.WithValidations(errors);
+            }
+
+            var result = await _categoryServiceRavenDB.CreateAsync(categoryResult.Data);
+            return ((result.Status != EResultStatus.Success) || (result.Data is null))
+                ? RequestResult<Category>.WithError("Failed to create category")
+                : RequestResult<Category>.Success(result.Data);
+        }
+        catch (DomainException ex)
         {
-            var errors = validationResult.Errors.Select(e => new RequestValidation(e.Field, e.Message)).ToArray();
-            return RequestResult<Category>.WithValidations(errors);
+            return RequestResult<Category>.WithError(ex.Message);
         }
-
-        var result = await _categoryServiceRavenDB.CreateAsync(categoryResult.Data);
-        return ((result.Status != EResultStatus.Success) || (result.Data is null))
-            ? RequestResult<Category>.WithError("Failed to create category")
-            : RequestResult<Category>.Success(result.Data);
     }
 }

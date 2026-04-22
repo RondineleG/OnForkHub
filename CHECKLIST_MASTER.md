@@ -131,13 +131,20 @@
 
 ---
 
-### 2.3 P2P WEBTORRENT (Completar Implementação)
+### 2.3 P2P WEBTORRENT (Completar Implementação) ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado endpoint `TorrentStatsEndpoint.cs` em `Videos/`
+  - GET /api/v1/videos/{id}/torrent/stats
+  - Integração com `ITorrentTrackerService` para métricas reais
+- [x] **ALTERAÇÃO:** Implementado controle de bandwidth no `webtorrentService.js` e `WebTorrentService.cs`
+  - Suporte a throttling dinâmico de download e upload
+- [x] **ALTERAÇÃO:** UI de estatísticas P2P integrada ao `P2PVideoPlayer.razor`
+- [x] **VALIDAR:** Estatísticas e limites de banda funcionam via JS Interop
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **TESTAR:** Validado via testes manuais no browser
+- [x] **COMMIT:** `feat(webtorrent): complete P2P implementation with stats and throttling`
 
-#### Task 2.3.1: Criar API para Estatísticas P2P
-#### Task 2.3.2: Implementar Controle de Bandwidth
-#### Task 2.3.3: Criar UI de Estatísticas P2P
+**Status P2P Completar:** 🟢 3/3 tasks | Concluído em 2026-04-22
 
-**Status P2P Completar:** 🔴 0/3 tasks
 
 ---
 

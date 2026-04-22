@@ -43,3 +43,9 @@ export function getTorrentStats(magnetUri) {
         uploadSpeed: torrent.uploadSpeed
     };
 }
+
+export function updateConfig(maxDownloadSpeed, maxUploadSpeed) {
+    // WebTorrent client-level throttling
+    getClient().throttleDownload(maxDownloadSpeed || -1);
+    getClient().throttleUpload(maxUploadSpeed || -1);
+}

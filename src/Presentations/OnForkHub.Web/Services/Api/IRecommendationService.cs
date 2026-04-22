@@ -10,6 +10,6 @@ public interface IRecommendationService
     /// <summary>
     /// Gets recommended videos.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<List<VideoResponse>> GetRecommendationsAsync(int count = 10);
 }
