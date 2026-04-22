@@ -41,7 +41,7 @@
 |------|-------|------------|-----------|--------|
 | **FASE 0** - Correções Imediatas | 10 | 10 | 100% | 🟢 Concluído |
 | **FASE 1** - Features em Progresso | 20 | 20 | 100% | 🟢 Concluído |
-| **FASE 2** - Must Have | 28 | 11 | 39% | 🟡 Em Progresso |
+| **FASE 2** - Must Have | 28 | 17 | 61% | 🟡 Em Progresso |
 | **FASE 3** - Should Have | 16 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 4** - Nice to Have | 12 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 5** - Arquitetura & DevOps | 24 | 0 | 0% | 🔴 Não Iniciado |
@@ -110,11 +110,14 @@
 - [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Api` → 0 erros
 - [x] **COMMIT:** `feat(api): implement video streaming endpoint with range support`
 
-#### Task 2.2.5: Implementar DASH/HLS Manifest
-- [ ] **ALTERAÇÃO:** Criar gerador de manifesto MPEG-DASH
-- [ ] **VALIDAR:** XML válido para DASH
-- [ ] **BUILDAR:** Build
-- [ ] **COMMIT:** `feat(streaming): implementar gerador de manifesto DASH`
+#### Task 2.2.5: Implementar DASH/HLS Manifest ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado `DashManifestGenerator.cs` em `OnForkHub.Application/Services/`
+  - Gera manifestos `.mpd` (MPEG-DASH) dinamicamente
+  - Suporte a múltiplas representações (1080p, 720p, 480p)
+- [x] **ALTERAÇÃO:** Atualizado `StreamEndpoint.cs` para servir o manifesto DASH
+- [x] **VALIDAR:** XML gerado é compatível com o padrão MPEG-DASH
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(streaming): implement DASH manifest generation`
 
 #### Task 2.2.6: Criar Componente Video Player com DASH.js
 - [ ] **ALTERAÇÃO:** Criar `AdaptiveVideoPlayer.razor`
@@ -127,7 +130,7 @@
 - [ ] **VALIDAR:** Adapta qualidade baseado na conexão
 - [ ] **COMMIT:** `feat(streaming): implementar auto-quality selection no player`
 
-**Status Streaming:** 🟡 Em Progresso (4/7 tasks concluídas)
+**Status Streaming:** 🟡 Em Progresso (5/7 tasks concluídas)
 
 ---
 
