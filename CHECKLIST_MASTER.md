@@ -44,7 +44,7 @@
 | **FASE 2** - Must Have | 28 | 28 | 100% | 🟢 Concluído |
 | **FASE 3** - Should Have | 16 | 16 | 100% | 🟢 Concluído |
 | **FASE 4** - Nice to Have | 12 | 12 | 100% | 🟢 Concluído |
-| **FASE 5** - Arquitetura & DevOps | 24 | 0 | 0% | 🔴 Não Iniciado |
+| **FASE 5** - Arquitetura & DevOps | 24 | 2 | 8% | 🟡 Em Progresso |
 | **FASE 6** - Migração .NET 10 | 46 | 0 | 0% | 🔴 Não Iniciado |
 | **FASE 7** - Qualidade & Métricas | 14 | 0 | 0% | 🔴 Não Iniciado |
 | **TOTAL** | **180** | **41** | **23%** | 🟡 |
@@ -298,7 +298,15 @@
 - [x] **BUILDAR:** `dotnet build` → 0 erros
 - [x] **COMMIT:** `feat(devops): implement distributed tracing with Jaeger and OpenTelemetry`
 
-**Status Tracing:** 🟢 1/1 tasks | Concluído em 2026-04-22
+### 5.2 DOCKER COMPOSE REFINEMENT ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Atualizado `docker-compose.yml` em `.deploy/`
+  - Adicionados serviços `redis` (cache) e `jaeger` (tracing)
+  - Configurada variáveis de ambiente (`Cache__UseRedis`, `Jaeger__Host`) na API
+  - Ajustados limites de memória e reservas para containers
+- [x] **VALIDAR:** Orquestração de containers inicia todos os serviços dependentes
+- [x] **COMMIT:** `chore(docker): refine compose with redis, jaeger and env vars`
+
+**Status DevOps:** 🟢 2/2 tasks | Concluído em 2026-04-22
 
 ---
 
