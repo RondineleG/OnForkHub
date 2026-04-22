@@ -40,6 +40,15 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         // PasswordHash property
         builder.Property(u => u.PasswordHash).HasMaxLength(500).IsRequired();
 
+        // Preferences as JSON column
+        builder.OwnsOne(
+            u => u.Preferences,
+            p =>
+            {
+                p.ToJson();
+            }
+        );
+
         // Index on CreatedAt for sorting
         builder.HasIndex(u => u.CreatedAt).HasDatabaseName("IX_Users_CreatedAt");
     }

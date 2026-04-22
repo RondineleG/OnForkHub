@@ -17,6 +17,8 @@ public class User : BaseEntity
 
     public string? AvatarUrl { get; private set; }
 
+    public UserPreferences Preferences { get; private set; } = new UserPreferences();
+
     public IReadOnlyCollection<Video> Videos => _videos.AsReadOnly();
 
     public static RequestResult<User> Create(Name name, string email, string passwordHash)

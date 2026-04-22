@@ -187,3 +187,74 @@
 
 **Status Recommendations:** 🟢 3/3 tasks | Concluído em 2026-04-22
 
+
+---
+
+## 💡 FASE 3: SHOULD HAVE (Features Importantes)
+
+### 3.1 USER PREFERENCES & SETTINGS ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criado modelo UserPreferences.cs no Core como Value Object
+- [x] **ALTERAÇÃO:** Adicionada propriedade Preferences na entidade User e configurada persistência JSON no EF Core
+- [x] **ALTERAÇÃO:** Gerada migration AddUserPreferences para atualizar o banco de dados
+- [x] **ALTERAÇÃO:** Implementada página Settings.razor em OnForkHub.Web/Pages/
+  - Gerenciamento de perfil (Nome, Email)
+  - Configurações de Auto-play, Qualidade padrão, P2P (WebTorrent), Dark Mode e Idioma
+- [x] **VALIDAR:** Preferências são salvas e persistidas corretamente
+- [x] **BUILDAR:** `dotnet build` → 0 erros
+- [x] **COMMIT:** `feat(user-settings): implement user preferences and settings UI`
+
+**Status Preferences:** 🟢 4/4 tasks | Concluído em 2026-04-22
+
+---
+
+### 3.2 COMMENTS & RATING SYSTEM
+
+#### Task 3.2.1: Criar Entidade Comment
+#### Task 3.2.2: Criar Sistema de Rating (Like/Dislike)
+#### Task 3.2.3: CRUD de Comentários na API
+#### Task 3.2.4: UI de Comentários
+#### Task 3.2.5: Mostrar Rating no Vídeo
+
+**Status Comments/Ratings:** �?? 0/5 tasks
+
+---
+
+### 3.3 SOCIAL SHARING
+
+#### Task 3.3.1: Criar ShareService
+#### Task 3.3.2: Adicionar Botões de Share na UI
+#### Task 3.3.3: Meta Tags para Preview (Open Graph)
+#### Task 3.3.4: Embeddable Player (IFrame)
+
+**Status Social:** �?? 0/4 tasks
+
+---
+
+### 3.4 ADVANCED SEARCH & FILTERING
+
+#### Task 3.4.1: Implementar Full-Text Search
+#### Task 3.4.2: Criar Search Endpoint
+#### Task 3.4.3: Criar Página de Search
+#### Task 3.4.4: Sugestões de Busca (Autocomplete)
+
+**Status Search:** �?? 0/4 tasks
+
+---
+
+## 🌟 FASE 4: NICE TO HAVE (Features Avançadas)
+**Status Fase 4:** �?? 0/12 tasks
+
+---
+
+## � �️ FASE 5: ARQUITETURA & DEVOPS
+**Status Fase 5:** �?? 0/24 tasks
+
+---
+
+## 🚀 FASE 6: MIGRAÇÃO .NET 10
+**Status Fase 6:** �?? 0/46 tasks
+
+---
+
+## 💎 FASE 7: QUALIDADE & MÉTRICAS
+**Status Fase 7:** �?? 0/14 tasks

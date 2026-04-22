@@ -1,9 +1,9 @@
-namespace OnForkHub.Application.Dtos.User.Response;
+namespace OnForkHub.Core.Responses.Users;
 
 /// <summary>
 /// Data transfer object for authentication responses.
 /// </summary>
-public sealed class AuthResponseDto
+public sealed class AuthResponse
 {
     /// <summary>
     /// Gets or sets the user information.

@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.Dtos.User.Response;
+namespace OnForkHub.Core.Responses.Users;
 
 using OnForkHub.Core.Entities;
 

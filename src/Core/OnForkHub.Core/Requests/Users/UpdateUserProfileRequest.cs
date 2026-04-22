@@ -1,4 +1,4 @@
-namespace OnForkHub.Application.Dtos.User.Request;
+namespace OnForkHub.Core.Requests.Users;
 
 using System.ComponentModel.DataAnnotations;
 
@@ -20,4 +20,9 @@ public sealed class UpdateUserProfileRequest
     [Required(ErrorMessage = "The Email field is required")]
     [EmailAddress(ErrorMessage = "Invalid email format")]
     public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's avatar URL.
+    /// </summary>
+    public string? AvatarUrl { get; set; }
 }

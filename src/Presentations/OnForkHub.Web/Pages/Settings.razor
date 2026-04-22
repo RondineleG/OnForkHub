@@ -1,0 +1,174 @@
+@page "/settings"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using OnForkHub.Core.Requests.Users
+@using OnForkHub.Core.Responses.Users
+@inject IUserService UserService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<PageTitle>Configurações - OnForkHub</PageTitle>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0"><i class="bi bi-gear me-2"></i>Configurações do Usuário</h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (isLoading)
+                    {
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2 text-muted">Carregando configurações...</p>
+                        </div>
+                    }
+                    else if (userProfile != null)
+                    {
+                        @if (!string.IsNullOrEmpty(successMessage))
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle me-2"></i>@successMessage
+                                <button type="button" class="btn-close" @onclick="() => successMessage = string.Empty"></button>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>@errorMessage
+                                <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+                            </div>
+                        }
+
+                        <EditForm Model="updateRequest" OnValidSubmit="HandleSaveAsync">
+                            <DataAnnotationsValidator />
+
+                            <h5 class="mb-3 border-bottom pb-2">Perfil</h5>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nome</label>
+                                <InputText @bind-Value="updateRequest.Name" class="form-control" />
+                                <ValidationMessage For="@(() => updateRequest.Name)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">E-mail</label>
+                                <InputText @bind-Value="updateRequest.Email" class="form-control" />
+                                <ValidationMessage For="@(() => updateRequest.Email)" class="text-danger small" />
+                            </div>
+
+                            <h5 class="mb-3 border-bottom pb-2">Preferências de Reprodução</h5>
+                            <div class="form-check form-switch mb-3">
+                                <InputCheckbox @bind-Value="preferences.AutoPlayNextVideo" id="autoPlay" class="form-check-input" />
+                                <label class="form-check-label" for="autoPlay">Reproduzir próximo vídeo automaticamente</label>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Qualidade Padrão</label>
+                                <InputSelect @bind-Value="preferences.DefaultQuality" class="form-select">
+                                    <option value="Auto">Automática</option>
+                                    <option value="1080p">1080p (Full HD)</option>
+                                    <option value="720p">720p (HD)</option>
+                                    <option value="480p">480p (SD)</option>
+                                </InputSelect>
+                            </div>
+
+                            <div class="form-check form-switch mb-4">
+                                <InputCheckbox @bind-Value="preferences.EnableP2P" id="enableP2P" class="form-check-input" />
+                                <label class="form-check-label" for="enableP2P">Habilitar P2P (WebTorrent)</label>
+                                <div class="form-text">Ajuda a economizar banda do servidor compartilhando partes do vídeo com outros usuários.</div>
+                            </div>
+
+                            <h5 class="mb-3 border-bottom pb-2">Interface</h5>
+                            <div class="form-check form-switch mb-3">
+                                <InputCheckbox @bind-Value="preferences.DarkMode" id="darkMode" class="form-check-input" />
+                                <label class="form-check-label" for="darkMode">Modo Escuro (Dark Mode)</label>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Idioma</label>
+                                <InputSelect @bind-Value="preferences.Language" class="form-select">
+                                    <option value="pt-BR">Português (Brasil)</option>
+                                    <option value="en-US">English (US)</option>
+                                    <option value="es-ES">Español</option>
+                                </InputSelect>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary px-4" disabled="@isSaving">
+                                    @if (isSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    }
+                                    <i class="bi bi-save me-2"></i>Salvar Alterações
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string? successMessage;
+    private string? errorMessage;
+    private UserProfileResponse? userProfile;
+    private UpdateUserProfileRequest updateRequest = new();
+    private OnForkHub.Core.ValueObjects.UserPreferences preferences = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettingsAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        try
+        {
+            isLoading = true;
+            userProfile = await UserService.GetProfileAsync();
+            if (userProfile != null)
+            {
+                updateRequest = new UpdateUserProfileRequest
+                {
+                    Name = userProfile.Name,
+                    Email = userProfile.Email,
+                    AvatarUrl = userProfile.AvatarUrl
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao carregar configurações: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSaveAsync()
+    {
+        try
+        {
+            isSaving = true;
+            successMessage = null;
+            errorMessage = null;
+
+            await UserService.UpdateProfileAsync(updateRequest);
+            successMessage = "Configurações salvas com sucesso!";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao salvar configurações: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}
