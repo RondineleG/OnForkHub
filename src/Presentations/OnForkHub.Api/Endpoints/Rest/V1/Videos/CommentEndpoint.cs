@@ -4,9 +4,9 @@ using System.Security.Claims;
 
 using Microsoft.AspNetCore.Authorization;
 
-using OnForkHub.Application.Dtos.Video.Request;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Services;
+using OnForkHub.Core.Requests.Videos;
 using OnForkHub.Core.ValueObjects;
 using OnForkHub.CrossCutting.Interfaces;
 

@@ -7,6 +7,7 @@ using OnForkHub.Core.Interfaces.Repositories.Base;
 using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.Core.Interfaces.Validations;
 using OnForkHub.Core.Requests.Users;
+using OnForkHub.Core.Requests.Videos;
 using OnForkHub.Core.Responses;
 using OnForkHub.Core.Responses.Users;
 using OnForkHub.Core.Validations;
