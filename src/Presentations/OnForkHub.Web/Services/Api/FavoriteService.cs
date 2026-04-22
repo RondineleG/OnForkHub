@@ -40,6 +40,24 @@ public sealed class FavoriteService(HttpClient httpClient) : IFavoriteService
         return response.IsSuccessStatusCode;
     }
 
+    /// <inheritdoc/>
+    public async Task<bool> IsFavoriteAsync(Guid videoId)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/v1/users/favorites/{videoId}/check");
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            var result = await response.Content.ReadFromJsonAsync<bool>();
+            return result;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private Video MapToWebModel(VideoResponse response)
     {
         return new Video

@@ -1,6 +1,7 @@
 namespace OnForkHub.Core.Responses.Users;
 
 using OnForkHub.Core.Entities;
+using OnForkHub.Core.ValueObjects;
 
 /// <summary>
 /// Response containing user profile information.
@@ -33,6 +34,11 @@ public sealed class UserProfileResponse
     public IReadOnlyList<string> Roles { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the user's preferences.
+    /// </summary>
+    public UserPreferences? Preferences { get; set; }
+
+    /// <summary>
     /// Gets or sets the creation date.
     /// </summary>
     public DateTime CreatedAt { get; set; }
@@ -54,6 +60,7 @@ public sealed class UserProfileResponse
             Email = user.Email.Value,
             AvatarUrl = user.AvatarUrl,
             Roles = roles ?? [],
+            Preferences = user.Preferences,
             CreatedAt = user.CreatedAt,
         };
     }

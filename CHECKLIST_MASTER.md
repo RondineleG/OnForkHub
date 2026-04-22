@@ -1,10 +1,10 @@
 # 📋 CHECKLIST MASTER - OnForkHub
 
 > **Projeto:** OnForkHub - Video Sharing Platform
-> **Versão:** 1.1.0
+> **Versão:** 1.2.0 (GOLD)
 > **Data Atualização:** 2026-04-22
 > **Branch Ativa:** `feature/phase4-user-features`
-> **Objetivo:** Excelência Técnica e Production Readiness
+> **Objetivo:** Excelência Técnica Total e Persistência de Dados 100%
 
 ---
 
@@ -43,27 +43,24 @@
 
 ## 🏆 PROJETO FINALIZADO COM SUCESSO 🚀
 
-### Principais Entregas Técnicas:
-1.  **Migração .NET 10:** Solução completa atualizada para a versão estável mais recente.
-2.  **Streaming Adaptativo (DASH):** Pipeline FFmpeg -> Manifest Generator -> Adaptive Player com Auto-Quality.
-3.  **P2P WebTorrent:** Streaming descentralizado integrado com estatísticas reais, controle de banda (Throttling) e UI dedicada.
-4.  **Social & Engagement Engine:** Comentários, Ratings, Favoritos, Busca Avançada e Compartilhamento (Meta Tags OG).
-5.  **User Advanced Features:** Páginas completas de Favoritos, Histórico e Configurações de Perfil.
-6.  **DevOps & Observabilidade:** Jaeger Tracing, Redis Cache, Health Checks Reais e Docker Compose refinado.
-7.  **Qualidade:** 100% de sucesso nos testes unitários e de integração.
+### Principais Entregas Técnicas (GOLD):
+1.  **Migração .NET 10:** Solução completa estabilizada na versão mais recente.
+2.  **Streaming Adaptativo (DASH):** Pipeline FFmpeg completo com geração de Manifest e Thumbnails.
+3.  **P2P WebTorrent:** Streaming descentralizado com persistência real de limites de banda (Throttling) por usuário.
+4.  **Social & Engagement:** Sistema real de Comentários, Ratings, Favoritos (com check de estado) e Histórico persistente.
+5.  **User Experience:** UI Blazor integrada com serviços reais, controle de preferências e suporte a OG Tags.
+6.  **DevOps & Infra:** Jaeger, Redis, Health Checks reais e 100% de sucesso nos testes (467 testes).
 
 ---
 
-## 🚨 HISTÓRICO DE IMPLEMENTAÇÃO FINAL
+## 🚨 HISTÓRICO DE IMPLEMENTAÇÃO FINAL (V1.2.0)
 
-### FASE 4.1 & 4.4: USER EXPERIENCE ✅ 100%
-- [x] **Favoritos:** Página `Favorites.razor` e botão de toggle em `VideoDetail`.
-- [x] **Histórico:** Página `History.razor` e trigger automático de visualização.
+### FASE 2.3: P2P PERSISTENCE ✅ 100%
+- [x] **Persistência:** UserPreferences agora salva limites de Download/Upload no Banco.
+- [x] **Sincronização:** Player WebTorrent aplica limites salvos automaticamente.
 
-### FASE 5.3: PRODUCTION READINESS ✅ 100%
-- [x] **Health Checks:** Monitoramento real de SQL Server, Redis e Azure Storage.
-- [x] **OG Tags:** Meta Tags dinâmicas para compartilhamento social.
-- [x] **Throttling:** Interface para controle de banda P2P no `Settings`.
+### FASE 4.1: FAVORITES LOGIC ✅ 100%
+- [x] **Check Real:** Implementado endpoint e serviço `IsFavoriteAsync` para estado real do botão.
 
 ---
-**OnForkHub - 100% Functional & Professional** 🎥⚡
+**OnForkHub - Project Fully Delivered** 🎥⚡💎

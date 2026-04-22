@@ -16,6 +16,8 @@ public class UpdateUserProfileUseCase(IUserService userService) : IUseCase<(Id U
         ArgumentNullException.ThrowIfNull(input.UserId);
         ArgumentNullException.ThrowIfNull(input.Request);
 
+        var request = input.Request;
+
         // Get the existing user
         var getUserResult = await _userService.GetByIdAsync(input.UserId);
 
@@ -27,13 +29,29 @@ public class UpdateUserProfileUseCase(IUserService userService) : IUseCase<(Id U
         var user = getUserResult.Data;
 
         // Update user data
-        var name = Name.Create(input.Request.Name);
-        var updateResult = user.UpdateData(name, input.Request.Email);
+        var name = Name.Create(request.Name);
+        var updateResult = user.UpdateData(name, request.Email);
 
         if (updateResult.Status != EResultStatus.Success)
         {
             return RequestResult<UserProfileResponse>.WithError(updateResult.Message);
         }
+
+        // Update preferences if provided
+        if (request.AutoPlayNextVideo.HasValue)
+            user.Preferences.AutoPlayNextVideo = request.AutoPlayNextVideo.Value;
+        if (!string.IsNullOrEmpty(request.DefaultQuality))
+            user.Preferences.DefaultQuality = request.DefaultQuality;
+        if (request.EnableP2P.HasValue)
+            user.Preferences.EnableP2P = request.EnableP2P.Value;
+        if (request.DownloadLimitMb.HasValue)
+            user.Preferences.DownloadLimitMb = request.DownloadLimitMb.Value;
+        if (request.UploadLimitMb.HasValue)
+            user.Preferences.UploadLimitMb = request.UploadLimitMb.Value;
+        if (request.DarkMode.HasValue)
+            user.Preferences.DarkMode = request.DarkMode.Value;
+        if (!string.IsNullOrEmpty(request.Language))
+            user.Preferences.Language = request.Language;
 
         // Save the updated user
         var saveResult = await _userService.UpdateAsync(user);

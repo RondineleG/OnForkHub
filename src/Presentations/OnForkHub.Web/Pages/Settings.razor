@@ -85,15 +85,15 @@
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Limite de Download (MB/s)</label>
                                         <div class="d-flex align-items-center gap-3">
-                                            <input type="range" class="form-range flex-grow-1" min="0" max="50" step="1" @bind="downloadLimitMb" />
-                                            <span class="badge bg-secondary" style="width: 60px;">@(downloadLimitMb == 0 ? "Ilimit." : $"{downloadLimitMb}MB")</span>
+                                            <input type="range" class="form-range flex-grow-1" min="0" max="50" step="1" @bind="preferences.DownloadLimitMb" />
+                                            <span class="badge bg-secondary" style="width: 60px;">@(preferences.DownloadLimitMb == 0 ? "Ilimit." : $"{preferences.DownloadLimitMb}MB")</span>
                                         </div>
                                     </div>
                                     <div class="mb-0">
                                         <label class="form-label small fw-bold">Limite de Upload (MB/s)</label>
                                         <div class="d-flex align-items-center gap-3">
-                                            <input type="range" class="form-range flex-grow-1" min="0" max="20" step="0.5" @bind="uploadLimitMb" />
-                                            <span class="badge bg-secondary" style="width: 60px;">@(uploadLimitMb == 0 ? "Ilimit." : $"{uploadLimitMb}MB")</span>
+                                            <input type="range" class="form-range flex-grow-1" min="0" max="20" step="0.5" @bind="preferences.UploadLimitMb" />
+                                            <span class="badge bg-secondary" style="width: 60px;">@(preferences.UploadLimitMb == 0 ? "Ilimit." : $"{preferences.UploadLimitMb}MB")</span>
                                         </div>
                                     </div>
                                 </div>
@@ -139,8 +139,6 @@
     private UserProfileResponse? userProfile;
     private UpdateUserProfileRequest updateRequest = new();
     private OnForkHub.Core.ValueObjects.UserPreferences preferences = new();
-    private double downloadLimitMb = 0;
-    private double uploadLimitMb = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -161,6 +159,9 @@
                     Email = userProfile.Email,
                     AvatarUrl = userProfile.AvatarUrl
                 };
+
+                // Load preferences from profile
+                preferences = userProfile.Preferences ?? new();
             }
         }
         catch (Exception ex)
@@ -180,6 +181,15 @@
             isSaving = true;
             successMessage = null;
             errorMessage = null;
+
+            // Map preferences to request
+            updateRequest.AutoPlayNextVideo = preferences.AutoPlayNextVideo;
+            updateRequest.DefaultQuality = preferences.DefaultQuality;
+            updateRequest.EnableP2P = preferences.EnableP2P;
+            updateRequest.DownloadLimitMb = preferences.DownloadLimitMb;
+            updateRequest.UploadLimitMb = preferences.UploadLimitMb;
+            updateRequest.DarkMode = preferences.DarkMode;
+            updateRequest.Language = preferences.Language;
 
             await UserService.UpdateProfileAsync(updateRequest);
             successMessage = "Configurações salvas com sucesso!";

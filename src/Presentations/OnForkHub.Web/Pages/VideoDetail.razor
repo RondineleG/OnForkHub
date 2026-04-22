@@ -2,6 +2,7 @@
 @inject IVideoService VideoService
 @inject IFavoriteService FavoriteService
 @inject IHistoryService HistoryService
+@inject IUserService UserService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
@@ -40,9 +41,13 @@
     {
         <div class="row g-4">
             <div class="col-lg-8">
-                @if (video.IsTorrent)
+                @if (video.IsTorrent && userPreferences.EnableP2P)
                 {
-                    <P2PVideoPlayer VideoId="video.Id" MagnetUri="@video.Url" />
+                    <P2PVideoPlayer 
+                        VideoId="video.Id" 
+                        MagnetUri="@video.Url" 
+                        DownloadLimit="@(userPreferences.DownloadLimitMb * 1024 * 1024)" 
+                        UploadLimit="@(userPreferences.UploadLimitMb * 1024 * 1024)" />
                 }
                 else
                 {
@@ -117,6 +122,7 @@
     private List<OnForkHub.Web.Models.Video> relatedVideos = [];
     private bool isLoading = true;
     private bool isFavorite = false;
+    private OnForkHub.Core.ValueObjects.UserPreferences userPreferences = new();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -129,17 +135,24 @@
         {
             isLoading = true;
             video = await VideoService.GetVideoByIdAsync(Id);
+            
             if (video != null)
             {
                 // Trigger history and analytics
                 _ = VideoService.IncrementViewCountAsync(video.Id);
                 _ = HistoryService.AddToHistoryAsync(video.Id);
 
+                // Load user preferences for P2P limits
+                var profile = await UserService.GetProfileAsync();
+                if (profile?.Preferences != null)
+                {
+                    userPreferences = profile.Preferences;
+                }
+
+                // Check if favorite
+                isFavorite = await FavoriteService.IsFavoriteAsync(video.Id);
+
                 relatedVideos = await VideoService.GetRelatedVideosAsync(video.Id.ToString(), 6);
-                
-                // Check if favorite (this would need a specific endpoint, mock for now)
-                // var favorites = await FavoriteService.GetFavoritesAsync();
-                // isFavorite = favorites.Any(f => f.Id == video.Id);
             }
         }
         catch (Exception ex)

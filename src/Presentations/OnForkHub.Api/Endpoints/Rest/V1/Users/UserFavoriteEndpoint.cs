@@ -45,6 +45,21 @@ public sealed partial class UserFavoriteEndpoint(
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        app.MapGet(
+                $"{Route}/{{videoId:guid}}/check",
+                [Authorize]
+                async ([FromRoute] Guid videoId, ClaimsPrincipal user, CancellationToken cancellationToken) =>
+                {
+                    return await HandleCheckFavoriteAsync(videoId, user, cancellationToken);
+                }
+            )
+            .WithName("CheckUserFavoriteV1")
+            .WithApiVersionSet(apiVersionSet)
+            .MapToApiVersion(V1)
+            .WithTags("Favorites")
+            .Produces<bool>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
         app.MapDelete(
                 $"{Route}/{{videoId:guid}}",
                 [Authorize]
@@ -109,6 +124,21 @@ public sealed partial class UserFavoriteEndpoint(
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Results.Created($"{Route}/{videoId}", new { success = true });
+    }
+
+    private async Task<IResult> HandleCheckFavoriteAsync(Guid videoId, ClaimsPrincipal user, CancellationToken cancellationToken)
+    {
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Results.Unauthorized();
+
+        var isFavorite = await EntityFrameworkQueryableExtensions.AnyAsync(
+            _dbContext.UserFavorites,
+            f => f.VideoId == videoId && f.UserId.ToString() == userId,
+            cancellationToken
+        );
+
+        return Results.Ok(isFavorite);
     }
 
     private async Task<IResult> HandleRemoveFavoriteAsync(Guid videoId, ClaimsPrincipal user, CancellationToken cancellationToken)

@@ -25,4 +25,39 @@ public sealed class UpdateUserProfileRequest
     /// Gets or sets the user's avatar URL.
     /// </summary>
     public string? AvatarUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user's preferences for autoplay.
+    /// </summary>
+    public bool? AutoPlayNextVideo { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user's default video quality.
+    /// </summary>
+    public string? DefaultQuality { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether P2P is enabled for the user.
+    /// </summary>
+    public bool? EnableP2P { get; set; }
+
+    /// <summary>
+    /// Gets or sets the P2P download limit.
+    /// </summary>
+    public double? DownloadLimitMb { get; set; }
+
+    /// <summary>
+    /// Gets or sets the P2P upload limit.
+    /// </summary>
+    public double? UploadLimitMb { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether dark mode is enabled.
+    /// </summary>
+    public bool? DarkMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the preferred language.
+    /// </summary>
+    public string? Language { get; set; }
 }
