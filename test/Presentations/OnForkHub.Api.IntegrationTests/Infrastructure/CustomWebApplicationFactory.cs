@@ -13,7 +13,6 @@ using Microsoft.IdentityModel.Tokens;
 
 using NSubstitute;
 
-using OnForkHub.Application.Dtos.User.Response;
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.Core.Requests;
@@ -119,7 +118,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 AccessTokenExpiration = DateTime.UtcNow.AddHours(1),
                 RefreshTokenExpiration = DateTime.UtcNow.AddDays(7),
             };
-            mockTokenService.GenerateTokens(Arg.Any<IEnumerable<System.Security.Claims.Claim>>()).Returns(tokenResult);
+            mockTokenService.GenerateTokens(Arg.Any<IEnumerable<Claim>>()).Returns(tokenResult);
             mockTokenService.GenerateTokens(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IEnumerable<string>>()).Returns(tokenResult);
             mockTokenService.RefreshToken(Arg.Any<string>(), Arg.Is<string>(x => x == "test-refresh-token")).Returns(tokenResult);
             mockTokenService.RefreshToken(Arg.Any<string>(), Arg.Is<string>(x => x != "test-refresh-token")).Returns((TokenResult?)null);

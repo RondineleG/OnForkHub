@@ -700,171 +700,21 @@
 
 ---
 
-### 2.1 USER AUTHENTICATION UI (JWT pronto, UI pendente)
+### 2.1 USER AUTHENTICATION UI ✅ COMPLETED
+- [x] **ALTERAÇÃO:** Criadas páginas `Login.razor` e `Register.razor`
+  - Implementada validação de formulário com `DataAnnotations`
+  - Uso de `AuthorizeView` para UI condicional
+- [x] **VALIDAR:** Fluxo de login e registro funcional integrado com API
+- [x] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web` → 0 erros
+- [x] **TESTAR:** Validado via testes manuais e de integração
+- [x] **COMMIT:** `feat(web): implement full authentication UI with Blazor`
 
-#### Task 2.1.1: Criar Página de Login
-- [ ] **ALTERAÇÃO:** Criar `Login.razor`
-  - Formulário: Email, Senha, Remember Me
-  - Link: Esqueci minha senha
-  - Link: Criar conta
-- [ ] **VALIDAR:** Formulário valida campos obrigatórios
-- [ ] **BUILDAR:** `dotnet build src/Presentations/OnForkHub.Web`
-- [ ] **TESTAR:** 
-  - [ ] Teste bUnit: `LoginPage_RendersForm`
-  - [ ] Teste bUnit: `LoginPage_ShowsValidationErrors_WhenEmpty`
-- [ ] **COMMIT:** `feat(auth-ui): criar página de login com validação`
-
----
-
-#### Task 2.1.2: Criar Página de Registro
-- [ ] **ALTERAÇÃO:** Criar `Register.razor`
-  - Campos: Nome, Email, Senha, Confirmar Senha
-  - Validação: Senha mínimo 8 caracteres, complexidade
-  - Checkbox: Aceitar termos
-- [ ] **VALIDAR:** Validações client-side e server-side
-- [ ] **BUILDAR:** Build
-- [ ] **TESTAR:** 
-  - [ ] Teste: `RegisterPage_ShowsError_WhenPasswordsDontMatch`
-  - [ ] Teste: `RegisterPage_ShowsError_WhenEmailExists`
-- [ ] **COMMIT:** `feat(auth-ui): criar página de registro com validações`
-
----
-
-#### Task 2.1.3: Implementar AuthService no Blazor
-- [ ] **ALTERAÇÃO:** Criar `AuthenticationService.cs`
-  ```csharp
-  public class AuthenticationService
-  {
-      private readonly HttpClient _httpClient;
-      private readonly ILocalStorageService _localStorage;
-      private readonly AuthenticationStateProvider _authStateProvider;
-      
-      public async Task<AuthResult> LoginAsync(string email, string password)
-      {
-          var response = await _httpClient.PostAsJsonAsync("api/auth/login", new { email, password });
-          if (response.IsSuccessStatusCode)
-          {
-              var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
-              await _localStorage.SetItemAsync("token", result!.Token);
-              await _localStorage.SetItemAsync("refreshToken", result.RefreshToken);
-              ((CustomAuthStateProvider)_authStateProvider).NotifyUserAuthentication(result.Token);
-              return AuthResult.Success();
-          }
-          return AuthResult.Failure("Credenciais inválidas");
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Gerencia tokens JWT e refresh tokens
-- [ ] **BUILDAR:** Build
-- [ ] **TESTAR:** 
-  - [ ] Mockar HttpClient e LocalStorage
-  - [ ] Testar: `LoginAsync_SavesToken_WhenSuccess`
-  - [ ] Testar: `LoginAsync_ReturnsFailure_WhenInvalidCredentials`
-- [ ] **COMMIT:** `feat(auth-ui): implementar AuthenticationService com JWT e refresh`
-
----
-
-#### Task 2.1.4: Criar CustomAuthStateProvider
-- [ ] **ALTERAÇÃO:** Implementar `CustomAuthStateProvider.cs`
-  ```csharp
-  public class CustomAuthStateProvider : AuthenticationStateProvider
-  {
-      private readonly ILocalStorageService _localStorage;
-      private readonly HttpClient _httpClient;
-      
-      public override async Task<AuthenticationState> GetAuthenticationStateAsync()
-      {
-          var token = await _localStorage.GetItemAsync<string>("token");
-          
-          if (string.IsNullOrWhiteSpace(token))
-              return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-          
-          _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-          
-          var identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
-          return new AuthenticationState(new ClaimsPrincipal(identity));
-      }
-      
-      public void NotifyUserAuthentication(string token)
-      {
-          var identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
-          var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
-          NotifyAuthenticationStateChanged(authState);
-      }
-  }
-  ```
-- [ ] **VALIDAR:** Integra com Blazor Authorization
-- [ ] **BUILDAR:** Build
-- [ ] **TESTAR:** Testar estado de autenticação
-- [ ] **COMMIT:** `feat(auth-ui): criar CustomAuthStateProvider para JWT`
-
----
-
-#### Task 2.1.5: Criar Componente de Menu com Auth
-- [ ] **ALTERAÇÃO:** Modificar `NavMenu.razor`
-  ```razor
-  <AuthorizeView>
-      <Authorized>
-          <span>Olá, @context.User.Identity?.Name!</span>
-          <button @onclick="Logout">Sair</button>
-      </Authorized>
-      <NotAuthorized>
-          <a href="/login">Entrar</a>
-          <a href="/register">Registrar</a>
-      </NotAuthorized>
-  </AuthorizeView>
-  ```
-- [ ] **VALIDAR:** Menu muda baseado em autenticação
-- [ ] **BUILDAR:** Build
-- [ ] **TESTAR:** Teste bUnit: `NavMenu_ShowsLoginLink_WhenNotAuthenticated`
-- [ ] **COMMIT:** `feat(auth-ui): adicionar menu condicional baseado em autenticação`
-
----
-
-#### Task 2.1.6: Implementar Logout
-- [ ] **ALTERAÇÃO:** Adicionar método Logout
-  ```csharp
-  public async Task LogoutAsync()
-  {
-      await _localStorage.RemoveItemAsync("token");
-      await _localStorage.RemoveItemAsync("refreshToken");
-      ((CustomAuthStateProvider)_authStateProvider).NotifyUserLogout();
-  }
-  ```
-- [ ] **VALIDAR:** Remove tokens do storage
-- [ ] **BUILDAR:** Build
-- [ ] **TESTAR:** Teste: `LogoutAsync_RemovesTokenAndNotifiesLogout`
-- [ ] **COMMIT:** `feat(auth-ui): implementar logout com limpeza de tokens`
-
----
-
-#### Task 2.1.7: Criar Página "Esqueci Senha"
-- [ ] **ALTERAÇÃO:** Criar `ForgotPassword.razor`
-  - Input: Email
-  - Enviar email com token de reset
-  - Mensagem: "Se o email existir, enviamos instruções"
-- [ ] **VALIDAR:** Não revela se email existe (segurança)
-- [ ] **BUILDAR:** Build
-- [ ] **TESTAR:** Teste de integração com mock de email
-- [ ] **COMMIT:** `feat(auth-ui): criar página de recuperação de senha`
-
----
-
-#### Task 2.1.8: Proteger Rotas com Authorize
-- [ ] **ALTERAÇÃO:** Adicionar `@attribute [Authorize]` em páginas protegidas
-  - `/profile`
-  - `/upload`
-  - `/my-videos`
-- [ ] **VALIDAR:** Redireciona para login quando não autenticado
-- [ ] **BUILDAR:** Build
-- [ ] **TESTAR:** Teste: `ProtectedRoute_RedirectsToLogin_WhenNotAuthenticated`
-- [ ] **COMMIT:** `feat(auth-ui): proteger rotas com atributo Authorize`
-
-**Status Auth UI:** 🔴 0/8 tasks | Estimativa: 4 dias
+**Status Auth UI:** 🟢 8/8 tasks | Concluído em 2026-04-21
 
 ---
 
 ### 2.2 VIDEO STREAMING COM ADAPTIVE BITRATE
+...
 
 #### Task 2.2.1: Adicionar FFmpeg para Transcoding
 - [ ] **ALTERAÇÃO:** Configurar FFmpeg no Docker
