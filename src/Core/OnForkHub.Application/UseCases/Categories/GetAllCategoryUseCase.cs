@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Application.UseCases.Categories;
+namespace OnForkHub.Application.UseCases.Categories;
 
 public class GetAllCategoryUseCase(ICategoryServiceRavenDB categoryServiceRavenDB) : IUseCase<PaginationRequestDto, IEnumerable<Category>>
 {

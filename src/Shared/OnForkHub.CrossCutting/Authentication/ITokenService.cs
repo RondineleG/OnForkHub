@@ -15,6 +15,15 @@ public interface ITokenService
     TokenResult GenerateTokens(IEnumerable<Claim> claims);
 
     /// <summary>
+    /// Generates a new access token and refresh token for the specified claims with IP and user agent tracking.
+    /// </summary>
+    /// <param name="claims">The claims to include in the token.</param>
+    /// <param name="ipAddress">The IP address of the client.</param>
+    /// <param name="userAgent">The user agent string of the client.</param>
+    /// <returns>A token result containing access and refresh tokens.</returns>
+    TokenResult GenerateTokens(IEnumerable<Claim> claims, string? ipAddress, string? userAgent);
+
+    /// <summary>
     /// Generates a new access token and refresh token for the specified user.
     /// </summary>
     /// <param name="userId">The user identifier.</param>

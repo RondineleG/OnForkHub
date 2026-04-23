@@ -3,7 +3,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoftJsonCheck>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>14.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Extensions\**" />

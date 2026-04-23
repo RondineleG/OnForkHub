@@ -19,7 +19,7 @@ public abstract class BaseEndPoint<TEntity>
 
     protected static string GetVersionedRoute(int version, string? customRoute = null)
     {
-        var route = customRoute ?? typeof(TEntity).Name.ToLowerInvariant();
+        var route = customRoute ?? GetDefaultRestRoute();
         return $"/api/v{version}/{route}";
     }
 
@@ -65,6 +65,16 @@ public abstract class BaseEndPoint<TEntity>
         return await HandleUseCaseAsync(useCase, logger, request, MapResponse, "Internal Server Error");
     }
 
+    protected static async Task<IResult> HandleUseCase<TRequest, TResponse>(
+        IUseCase<TRequest, TResponse> useCase,
+        ILogger logger,
+        TRequest request,
+        CancellationToken cancellationToken
+    )
+    {
+        return await HandleUseCaseAsync(useCase, logger, request, MapResponse, "Internal Server Error", cancellationToken);
+    }
+
     protected static async Task<IResult> HandleUseCaseAsync<TRequest, TResponse>(
         IUseCase<TRequest, TResponse> useCase,
         ILogger logger,
@@ -73,13 +83,25 @@ public abstract class BaseEndPoint<TEntity>
         string errorTitle
     )
     {
+        return await HandleUseCaseAsync(useCase, logger, request, successHandler, errorTitle, CancellationToken.None);
+    }
+
+    protected static async Task<IResult> HandleUseCaseAsync<TRequest, TResponse>(
+        IUseCase<TRequest, TResponse> useCase,
+        ILogger logger,
+        TRequest request,
+        Func<RequestResult<TResponse>, IResult> successHandler,
+        string errorTitle,
+        CancellationToken cancellationToken
+    )
+    {
         ArgumentNullException.ThrowIfNull(useCase);
         ArgumentNullException.ThrowIfNull(logger);
 
         try
         {
             EndpointLogMessages.LogExecutingUseCase(logger, useCase.GetType().Name, JsonSerializer.Serialize(request), null);
-            var result = await useCase.ExecuteAsync(request);
+            var result = await useCase.ExecuteAsync(request, cancellationToken);
 
             return result.Status == EResultStatus.Success ? successHandler(result) : MapResponse(result);
         }
@@ -117,6 +139,17 @@ public abstract class BaseEndPoint<TEntity>
             EResultStatus.EntityAlreadyExists => Results.Conflict(response),
             EResultStatus.HasError or EResultStatus.EntityHasError => Results.BadRequest(response),
             _ => Results.BadRequest(response),
+        };
+    }
+
+    private static string GetDefaultRestRoute()
+    {
+        return typeof(TEntity).Name switch
+        {
+            nameof(Category) => "rest/categories",
+            nameof(Video) => "rest/videos",
+            nameof(Notification) => "rest/notifications",
+            var entityName => $"rest/{entityName.ToLowerInvariant()}",
         };
     }
 }

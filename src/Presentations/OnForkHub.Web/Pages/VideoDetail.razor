@@ -1,0 +1,183 @@
+@page "/video/{Id}"
+@inject IVideoService VideoService
+@inject IFavoriteService FavoriteService
+@inject IHistoryService HistoryService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@(video?.Title ?? "Carregando...") - OnForkHub</PageTitle>
+
+@if (video != null)
+{
+    <HeadContent>
+        <meta property="og:title" content="@video.Title" />
+        <meta property="og:description" content="@video.Description" />
+        <meta property="og:image" content="@video.Thumbnail" />
+        <meta property="og:type" content="video.other" />
+        <meta property="og:url" content="@Navigation.Uri" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="@video.Title" />
+        <meta name="twitter:description" content="@video.Description" />
+        <meta name="twitter:image" content="@video.Thumbnail" />
+    </HeadContent>
+}
+
+<div class="container-xxl py-4">
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Carregando vídeo...</p>
+        </div>
+    }
+    else if (video == null)
+    {
+        <div class="alert alert-warning shadow-sm border-0">
+            <i class="bi bi-exclamation-triangle me-2"></i>Vídeo não encontrado ou indisponível.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                @if (video.IsTorrent && userPreferences.EnableP2P)
+                {
+                    <P2PVideoPlayer 
+                        VideoId="video.Id" 
+                        MagnetUri="@video.Url" 
+                        DownloadLimit="@(userPreferences.DownloadLimitMb * 1024 * 1024)" 
+                        UploadLimit="@(userPreferences.UploadLimitMb * 1024 * 1024)" />
+                }
+                else
+                {
+                    <AdaptiveVideoPlayer ManifestUrl="@($"/api/v1/videos/{video.Id}/stream/manifest.mpd")" />
+                }
+
+                <div class="mt-4">
+                    <h1 class="h3 mb-2">@video.Title</h1>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="text-muted small">
+                            <span>@video.ViewCount views • @video.CreatedAt.ToShortDateString()</span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <VideoRating VideoId="video.Id" />
+                            
+                            <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2 px-3" @onclick="ToggleFavoriteAsync">
+                                <i class="bi @(isFavorite ? "bi-star-fill text-warning" : "bi-star")"></i>
+                                <span>@(isFavorite ? "Salvo" : "Salvar")</span>
+                            </button>
+
+                            <ShareButtons VideoId="video.Id" Title="@video.Title" />
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="d-flex gap-3 mb-3">
+                        <img src="/images/default-avatar.png" class="rounded-circle" style="width: 48px; height: 48px;" alt="Avatar" />
+                        <div>
+                            <h6 class="mb-0">Canal do Criador</h6>
+                            <span class="text-muted smaller">1.2K Inscritos</span>
+                        </div>
+                        <button class="btn btn-danger btn-sm px-4 ms-auto align-self-center">INSCREVER-SE</button>
+                    </div>
+                    <div class="card border-0 bg-light">
+                        <div class="card-body p-3">
+                            <p class="mb-0 small">@video.Description</p>
+                        </div>
+                    </div>
+                </div>
+
+                <CommentsSection VideoId="video.Id" />
+            </div>
+
+            <div class="col-lg-4">
+                <h5 class="mb-3">Vídeos Relacionados</h5>
+                <div class="related-videos d-flex flex-column gap-3">
+                    @foreach (var related in relatedVideos)
+                    {
+                        <div class="card border-0 shadow-sm overflow-hidden" style="cursor: pointer;" @onclick="@(() => Navigation.NavigateTo($"/video/{related.Id}"))">
+                            <div class="row g-0">
+                                <div class="col-5">
+                                    <img src="@related.Thumbnail" class="img-fluid h-100 object-fit-cover" alt="@related.Title" />
+                                </div>
+                                <div class="col-7">
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-1 text-truncate-2 small">@related.Title</h6>
+                                        <p class="card-text text-muted smaller mb-0">Criador Exemplo</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    private OnForkHub.Web.Models.Video? video;
+    private List<OnForkHub.Web.Models.Video> relatedVideos = [];
+    private bool isLoading = true;
+    private bool isFavorite = false;
+    private OnForkHub.Core.ValueObjects.UserPreferences userPreferences = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            isLoading = true;
+            video = await VideoService.GetVideoByIdAsync(Id);
+            
+            if (video != null)
+            {
+                // Trigger history and analytics
+                _ = VideoService.IncrementViewCountAsync(video.Id);
+                _ = HistoryService.AddToHistoryAsync(video.Id);
+
+                // Load user preferences for P2P limits
+                var profile = await UserService.GetProfileAsync();
+                if (profile?.Preferences != null)
+                {
+                    userPreferences = profile.Preferences;
+                }
+
+                // Check if favorite
+                isFavorite = await FavoriteService.IsFavoriteAsync(video.Id);
+
+                relatedVideos = await VideoService.GetRelatedVideosAsync(video.Id.ToString(), 6);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading video: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ToggleFavoriteAsync()
+    {
+        if (video == null) return;
+
+        if (isFavorite)
+        {
+            if (await FavoriteService.RemoveFromFavoritesAsync(video.Id))
+                isFavorite = false;
+        }
+        else
+        {
+            if (await FavoriteService.AddToFavoritesAsync(video.Id))
+                isFavorite = true;
+        }
+    }
+}

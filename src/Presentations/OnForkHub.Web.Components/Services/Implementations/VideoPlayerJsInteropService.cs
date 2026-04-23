@@ -33,6 +33,7 @@ public class VideoPlayerJsInteropService(IJSRuntime jsRuntime) : IAsyncDisposabl
         }
         catch
         {
+            // Ignore cleanup errors
         }
 
         if (_mainTask.IsValueCreated)

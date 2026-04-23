@@ -1,0 +1,31 @@
+.upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    padding: 3rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-zone:hover {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+.upload-zone.drag-over {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+    border-style: solid;
+}
+
+.upload-zone .bi {
+    transition: transform 0.2s ease;
+}
+
+.upload-zone:hover .bi {
+    transform: scale(1.1);
+}

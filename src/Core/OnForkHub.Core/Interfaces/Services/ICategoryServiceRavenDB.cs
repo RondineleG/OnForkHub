@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.Interfaces.Services;
+namespace OnForkHub.Core.Interfaces.Services;
 
 public interface ICategoryServiceRavenDB
 {

@@ -1,0 +1,137 @@
+@using OnForkHub.Web.Services
+@inject WebTorrentService WebTorrentService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="p2p-player-container">
+    <div id="@containerId" class="video-container mb-3">
+        @if (isLoading)
+        {
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando P2P...</span>
+                </div>
+            </div>
+        }
+        @if (useFallback && !string.IsNullOrEmpty(FallbackUrl))
+        {
+            <video controls class="w-100 h-100">
+                <source src="@FallbackUrl" type="video/mp4">
+                Seu navegador não suporta o elemento de vídeo.
+            </video>
+        }
+    </div>
+
+    @if (stats != null && !useFallback)
+    {
+        <div class="p2p-stats card bg-dark text-white">
+            <div class="card-body py-2">
+                <div class="row text-center">
+                    <div class="col">
+                        <small class="text-muted d-block">Peers</small>
+                        <span class="fw-bold">@stats.Peers</span>
+                    </div>
+                    <div class="col">
+                        <small class="text-muted d-block">Progresso</small>
+                        <span class="fw-bold">@stats.Progress.ToString("F1")%</span>
+                    </div>
+                    <div class="col">
+                        <small class="text-muted d-block">Download</small>
+                        <span class="fw-bold">@FormatSpeed(stats.DownloadSpeed)</span>
+                    </div>
+                    <div class="col">
+                        <small class="text-muted d-block">Upload</small>
+                        <span class="fw-bold">@FormatSpeed(stats.UploadSpeed)</span>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar" role="progressbar" style="width: @stats.Progress% ;" aria-valuenow="@stats.Progress" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string MagnetUri { get; set; } = string.Empty;
+    [Parameter] public string? FallbackUrl { get; set; }
+
+    private string containerId = $"p2p-container-{Guid.NewGuid():N}";
+    private P2PStats? stats;
+    private bool isLoading = true;
+    private bool useFallback = false;
+    private CancellationTokenSource? cts;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrEmpty(MagnetUri))
+        {
+            await StartP2PAsync();
+        }
+    }
+
+    private async Task StartP2PAsync()
+    {
+        try
+        {
+            isLoading = true;
+            await WebTorrentService.StartDownloadAsync(MagnetUri, containerId);
+            
+            // Check after a few seconds if we have peers
+            await Task.Delay(5000);
+            stats = await WebTorrentService.GetTorrentStatsAsync(MagnetUri);
+            
+            if (stats == null || stats.Peers == 0)
+            {
+                // No peers found, fallback to CDN if available
+                if (!string.IsNullOrEmpty(FallbackUrl))
+                {
+                    useFallback = true;
+                    isLoading = false;
+                    StateHasChanged();
+                    return;
+                }
+            }
+
+            isLoading = false;
+            StateHasChanged();
+
+            // Start stats polling
+            cts = new CancellationTokenSource();
+            _ = PollStatsAsync(cts.Token);
+        }
+        catch (Exception)
+        {
+            isLoading = false;
+            if (!string.IsNullOrEmpty(FallbackUrl))
+            {
+                useFallback = true;
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task PollStatsAsync(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            stats = await WebTorrentService.GetTorrentStatsAsync(MagnetUri);
+            StateHasChanged();
+            await Task.Delay(2000, token);
+        }
+    }
+
+    private string FormatSpeed(double bytesPerSecond)
+    {
+        if (bytesPerSecond < 1024) return $"{bytesPerSecond:F0} B/s";
+        if (bytesPerSecond < 1024 * 1024) return $"{(bytesPerSecond / 1024):F1} KB/s";
+        return $"{(bytesPerSecond / (1024 * 1024)):F1} MB/s";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        cts?.Cancel();
+        cts?.Dispose();
+        await Task.CompletedTask;
+    }
+}

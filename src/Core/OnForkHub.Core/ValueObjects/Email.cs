@@ -1,8 +1,15 @@
-﻿namespace OnForkHub.Core.ValueObjects;
+namespace OnForkHub.Core.ValueObjects;
 
 /// <summary>Documentation for Email class.</summary>
 public partial class Email : ValueObject
 {
+    // Parameterless constructor for EF Core
+    private Email()
+    {
+        Value = string.Empty;
+        _validationResult = new ValidationResult();
+    }
+
     private Email(string value, ValidationResult validationResult)
     {
         Value = value;

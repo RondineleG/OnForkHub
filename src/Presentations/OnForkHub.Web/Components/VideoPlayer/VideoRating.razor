@@ -1,0 +1,73 @@
+@using OnForkHub.Web.Services.Api
+@using OnForkHub.Core.Enums
+@inject IRatingService RatingService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="video-rating-container d-flex align-items-center gap-2">
+    <div class="btn-group btn-group-sm shadow-sm" role="group">
+        <button class="btn @(userRating == ERatingType.Like ? "btn-primary" : "btn-outline-secondary") d-flex align-items-center gap-2 px-3" 
+                @onclick="() => ToggleRatingAsync(ERatingType.Like)">
+            <i class="bi @(userRating == ERatingType.Like ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up")"></i>
+            <span>@FormatNumber(stats.Likes)</span>
+        </button>
+        <button class="btn @(userRating == ERatingType.Dislike ? "btn-danger" : "btn-outline-secondary") d-flex align-items-center gap-2 px-3" 
+                @onclick="() => ToggleRatingAsync(ERatingType.Dislike)">
+            <i class="bi @(userRating == ERatingType.Dislike ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down")"></i>
+            <span>@FormatNumber(stats.Dislikes)</span>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid VideoId { get; set; }
+
+    private VideoRatingStats stats = new();
+    private ERatingType? userRating => stats.UserRating;
+    private bool isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatsAsync();
+    }
+
+    private async Task LoadStatsAsync()
+    {
+        stats = await RatingService.GetStatsAsync(VideoId);
+    }
+
+    private async Task ToggleRatingAsync(ERatingType type)
+    {
+        if (isProcessing) return;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (!authState.User.Identity?.IsAuthenticated ?? true)
+        {
+            // Redirect or show login prompt
+            return;
+        }
+
+        try
+        {
+            isProcessing = true;
+            if (userRating == type)
+            {
+                await RatingService.RemoveRatingAsync(VideoId);
+            }
+            else
+            {
+                await RatingService.SetRatingAsync(VideoId, type);
+            }
+            await LoadStatsAsync();
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private string FormatNumber(int number)
+    {
+        if (number < 1000) return number.ToString();
+        return $"{(number / 1000.0):F1}K";
+    }
+}

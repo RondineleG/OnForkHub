@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Persistence.Configurations;
+namespace OnForkHub.Persistence.Configurations;
 
 public class RavenDbSettings
 {

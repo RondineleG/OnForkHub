@@ -1,0 +1,6 @@
+MSBUILD : error MSB1008: Somente um projeto pode ser especificado.
+    Linha de comando completa: 'C:\Program Files\dotnet\sdk\10.0.201\MSBuild.dll -maxcpucount --verbosity:m -tlp:default=auto --property:Configuration=Debug --property:NuGetInteractive=false --restoreProperty:Configuration=Debug --restoreProperty:NuGetInteractive=false --restoreProperty:EnableDefaultCompileItems=false --restoreProperty:EnableDefaultEmbeddedResourceItems=false --restoreProperty:EnableDefaultNoneItems=false --verbosity:minimal --nologo ; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } -consoleloggerparameters:Summary -restore -distributedlogger:Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildLogger,C:\Program Files\dotnet\sdk\10.0.201\dotnet.dll*Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildForwardingLogger,C:\Program Files\dotnet\sdk\10.0.201\dotnet.dll'
+  Comutadores acrescentados por arquivos de resposta:
+Opção: if
+
+Para obter a sintaxe da opção, digite "MSBuild -help"
