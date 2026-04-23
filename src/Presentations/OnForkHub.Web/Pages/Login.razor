@@ -1,0 +1,160 @@
+@page "/login"
+@attribute [AllowAnonymous]
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject ILogger<Login> Logger
+@inject AuthenticationStateProvider AuthenticationStateProviderInstance
+
+<PageTitle>Login - OnForkHub</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>Bem-vindo de volta!</h2>
+            <p>Entre na sua conta para continuar</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @ErrorMessage
+                <button type="button" class="btn-close" @onclick="() => ErrorMessage = null"></button>
+            </div>
+        }
+
+        @if (SuccessMessage)
+        {
+            <div class="alert alert-success" role="alert">
+                <i class="bi bi-check-circle"></i> Login realizado com sucesso! Redirecionando...
+            </div>
+        }
+
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin" FormName="login">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" 
+                          @bind-Value="loginModel.Email" 
+                          class="form-control" 
+                          placeholder="seu@email.com"
+                          autocomplete="email" />
+                <ValidationMessage For="@(() => loginModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <div class="password-input-group">
+                    <InputText id="password" 
+                              @bind-Value="loginModel.Password" 
+                              class="form-control" 
+                              type="@(showPassword ? "text" : "password")"
+                              placeholder="Sua senha"
+                              autocomplete="current-password" />
+                    <button type="button" 
+                            class="btn btn-outline-secondary toggle-password"
+                            @onclick="() => showPassword = !showPassword"
+                            aria-label="Mostrar ou ocultar senha">
+                        <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            <div class="form-options">
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe" @bind="rememberMe" />
+                    <label for="rememberMe">Lembrar-me</label>
+                </div>
+                <a href="/forgot-password" class="forgot-password-link">Esqueceu a senha?</a>
+            </div>
+
+            <button type="submit" 
+                    class="btn btn-primary btn-block" 
+                    disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span> Entrando...</span>
+                }
+                else
+                {
+                    <span>Entrar</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="auth-footer">
+            <p>Não tem uma conta? <a href="/register">Registre-se aqui</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private bool isLoading = false;
+    private bool showPassword = false;
+    private bool rememberMe = false;
+    private string? ErrorMessage;
+    private bool SuccessMessage = false;
+
+    protected override void OnInitialized()
+    {
+        // Check if user is already authenticated
+        // This will be handled by the AuthStateProvider
+    }
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = null;
+        SuccessMessage = false;
+        isLoading = true;
+
+        try
+        {
+            var authResponse = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
+
+            // Mark user as authenticated in the AuthStateProvider
+            var authStateProvider = (JwtAuthenticationStateProvider)AuthenticationStateProviderInstance;
+            await authStateProvider.MarkUserAsAuthenticated(authResponse.AccessToken, authResponse.RefreshToken);
+
+            SuccessMessage = true;
+            Logger.LogInformation("User logged in successfully: {Email}", loginModel.Email);
+
+            // Redirect to home page after short delay
+            await Task.Delay(500);
+            Navigation.NavigateTo("/");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            ErrorMessage = "Email ou senha incorretos. Tente novamente.";
+            Logger.LogWarning("Failed login attempt for email: {Email}", loginModel.Email);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+        {
+            ErrorMessage = "Muitas tentativas. Aguarde um momento e tente novamente.";
+            Logger.LogWarning("Rate limit exceeded for login: {Email}", loginModel.Email);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ocorreu um erro ao fazer login. Tente novamente mais tarde.";
+            Logger.LogError(ex, "Login failed for email: {Email}", loginModel.Email);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Senha é obrigatória")]
+        [MinLength(6, ErrorMessage = "Senha deve ter pelo menos 6 caracteres")]
+        public string Password { get; set; } = string.Empty;
+    }
+}

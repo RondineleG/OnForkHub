@@ -1,0 +1,203 @@
+@page "/upload"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject IVideoService VideoService
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+
+<PageTitle>Upload de Vídeo - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h3 class="h4 mb-0"><i class="bi bi-cloud-upload me-2 text-primary"></i>Enviar Novo Vídeo</h3>
+                </div>
+                <div class="card-body p-4">
+                    <EditForm Model="uploadModel" OnValidSubmit="HandleUploadAsync">
+                        <DataAnnotationsValidator />
+
+                        <div class="row g-4">
+                            <div class="col-md-5">
+                                <div class="upload-dropzone p-5 border-dashed rounded text-center @(isDragging ? "active" : "")"
+                                     @ondragenter="() => isDragging = true"
+                                     @ondragleave="() => isDragging = false"
+                                     @onclick="TriggerFileInput">
+                                    <InputFile id="fileInput" OnChange="OnFileChange" class="d-none" accept="video/mp4,video/x-m4v,video/*" />
+                                    <i class="bi bi-camera-reels display-1 text-muted opacity-50 mb-3"></i>
+                                    @if (selectedFile == null)
+                                    {
+                                        <p class="mb-0 small text-muted">Arraste um vídeo ou clique para selecionar</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="mb-0 fw-bold text-primary">@selectedFile.Name</p>
+                                        <span class="text-muted small">@FormatSize(selectedFile.Size)</span>
+                                    }
+                                </div>
+                                <ValidationMessage For="@(() => selectedFile)" class="text-danger small mt-2" />
+                            </div>
+
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">Título</label>
+                                    <InputText @bind-Value="uploadModel.Title" class="form-control" placeholder="Dê um nome chamativo ao seu vídeo" />
+                                    <ValidationMessage For="@(() => uploadModel.Title)" class="text-danger small" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">Categoria</label>
+                                    <InputSelect @bind-Value="uploadModel.CategoryId" class="form-select">
+                                        <option value="">Selecione uma categoria...</option>
+                                        @foreach (var cat in categories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => uploadModel.CategoryId)" class="text-danger small" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">Descrição</label>
+                                    <InputTextArea @bind-Value="uploadModel.Description" class="form-control" rows="4" placeholder="Conte um pouco sobre o vídeo..." />
+                                    <ValidationMessage For="@(() => uploadModel.Description)" class="text-danger small" />
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (isUploading)
+                        {
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between mb-1 small">
+                                    <span class="text-primary fw-bold">Enviando vídeo...</span>
+                                    <span class="text-muted">@uploadProgress%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @uploadProgress%"></div>
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger mt-4 py-2 border-0 shadow-sm small">
+                                <i class="bi bi-exclamation-circle me-2"></i>@errorMessage
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <button type="button" class="btn btn-light px-4" disabled="@isUploading" @onclick='() => Navigation.NavigateTo("/videos")'>Cancelar</button>
+                            <button type="submit" class="btn btn-primary px-4" disabled="@(isUploading || selectedFile == null)">
+                                @if (isUploading)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                }
+                                <i class="bi bi-cloud-arrow-up me-2"></i>Enviar Vídeo
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<OnForkHub.Web.Models.CategoryDto> categories = [];
+    private VideoUploadModel uploadModel = new();
+    private IBrowserFile? selectedFile;
+    private bool isUploading = false;
+    private bool isDragging = false;
+    private int uploadProgress = 0;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            categories = await CategoryService.GetAllCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro ao carregar categorias: {ex.Message}";
+        }
+    }
+
+    private void OnFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        if (string.IsNullOrEmpty(uploadModel.Title))
+        {
+            uploadModel.Title = Path.GetFileNameWithoutExtension(selectedFile.Name);
+        }
+    }
+
+    private async Task HandleUploadAsync()
+    {
+        if (selectedFile == null) return;
+
+        try
+        {
+            isUploading = true;
+            errorMessage = null;
+            uploadProgress = 0;
+
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 100); // 100MB
+            
+            var success = await VideoService.UploadVideoAsync(
+                stream, 
+                selectedFile.Name, 
+                uploadModel.Title, 
+                uploadModel.Description, 
+                uploadModel.CategoryId);
+
+            if (success)
+            {
+                Navigation.NavigateTo("/videos");
+            }
+            else
+            {
+                errorMessage = "Falha ao enviar vídeo. Tente novamente.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erro durante o upload: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    private void TriggerFileInput()
+    {
+        // Simple placeholder for JS trigger
+    }
+
+    private string FormatSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    public class VideoUploadModel
+    {
+        [Required(ErrorMessage = "O título é obrigatório")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "O título deve ter entre 3 e 100 caracteres")]
+        public string Title { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Selecione uma categoria")]
+        public string CategoryId { get; set; } = string.Empty;
+
+        [StringLength(500, ErrorMessage = "A descrição não pode exceder 500 caracteres")]
+        public string Description { get; set; } = string.Empty;
+    }
+}

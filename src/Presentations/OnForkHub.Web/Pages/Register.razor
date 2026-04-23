@@ -1,0 +1,217 @@
+@page "/register"
+@attribute [AllowAnonymous]
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject ILogger<Register> Logger
+@inject AuthenticationStateProvider AuthenticationStateProviderInstance
+
+<PageTitle>Registrar-se - OnForkHub</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>Crie sua conta</h2>
+            <p>Junte-se à nossa comunidade de compartilhamento de vídeos</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @ErrorMessage
+                <button type="button" class="btn-close" @onclick="() => ErrorMessage = null"></button>
+            </div>
+        }
+
+        @if (SuccessMessage)
+        {
+            <div class="alert alert-success" role="alert">
+                <i class="bi bi-check-circle"></i> Conta criada com sucesso! Redirecionando...
+            </div>
+        }
+
+        <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister" FormName="register">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="name">Nome completo</label>
+                <InputText id="name" 
+                          @bind-Value="registerModel.Name" 
+                          class="form-control" 
+                          placeholder="Seu nome completo"
+                          autocomplete="name" />
+                <ValidationMessage For="@(() => registerModel.Name)" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" 
+                          @bind-Value="registerModel.Email" 
+                          class="form-control" 
+                          placeholder="seu@email.com"
+                          autocomplete="email" />
+                <ValidationMessage For="@(() => registerModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <div class="password-input-group">
+                    <InputText id="password" 
+                              @bind-Value="registerModel.Password" 
+                              class="form-control" 
+                              type="@(showPassword ? "text" : "password")"
+                              placeholder="Mínimo 6 caracteres"
+                              autocomplete="new-password" />
+                    <button type="button" 
+                            class="btn btn-outline-secondary toggle-password"
+                            @onclick="() => showPassword = !showPassword"
+                            aria-label="Mostrar ou ocultar senha">
+                        <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => registerModel.Password)" />
+                <small class="form-text text-muted">A senha deve ter pelo menos 6 caracteres</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirmar senha</label>
+                <div class="password-input-group">
+                    <InputText id="confirmPassword" 
+                              @bind-Value="registerModel.ConfirmPassword" 
+                              class="form-control" 
+                              type="@(showPassword ? "text" : "password")"
+                              placeholder="Repita a senha"
+                              autocomplete="new-password" />
+                    <button type="button" 
+                            class="btn btn-outline-secondary toggle-password"
+                            @onclick="() => showPassword = !showPassword"
+                            aria-label="Mostrar ou ocultar senha">
+                        <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+            </div>
+
+            <div class="form-group">
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="acceptTerms" @bind="registerModel.AcceptTerms" />
+                    <label for="acceptTerms">
+                        Eu concordo com os <a href="/terms" target="_blank">Termos de Uso</a> e <a href="/privacy" target="_blank">Política de Privacidade</a>
+                    </label>
+                </div>
+                <ValidationMessage For="@(() => registerModel.AcceptTerms)" />
+            </div>
+
+            <button type="submit" 
+                    class="btn btn-primary btn-block" 
+                    disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span> Criando conta...</span>
+                }
+                else
+                {
+                    <span>Criar Conta</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="auth-footer">
+            <p>Já tem uma conta? <a href="/login">Faça login</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+    private bool isLoading = false;
+    private bool showPassword = false;
+    private string? ErrorMessage;
+    private bool SuccessMessage = false;
+
+    private async Task HandleRegister()
+    {
+        ErrorMessage = null;
+        SuccessMessage = false;
+
+        // Validate passwords match
+        if (registerModel.Password != registerModel.ConfirmPassword)
+        {
+            ErrorMessage = "As senhas não coincidem.";
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var authResponse = await AuthService.RegisterAsync(
+                registerModel.Name, 
+                registerModel.Email, 
+                registerModel.Password
+            );
+
+            // Mark user as authenticated in the AuthStateProvider
+            var authStateProvider = (JwtAuthenticationStateProvider)AuthenticationStateProviderInstance;
+            await authStateProvider.MarkUserAsAuthenticated(authResponse.AccessToken, authResponse.RefreshToken);
+
+            SuccessMessage = true;
+            Logger.LogInformation("User registered successfully: {Email}", registerModel.Email);
+
+            // Redirect to home page after short delay
+            await Task.Delay(500);
+            Navigation.NavigateTo("/");
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            ErrorMessage = "Este email já está cadastrado. Tente fazer login ou use outro email.";
+            Logger.LogWarning("Registration attempted with existing email: {Email}", registerModel.Email);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+        {
+            ErrorMessage = "Muitas tentativas. Aguarde um momento e tente novamente.";
+            Logger.LogWarning("Rate limit exceeded for registration: {Email}", registerModel.Email);
+        }
+        catch (HttpRequestException ex)
+        {
+            ErrorMessage = "Ocorreu um erro ao criar a conta. Tente novamente mais tarde.";
+            Logger.LogError(ex, "Registration failed for email: {Email}", registerModel.Email);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ocorreu um erro inesperado. Tente novamente mais tarde.";
+            Logger.LogError(ex, "Unexpected error during registration for email: {Email}", registerModel.Email);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Nome é obrigatório")]
+        [MinLength(3, ErrorMessage = "Nome deve ter pelo menos 3 caracteres")]
+        [MaxLength(100, ErrorMessage = "Nome não pode exceder 100 caracteres")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email é obrigatório")]
+        [EmailAddress(ErrorMessage = "Email inválido")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Senha é obrigatória")]
+        [MinLength(6, ErrorMessage = "Senha deve ter pelo menos 6 caracteres")]
+        [MaxLength(100, ErrorMessage = "Senha não pode exceder 100 caracteres")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Confirmação de senha é obrigatória")]
+        [Compare(nameof(Password), ErrorMessage = "As senhas não coincidem")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Você deve aceitar os termos de uso")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Você deve aceitar os termos de uso")]
+        public bool AcceptTerms { get; set; } = false;
+    }
+}

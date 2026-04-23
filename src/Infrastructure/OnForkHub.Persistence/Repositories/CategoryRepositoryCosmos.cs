@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Persistence.Repositories;
+namespace OnForkHub.Persistence.Repositories;
 
 public class CategoryRepositoryCosmos(ICosmosContainerContext<Category> context) : IBaseRepository<Category>, ICategoryRepositoryComos
 {

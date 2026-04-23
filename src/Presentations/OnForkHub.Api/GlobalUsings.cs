@@ -1,3 +1,6 @@
+global using System.Diagnostics.CodeAnalysis;
+global using System.Text.Json;
+
 global using Asp.Versioning;
 global using Asp.Versioning.Builder;
 
@@ -16,17 +19,14 @@ global using OnForkHub.Application.UseCases.Categories;
 global using OnForkHub.Core.Entities;
 global using OnForkHub.Core.Entities.Base;
 global using OnForkHub.Core.Enums;
-global using OnForkHub.Core.GraphQL;
 global using OnForkHub.Core.Interfaces.Services;
 global using OnForkHub.Core.Interfaces.UseCases;
 global using OnForkHub.Core.Interfaces.Validations;
 global using OnForkHub.Core.Requests;
 global using OnForkHub.Core.Validations;
+global using OnForkHub.CrossCutting.GraphQL.Base;
 global using OnForkHub.Persistence.Configurations;
 global using OnForkHub.Persistence.Contexts;
 global using OnForkHub.Persistence.Contexts.Base;
 
 global using Raven.Client.Documents;
-
-global using System.Diagnostics.CodeAnalysis;
-global using System.Text.Json;

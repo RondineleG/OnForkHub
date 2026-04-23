@@ -1,0 +1,181 @@
+@page "/search"
+@using Microsoft.AspNetCore.WebUtilities
+@using OnForkHub.Core.Responses
+@inject IVideoService VideoService
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+
+<PageTitle>Busca - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form @onsubmit="HandleSearch" @onsubmit:preventDefault class="row g-3">
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" placeholder="O que você quer assistir?" @bind="searchTerm" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" @bind="selectedCategoryId">
+                                <option value="">Todas as Categorias</option>
+                                @foreach (var cat in categories)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm overflow-hidden">
+                        <div class="skeleton card-img-top" style="height: 180px;"></div>
+                        <div class="card-body">
+                            <div class="skeleton mb-2" style="height: 24px; width: 80%;"></div>
+                            <div class="skeleton" style="height: 16px; width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (searchResponse == null || searchResponse.Items.Count == 0)
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-emoji-frown display-1 text-muted opacity-25 mb-4"></i>
+            <h4>Nenhum resultado encontrado</h4>
+            <p class="text-muted">Tente usar termos mais genéricos ou mudar a categoria.</p>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small">@searchResponse.TotalCount resultados encontrados</span>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+            @foreach (var video in searchResponse.Items)
+            {
+                <div class="col">
+                    <VideoCard Video="video" />
+                </div>
+            }
+        </div>
+
+        @if (searchResponse.TotalPages > 1)
+        {
+            <nav aria-label="Navegação de busca">
+                <ul class="pagination justify-content-center">
+                    @for (int i = 1; i <= searchResponse.TotalPages; i++)
+                    {
+                        var pageNum = i;
+                        <li class="page-item @(searchResponse.Page == pageNum ? "active" : "")">
+                            <button class="page-link" @onclick="() => ChangePage(pageNum)">@pageNum</button>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+@code {
+    private string searchTerm = string.Empty;
+    private long? selectedCategoryId;
+    private bool isLoading = false;
+    private SearchResponse<OnForkHub.Web.Models.Video>? searchResponse;
+    private List<OnForkHub.Web.Models.CategoryDto> categories = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        ParseQueryParameters();
+        await LoadCategoriesAsync();
+        
+        if (!string.IsNullOrEmpty(searchTerm) || selectedCategoryId.HasValue)
+        {
+            await PerformSearchAsync();
+        }
+    }
+
+    private void ParseQueryParameters()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("q", out var query))
+        {
+            searchTerm = query.ToString();
+        }
+        
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("c", out var categoryId) && long.TryParse(categoryId, out var c))
+        {
+            selectedCategoryId = c;
+        }
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            categories = await CategoryService.GetAllCategoriesAsync();
+        }
+        catch { }
+    }
+
+    private async Task HandleSearch()
+    {
+        var queryParams = new Dictionary<string, object?>();
+        if (!string.IsNullOrEmpty(searchTerm)) queryParams.Add("q", searchTerm);
+        if (selectedCategoryId.HasValue) queryParams.Add("c", selectedCategoryId.ToString());
+
+        var newUri = Navigation.GetUriWithQueryParameters(queryParams);
+        Navigation.NavigateTo(newUri);
+        
+        await PerformSearchAsync();
+    }
+
+    private async Task PerformSearchAsync()
+    {
+        try
+        {
+            isLoading = true;
+            searchResponse = await VideoService.SearchAsync(searchTerm, selectedCategoryId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Search error: {ex.Message}");
+            searchResponse = new SearchResponse<OnForkHub.Web.Models.Video>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ChangePage(int page)
+    {
+        try
+        {
+            isLoading = true;
+            searchResponse = await VideoService.SearchAsync(searchTerm, selectedCategoryId, page);
+        }
+        catch { }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

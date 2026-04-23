@@ -1,3 +1,5 @@
+global using System.ComponentModel.DataAnnotations;
+
 global using HotChocolate;
 global using HotChocolate.Types;
 
@@ -15,6 +17,5 @@ global using OnForkHub.Core.Interfaces.Validations;
 global using OnForkHub.Core.Requests;
 global using OnForkHub.Core.ValueObjects;
 
-global using System.ComponentModel.DataAnnotations;
-
+global using UserEntity = OnForkHub.Core.Entities.User;
 global using ValidationResult = OnForkHub.Core.Validations.ValidationResult;

@@ -17,7 +17,15 @@ public class Video : BaseEntity
 
     public Url Url { get; private set; } = null!;
 
+    public string? ThumbnailUrl { get; private set; }
+
     public Id? UserId { get; private set; }
+
+    public string? MagnetUri { get; private set; }
+
+    public long ViewCount { get; private set; }
+
+    public bool IsTorrentEnabled { get; private set; }
 
     public static RequestResult<Video> Create(string title, string description, string url, Id userId)
     {
@@ -67,6 +75,37 @@ public class Video : BaseEntity
         {
             return RequestResult<Video>.WithError(ex.Message);
         }
+    }
+
+    public void EnableTorrent(string magnetUri)
+    {
+        if (string.IsNullOrWhiteSpace(magnetUri))
+        {
+            throw new DomainException("Magnet URI is required to enable torrent.");
+        }
+
+        MagnetUri = magnetUri;
+        IsTorrentEnabled = true;
+        Update();
+    }
+
+    /// <summary>
+    /// Increments the view count of the video.
+    /// </summary>
+    public void IncrementViews()
+    {
+        ViewCount++;
+        Update();
+    }
+
+    /// <summary>
+    /// Updates the video thumbnail URL.
+    /// </summary>
+    /// <param name="thumbnailUrl">The new thumbnail URL.</param>
+    public void UpdateThumbnail(string thumbnailUrl)
+    {
+        ThumbnailUrl = thumbnailUrl;
+        Update();
     }
 
     public RequestResult AddCategory(Category category)

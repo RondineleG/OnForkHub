@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Application.UseCases.Categories;
+namespace OnForkHub.Application.UseCases.Categories;
 
 public class UpdateCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF, IEntityValidator<Category> validator)
     : IUseCase<CategoryUpdateRequestDto, Category>

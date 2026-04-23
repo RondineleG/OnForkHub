@@ -5,11 +5,17 @@
              @onclick="playVideo">
             <div class="hc-content">
                 <picture>
-                    <img src="/Images/@Video.Thumbnail" alt="@Video.Title"/>
+                    <img src="@(string.IsNullOrEmpty(Video.Thumbnail) ? "/images/video-placeholder.png" : Video.Thumbnail)" alt="@Video.Title"/>
                 </picture>
-                <p class="text-center">
-                    @Video.Title
-                </p>
+                <div class="p-2">
+                    <p class="text-center mb-1 fw-bold text-truncate">
+                        @Video.Title
+                    </p>
+                    <div class="d-flex justify-content-between smaller text-muted px-2">
+                        <span>@FormatViews(Video.ViewCount) views</span>
+                        <span>@Video.CreatedAt.ToShortDateString()</span>
+                    </div>
+                </div>
                 <button type="button" class="btn btn-glass">
                     @if (NowPlayingVideo == Video.Title)
                     {
@@ -44,4 +50,10 @@
         await OnStopCallBack.InvokeAsync();
     }
 
+    private string FormatViews(long views)
+    {
+        if (views < 1000) return views.ToString();
+        if (views < 1000000) return $"{(views / 1000.0):F1}K";
+        return $"{(views / 1000000.0):F1}M";
+    }
 }

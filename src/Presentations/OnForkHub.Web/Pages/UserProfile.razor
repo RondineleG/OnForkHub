@@ -1,0 +1,217 @@
+@page "/profile"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using OnForkHub.Core.Requests.Users
+@using OnForkHub.Core.Responses.Users
+@inject IUserService UserService
+@inject IVideoService VideoService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<PageTitle>Meu Perfil - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Carregando perfil...</p>
+        </div>
+    }
+    else if (userProfile != null)
+    {
+        <div class="row g-4">
+            @* User Sidebar Info *@
+            <div class="col-12 col-lg-4 col-xl-3">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 1rem;">
+                    <div class="card-body text-center p-4">
+                        <div class="position-relative d-inline-block mb-3">
+                            <img src="@(string.IsNullOrEmpty(userProfile.AvatarUrl) ? "/images/default-avatar.png" : userProfile.AvatarUrl)" 
+                                 class="rounded-circle border border-4 border-light shadow-sm" 
+                                 style="width: 120px; height: 120px; object-fit: cover;"
+                                 alt="@userProfile.Name" />
+                            <button class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" 
+                                    @onclick="ShowEditAvatarModal" title="Trocar Avatar">
+                                <i class="bi bi-camera"></i>
+                            </button>
+                        </div>
+                        <h4 class="mb-1">@userProfile.Name</h4>
+                        <p class="text-muted small mb-3">@userProfile.Email</p>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" @onclick="() => showEditProfile = true">
+                                <i class="bi bi-pencil-square me-2"></i>Editar Perfil
+                            </button>
+                            <a href="/settings" class="btn btn-outline-secondary">
+                                <i class="bi bi-gear me-2"></i>Configurações
+                            </a>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="row text-center g-2">
+                            <div class="col-6">
+                                <div class="p-2 rounded bg-light">
+                                    <div class="h5 mb-0">@userVideos.Count</div>
+                                    <div class="small text-muted">Vídeos</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 rounded bg-light">
+                                    <div class="h5 mb-0">@FormatViews(totalViews)</div>
+                                    <div class="small text-muted">Views</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* User Videos Content *@
+            <div class="col-12 col-lg-8 col-xl-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h4 mb-0">Meus Vídeos</h2>
+                    <a href="/upload" class="btn btn-success">
+                        <i class="bi bi-plus-lg me-2"></i>Novo Vídeo
+                    </a>
+                </div>
+
+                @if (userVideos.Count == 0)
+                {
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center p-5">
+                            <i class="bi bi-camera-reels display-1 text-muted opacity-25 mb-4"></i>
+                            <h5>Você ainda não enviou nenhum vídeo</h5>
+                            <p class="text-muted mb-4">Que tal compartilhar seu primeiro conteúdo com a comunidade?</p>
+                            <a href="/upload" class="btn btn-primary btn-lg">Começar Agora</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
+                        @foreach (var video in userVideos)
+                        {
+                            <div class="col">
+                                <VideoCard Video="video" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@* Edit Profile Modal Placeholder *@
+@if (showEditProfile)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Perfil</h5>
+                    <button type="button" class="btn-close" @onclick="() => showEditProfile = false"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <EditForm Model="editProfileRequest" OnValidSubmit="HandleUpdateProfile">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label class="form-label">Nome</label>
+                            <InputText @bind-Value="editProfileRequest.Name" class="form-control" />
+                            <ValidationMessage For="@(() => editProfileRequest.Name)" class="text-danger small" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">E-mail</label>
+                            <InputText @bind-Value="editProfileRequest.Email" class="form-control" />
+                            <ValidationMessage For="@(() => editProfileRequest.Email)" class="text-danger small" />
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-light" @onclick="() => showEditProfile = false">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                @if (isSaving) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                                Salvar
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool showEditProfile = false;
+    private UserProfileResponse? userProfile;
+    private List<OnForkHub.Web.Models.Video> userVideos = [];
+    private long totalViews = 0;
+    private UpdateUserProfileRequest editProfileRequest = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            isLoading = true;
+            userProfile = await UserService.GetProfileAsync();
+            
+            if (userProfile != null)
+            {
+                editProfileRequest = new UpdateUserProfileRequest
+                {
+                    Name = userProfile.Name,
+                    Email = userProfile.Email,
+                    AvatarUrl = userProfile.AvatarUrl
+                };
+
+                // TODO: Load user videos via VideoService
+                // userVideos = await VideoService.GetUserVideosAsync(userProfile.Id);
+                // totalViews = userVideos.Sum(v => v.Views);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading profile: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdateProfile()
+    {
+        try
+        {
+            isSaving = true;
+            userProfile = await UserService.UpdateProfileAsync(editProfileRequest);
+            showEditProfile = false;
+            // Show toast or success message
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating profile: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ShowEditAvatarModal()
+    {
+        // To be implemented
+    }
+
+    private string FormatViews(long views)
+    {
+        if (views < 1000) return views.ToString();
+        if (views < 1000000) return $"{(views / 1000.0):F1}K";
+        return $"{(views / 1000000.0):F1}M";
+    }
+}

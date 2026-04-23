@@ -14,7 +14,7 @@ RUN apt update && apt install -y --no-install-recommends \
 
 RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
-    apt update && apt install -y dotnet-sdk-9.0 dotnet-sdk-8.0 && \
+    apt update && apt install -y dotnet-sdk-10.0 dotnet-sdk-9.0 && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 

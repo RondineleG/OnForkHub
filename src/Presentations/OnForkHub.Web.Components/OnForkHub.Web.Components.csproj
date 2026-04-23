@@ -7,7 +7,7 @@
   </PropertyGroup>
   <Target Name="NpmInstall" BeforeTargets="Build">
     <Message Importance="high" Text="Checking NpmInstall target execution..." />
-    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
+    <Exec Command="npm install --include=dev" WorkingDirectory="$(MSBuildProjectDirectory)/wwwroot/npm" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="NpmInstallExitCode" />
     </Exec>
     <Message Importance="high" Text="npm install exit code: $(NpmInstallExitCode)" />

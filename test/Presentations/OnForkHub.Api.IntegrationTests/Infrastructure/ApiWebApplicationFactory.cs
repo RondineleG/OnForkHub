@@ -1,10 +1,14 @@
 namespace OnForkHub.Api.IntegrationTests.Infrastructure;
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using NSubstitute;
+
+using OnForkHub.Core.Interfaces.Services;
 using OnForkHub.Persistence.Contexts;
 
 /// <summary>
@@ -39,7 +43,6 @@ internal sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // Remove all DbContext and DbContextOptions registrations
             var descriptorsToRemove = services
                 .Where(d =>
                     d.ServiceType.Name.Contains("DbContext")
@@ -53,11 +56,17 @@ internal sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // Add in-memory database for testing
             services.AddDbContext<EntityFrameworkDataContext>(options =>
             {
                 options.UseInMemoryDatabase($"TestDatabase_{Guid.NewGuid()}");
             });
+
+            var mockTorrentTracker = Substitute.For<ITorrentTrackerService>();
+            mockTorrentTracker.GetPeerCountAsync(Arg.Any<string>()).Returns(0);
+            mockTorrentTracker.IsHealthyAsync(Arg.Any<string>()).Returns(false);
+            mockTorrentTracker.GetStatsAsync(Arg.Any<string>()).Returns(new TorrentHealthStats());
+            mockTorrentTracker.ReannounceAsync(Arg.Any<string>()).Returns(Task.CompletedTask);
+            services.AddScoped(_ => mockTorrentTracker);
         });
     }
 }

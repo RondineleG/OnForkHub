@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Application.Dtos.Base;
+namespace OnForkHub.Application.Dtos.Base;
 
 public class PaginationRequestDto
 {

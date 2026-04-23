@@ -1,7 +1,27 @@
-﻿namespace OnForkHub.Application.Services.Base;
+namespace OnForkHub.Application.Services.Base;
 
 public abstract class BaseService
 {
+    protected virtual async Task<RequestResult> ExecuteAsync(Func<Task<RequestResult>> operation, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await operation();
+        }
+        catch (CustomResultException ex)
+        {
+            return RequestResult.WithError(ex.CustomResult.Message);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return RequestResult.WithError("Operation was cancelled");
+        }
+        catch (Exception ex)
+        {
+            return RequestResult.WithError($"Error processing operation: {ex.Message}");
+        }
+    }
+
     protected virtual async Task<RequestResult<T>> ExecuteAsync<T>(
         Func<Task<RequestResult<T>>> operation,
         CancellationToken cancellationToken = default

@@ -1,8 +1,10 @@
+using OnForkHub.Api.Hubs;
 using OnForkHub.Api.Middlewares;
 using OnForkHub.Application.Extensions;
-using OnForkHub.Core.Interfaces.GraphQL;
+using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.CrossCutting.Caching;
 using OnForkHub.CrossCutting.Extensions;
+using OnForkHub.CrossCutting.GraphQL.Interfaces;
 using OnForkHub.CrossCutting.Middleware.RateLimiting;
 using OnForkHub.CrossCutting.Middleware.ResponseCompression;
 using OnForkHub.CrossCutting.Middleware.Security;
@@ -18,8 +20,35 @@ builder.Services.AddGraphQLAdapters();
 builder.Services.AddResponseCompressionServices();
 builder.Services.AddCachingServices(builder.Configuration);
 builder.Services.AddRateLimitingServices(builder.Configuration);
+builder.Services.AddTracingServices(builder.Configuration);
+builder.Services.AddCustomHealthChecks(builder.Configuration);
+builder.Services.AddSignalR();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        "DefaultPolicy",
+        policy =>
+        {
+            var allowedOrigins =
+                builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ??
+                [
+                    "http://localhost:5000",
+                    "https://localhost:5001",
+                    "http://localhost:3000",
+                ];
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        }
+    );
+});
+
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseCors("DefaultPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseResponseCompressionMiddleware();
 app.UseMiddleware<SecurityHeadersMiddleware>();
@@ -35,24 +64,44 @@ app.UseGlobalExceptionHandler();
 
 app.UseMiddleware<ApiTypeDetectionMiddleware>();
 
-if (apiMode is "Rest")
+if (apiMode is "Rest" or "All")
 {
-    app.MapGroup("/api/v1/rest").MapRestEndpoints();
+    await app.MapRegisteredEndpointsAsync();
 }
 
-if (apiMode is "HotChocolate")
+if (apiMode is "HotChocolate" or "All")
 {
     app.MapGroup("/api/v1/graph/hc").MapHotChocolateEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
 }
 
-if (apiMode is "GraphQLNet")
+if (apiMode is "GraphQLNet" or "All")
 {
     app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
 }
 
-await app.RunAsync();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
-/// <summary>
-/// Partial class declaration for integration tests.
-/// </summary>
-public partial class Program { }
+app.MapHealthChecks(
+    "/health",
+    new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        ResponseWriter = async (context, report) =>
+        {
+            context.Response.ContentType = "application/json";
+            var response = new
+            {
+                status = report.Status.ToString(),
+                checks = report.Entries.Select(x => new
+                {
+                    component = x.Key,
+                    status = x.Value.Status.ToString(),
+                    description = x.Value.Description,
+                }),
+                totalDuration = report.TotalDuration,
+            };
+            await context.Response.WriteAsJsonAsync(response);
+        },
+    }
+);
+
+await app.RunAsync();

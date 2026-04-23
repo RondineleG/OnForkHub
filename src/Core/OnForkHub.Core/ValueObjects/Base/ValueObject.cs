@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.ValueObjects.Base;
+namespace OnForkHub.Core.ValueObjects.Base;
 
 public abstract class ValueObject
 {
