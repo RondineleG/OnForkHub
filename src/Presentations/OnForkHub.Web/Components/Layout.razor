@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@using OnForkHub.Web.Components.Notifications
+
 <div class="d-flex flex-column h-100">
     <Menu/>
     <main class="flex-grow-1">
@@ -10,6 +12,8 @@
         <Footer/>
     </footer>
 </div>
+
+<NotificationToast />
 
 @code {
 

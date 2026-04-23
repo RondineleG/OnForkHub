@@ -1,6 +1,8 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.Core.Interfaces.Configuration;
+using System.Security.Claims;
+
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for archiving a notification.
@@ -23,11 +25,19 @@ public class ArchiveEndpoint(ILogger<ArchiveEndpoint> logger, INotificationServi
         ConfigureEndpoint(
                 app.MapPut(
                     Route,
-                    async ([FromRoute] string id, CancellationToken cancellationToken = default) =>
+                    async (HttpContext httpContext, [FromRoute] string id, CancellationToken cancellationToken = default) =>
                     {
+                        // SECURITY: Extract userId from JWT Claims to validate ownership
+                        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            return Results.Unauthorized();
+                        }
+
                         try
                         {
-                            var result = await _notificationService.ArchiveAsync(id);
+                            var result = await _notificationService.ArchiveAsync(id, userId);
                             return MapToResult(result);
                         }
                         catch (Exception ex)

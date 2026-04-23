@@ -1,7 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
 using OnForkHub.Application.Dtos.Video.Request;
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for creating videos.

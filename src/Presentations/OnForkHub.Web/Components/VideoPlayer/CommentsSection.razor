@@ -1,0 +1,124 @@
+@using OnForkHub.Web.Services.Api
+@using OnForkHub.Core.Requests.Videos
+@inject ICommentService CommentService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="comments-section mt-5">
+    <h5 class="mb-4">Comentários</h5>
+
+    <AuthorizeView>
+        <Authorized>
+            <div class="mb-4">
+                <div class="d-flex gap-3">
+                    <img src="/images/default-avatar.png" class="rounded-circle" style="width: 40px; height: 40px;" alt="Avatar" />
+                    <div class="flex-grow-1">
+                        <textarea class="form-control mb-2" rows="2" placeholder="Adicione um comentário..." @bind="newCommentContent"></textarea>
+                        <div class="d-flex justify-content-end">
+                            <button class="btn btn-primary btn-sm px-4" disabled="@(string.IsNullOrWhiteSpace(newCommentContent) || isSubmitting)" @onclick="PostCommentAsync">
+                                @if (isSubmitting) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                                Comentar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="alert alert-light border small">
+                <a href="/login" class="fw-bold">Faça login</a> para adicionar um comentário.
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+        </div>
+    }
+    else if (comments.Count == 0)
+    {
+        <p class="text-muted small text-center py-4">Nenhum comentário ainda. Seja o primeiro!</p>
+    }
+    else
+    {
+        <div class="comments-list">
+            @foreach (var comment in comments)
+            {
+                <div class="comment-item d-flex gap-3 mb-4">
+                    <img src="@(string.IsNullOrEmpty(comment.UserAvatarUrl) ? "/images/default-avatar.png" : comment.UserAvatarUrl)" 
+                         class="rounded-circle" style="width: 40px; height: 40px;" alt="@comment.UserName" />
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold small">@comment.UserName</span>
+                            <span class="text-muted smaller">@FormatTime(comment.CreatedAt)</span>
+                        </div>
+                        <p class="mb-1 small">@comment.Content</p>
+                        <div class="comment-actions">
+                            <button class="btn btn-link btn-sm p-0 text-muted smaller text-decoration-none me-3">Responder</button>
+                            <button class="btn btn-link btn-sm p-0 text-muted smaller text-decoration-none"><i class="bi bi-hand-thumbs-up me-1"></i></button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid VideoId { get; set; }
+
+    private List<CommentDisplayModel> comments = [];
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private string newCommentContent = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCommentsAsync();
+    }
+
+    private async Task LoadCommentsAsync()
+    {
+        try
+        {
+            isLoading = true;
+            comments = await CommentService.GetCommentsAsync(VideoId);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task PostCommentAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newCommentContent)) return;
+
+        try
+        {
+            isSubmitting = true;
+            var request = new CreateCommentRequest(newCommentContent);
+            var success = await CommentService.CreateCommentAsync(VideoId, request);
+            
+            if (success)
+            {
+                newCommentContent = string.Empty;
+                await LoadCommentsAsync();
+            }
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private string FormatTime(DateTime date)
+    {
+        var diff = DateTime.UtcNow - date;
+        if (diff.TotalDays >= 1) return $"há {Math.Floor(diff.TotalDays)} d";
+        if (diff.TotalHours >= 1) return $"há {Math.Floor(diff.TotalHours)} h";
+        if (diff.TotalMinutes >= 1) return $"há {Math.Floor(diff.TotalMinutes)} min";
+        return "agora";
+    }
+}

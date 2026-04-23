@@ -99,7 +99,7 @@ public class NotificationService(INotificationRepositoryEF notificationRepositor
     }
 
     /// <inheritdoc/>
-    public async Task<RequestResult<Notification>> MarkAsReadAsync(string id)
+    public async Task<RequestResult<Notification>> MarkAsReadAsync(string id, string userId)
     {
         return await ExecuteAsync(async () =>
         {
@@ -111,6 +111,13 @@ public class NotificationService(INotificationRepositoryEF notificationRepositor
             }
 
             var notification = notificationResult.Data;
+
+            // SECURITY: Validate that the notification belongs to the user
+            if (notification.UserId.ToString() != userId)
+            {
+                return RequestResult<Notification>.WithError("You do not have permission to access this notification");
+            }
+
             var markResult = notification.MarkAsRead();
 
             if (!markResult.Status.Equals(EResultStatus.Success))
@@ -129,7 +136,7 @@ public class NotificationService(INotificationRepositoryEF notificationRepositor
     }
 
     /// <inheritdoc/>
-    public async Task<RequestResult<Notification>> ArchiveAsync(string id)
+    public async Task<RequestResult<Notification>> ArchiveAsync(string id, string userId)
     {
         return await ExecuteAsync(async () =>
         {
@@ -141,6 +148,13 @@ public class NotificationService(INotificationRepositoryEF notificationRepositor
             }
 
             var notification = notificationResult.Data;
+
+            // SECURITY: Validate that the notification belongs to the user
+            if (notification.UserId.ToString() != userId)
+            {
+                return RequestResult<Notification>.WithError("You do not have permission to access this notification");
+            }
+
             var archiveResult = notification.Archive();
 
             if (!archiveResult.Status.Equals(EResultStatus.Success))
@@ -153,7 +167,7 @@ public class NotificationService(INotificationRepositoryEF notificationRepositor
     }
 
     /// <inheritdoc/>
-    public async Task<RequestResult<Notification>> DeleteAsync(string id)
+    public async Task<RequestResult<Notification>> DeleteAsync(string id, string userId)
     {
         return await ExecuteAsync(async () =>
         {
@@ -165,6 +179,13 @@ public class NotificationService(INotificationRepositoryEF notificationRepositor
             }
 
             var notification = notificationResult.Data;
+
+            // SECURITY: Validate that the notification belongs to the user
+            if (notification.UserId.ToString() != userId)
+            {
+                return RequestResult<Notification>.WithError("You do not have permission to access this notification");
+            }
+
             var deleteResult = notification.Delete();
 
             if (!deleteResult.Status.Equals(EResultStatus.Success))

@@ -1,0 +1,165 @@
+@page "/videos"
+@inject IVideoService VideoService
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+
+<PageTitle>Vídeos - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <h1 class="h3 mb-0">Explorar Vídeos</h1>
+        
+        <div class="d-flex gap-2 align-items-center">
+            <div class="input-group input-group-sm shadow-sm" style="width: 250px;">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-start-0" placeholder="Buscar vídeos..." @bind="searchTerm" @bind:event="oninput" @onkeyup="HandleSearch" />
+            </div>
+            <select class="form-select form-select-sm shadow-sm" style="width: 150px;" @onchange="OnCategoryChanged">
+                <option value="">Todas Categorias</option>
+                @foreach (var cat in categories)
+                {
+                    <option value="@cat.Id">@cat.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @for (int i = 0; i < 8; i++)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm overflow-hidden">
+                        <div class="skeleton card-img-top" style="height: 180px;"></div>
+                        <div class="card-body">
+                            <div class="skeleton mb-2" style="height: 24px; width: 80%;"></div>
+                            <div class="skeleton" style="height: 16px; width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (videos.Count == 0)
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-search display-1 text-muted opacity-25 mb-4"></i>
+            <h4>Nenhum vídeo encontrado</h4>
+            <p class="text-muted">Tente ajustar seus filtros ou busca.</p>
+            <button class="btn btn-primary mt-3" @onclick="ClearFilters">Limpar Tudo</button>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+            @foreach (var video in videos)
+            {
+                <div class="col">
+                    <VideoCard Video="video" />
+                </div>
+            }
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Navegação de vídeos">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <button class="page-link" @onclick="() => ChangePage(currentPage - 1)">Anterior</button>
+                    </li>
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        var pageNum = i;
+                        <li class="page-item @(currentPage == pageNum ? "active" : "")">
+                            <button class="page-link" @onclick="() => ChangePage(pageNum)">@pageNum</button>
+                        </li>
+                    }
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <button class="page-link" @onclick="() => ChangePage(currentPage + 1)">Próximo</button>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+@code {
+    private List<OnForkHub.Web.Models.Video> videos = [];
+    private List<OnForkHub.Web.Models.CategoryDto> categories = [];
+    private string searchTerm = string.Empty;
+    private long? selectedCategoryId;
+    private int currentPage = 1;
+    private int totalPages = 1;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+        await LoadVideosAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            categories = await CategoryService.GetAllCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading categories: {ex.Message}");
+        }
+    }
+
+    private async Task LoadVideosAsync()
+    {
+        try
+        {
+            isLoading = true;
+            // Using advanced search for all list operations
+            var result = await VideoService.SearchAsync(searchTerm, selectedCategoryId, currentPage, 12);
+            videos = result.Items;
+            totalPages = result.TotalPages;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading videos: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            currentPage = 1;
+            await LoadVideosAsync();
+        }
+    }
+
+    private async Task OnCategoryChanged(ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString();
+        selectedCategoryId = string.IsNullOrEmpty(val) ? null : long.Parse(val);
+        currentPage = 1;
+        await LoadVideosAsync();
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        await LoadVideosAsync();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = string.Empty;
+        selectedCategoryId = null;
+        currentPage = 1;
+        await LoadVideosAsync();
+    }
+}

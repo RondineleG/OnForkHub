@@ -1,7 +1,9 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.Core.Interfaces.Configuration;
+using System.Security.Claims;
+
 using OnForkHub.Core.ValueObjects;
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for getting user notifications with pagination.
@@ -27,12 +29,20 @@ public class GetUserNotificationsEndpoint(ILogger<GetUserNotificationsEndpoint> 
                 app.MapGet(
                     Route,
                     async (
-                        [FromQuery] string userId,
+                        HttpContext httpContext,
                         [FromQuery] int page = 1,
                         [FromQuery] int pageSize = 10,
                         CancellationToken cancellationToken = default
                     ) =>
                     {
+                        // SECURITY: Extract userId from JWT Claims instead of query parameter
+                        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            return Results.Unauthorized();
+                        }
+
                         try
                         {
                             Id userIdValue = userId;

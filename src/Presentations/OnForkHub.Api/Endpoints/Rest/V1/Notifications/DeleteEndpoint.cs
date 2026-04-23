@@ -1,6 +1,8 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.Core.Interfaces.Configuration;
+using System.Security.Claims;
+
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for deleting a notification.
@@ -23,11 +25,19 @@ public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, INotificationService
         ConfigureEndpoint(
                 app.MapDelete(
                     Route,
-                    async ([FromRoute] string id, CancellationToken cancellationToken = default) =>
+                    async (HttpContext httpContext, [FromRoute] string id, CancellationToken cancellationToken = default) =>
                     {
+                        // SECURITY: Extract userId from JWT Claims to validate ownership
+                        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            return Results.Unauthorized();
+                        }
+
                         try
                         {
-                            var result = await _notificationService.DeleteAsync(id);
+                            var result = await _notificationService.DeleteAsync(id, userId);
                             return result.Status == EResultStatus.Success ? Results.NoContent() : MapToResult(result);
                         }
                         catch (Exception ex)

@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.Interfaces.Repositories;
+namespace OnForkHub.Core.Interfaces.Repositories;
 
 public interface ICategoryRepositoryRavenDB
 {

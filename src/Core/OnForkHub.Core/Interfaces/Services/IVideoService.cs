@@ -79,4 +79,28 @@ public interface IVideoService
         Id userId,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Enables torrent for a video.
+    /// </summary>
+    /// <param name="videoId">The video identifier.</param>
+    /// <param name="magnetUri">The magnet URI.</param>
+    /// <returns>A request result.</returns>
+    Task<RequestResult> EnableTorrentAsync(Guid videoId, string magnetUri);
+
+    /// <summary>
+    /// Advanced search for videos.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task<RequestResult<(IEnumerable<Video> Items, int TotalCount)>> SearchAsync(
+        string? searchTerm,
+        long? categoryId,
+        string? userId,
+        DateTime? fromDate,
+        DateTime? toDate,
+        int sortBy,
+        bool sortDescending,
+        int page,
+        int pageSize
+    );
 }

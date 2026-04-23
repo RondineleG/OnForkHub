@@ -1,6 +1,6 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for getting a notification by ID.

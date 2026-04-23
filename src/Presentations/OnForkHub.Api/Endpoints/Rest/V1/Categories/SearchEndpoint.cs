@@ -3,7 +3,7 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 using OnForkHub.Application.Dtos.Base;
 using OnForkHub.Application.Dtos.Category.Request;
 using OnForkHub.Application.Dtos.Category.Response;
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for searching categories.

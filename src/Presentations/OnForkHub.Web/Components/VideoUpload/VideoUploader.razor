@@ -1,0 +1,128 @@
+@using OnForkHub.Web.Services.Api
+@using OnForkHub.Core.Responses
+@using OnForkHub.Core.Enums
+@inject IVideoUploadService UploadService
+@inject ILogger<VideoUploader> Logger
+
+<div class="video-uploader">
+    <div class="mb-3">
+        <label for="videoFile" class="form-label">Selecionar Vídeo</label>
+        <InputFile id="videoFile" OnChange="OnInputFileChange" class="form-control" accept="video/*" disabled="@isUploading" />
+    </div>
+
+    @if (selectedFile != null)
+    {
+        <div class="file-info mb-3">
+            <p>Arquivo: @selectedFile.Name (@FormatFileSize(selectedFile.Size))</p>
+        </div>
+    }
+
+    @if (isUploading)
+    {
+        <div class="upload-progress mb-3">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: @progress% ;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100">@progress%</div>
+            </div>
+            <p class="text-center mt-1">@statusMessage</p>
+        </div>
+    }
+
+    <button class="btn btn-primary" @onclick="StartUpload" disabled="@(selectedFile == null || isUploading)">
+        @if (isUploading)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
+        Fazer Upload
+    </button>
+</div>
+
+@code {
+    private IBrowserFile? selectedFile;
+    private bool isUploading;
+    private double progress;
+    private string statusMessage = string.Empty;
+    private const long ChunkSize = 1024 * 1024; // 1MB
+
+    [Parameter] public EventCallback<string> OnUploadComplete { get; set; }
+
+    private void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        progress = 0;
+        statusMessage = string.Empty;
+    }
+
+    private async Task StartUpload()
+    {
+        if (selectedFile == null) return;
+
+        isUploading = true;
+        progress = 0;
+        statusMessage = "Iniciando upload...";
+
+        try
+        {
+            // 1. Iniciar Upload
+            var initiation = await UploadService.InitiateUploadAsync(selectedFile.Name, selectedFile.Size, selectedFile.ContentType);
+            var uploadId = Guid.Parse(initiation.Id);
+
+            // 2. Upload Chunks
+            long totalSize = selectedFile.Size;
+            int totalChunks = (int)Math.Ceiling((double)totalSize / ChunkSize);
+
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
+            var buffer = new byte[ChunkSize];
+
+            for (int i = 0; i < totalChunks; i++)
+            {
+                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                if (bytesRead == 0) break;
+
+                byte[] chunkToSend = bytesRead == ChunkSize ? buffer : buffer.Take(bytesRead).ToArray();
+
+                statusMessage = $"Enviando parte {i + 1} de {totalChunks}...";
+                var success = await UploadService.UploadChunkAsync(uploadId, chunkToSend, i, totalChunks);
+
+                if (!success)
+                {
+                    throw new Exception("Falha ao enviar chunk.");
+                }
+
+                progress = Math.Round(((double)(i + 1) / totalChunks) * 100, 2);
+                StateHasChanged();
+            }
+
+            statusMessage = "Upload concluído! Processando...";
+            
+            // 3. Aguardar conclusão (opcional, para feedback)
+            string status = await UploadService.GetUploadStatusAsync(uploadId);
+            
+            if (OnUploadComplete.HasDelegate)
+            {
+                await OnUploadComplete.InvokeAsync(initiation.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro durante o upload");
+            statusMessage = $"Erro: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] suffix = { "B", "KB", "MB", "GB", "TB" };
+        int i;
+        double dblSByte = bytes;
+        for (i = 0; i < suffix.Length && bytes >= 1024; i++, bytes /= 1024)
+        {
+            dblSByte = bytes / 1024.0;
+        }
+
+        return $"{dblSByte:0.##} {suffix[i]}";
+    }
+}

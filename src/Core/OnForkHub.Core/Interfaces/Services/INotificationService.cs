@@ -64,11 +64,12 @@ public interface INotificationService
     Task<int> GetUnreadCountAsync(Id userId);
 
     /// <summary>
-    /// Marks a notification as read.
+    /// Marks a notification as read if it belongs to the specified user.
     /// </summary>
     /// <param name="id">The notification ID.</param>
+    /// <param name="userId">The user ID to validate ownership.</param>
     /// <returns>The updated notification.</returns>
-    Task<RequestResult<Notification>> MarkAsReadAsync(string id);
+    Task<RequestResult<Notification>> MarkAsReadAsync(string id, string userId);
 
     /// <summary>
     /// Marks all notifications as read for a user.
@@ -78,16 +79,18 @@ public interface INotificationService
     Task<RequestResult<int>> MarkAllAsReadAsync(Id userId);
 
     /// <summary>
-    /// Archives a notification.
+    /// Archives a notification if it belongs to the specified user.
     /// </summary>
     /// <param name="id">The notification ID.</param>
+    /// <param name="userId">The user ID to validate ownership.</param>
     /// <returns>The updated notification.</returns>
-    Task<RequestResult<Notification>> ArchiveAsync(string id);
+    Task<RequestResult<Notification>> ArchiveAsync(string id, string userId);
 
     /// <summary>
-    /// Deletes a notification.
+    /// Deletes a notification if it belongs to the specified user.
     /// </summary>
     /// <param name="id">The notification ID.</param>
+    /// <param name="userId">The user ID to validate ownership.</param>
     /// <returns>The deleted notification.</returns>
-    Task<RequestResult<Notification>> DeleteAsync(string id);
+    Task<RequestResult<Notification>> DeleteAsync(string id, string userId);
 }

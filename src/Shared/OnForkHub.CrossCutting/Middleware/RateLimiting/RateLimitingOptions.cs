@@ -39,4 +39,10 @@ public class RateLimitingOptions
     /// Gets or sets the maximum number of requests for anonymous users.
     /// </summary>
     public int AnonymousPermitLimit { get; set; } = 50;
+
+    /// <summary>
+    /// Gets or sets the maximum number of requests per minute for authentication endpoints (login/register).
+    /// This is intentionally low to prevent brute force attacks.
+    /// </summary>
+    public int AuthPermitLimitPerMinute { get; set; } = 10;
 }

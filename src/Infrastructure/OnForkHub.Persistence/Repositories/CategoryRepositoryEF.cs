@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Persistence.Repositories;
+namespace OnForkHub.Persistence.Repositories;
 
 public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICategoryRepositoryEF
 {
@@ -47,7 +47,7 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
         }
         catch (Exception ex) when (ex is not PersistenceException)
         {
-            throw new DatabaseOperationException("delete", ex.Message);
+            return RequestResult<Category>.WithError($"Error deleting {EntityName}: {ex.Message}");
         }
     }
 
@@ -147,6 +147,6 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
     /// <inheritdoc/>
     public async Task<int> GetTotalCountAsync()
     {
-        return await EntityFrameworkQueryableExtensions.CountAsync(_context.Categories);
+        return await EntityFrameworkQueryableExtensions.CountAsync(_context.Categories.AsNoTracking());
     }
 }

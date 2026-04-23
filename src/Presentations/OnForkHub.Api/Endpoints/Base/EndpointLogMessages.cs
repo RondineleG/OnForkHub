@@ -31,4 +31,10 @@ public static class EndpointLogMessages
         new EventId(5, nameof(LogNotificationError)),
         "Error in notification operation {Operation}: {ErrorMessage}"
     );
+
+    public static readonly Action<ILogger, string, Exception?> LogUpdatingProfile = LoggerMessage.Define<string>(
+        LogLevel.Information,
+        new EventId(6, nameof(LogUpdatingProfile)),
+        "Updating profile for user {UserId}"
+    );
 }

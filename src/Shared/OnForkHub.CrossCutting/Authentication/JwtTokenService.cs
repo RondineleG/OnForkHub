@@ -1,20 +1,25 @@
 namespace OnForkHub.CrossCutting.Authentication;
 
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+
+using OnForkHub.Core.Entities;
+using OnForkHub.Core.Interfaces.Repositories;
+
+using RefreshTokenEntity = OnForkHub.Core.Entities.RefreshToken;
+
 /// <summary>
 /// JWT token service implementation with refresh token support.
+/// Refresh tokens are persisted in the database for scalability and reliability.
 /// </summary>
 public sealed class JwtTokenService : ITokenService
 {
-    private static readonly ConcurrentDictionary<string, RefreshTokenInfo> RefreshTokens = new();
-
+    private readonly IRefreshTokenRepositoryEF _refreshTokenRepository;
     private readonly JwtOptions _options;
     private readonly TokenValidationParameters _tokenValidationParameters;
 
@@ -22,9 +27,11 @@ public sealed class JwtTokenService : ITokenService
     /// Initializes a new instance of the <see cref="JwtTokenService"/> class.
     /// </summary>
     /// <param name="options">The JWT options.</param>
-    public JwtTokenService(IOptions<JwtOptions> options)
+    /// <param name="refreshTokenRepository">The refresh token repository for database persistence.</param>
+    public JwtTokenService(IOptions<JwtOptions> options, IRefreshTokenRepositoryEF refreshTokenRepository)
     {
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _refreshTokenRepository = refreshTokenRepository ?? throw new ArgumentNullException(nameof(refreshTokenRepository));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
 
@@ -54,6 +61,35 @@ public sealed class JwtTokenService : ITokenService
         var refreshToken = GenerateRefreshToken();
 
         StoreRefreshToken(refreshToken, refreshTokenExpiration, claims);
+
+        return new TokenResult
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            AccessTokenExpiration = accessTokenExpiration,
+            RefreshTokenExpiration = refreshTokenExpiration,
+        };
+    }
+
+    /// <summary>
+    /// Generates JWT tokens with IP address and user agent tracking.
+    /// </summary>
+    /// <param name="claims">The user claims.</param>
+    /// <param name="ipAddress">The IP address of the client.</param>
+    /// <param name="userAgent">The user agent string of the client.</param>
+    /// <returns>A token result containing access and refresh tokens.</returns>
+    public TokenResult GenerateTokens(IEnumerable<Claim> claims, string? ipAddress, string? userAgent)
+    {
+        ArgumentNullException.ThrowIfNull(claims);
+
+        var now = DateTime.UtcNow;
+        var accessTokenExpiration = now.AddMinutes(_options.AccessTokenExpirationMinutes);
+        var refreshTokenExpiration = now.AddDays(_options.RefreshTokenExpirationDays);
+
+        var accessToken = GenerateAccessToken(claims, now, accessTokenExpiration);
+        var refreshToken = GenerateRefreshToken();
+
+        StoreRefreshToken(refreshToken, refreshTokenExpiration, claims, ipAddress, userAgent);
 
         return new TokenResult
         {
@@ -138,18 +174,26 @@ public sealed class JwtTokenService : ITokenService
             return false;
         }
 
-        if (!RefreshTokens.TryGetValue(refreshToken, out var tokenInfo))
+        try
+        {
+            var tokenInfo = _refreshTokenRepository.GetByTokenAsync(refreshToken).GetAwaiter().GetResult();
+
+            if (tokenInfo == null)
+            {
+                return false;
+            }
+
+            if (tokenInfo.IsRevoked)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch
         {
             return false;
         }
-
-        if (tokenInfo.IsRevoked || tokenInfo.Expiration <= DateTime.UtcNow)
-        {
-            RefreshTokens.TryRemove(refreshToken, out _);
-            return false;
-        }
-
-        return true;
     }
 
     /// <inheritdoc/>
@@ -200,9 +244,13 @@ public sealed class JwtTokenService : ITokenService
             return;
         }
 
-        if (RefreshTokens.TryGetValue(refreshToken, out var tokenInfo))
+        try
         {
-            tokenInfo.IsRevoked = true;
+            _refreshTokenRepository.RevokeAsync(refreshToken).GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Silently fail - token may not exist
         }
     }
 
@@ -214,28 +262,54 @@ public sealed class JwtTokenService : ITokenService
         return Convert.ToBase64String(randomNumber);
     }
 
-    private static void StoreRefreshToken(string refreshToken, DateTime expiration, IEnumerable<Claim> claims)
+    private void StoreRefreshToken(
+        string refreshToken,
+        DateTime expiration,
+        IEnumerable<Claim> claims,
+        string? ipAddress = null,
+        string? userAgent = null
+    )
     {
-        RefreshTokens[refreshToken] = new RefreshTokenInfo
+        try
         {
-            Expiration = expiration,
-            Claims = claims.ToList(),
-            IsRevoked = false,
-        };
+            var userId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-        CleanupExpiredTokens();
+            if (string.IsNullOrEmpty(userId))
+            {
+                // Cannot store token without user ID - log this as a warning
+                return;
+            }
+
+            var refreshTokenEntity = RefreshTokenEntity.Create(
+                refreshToken,
+                userId,
+                expiration,
+                ipAddress ?? string.Empty,
+                userAgent ?? string.Empty
+            );
+
+            if (refreshTokenEntity.Status == EResultStatus.Success)
+            {
+                _refreshTokenRepository.CreateAsync(refreshTokenEntity.Data!).GetAwaiter().GetResult();
+            }
+
+            CleanupExpiredTokens();
+        }
+        catch
+        {
+            // Silently fail - logging should be done in production
+        }
     }
 
-    private static void CleanupExpiredTokens()
+    private void CleanupExpiredTokens()
     {
-        var expiredTokens = RefreshTokens
-            .Where(kvp => kvp.Value.Expiration <= DateTime.UtcNow || kvp.Value.IsRevoked)
-            .Select(kvp => kvp.Key)
-            .ToList();
-
-        foreach (var token in expiredTokens)
+        try
         {
-            RefreshTokens.TryRemove(token, out _);
+            _refreshTokenRepository.CleanupExpiredTokensAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Silently fail - cleanup is not critical
         }
     }
 

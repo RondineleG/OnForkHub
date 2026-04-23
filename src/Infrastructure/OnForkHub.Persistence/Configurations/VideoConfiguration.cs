@@ -42,7 +42,22 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
 
         builder.Property(v => v.Description).HasMaxLength(2000);
 
-        builder.Property(v => v.Url).HasMaxLength(500).IsRequired();
+        builder.Property(v => v.MagnetUri).HasMaxLength(2000);
+
+        builder.Property(v => v.IsTorrentEnabled).IsRequired().HasDefaultValue(false);
+
+        builder.Property(v => v.ViewCount).IsRequired().HasDefaultValue(0);
+
+        builder.Property(v => v.ThumbnailUrl).HasMaxLength(500);
+
+        // Configure Url value object
+        builder.OwnsOne(
+            v => v.Url,
+            url =>
+            {
+                url.Property(u => u.Value).HasColumnName("Url").HasMaxLength(500).IsRequired();
+            }
+        );
 
         // Index on CreatedAt for sorting and date range filtering
         builder.HasIndex(v => v.CreatedAt).HasDatabaseName("IX_Videos_CreatedAt");

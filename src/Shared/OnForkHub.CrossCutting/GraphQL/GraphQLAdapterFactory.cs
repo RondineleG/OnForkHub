@@ -1,6 +1,6 @@
-using OnForkHub.Core.Interfaces.GraphQL;
 using OnForkHub.CrossCutting.GraphQL.GraphQLNet;
 using OnForkHub.CrossCutting.GraphQL.HotChocolate;
+using OnForkHub.CrossCutting.GraphQL.Interfaces;
 
 namespace OnForkHub.CrossCutting.GraphQL;
 

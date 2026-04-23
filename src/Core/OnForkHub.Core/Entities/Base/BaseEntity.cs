@@ -1,4 +1,4 @@
-﻿namespace OnForkHub.Core.Entities.Base;
+namespace OnForkHub.Core.Entities.Base;
 
 public abstract class BaseEntity : IAggregateRoot
 {

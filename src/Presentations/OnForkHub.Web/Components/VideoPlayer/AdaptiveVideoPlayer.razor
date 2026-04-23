@@ -1,0 +1,81 @@
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="adaptive-player-container">
+    <div id="@containerId" class="dash-video-container mb-3 bg-black" style="min-height: 400px; position: relative;">
+        <video id="@playerId" controls class="w-100 h-100"></video>
+        
+        @if (isLoading)
+        {
+            <div class="position-absolute top-50 start-50 translate-middle">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando Player Adaptativo...</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="player-info card bg-light mt-2">
+        <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-primary">DASH</span>
+                    <span class="ms-2 small text-muted">Qualidade Adaptativa Ativada</span>
+                </div>
+                <div id="@statsId" class="small text-muted">
+                    Iniciando métricas...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string ManifestUrl { get; set; } = string.Empty;
+    [Parameter] public bool AutoPlay { get; set; } = true;
+
+    private string containerId = $"dash-container-{Guid.NewGuid():N}";
+    private string playerId = $"dash-player-{Guid.NewGuid():N}";
+    private string statsId = $"dash-stats-{Guid.NewGuid():N}";
+    private bool isLoading = true;
+    private IJSObjectReference? _module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrEmpty(ManifestUrl))
+        {
+            await InitializePlayerAsync();
+        }
+    }
+
+    private async Task InitializePlayerAsync()
+    {
+        try
+        {
+            isLoading = true;
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/dashPlayer.js");
+            await _module.InvokeVoidAsync("initializePlayer", playerId, ManifestUrl, AutoPlay, statsId);
+            isLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing DASH player: {ex.Message}");
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("destroyPlayer", playerId);
+                await _module.DisposeAsync();
+            }
+            catch { }
+        }
+    }
+}

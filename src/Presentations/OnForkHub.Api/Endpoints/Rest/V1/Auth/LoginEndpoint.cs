@@ -3,14 +3,24 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Auth;
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.User.Request;
-using OnForkHub.Application.Dtos.User.Response;
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.Application.UseCases.Users;
+using OnForkHub.Core.Entities;
+using OnForkHub.Core.Enums;
+using OnForkHub.Core.Responses.Users;
 using OnForkHub.CrossCutting.Authentication;
+using OnForkHub.CrossCutting.Interfaces;
+using OnForkHub.CrossCutting.Middleware.RateLimiting;
+
+using UserEntity = OnForkHub.Core.Entities.User;
 
 /// <summary>
 /// Endpoint for user login.
 /// </summary>
-public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenService tokenService) : IEndpointAsync
+public sealed partial class LoginEndpoint(
+    ILogger<LoginEndpoint> logger,
+    ITokenService tokenService,
+    IUseCase<UserLoginRequestDto, UserEntity> loginUserUseCase
+) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -19,6 +29,8 @@ public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenS
     private readonly ILogger<LoginEndpoint> _logger = logger;
 
     private readonly ITokenService _tokenService = tokenService;
+
+    private readonly IUseCase<UserLoginRequestDto, UserEntity> _loginUserUseCase = loginUserUseCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -33,6 +45,7 @@ public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenS
                     return await HandleLoginAsync(request);
                 }
             )
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
             .WithName("LoginV1")
             .WithApiVersionSet(apiVersionSet)
             .MapToApiVersion(V1)
@@ -40,7 +53,7 @@ public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenS
             .WithDescription("Authenticates a user and returns JWT tokens")
             .WithSummary("User login")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<AuthResponseDto>(StatusCodes.Status200OK)
+            .Produces<AuthResponse>(StatusCodes.Status200OK)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -50,34 +63,34 @@ public sealed partial class LoginEndpoint(ILogger<LoginEndpoint> logger, ITokenS
     [LoggerMessage(Level = LogLevel.Information, Message = "Login attempt for user: {Email}")]
     private partial void LogLoginAttempt(string email);
 
-    private Task<IResult> HandleLoginAsync(UserLoginRequestDto request)
+    private async Task<IResult> HandleLoginAsync(UserLoginRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         LogLoginAttempt(request.Email);
 
+        var userResult = await _loginUserUseCase.ExecuteAsync(request);
+        if (userResult.Status != EResultStatus.Success || userResult.Data is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var user = userResult.Data;
         var tokens = _tokenService.GenerateTokens(
-            userId: Guid.NewGuid().ToString(),
-            userName: request.Email,
+            userId: user.Id.ToString(),
+            userName: user.Name.Value,
             roles: [CrossCutting.Authorization.Roles.User]
         );
 
-        var response = new AuthResponseDto
+        var response = new AuthResponse
         {
-            User = new UserResponseDto
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = request.Email.Split('@')[0],
-                Email = request.Email,
-                Roles = [CrossCutting.Authorization.Roles.User],
-                CreatedAt = DateTime.UtcNow,
-            },
+            User = UserProfileResponse.FromUser(user, [CrossCutting.Authorization.Roles.User]),
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
             AccessTokenExpiration = tokens.AccessTokenExpiration,
             RefreshTokenExpiration = tokens.RefreshTokenExpiration,
         };
 
-        return Task.FromResult(Results.Ok(response));
+        return Results.Ok(response);
     }
 }

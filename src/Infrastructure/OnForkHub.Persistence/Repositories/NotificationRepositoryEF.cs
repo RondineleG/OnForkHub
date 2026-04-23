@@ -181,10 +181,14 @@ public class NotificationRepositoryEF(IEntityFrameworkDataContext context) : INo
                 _context.Notifications.Where(n => n.UserId.Value == userIdValue && n.Status == ENotificationStatus.Unread)
             );
 
+            if (unreadNotifications.Count == 0)
+            {
+                return RequestResult<int>.Success(0);
+            }
+
             foreach (var notification in unreadNotifications)
             {
                 notification.MarkAsRead();
-                _context.Entry(notification).State = EntityState.Modified;
             }
 
             await _context.SaveChangesAsync();

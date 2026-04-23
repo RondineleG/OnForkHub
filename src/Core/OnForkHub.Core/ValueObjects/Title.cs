@@ -1,14 +1,20 @@
-﻿namespace OnForkHub.Core.ValueObjects;
+namespace OnForkHub.Core.ValueObjects;
 
 public class Title : ValueObject
 {
+    // Parameterless constructor for EF Core
+    private Title()
+    {
+        Value = string.Empty;
+    }
+
     private Title(string value)
     {
         Value = value;
         Validate();
     }
 
-    public string Value { get; set; }
+    public string Value { get; private set; }
 
     public static Title Create(string value)
     {

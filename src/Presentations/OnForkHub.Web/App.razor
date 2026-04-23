@@ -1,12 +1,44 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout)"/>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(Layout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout)">
+                <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <PageTitle>Access Denied</PageTitle>
+                        <div class="container mt-5">
+                            <div class="alert alert-danger">
+                                <h4 class="alert-heading">Acesso Negado</h4>
+                                <p>Você não tem permissão para acessar esta página.</p>
+                            </div>
+                        </div>
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="text-center mt-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="mt-2">Verificando autenticação...</p>
+                    </div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
+        </Found>
+        <NotFound>
+            <PageTitle>Página não encontrada</PageTitle>
+            <LayoutView Layout="@typeof(Layout)">
+                <div class="container mt-5 text-center">
+                    <h1>404</h1>
+                    <h2>Página não encontrada</h2>
+                    <p>A página que você está procurando não existe ou foi removida.</p>
+                    <a href="/" class="btn btn-primary">Voltar para a página inicial</a>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

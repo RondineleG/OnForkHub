@@ -1,7 +1,9 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Notifications;
 
-using OnForkHub.Core.Interfaces.Configuration;
+using System.Security.Claims;
+
 using OnForkHub.Core.ValueObjects;
+using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for getting unread notifications for a user.
@@ -26,8 +28,16 @@ public class GetUnreadEndpoint(ILogger<GetUnreadEndpoint> logger, INotificationS
         ConfigureEndpoint(
                 app.MapGet(
                     Route,
-                    async ([FromQuery] string userId, CancellationToken cancellationToken = default) =>
+                    async (HttpContext httpContext, CancellationToken cancellationToken = default) =>
                     {
+                        // SECURITY: Extract userId from JWT Claims instead of query parameter
+                        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        if (string.IsNullOrEmpty(userId))
+                        {
+                            return Results.Unauthorized();
+                        }
+
                         try
                         {
                             Id userIdValue = userId;
@@ -36,7 +46,7 @@ public class GetUnreadEndpoint(ILogger<GetUnreadEndpoint> logger, INotificationS
                         }
                         catch (Exception ex)
                         {
-                            EndpointLogMessages.LogNotificationError(_logger, $"GetUnread:{userId}", ex.Message, ex);
+                            EndpointLogMessages.LogNotificationError(_logger, "GetUnread", ex.Message, ex);
                             return Results.Problem(title: "Error", detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
                         }
                     }

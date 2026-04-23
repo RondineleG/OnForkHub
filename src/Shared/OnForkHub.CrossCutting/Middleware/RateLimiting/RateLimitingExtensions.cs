@@ -1,12 +1,13 @@
 namespace OnForkHub.CrossCutting.Middleware.RateLimiting;
 
+using System.Globalization;
+using System.Threading.RateLimiting;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Globalization;
-using System.Threading.RateLimiting;
 
 /// <summary>
 /// Extension methods for configuring rate limiting services.
@@ -27,6 +28,11 @@ public static class RateLimitingExtensions
     /// Policy name for anonymous users rate limiter.
     /// </summary>
     public const string AnonymousPolicy = "anonymous";
+
+    /// <summary>
+    /// Policy name for authentication endpoints (login/register) to prevent brute force.
+    /// </summary>
+    public const string AuthPolicy = "auth";
 
     /// <summary>
     /// Adds rate limiting services to the dependency injection container.
@@ -82,6 +88,18 @@ public static class RateLimitingExtensions
                     windowOptions.Window = TimeSpan.FromSeconds(options.WindowSeconds);
                     windowOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                     windowOptions.QueueLimit = options.QueueLimit / 2;
+                }
+            );
+
+            // SECURITY: Restrictive rate limit for auth endpoints to prevent brute force attacks
+            limiterOptions.AddFixedWindowLimiter(
+                AuthPolicy,
+                windowOptions =>
+                {
+                    windowOptions.PermitLimit = options.AuthPermitLimitPerMinute;
+                    windowOptions.Window = TimeSpan.FromMinutes(1);
+                    windowOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    windowOptions.QueueLimit = 2;
                 }
             );
 

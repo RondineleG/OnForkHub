@@ -1,5 +1,10 @@
 namespace OnForkHub.Persistence.Configurations;
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+using UserEntity = OnForkHub.Core.Entities.User;
+
 /// <summary>
 /// EF Core configuration for Notification entity with optimized indexes.
 /// </summary>

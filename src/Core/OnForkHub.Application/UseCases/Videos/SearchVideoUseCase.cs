@@ -2,18 +2,18 @@ namespace OnForkHub.Application.UseCases.Videos;
 
 using OnForkHub.Application.Dtos.Base;
 using OnForkHub.Application.Dtos.Video.Request;
-using OnForkHub.Application.Dtos.Video.Response;
 using OnForkHub.Core.Interfaces.Repositories;
+using OnForkHub.Core.Responses;
 
 /// <summary>
 /// Use case for searching videos with filters.
 /// </summary>
-public class SearchVideoUseCase(IVideoRepositoryEF repository) : IUseCase<VideoSearchRequestDto, PagedResultDto<VideoResponseDto>>
+public class SearchVideoUseCase(IVideoRepositoryEF repository) : IUseCase<VideoSearchRequestDto, PagedResultDto<VideoResponse>>
 {
     private readonly IVideoRepositoryEF _repository = repository;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<PagedResultDto<VideoResponseDto>>> ExecuteAsync(VideoSearchRequestDto request)
+    public async Task<RequestResult<PagedResultDto<VideoResponse>>> ExecuteAsync(VideoSearchRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -31,13 +31,13 @@ public class SearchVideoUseCase(IVideoRepositoryEF repository) : IUseCase<VideoS
 
         if (result.Status != EResultStatus.Success || result.Data.Items is null)
         {
-            return RequestResult<PagedResultDto<VideoResponseDto>>.WithError(result.Message ?? "Failed to search videos");
+            return RequestResult<PagedResultDto<VideoResponse>>.WithError(result.Message ?? "Failed to search videos");
         }
 
-        var responseDtos = result.Data.Items.Select(VideoResponseDto.FromVideo).ToList();
+        var responseDtos = result.Data.Items.Select(VideoResponse.FromVideo).ToList();
 
-        var pagedResult = PagedResultDto<VideoResponseDto>.Create(responseDtos, request.Page, request.ItemsPerPage, result.Data.TotalCount);
+        var pagedResult = PagedResultDto<VideoResponse>.Create(responseDtos, request.Page, request.ItemsPerPage, result.Data.TotalCount);
 
-        return RequestResult<PagedResultDto<VideoResponseDto>>.Success(pagedResult);
+        return RequestResult<PagedResultDto<VideoResponse>>.Success(pagedResult);
     }
 }

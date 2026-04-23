@@ -3,14 +3,24 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Auth;
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.User.Request;
-using OnForkHub.Application.Dtos.User.Response;
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.Application.UseCases.Users;
+using OnForkHub.Core.Entities;
+using OnForkHub.Core.Enums;
+using OnForkHub.Core.Responses.Users;
 using OnForkHub.CrossCutting.Authentication;
+using OnForkHub.CrossCutting.Interfaces;
+using OnForkHub.CrossCutting.Middleware.RateLimiting;
+
+using UserEntity = OnForkHub.Core.Entities.User;
 
 /// <summary>
 /// Endpoint for user registration.
 /// </summary>
-public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, ITokenService tokenService) : IEndpointAsync
+public sealed partial class RegisterEndpoint(
+    ILogger<RegisterEndpoint> logger,
+    ITokenService tokenService,
+    IUseCase<UserRegisterRequestDto, UserEntity> registerUserUseCase
+) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -19,6 +29,8 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
     private readonly ILogger<RegisterEndpoint> _logger = logger;
 
     private readonly ITokenService _tokenService = tokenService;
+
+    private readonly IUseCase<UserRegisterRequestDto, UserEntity> _registerUserUseCase = registerUserUseCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -33,6 +45,7 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
                     return await HandleRegisterAsync(request);
                 }
             )
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
             .WithName("RegisterV1")
             .WithApiVersionSet(apiVersionSet)
             .MapToApiVersion(V1)
@@ -40,9 +53,9 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
             .WithDescription("Registers a new user and returns JWT tokens")
             .WithSummary("User registration")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<AuthResponseDto>(StatusCodes.Status201Created)
+            .Produces<AuthResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
         return Task.FromResult(RequestResult.Success());
     }
@@ -50,16 +63,16 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
     [LoggerMessage(Level = LogLevel.Information, Message = "Registration attempt for user: {Email}")]
     private partial void LogRegistrationAttempt(string email);
 
-    private Task<IResult> HandleRegisterAsync(UserRegisterRequestDto request)
+    private async Task<IResult> HandleRegisterAsync(UserRegisterRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         LogRegistrationAttempt(request.Email);
 
-        var userResult = request.ToUser();
+        var userResult = await _registerUserUseCase.ExecuteAsync(request);
         if (userResult.Status != EResultStatus.Success || userResult.Data is null)
         {
-            return Task.FromResult(Results.BadRequest(new { error = userResult.Message }));
+            return Results.BadRequest(new { error = userResult.Message ?? "Registration failed" });
         }
 
         var user = userResult.Data;
@@ -69,15 +82,15 @@ public sealed partial class RegisterEndpoint(ILogger<RegisterEndpoint> logger, I
             roles: [CrossCutting.Authorization.Roles.User]
         );
 
-        var response = new AuthResponseDto
+        var response = new AuthResponse
         {
-            User = UserResponseDto.FromUser(user, [CrossCutting.Authorization.Roles.User]),
+            User = UserProfileResponse.FromUser(user, [CrossCutting.Authorization.Roles.User]),
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
             AccessTokenExpiration = tokens.AccessTokenExpiration,
             RefreshTokenExpiration = tokens.RefreshTokenExpiration,
         };
 
-        return Task.FromResult(Results.Created($"/api/v{V1}/users/{user.Id}", response));
+        return Results.Created($"/api/v{V1}/users/{user.Id}", response);
     }
 }

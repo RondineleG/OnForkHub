@@ -1,10 +1,11 @@
 namespace OnForkHub.CrossCutting.Authentication;
 
+using System.Text;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 /// <summary>
 /// Extension methods for configuring JWT authentication services.
@@ -26,7 +27,7 @@ public static class JwtExtensions
 
         var jwtOptions = jwtSection.Get<JwtOptions>() ?? new JwtOptions();
 
-        services.AddSingleton<ITokenService, JwtTokenService>();
+        services.AddScoped<ITokenService, JwtTokenService>();
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey));
 
@@ -38,6 +39,7 @@ public static class JwtExtensions
             })
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = jwtOptions.ValidateIssuer,

@@ -1,8 +1,15 @@
 namespace OnForkHub.CrossCutting.Tests.Authentication;
 
-using Microsoft.Extensions.Options;
-using OnForkHub.CrossCutting.Authentication;
 using System.Security.Claims;
+
+using Microsoft.Extensions.Options;
+
+using NSubstitute;
+
+using OnForkHub.Core.Entities;
+using OnForkHub.Core.Interfaces.Repositories;
+using OnForkHub.Core.Requests;
+using OnForkHub.CrossCutting.Authentication;
 
 [TestClass]
 [TestCategory("Unit")]
@@ -14,7 +21,8 @@ public sealed class JwtTokenServiceTests
     [TestCategory("Authentication")]
     public void ConstructorThrowsWhenOptionsIsNull()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => new JwtTokenService(null!));
+        var mockRepository = Substitute.For<IRefreshTokenRepositoryEF>();
+        Assert.ThrowsExactly<ArgumentNullException>(() => new JwtTokenService(null!, mockRepository));
     }
 
     [TestMethod]
@@ -253,6 +261,46 @@ public sealed class JwtTokenServiceTests
             ValidateIssuerSigningKey = true,
         };
 
-        return new JwtTokenService(Options.Create(options));
+        // In-memory store for testing
+        var refreshTokens = new Dictionary<string, RefreshToken>();
+
+        var mockRepository = Substitute.For<IRefreshTokenRepositoryEF>();
+
+        // Setup CreateAsync
+        mockRepository
+            .CreateAsync(Arg.Any<RefreshToken>())
+            .Returns(callInfo =>
+            {
+                var token = callInfo.Arg<RefreshToken>();
+                refreshTokens[token.Token] = token;
+                return Task.FromResult(RequestResult<bool>.Success(true));
+            });
+
+        // Setup GetByTokenAsync
+        mockRepository
+            .GetByTokenAsync(Arg.Any<string>())
+            .Returns(callInfo =>
+            {
+                var token = callInfo.Arg<string>();
+                return refreshTokens.TryGetValue(token, out var rt) ? rt : (RefreshToken?)null;
+            });
+
+        // Setup RevokeAsync
+        mockRepository
+            .RevokeAsync(Arg.Any<string>())
+            .Returns(callInfo =>
+            {
+                var token = callInfo.Arg<string>();
+                if (refreshTokens.TryGetValue(token, out var rt))
+                {
+                    rt.Revoke();
+                }
+                return Task.FromResult(true);
+            });
+
+        // Setup CleanupExpiredTokensAsync
+        mockRepository.CleanupExpiredTokensAsync().Returns(Task.FromResult(0));
+
+        return new JwtTokenService(Options.Create(options), mockRepository);
     }
 }

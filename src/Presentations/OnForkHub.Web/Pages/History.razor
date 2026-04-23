@@ -1,0 +1,77 @@
+@page "/history"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject IHistoryService HistoryService
+@inject NavigationManager Navigation
+
+<PageTitle>Histórico - OnForkHub</PageTitle>
+
+<div class="container-xxl py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0"><i class="bi bi-clock-history me-2"></i>Histórico de Visualização</h1>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm overflow-hidden">
+                        <div class="skeleton card-img-top" style="height: 180px;"></div>
+                        <div class="card-body">
+                            <div class="skeleton mb-2" style="height: 24px; width: 80%;"></div>
+                            <div class="skeleton" style="height: 16px; width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (videos.Count == 0)
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-clock-history display-1 text-muted opacity-25 mb-4"></i>
+            <h4>Seu histórico está vazio</h4>
+            <p class="text-muted">Os vídeos que você assistir aparecerão aqui.</p>
+            <a href="/videos" class="btn btn-primary mt-3">Começar a Assistir</a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+            @foreach (var video in videos)
+            {
+                <div class="col">
+                    <VideoCard Video="video" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<OnForkHub.Web.Models.Video> videos = [];
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistoryAsync();
+    }
+
+    private async Task LoadHistoryAsync()
+    {
+        try
+        {
+            isLoading = true;
+            videos = await HistoryService.GetHistoryAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading history: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

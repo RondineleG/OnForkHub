@@ -1,4 +1,5 @@
-using OnForkHub.Core.Interfaces.Configuration;
+using OnForkHub.Core.Responses.Categories;
+using OnForkHub.CrossCutting.Interfaces;
 
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
@@ -24,7 +25,26 @@ public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationR
                     async (CancellationToken cancellationToken) =>
                     {
                         var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
-                        return await HandleUseCase(_useCase, _logger, request);
+                        return await HandleUseCaseAsync(
+                            _useCase,
+                            _logger,
+                            request,
+                            result =>
+                            {
+                                var responses = result.Data?.Select(CategoryResponse.FromEntity) ?? [];
+                                return Results.Ok(
+                                    new
+                                    {
+                                        data = responses,
+                                        message = result.Message,
+                                        date = result.Date,
+                                        id = result.Id,
+                                    }
+                                );
+                            },
+                            "Failed to list categories",
+                            cancellationToken
+                        );
                     }
                 )
             )
@@ -35,7 +55,7 @@ public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationR
             .WithDescription("Returns all categories")
             .WithSummary("List categories")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<RequestResult<IEnumerable<Category>>>();
+            .Produces<IEnumerable<CategoryResponse>>();
 
         return Task.FromResult(RequestResult.Success());
     }
