@@ -34,6 +34,9 @@ jobs:
       - name: Verify SDK
         run: dotnet --version
 
+      - name: Check WebTorrent JavaScript syntax
+        run: node --check src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js
+
       - name: Restore
         run: dotnet restore OnForkHub.slnx
 
