@@ -1,0 +1,46 @@
+name: Validate .NET 10 Build and Tests
+
+on:
+  push:
+    branches:
+      - feat/pair-programming
+    paths:
+      - .github/workflows/validate-dotnet10.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Restore, Build and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET from global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Verify SDK
+        run: dotnet --version
+
+      - name: Restore
+        run: dotnet restore OnForkHub.slnx
+
+      - name: Build
+        run: dotnet build OnForkHub.slnx --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test OnForkHub.slnx --no-build --configuration Release --logger "trx;LogFileName=tests.trx" --results-directory ./test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet10-test-results
+          path: test-results/
+          if-no-files-found: warn
