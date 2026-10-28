@@ -22,7 +22,9 @@ jobs:
       - name: Run JavaScript player unit tests
         run: node --test tests/webtorrentService.test.mjs
       - name: Validate seeder JavaScript syntax
-        run: node --check tools/p2p-seeder/src/index.mjs
+        run: node --check tools/p2p-seeder/src/index.mjs && node --check tools/p2p-seeder/src/catalog-sync.mjs
+      - name: Test catalog synchronizer
+        run: node --test tools/p2p-seeder/tests/*.test.mjs
 
   seeder-runtime:
     runs-on: ubuntu-latest
