@@ -12,7 +12,7 @@ public interface IVideoUploadService
     /// Initiates a new chunked upload.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<VideoUploadResponse> InitiateUploadAsync(string fileName, long fileSize, string contentType);
+    Task<VideoUploadResponse> InitiateUploadAsync(string fileName, long fileSize, string contentType, int totalChunks, string userId);
 
     /// <summary>
     /// Uploads a chunk of the video file.
