@@ -1,0 +1,12 @@
+services:
+  p2p-seeder:
+    build: .
+    restart: unless-stopped
+    environment:
+      MEDIA_DIR: /media
+      METADATA_DIR: /metadata
+      POLL_MS: "30000"
+      WEBRTC_TRACKERS: "wss://tracker.webtorrent.dev,wss://tracker.openwebtorrent.com"
+    volumes:
+      - ./media:/media:ro
+      - ./metadata:/metadata
