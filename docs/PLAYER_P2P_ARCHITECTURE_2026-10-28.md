@@ -106,3 +106,23 @@ Tamanho do arquivo isoladamente não determina se um vídeo toca. Comparar bitra
 **Validação ainda não comprovada:** resultado do workflow Node; build do Blazor; reprodução real em browser; conexão seeder WebRTC; upload→geração do torrent→seeding persistente; fallback HTTP com URL efetiva. O ambiente de execução disponível não tinha acesso de rede para clonar o repositório e não tinha SDK dotnet instalado. Nenhum resultado de CI ou de playback foi fabricado.
 
 **Dependências para o aceite final:** disponibilizar arquivo de teste e um seeder WebRTC alcançável; definir armazenamento/infraestrutura ou credenciais de um ambiente de testes autorizado; obter logs de browser e pipeline; revisar o fallback HTTP do catálogo (o modelo atual expõe somente `Url` e `IsTorrent`, sem URL de fallback separada). Não considerar o escopo encerrado.
+
+
+## 12. Auditoria incremental — 2026-10-28 (segunda rodada)
+
+### Alterações confirmadas nesta rodada
+
+- `7993ed9` — conecta o componente P2P à rota HTTP já existente `/api/v1/videos/{id}/stream`. O stream depende de um arquivo realmente armazenado; a URL não garante fallback enquanto o backend mantiver apenas magnet URI.
+- `c4129c6` — informa erro de reprodução ao usuário e evita que uma falha de limpeza JS impeça a tentativa de fallback.
+
+### Bloqueios técnicos confirmados por leitura do código
+
+- `VideoUploadService.UploadChunkAsync` possui TODO explícito: apenas incrementa contador, **não grava nem monta os chunks**. Portanto upload real não está implementado.
+- `VideoUpload.Create` inicia o estado Pending, mas `UploadChunkAsync` não faz a transição para Uploading antes de `MarkAsProcessing`. O último chunk pode falhar por violar a transição de domínio.
+- `StreamEndpoint` busca `video.Url.Value` diretamente no armazenamento; se o endereço salvo for o magnet, não há fallback HTTP comprovado. É necessária uma referência persistida separada para a cópia reproduzível.
+- `EnableTorrentEndpoint` apenas registra magnet URI; não cria o torrent nem semeia o arquivo. É necessário worker compatível com peers WebRTC.
+- A reprodução real de 1 seeder + múltiplos navegadores, reconexão, seek e medição de banda depende de ambiente de teste e não pode ser marcada como aprovada por testes de mocks.
+
+### Política de conclusão
+
+Não assinalar upload, geração torrent, seeder, reprodução real, fallback e monitoramento como concluídos antes de persistência de arquivo, configuração de seeder, resultados de CI e teste funcional comprovados. Manter backend e front Blazor existentes e preservar separação entre catálogo, mídia HTTP e magnet.
