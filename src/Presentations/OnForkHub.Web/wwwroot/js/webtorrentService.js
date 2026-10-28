@@ -19,6 +19,20 @@ export function createTorrent(videoData, fileName) {
     });
 }
 
+const activeDownloads = new Map();
+
+export function stopDownload(magnetUri) {
+    const session = activeDownloads.get(magnetUri);
+    if (!session) return;
+    activeDownloads.delete(magnetUri);
+    session.cancel();
+    try {
+        getClient().remove(magnetUri, () => {});
+    } catch (error) {
+        console.warn('Could not remove torrent:', error);
+    }
+}
+
 export function startDownload(magnetUri, containerId) {
     return new Promise((resolve, reject) => {
         const container = document.getElementById(containerId);
@@ -26,9 +40,13 @@ export function startDownload(magnetUri, containerId) {
             reject(new Error('Video container not found.'));
             return;
         }
+        if (activeDownloads.has(magnetUri)) {
+            reject(new Error('Torrent already loading or playing.'));
+            return;
+        }
 
         let settled = false;
-        let torrent;
+        let torrent = null;
         let timeout;
         const cleanup = () => {
             clearTimeout(timeout);
@@ -38,6 +56,8 @@ export function startDownload(magnetUri, containerId) {
             if (settled) return;
             settled = true;
             cleanup();
+            activeDownloads.delete(magnetUri);
+            try { getClient().remove(magnetUri, () => {}); } catch { /* Not registered yet. */ }
             reject(error instanceof Error ? error : new Error(String(error)));
         };
         const succeed = () => {
@@ -46,12 +66,15 @@ export function startDownload(magnetUri, containerId) {
             cleanup();
             resolve();
         };
-
+        activeDownloads.set(magnetUri, {
+            cancel: () => fail(new Error('Torrent playback cancelled.'))
+        });
         timeout = setTimeout(() => fail(new Error('Timed out loading torrent metadata.')), 15000);
+
         try {
             torrent = getClient().add(magnetUri, (readyTorrent) => {
                 if (settled) return;
-                const file = readyTorrent.files.find((item) => /\\.(mp4|webm)$/i.test(item.name));
+                const file = readyTorrent.files.find((item) => /\.(mp4|webm)$/i.test(item.name));
                 if (!file) {
                     fail(new Error('Torrent contains no playable MP4 or WebM video.'));
                     return;
