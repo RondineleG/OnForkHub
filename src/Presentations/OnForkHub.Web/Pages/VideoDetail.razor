@@ -41,13 +41,9 @@
     {
         <div class="row g-4">
             <div class="col-lg-8">
-                @if (video.IsTorrent && userPreferences.EnableP2P)
+                @if (video.IsTorrent)
                 {
-                    <P2PVideoPlayer 
-                        VideoId="video.Id" 
-                        MagnetUri="@video.Url" 
-                        DownloadLimit="@(userPreferences.DownloadLimitMb * 1024 * 1024)" 
-                        UploadLimit="@(userPreferences.UploadLimitMb * 1024 * 1024)" />
+                    <P2PVideoPlayer MagnetUri="@video.Url" />
                 }
                 else
                 {
