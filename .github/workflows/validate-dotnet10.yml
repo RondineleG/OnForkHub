@@ -6,6 +6,7 @@ on:
       - feat/pair-programming
     paths:
       - .github/workflows/validate-dotnet10.yml
+      - Directory.Packages.props
   workflow_dispatch:
 
 permissions:
