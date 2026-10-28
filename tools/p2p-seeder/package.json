@@ -1,0 +1,12 @@
+{
+  "name": "onforkhub-p2p-seeder",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "dependencies": {
+    "webtorrent-hybrid": "^5.0.0"
+  }
+}
