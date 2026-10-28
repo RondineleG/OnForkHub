@@ -110,6 +110,7 @@ public sealed class VideoService(HttpClient httpClient) : IVideoService
             Duration = response.Duration,
             CreatedAt = response.CreatedAt,
             IsTorrent = response.IsTorrentEnabled,
+            MagnetUri = response.MagnetUri,
             ViewCount = response.ViewCount,
         };
     }
