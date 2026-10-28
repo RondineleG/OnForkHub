@@ -6,6 +6,7 @@ on:
     paths:
       - 'src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js'
       - 'tests/webtorrentService.test.mjs'
+      - 'tools/p2p-seeder/**'
       - '.github/workflows/player-tests.yml'
   workflow_dispatch:
 jobs:
@@ -20,3 +21,5 @@ jobs:
           node-version: '22'
       - name: Run JavaScript player unit tests
         run: node --test tests/webtorrentService.test.mjs
+      - name: Validate seeder JavaScript syntax
+        run: node --check tools/p2p-seeder/src/index.mjs
