@@ -1,0 +1,22 @@
+name: Player JavaScript tests
+on:
+  push:
+    branches:
+      - feat/pair-programming
+    paths:
+      - 'src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js'
+      - 'tests/webtorrentService.test.mjs'
+      - '.github/workflows/player-tests.yml'
+  workflow_dispatch:
+jobs:
+  player-unit-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run JavaScript player unit tests
+        run: node --test tests/webtorrentService.test.mjs
