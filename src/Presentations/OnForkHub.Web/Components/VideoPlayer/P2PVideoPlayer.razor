@@ -4,23 +4,21 @@
 @implements IAsyncDisposable
 
 <div class="p2p-player-container">
-    <div id="@containerId" class="video-container mb-3">
-        @if (isLoading)
-        {
-            <div class="d-flex justify-content-center align-items-center h-100">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando P2P...</span>
-                </div>
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando P2P...</span>
             </div>
-        }
-        @if (useFallback && !string.IsNullOrEmpty(FallbackUrl))
-        {
-            <video controls class="w-100 h-100">
-                <source src="@FallbackUrl" type="video/mp4">
-                Seu navegador não suporta o elemento de vídeo.
-            </video>
-        }
-    </div>
+        </div>
+    }
+    <div id="@containerId" class="video-container mb-3" style="display: @(useFallback ? "none" : "block")" @key="containerId"></div>
+    @if (useFallback && !string.IsNullOrEmpty(FallbackUrl))
+    {
+        <video controls class="w-100 h-100" src="@FallbackUrl">
+            Seu navegador não suporta o elemento de vídeo.
+        </video>
+    }
 
     @if (stats != null && !useFallback)
     {
@@ -78,24 +76,11 @@
             isLoading = true;
             await WebTorrentService.StartDownloadAsync(MagnetUri, containerId);
             
-            // Check after a few seconds if we have peers
-            await Task.Delay(5000, cts.Token);
+            // A successful initialization does not require a peer to remain connected.
+            // Do not discard an already initialized video based solely on peer count.
             stats = await WebTorrentService.GetTorrentStatsAsync(MagnetUri);
-            
-            if (stats == null || stats.Peers == 0)
-            {
-                // No peers found, fallback to CDN if available
-                if (!string.IsNullOrEmpty(FallbackUrl))
-                {
-                    useFallback = true;
-                    isLoading = false;
-                    StateHasChanged();
-                    return;
-                }
-            }
-
             isLoading = false;
-            StateHasChanged();
+            if (!disposed) await InvokeAsync(StateHasChanged);
 
             // Start stats polling
             _ = PollStatsAsync(cts.Token);
@@ -109,9 +94,10 @@
             isLoading = false;
             if (!string.IsNullOrEmpty(FallbackUrl))
             {
+                await WebTorrentService.StopDownloadAsync(MagnetUri);
                 useFallback = true;
             }
-            if (!disposed) StateHasChanged();
+            if (!disposed) await InvokeAsync(StateHasChanged);
         }
     }
 
