@@ -20,15 +20,52 @@ export function createTorrent(videoData, fileName) {
 }
 
 export function startDownload(magnetUri, containerId) {
-    getClient().add(magnetUri, (torrent) => {
-        console.log('Client is downloading:', torrent.infoHash);
-        
-        // Render the video in the container
-        torrent.files.forEach((file) => {
-            if (file.name.endsWith('.mp4') || file.name.endsWith('.webm')) {
-                file.appendTo(`#${containerId}`);
-            }
-        });
+    return new Promise((resolve, reject) => {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            reject(new Error('Video container not found.'));
+            return;
+        }
+
+        let settled = false;
+        let torrent;
+        let timeout;
+        const cleanup = () => {
+            clearTimeout(timeout);
+            torrent?.removeListener('error', fail);
+        };
+        const fail = (error) => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            reject(error instanceof Error ? error : new Error(String(error)));
+        };
+        const succeed = () => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            resolve();
+        };
+
+        timeout = setTimeout(() => fail(new Error('Timed out loading torrent metadata.')), 15000);
+        try {
+            torrent = getClient().add(magnetUri, (readyTorrent) => {
+                if (settled) return;
+                const file = readyTorrent.files.find((item) => /\\.(mp4|webm)$/i.test(item.name));
+                if (!file) {
+                    fail(new Error('Torrent contains no playable MP4 or WebM video.'));
+                    return;
+                }
+                try {
+                    file.appendTo(container, (error) => error ? fail(error) : succeed());
+                } catch (error) {
+                    fail(error);
+                }
+            });
+            torrent.on('error', fail);
+        } catch (error) {
+            fail(error);
+        }
     });
 }
 
