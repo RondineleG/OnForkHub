@@ -2,6 +2,7 @@ namespace OnForkHub.Application.Services;
 
 using Microsoft.Extensions.Logging;
 using System.IO;
+using System.Globalization;
 
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Enums;
@@ -73,7 +74,7 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
             var stagingRoot = Path.Combine(Path.GetTempPath(), "onforkhub-uploads");
             var uploadDirectory = Path.Combine(stagingRoot, uploadId.ToString("N"));
             Directory.CreateDirectory(uploadDirectory);
-            var chunkPath = Path.Combine(uploadDirectory, chunkIndex.ToString("D6") + ".part");
+            var chunkPath = Path.Combine(uploadDirectory, chunkIndex.ToString("D6", CultureInfo.InvariantCulture) + ".part");
             if (File.Exists(chunkPath))
             {
                 return RequestResult<bool>.WithError("Chunk already exists.");
@@ -105,7 +106,7 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
                 {
                     for (var index = 0; index < totalChunks; index++)
                     {
-                        var partPath = Path.Combine(uploadDirectory, index.ToString("D6") + ".part");
+                        var partPath = Path.Combine(uploadDirectory, index.ToString("D6", CultureInfo.InvariantCulture) + ".part");
                         await using var part = new FileStream(partPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                         await part.CopyToAsync(assembled);
                     }
@@ -138,9 +139,18 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
             }
             if (upload.Status == EVideoUploadStatus.Completed)
             {
-                try { Directory.Delete(uploadDirectory, recursive: true); }
-                catch (IOException) { /* Cleanup can be retried by maintenance. */ }
-                catch (UnauthorizedAccessException) { /* Do not undo completed upload. */ }
+                try
+                {
+                    Directory.Delete(uploadDirectory, recursive: true);
+                }
+                catch (IOException)
+                {
+                    // Cleanup can be retried by maintenance.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Do not undo completed upload.
+                }
             }
             return RequestResult<bool>.Success(true);
         });
