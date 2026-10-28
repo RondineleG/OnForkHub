@@ -25,7 +25,7 @@ public sealed class VideoUploadService : IVideoUploadService
     }
 
     /// <inheritdoc/>
-    public async Task<VideoUploadResponse> InitiateUploadAsync(string fileName, long fileSize, string contentType)
+    public async Task<VideoUploadResponse> InitiateUploadAsync(string fileName, long fileSize, string contentType, int totalChunks, string userId)
     {
         var request = new
         {
