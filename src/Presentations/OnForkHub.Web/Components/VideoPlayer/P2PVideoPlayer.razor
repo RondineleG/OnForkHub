@@ -60,7 +60,8 @@
     private P2PStats? stats;
     private bool isLoading = true;
     private bool useFallback = false;
-    private CancellationTokenSource? cts;
+    private CancellationTokenSource cts = new();
+    private bool disposed;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -78,7 +79,7 @@
             await WebTorrentService.StartDownloadAsync(MagnetUri, containerId);
             
             // Check after a few seconds if we have peers
-            await Task.Delay(5000);
+            await Task.Delay(5000, cts.Token);
             stats = await WebTorrentService.GetTorrentStatsAsync(MagnetUri);
             
             if (stats == null || stats.Peers == 0)
@@ -97,8 +98,11 @@
             StateHasChanged();
 
             // Start stats polling
-            cts = new CancellationTokenSource();
             _ = PollStatsAsync(cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            // Component was disposed while the player was starting.
         }
         catch (Exception)
         {
@@ -107,17 +111,28 @@
             {
                 useFallback = true;
             }
-            StateHasChanged();
+            if (!disposed) StateHasChanged();
         }
     }
 
     private async Task PollStatsAsync(CancellationToken token)
     {
-        while (!token.IsCancellationRequested)
+        try
         {
-            stats = await WebTorrentService.GetTorrentStatsAsync(MagnetUri);
-            StateHasChanged();
-            await Task.Delay(2000, token);
+            while (!token.IsCancellationRequested)
+            {
+                stats = await WebTorrentService.GetTorrentStatsAsync(MagnetUri);
+                if (!disposed) await InvokeAsync(StateHasChanged);
+                await Task.Delay(2000, token);
+            }
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // Normal shutdown.
+        }
+        catch (Exception)
+        {
+            // Stop polling on interop failure.
         }
     }
 
@@ -130,8 +145,20 @@
 
     public async ValueTask DisposeAsync()
     {
-        cts?.Cancel();
-        cts?.Dispose();
-        await Task.CompletedTask;
+        disposed = true;
+        cts.Cancel();
+        try
+        {
+            if (!string.IsNullOrEmpty(MagnetUri))
+                await WebTorrentService.StopDownloadAsync(MagnetUri);
+        }
+        catch (JSDisconnectedException)
+        {
+            // Browser context may already be disconnected.
+        }
+        finally
+        {
+            cts.Dispose();
+        }
     }
 }
