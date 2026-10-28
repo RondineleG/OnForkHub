@@ -8,6 +8,7 @@ on:
       - .github/workflows/validate-dotnet10.yml
       - Directory.Packages.props
       - 'test/**'
+      - 'src/**'
   workflow_dispatch:
 
 permissions:
