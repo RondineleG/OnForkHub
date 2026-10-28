@@ -7,6 +7,9 @@ const metadataDir = process.env.METADATA_DIR || '/metadata';
 const pollMs = Math.max(5000, Number(process.env.POLL_MS || 30000));
 const trackers = (process.env.WEBRTC_TRACKERS || 'wss://tracker.webtorrent.dev,wss://tracker.openwebtorrent.com')
   .split(',').map(x => x.trim()).filter(Boolean);
+if (!WebTorrent.WEBRTC_SUPPORT) {
+  throw new Error('WebRTC unavailable in the Node runtime. A WebRTC-capable seeder is required for browser playback.');
+}
 const client = new WebTorrent({ dht: false, lsd: false });
 const active = new Map();
 let closed = false;
