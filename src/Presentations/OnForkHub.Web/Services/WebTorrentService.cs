@@ -55,6 +55,15 @@ public sealed class WebTorrentService : IAsyncDisposable
         await _module!.InvokeVoidAsync("startDownload", magnetUri, containerId);
     }
 
+    /// <summary>Stops a torrent and releases the associated browser resources.</summary>
+    public async Task StopDownloadAsync(string magnetUri)
+    {
+        if (_module != null)
+        {
+            await _module.InvokeVoidAsync("stopDownload", magnetUri);
+        }
+    }
+
     /// <summary>
     /// Gets stats for a specific torrent.
     /// </summary>
