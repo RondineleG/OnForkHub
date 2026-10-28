@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "start": "node src/index.mjs"
+    "start": "node src/index.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "sync-catalog": "node src/catalog-sync.mjs"
   },
   "dependencies": {
     "webtorrent-hybrid": "6.0.0"
