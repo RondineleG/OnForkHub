@@ -17,13 +17,13 @@ async function synchronize() {
   const present = new Set(files.map(x => x.name));
   for (const [name, torrent] of active) {
     if (!present.has(name)) {
-      client.remove(torrent.infoHash);
+      if (torrent?.infoHash) client.remove(torrent.infoHash);
       active.delete(name);
       console.log(JSON.stringify({ event: 'unseed', name }));
     }
   }
   for (const file of files) {
-    if (active.has(file.name)) continue;
+    if (closed || active.has(file.name)) continue;
     const fullPath = path.join(mediaDir, file.name);
     const info = await stat(fullPath);
     if (!info.size) continue;
@@ -31,7 +31,10 @@ async function synchronize() {
     active.set(file.name, null);
     try {
       client.seed(fullPath, { announce: trackers }, async torrent => {
-        if (closed) return;
+        if (closed || !active.has(file.name)) {
+          client.remove(torrent.infoHash);
+          return;
+        }
         active.set(file.name, torrent);
         try {
           await writeFile(path.join(metadataDir, file.name + '.torrent'), torrent.torrentFile);
