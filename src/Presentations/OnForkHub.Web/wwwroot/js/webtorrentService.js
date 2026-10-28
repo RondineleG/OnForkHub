@@ -110,10 +110,7 @@ export function updateConfig(maxDownloadSpeed, maxUploadSpeed) {
 
 // Explicitly release downloads, seed connections and browser resources when the player shuts down.
 export function disposeWebTorrent() {
-    for (const [magnetUri, session] of activeDownloads) {
-        session.cancel();
-        activeDownloads.delete(magnetUri);
-    }
+    for (const magnetUri of [...activeDownloads.keys()]) stopDownload(magnetUri);
     if (client) {
         const current = client;
         client = null;
