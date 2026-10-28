@@ -7,6 +7,6 @@
     "start": "node src/index.mjs"
   },
   "dependencies": {
-    "webtorrent-hybrid": "^5.0.0"
+    "webtorrent": "3.0.21"
   }
 }
