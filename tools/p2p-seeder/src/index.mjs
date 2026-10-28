@@ -1,4 +1,4 @@
-import { readdir, mkdir, writeFile, stat } from 'node:fs/promises';
+import { readdir, mkdir, writeFile, stat, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import WebTorrent from 'webtorrent-hybrid';
 
@@ -12,6 +12,23 @@ if (!WebTorrent.WEBRTC_SUPPORT) {
 }
 const client = new WebTorrent({ dht: false, lsd: false });
 const active = new Map();
+
+async function publishMetadata(name, torrent) {
+  const output = {
+    schemaVersion: 1,
+    fileName: name,
+    infoHash: torrent.infoHash,
+    magnetUri: torrent.magnetURI,
+    generatedAt: new Date().toISOString()
+  };
+  const destination = path.join(metadataDir, name + '.json');
+  const temporary = destination + '.tmp';
+  await writeFile(temporary, JSON.stringify(output, null, 2) + '\n');
+  await rename(temporary, destination);
+  await writeFile(path.join(metadataDir, name + '.torrent'), torrent.torrentFile);
+  await writeFile(path.join(metadataDir, name + '.magnet'), torrent.magnetURI + '\n');
+}
+
 let closed = false;
 
 async function synchronize() {
@@ -22,6 +39,7 @@ async function synchronize() {
     if (!present.has(name)) {
       if (torrent?.infoHash) client.remove(torrent.infoHash);
       active.delete(name);
+      await Promise.allSettled(['.json', '.magnet', '.torrent'].map(ext => unlink(path.join(metadataDir, name + ext))));
       console.log(JSON.stringify({ event: 'unseed', name }));
     }
   }
@@ -40,8 +58,7 @@ async function synchronize() {
         }
         active.set(file.name, torrent);
         try {
-          await writeFile(path.join(metadataDir, file.name + '.torrent'), torrent.torrentFile);
-          await writeFile(path.join(metadataDir, file.name + '.magnet'), torrent.magnetURI + '\n');
+          await publishMetadata(file.name, torrent);
           console.log(JSON.stringify({ event: 'seeding', name: file.name, infoHash: torrent.infoHash, peers: torrent.numPeers }));
         } catch (error) {
           console.error('Metadata persistence failed:', error);
