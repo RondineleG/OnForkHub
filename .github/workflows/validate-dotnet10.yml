@@ -9,6 +9,9 @@ on:
       - Directory.Packages.props
       - 'test/**'
       - 'src/**'
+      - 'Directory.Build.props'
+      - 'global.json'
+      - 'OnForkHub.slnx'
   workflow_dispatch:
 
 permissions:
@@ -37,13 +40,19 @@ jobs:
       - name: Build
         run: dotnet build OnForkHub.slnx --no-restore --configuration Release
 
+      - name: Check code style
+        run: dotnet format style OnForkHub.slnx --no-restore --verify-no-changes --severity error
+
+      - name: Check analyzers
+        run: dotnet format analyzers OnForkHub.slnx --no-restore --verify-no-changes --severity error
+
       - name: Test
-        run: dotnet test OnForkHub.slnx --no-build --configuration Release --logger "trx;LogFileName=tests.trx" --results-directory ./test-results
+        run: dotnet test OnForkHub.slnx --no-build --configuration Release --collect:"XPlat Code Coverage" --logger "trx;LogFileName=tests.trx" --results-directory ./test-results
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: dotnet10-test-results
+          name: dotnet10-test-results-and-coverage
           path: test-results/
           if-no-files-found: warn
