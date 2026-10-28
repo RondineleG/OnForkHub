@@ -12,6 +12,10 @@
             </div>
         </div>
     }
+    @if (!string.IsNullOrEmpty(errorMessage) && !useFallback)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
     <div id="@containerId" class="video-container mb-3" style="display: @(useFallback ? "none" : "block")" @key="containerId"></div>
     @if (useFallback && !string.IsNullOrEmpty(FallbackUrl))
     {
@@ -60,6 +64,7 @@
     private bool useFallback = false;
     private CancellationTokenSource cts = new();
     private bool disposed;
+    private string? errorMessage;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -89,13 +94,18 @@
         {
             // Component was disposed while the player was starting.
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            if (disposed) return;
             isLoading = false;
-            if (!string.IsNullOrEmpty(FallbackUrl))
+            errorMessage = "Não foi possível iniciar a reprodução P2P: " + ex.Message;
+            if (!string.IsNullOrWhiteSpace(FallbackUrl))
             {
-                await WebTorrentService.StopDownloadAsync(MagnetUri);
+                try { await WebTorrentService.StopDownloadAsync(MagnetUri); }
+                catch (JSDisconnectedException) { }
+                catch (JSException) { }
                 useFallback = true;
+                errorMessage = null;
             }
             if (!disposed) await InvokeAsync(StateHasChanged);
         }
