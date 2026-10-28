@@ -80,8 +80,17 @@
 
             for (int i = 0; i < totalChunks; i++)
             {
-                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                if (bytesRead == 0) break;
+                var expectedBytes = (int)Math.Min(ChunkSize, totalSize - (long)i * ChunkSize);
+                int bytesRead = 0;
+                while (bytesRead < expectedBytes)
+                {
+                    var read = await stream.ReadAsync(buffer.AsMemory(bytesRead, expectedBytes - bytesRead));
+                    if (read == 0)
+                    {
+                        throw new EndOfStreamException("Video stream ended prematurely.");
+                    }
+                    bytesRead += read;
+                }
 
                 byte[] chunkToSend = buffer.AsSpan(0, bytesRead).ToArray();
 
