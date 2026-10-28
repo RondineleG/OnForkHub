@@ -106,7 +106,11 @@ public sealed class VideoService(IVideoRepositoryEF videoRepository, IFileStorag
             }
 
             videoResult.Data.EnableTorrent(magnetUri);
-            await _videoRepository.UpdateAsync(videoResult.Data);
+            var update = await _videoRepository.UpdateAsync(videoResult.Data);
+            if (update.Status != EResultStatus.Success)
+            {
+                return RequestResult.WithError(update.Message ?? "Unable to save magnet URI");
+            }
             return RequestResult.Success();
         });
     }
