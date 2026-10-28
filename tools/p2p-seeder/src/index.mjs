@@ -23,10 +23,10 @@ async function publishMetadata(name, torrent) {
   };
   const destination = path.join(metadataDir, name + '.json');
   const temporary = destination + '.tmp';
-  await writeFile(temporary, JSON.stringify(output, null, 2) + '\n');
-  await rename(temporary, destination);
   await writeFile(path.join(metadataDir, name + '.torrent'), torrent.torrentFile);
   await writeFile(path.join(metadataDir, name + '.magnet'), torrent.magnetURI + '\n');
+  await writeFile(temporary, JSON.stringify(output, null, 2) + '\n');
+  await rename(temporary, destination);
 }
 
 let closed = false;
