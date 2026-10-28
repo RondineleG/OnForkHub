@@ -1,8 +1,8 @@
 namespace OnForkHub.Application.Services;
 
-using Microsoft.Extensions.Logging;
-using System.IO;
 using System.Globalization;
+using System.IO;
+using Microsoft.Extensions.Logging;
 
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Enums;
