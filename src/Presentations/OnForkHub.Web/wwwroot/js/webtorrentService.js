@@ -25,71 +25,67 @@ const activeDownloads = new Map();
 export function stopDownload(magnetUri) {
     const session = activeDownloads.get(magnetUri);
     if (!session) return;
-    activeDownloads.delete(magnetUri);
-    session.cancel();
-    try {
-        getClient().remove(magnetUri, () => {});
-    } catch (error) {
-        console.warn('Could not remove torrent:', error);
-    }
+    session.stop();
 }
 
 export function startDownload(magnetUri, containerId) {
     return new Promise((resolve, reject) => {
         const container = document.getElementById(containerId);
-        if (!container) {
-            reject(new Error('Video container not found.'));
-            return;
-        }
-        if (activeDownloads.has(magnetUri)) {
-            reject(new Error('Torrent already loading or playing.'));
-            return;
-        }
+        if (!container) return reject(new Error('Video container not found.'));
+        if (activeDownloads.has(magnetUri)) return reject(new Error('Torrent already loading or playing.'));
 
-        let settled = false;
+        const torrentClient = getClient();
         let torrent = null;
-        let timeout;
-        const cleanup = () => {
+        let settled = false;
+        let timeout = null;
+        let stopped = false;
+        const removeTorrent = () => {
+            try { torrentClient.remove(magnetUri, () => {}); }
+            catch (error) { console.warn('Could not remove torrent:', error); }
+        };
+        const clearPending = () => {
             clearTimeout(timeout);
-            torrent?.removeListener('error', fail);
+            torrent?.removeListener?.('error', fail);
         };
         const fail = (error) => {
-            if (settled) return;
+            if (settled || stopped) return;
             settled = true;
-            cleanup();
+            clearPending();
             activeDownloads.delete(magnetUri);
-            try { getClient().remove(magnetUri, () => {}); } catch { /* Not registered yet. */ }
+            removeTorrent();
             reject(error instanceof Error ? error : new Error(String(error)));
         };
-        const succeed = () => {
-            if (settled) return;
-            settled = true;
-            cleanup();
-            resolve();
+        const stop = () => {
+            if (stopped) return;
+            stopped = true;
+            clearPending();
+            activeDownloads.delete(magnetUri);
+            removeTorrent();
+            if (!settled) {
+                settled = true;
+                reject(new Error('Torrent playback cancelled.'));
+            }
         };
-        activeDownloads.set(magnetUri, {
-            cancel: () => fail(new Error('Torrent playback cancelled.'))
-        });
+        activeDownloads.set(magnetUri, { stop });
         timeout = setTimeout(() => fail(new Error('Timed out loading torrent metadata.')), 15000);
 
         try {
-            torrent = getClient().add(magnetUri, (readyTorrent) => {
-                if (settled) return;
-                const file = readyTorrent.files.find((item) => /\.(mp4|webm)$/i.test(item.name));
-                if (!file) {
-                    fail(new Error('Torrent contains no playable MP4 or WebM video.'));
-                    return;
-                }
+            torrent = torrentClient.add(magnetUri, (readyTorrent) => {
+                if (stopped || settled) return;
+                const file = readyTorrent.files.find(item => /\.(mp4|webm)$/i.test(item.name));
+                if (!file) return fail(new Error('Torrent contains no playable MP4 or WebM video.'));
                 try {
-                    file.appendTo(container, (error) => error ? fail(error) : succeed());
-                } catch (error) {
-                    fail(error);
-                }
+                    file.appendTo(container, error => {
+                        if (stopped || settled) return;
+                        if (error) return fail(error);
+                        settled = true;
+                        clearPending();
+                        resolve();
+                    });
+                } catch (error) { fail(error); }
             });
-            torrent.on('error', fail);
-        } catch (error) {
-            fail(error);
-        }
+            torrent?.on?.('error', fail);
+        } catch (error) { fail(error); }
     });
 }
 
