@@ -23,3 +23,20 @@ jobs:
         run: node --test tests/webtorrentService.test.mjs
       - name: Validate seeder JavaScript syntax
         run: node --check tools/p2p-seeder/src/index.mjs
+
+  seeder-runtime:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: tools/p2p-seeder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install seeder dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify hybrid WebRTC support
+        run: node --input-type=module -e "import WebTorrent from 'webtorrent-hybrid'; if (!WebTorrent.WEBRTC_SUPPORT) process.exit(1);"
