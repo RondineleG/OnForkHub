@@ -83,6 +83,12 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
             {
                 await chunk.CopyToAsync(destination);
             }
+            if (new FileInfo(chunkPath).Length == 0 ||
+                new FileInfo(chunkPath).Length > upload.FileSize)
+            {
+                File.Delete(chunkPath);
+                return RequestResult<bool>.WithError("Chunk size exceeds allowed upload size.");
+            }
 
             if (upload.Status == EVideoUploadStatus.Pending)
             {
@@ -132,7 +138,9 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
             }
             if (upload.Status == EVideoUploadStatus.Completed)
             {
-                Directory.Delete(uploadDirectory, recursive: true);
+                try { Directory.Delete(uploadDirectory, recursive: true); }
+                catch (IOException) { /* Cleanup can be retried by maintenance. */ }
+                catch (UnauthorizedAccessException) { /* Do not undo completed upload. */ }
             }
             return RequestResult<bool>.Success(true);
         });
