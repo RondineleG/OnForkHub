@@ -1,7 +1,7 @@
 # OnForkHub — Arquitetura e validação do player P2P
 
 **Data:** 2026-10-28  
-**Status:** proposta técnica; exige validação funcional e aprovação por etapa  
+**Status:** implementação parcial em andamento; validação final concentrada após todas as correções viáveis  
 **Branch de trabalho:** `feat/pair-programming`
 
 ## 1. Objetivo e prioridade
@@ -85,7 +85,7 @@ Tamanho do arquivo isoladamente não determina se um vídeo toca. Comparar bitra
 
 - Trabalhar somente em `feat/pair-programming`, usando convenção de commits e observando as regras/hooks do projeto.
 - **Sem PR, merge, deploy ou alteração da `main`** sem autorização expressa.
-- Apresentar escopo, arquivos afetados e impacto antes de cada próxima mudança; o usuário valida cada item antes de avançar.
+- Apresentar escopo, arquivos afetados e impacto antes de cada próxima mudança; o usuário autorizou corrigir os itens do documento em sequência e concentrar a validação no final; mudanças externas de infraestrutura ainda dependem de acesso e configuração.
 - Este documento não implica aprovação automática das mudanças futuras.
 
 ## 10. Decisões pendentes
@@ -94,3 +94,15 @@ Tamanho do arquivo isoladamente não determina se um vídeo toca. Comparar bitra
 - Onde executar o primeiro worker (VPS existente ou nova)?
 - Limites iniciais de duração/tamanho/codec e qualidade?
 - Política para conteúdo privado (fora do MVP funcional)?
+
+## 11. Registro de execução — 2026-10-28
+
+**Alterações adicionais desta rodada:**
+- `eb14ee8`: isola o elemento de vídeo gerenciado pelo JavaScript da renderização Blazor e deixa de substituir P2P inicializado apenas por contagem instantânea de peers.
+- `da4830e`: adiciona workflow de testes JavaScript em Node 22 para a branch de trabalho, sem deploy.
+- `6a7856f`: remove parâmetros não declarados ao instanciar `P2PVideoPlayer`; vídeos marcados como torrent não dependem da preferência de perfil para usar P2P.
+- `3c07bb2`: desacopla o carregamento do player da consulta de perfil/autenticação e trata falhas de favoritos como opcionais.
+
+**Validação ainda não comprovada:** resultado do workflow Node; build do Blazor; reprodução real em browser; conexão seeder WebRTC; upload→geração do torrent→seeding persistente; fallback HTTP com URL efetiva. O ambiente de execução disponível não tinha acesso de rede para clonar o repositório e não tinha SDK dotnet instalado. Nenhum resultado de CI ou de playback foi fabricado.
+
+**Dependências para o aceite final:** disponibilizar arquivo de teste e um seeder WebRTC alcançável; definir armazenamento/infraestrutura ou credenciais de um ambiente de testes autorizado; obter logs de browser e pipeline; revisar o fallback HTTP do catálogo (o modelo atual expõe somente `Url` e `IsTorrent`, sem URL de fallback separada). Não considerar o escopo encerrado.
