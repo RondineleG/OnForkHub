@@ -57,4 +57,7 @@ public class Video
     /// Gets or sets a value indicating whether the video is available via P2P.
     /// </summary>
     public bool IsTorrent { get; set; }
+
+    /// <summary>Gets or sets the P2P magnet URI independently of the HTTP source.</summary>
+    public string? MagnetUri { get; set; }
 }
