@@ -65,3 +65,37 @@ test('stopDownload rejects in-progress initialization', async () => {
     assert.equal(torrents.has('cancelled'), false);
   } finally { client.add = original; }
 });
+
+test('rejects duplicate sessions for the same magnet', async () => {
+  const original = client.add;
+  client.add = (uri) => {
+    const torrent = { on() {}, removeListener() {} };
+    torrents.set(uri, torrent);
+    return torrent;
+  };
+  try {
+    const first = startDownload('duplicate', 'video');
+    await assert.rejects(startDownload('duplicate', 'video'), /already loading/);
+    stopDownload('duplicate');
+    await assert.rejects(first, /cancelled/);
+  } finally { client.add = original; }
+});
+
+test('reports torrent errors and releases the session', async () => {
+  const original = client.add;
+  let handler;
+  client.add = (uri) => {
+    const torrent = {
+      on(event, fn) { if (event === 'error') handler = fn; },
+      removeListener() {}
+    };
+    torrents.set(uri, torrent);
+    return torrent;
+  };
+  try {
+    const pending = startDownload('error-case', 'video');
+    handler(new Error('tracker failed'));
+    await assert.rejects(pending, /tracker failed/);
+    assert.equal(torrents.has('error-case'), false);
+  } finally { client.add = original; }
+});
