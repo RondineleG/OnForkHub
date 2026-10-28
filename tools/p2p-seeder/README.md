@@ -37,3 +37,24 @@ For `<stored-file>.mp4`, the seeder writes `<stored-file>.mp4.json` after the to
 The JSON is written to a temporary file then renamed so readers do not ingest an incomplete JSON document. When a video is removed from the shared media directory, the associated metadata artifacts are removed on the next scan.
 
 **Catalog integration is pending:** a trusted backend synchronizer must match `fileName` with the storage-generated file ID, resolve the correct video record and invoke the existing `IVideoService.EnableTorrentAsync` after verifying that the file and torrent belong together. Do not post these records directly to the public API or assume the storage URL can be replaced with a magnet without preserving a distinct HTTP fallback reference.
+
+## Catalog synchronization (opt-in)
+
+Run from the `tools/p2p-seeder` directory with Node.js 22, after manifest files exist:
+
+```bash
+export METADATA_DIR=/absolute/path/to/metadata
+export CATALOG_API_URL=https://your-api.example
+export CATALOG_API_TOKEN=your-authorized-bearer-token
+npm run sync-catalog
+```
+
+Default execution is a **dry run** and does not change the catalog. It checks one-to-one correspondence between the storage-generated filename (from the video's HTTP URL) and `manifest.fileName`. Ambiguous, missing, invalid or conflicting entries are reported but not changed.
+
+Only after inspecting the dry-run output and verifying that the token is authorized to manage exactly those videos should you run:
+
+```bash
+CATALOG_SYNC_APPLY=true npm run sync-catalog
+```
+
+This is an operator-controlled prototype, not an automated background task. The current catalog API's torrent enable endpoint must receive ownership/administrative authorization checks before unattended operation. Do not store API tokens in Compose files or commit them to Git. The HTTP URL remains unchanged; enabling torrent populates the separate MagnetUri property. Test all behavior in a non-production environment.
