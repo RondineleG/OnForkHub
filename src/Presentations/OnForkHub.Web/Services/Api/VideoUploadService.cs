@@ -32,6 +32,8 @@ public sealed class VideoUploadService : IVideoUploadService
             fileName,
             fileSize,
             contentType,
+            totalChunks,
+            userId,
         };
         var response = await _httpClient.PostAsJsonAsync("/api/v1/videos/upload/initiate", request);
         response.EnsureSuccessStatusCode();
@@ -47,9 +49,11 @@ public sealed class VideoUploadService : IVideoUploadService
         var fileContent = new ByteArrayContent(chunk);
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
         content.Add(fileContent, "chunk", "chunk.bin");
+        content.Add(new StringContent(chunkIndex.ToString(System.Globalization.CultureInfo.InvariantCulture)), "chunkIndex");
+        content.Add(new StringContent(totalChunks.ToString(System.Globalization.CultureInfo.InvariantCulture)), "totalChunks");
 
         var response = await _httpClient.PostAsync(
-            $"/api/v1/videos/upload/chunk/{uploadId}?chunkIndex={chunkIndex}&totalChunks={totalChunks}",
+            $"/api/v1/videos/upload/chunk/{uploadId}",
             content
         );
 
