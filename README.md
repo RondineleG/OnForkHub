@@ -27,7 +27,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
 ### Core Technologies
 
-- **🎯 Backend**: .NET 9 with ASP.NET Core
+- **🎯 Backend**: .NET 10 with ASP.NET Core
 - **🌐 Frontend**: Blazor WebAssembly
 - **💾 Databases**: RavenDB, CosmosDB, SQL Server
 - **📦 Storage**: Azure Blob Storage/AWS S3
@@ -46,7 +46,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
 ### Required Software
 
-- **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **.NET 10 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **Git** - [Download](https://git-scm.com/)
 - **GitHub CLI** - [Download](https://cli.github.com/)
 - **Node.js** - [Download](https://nodejs.org/)
@@ -164,7 +164,8 @@ We follow Git Flow with kebab-case naming convention for all branches (using low
 # Branch Types and Naming Convention
 main        # Production branch
 dev         # Development branch
-feature/    # New features (e.g., feature/add-user-auth)
+feat/       # New features (feature/ also supported)
+feature/    # Legacy feature branch prefix (e.g., feature/add-user-auth)
 hotfix/     # Production fixes (e.g., hotfix/fix-login-bug)
 release/    # Release preparation (e.g., release/v1.2.0)
 bugfix/     # Non-urgent fixes (e.g., bugfix/improve-error-handling)
