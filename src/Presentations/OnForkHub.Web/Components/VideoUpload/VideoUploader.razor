@@ -44,6 +44,7 @@
     private const long ChunkSize = 1024 * 1024; // 1MB
 
     [Parameter] public EventCallback<string> OnUploadComplete { get; set; }
+    [Parameter] public string UserId { get; set; } = string.Empty;
 
     private void OnInputFileChange(InputFileChangeEventArgs e)
     {
@@ -63,7 +64,11 @@
         try
         {
             // 1. Iniciar Upload
-            var initiation = await UploadService.InitiateUploadAsync(selectedFile.Name, selectedFile.Size, selectedFile.ContentType);
+            if (string.IsNullOrWhiteSpace(UserId))
+                throw new InvalidOperationException("Upload requires a valid user identifier.");
+
+            int totalChunks = (int)Math.Ceiling((double)selectedFile.Size / ChunkSize);
+            var initiation = await UploadService.InitiateUploadAsync(selectedFile.Name, selectedFile.Size, selectedFile.ContentType, totalChunks, UserId);
             var uploadId = Guid.Parse(initiation.Id);
 
             // 2. Upload Chunks
