@@ -134,19 +134,15 @@
             
             if (video != null)
             {
-                // Trigger history and analytics
-                _ = VideoService.IncrementViewCountAsync(video.Id);
-                _ = HistoryService.AddToHistoryAsync(video.Id);
-
-                // Load user preferences for P2P limits
-                var profile = await UserService.GetProfileAsync();
-                if (profile?.Preferences != null)
+                // Optional profile and engagement features must not block playback.
+                try
                 {
-                    userPreferences = profile.Preferences;
+                    isFavorite = await FavoriteService.IsFavoriteAsync(video.Id);
                 }
-
-                // Check if favorite
-                isFavorite = await FavoriteService.IsFavoriteAsync(video.Id);
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Favorites unavailable: {ex.Message}");
+                }
 
                 relatedVideos = await VideoService.GetRelatedVideosAsync(video.Id.ToString(), 6);
             }
