@@ -83,7 +83,7 @@
                 int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
                 if (bytesRead == 0) break;
 
-                byte[] chunkToSend = bytesRead == ChunkSize ? buffer : buffer.Take(bytesRead).ToArray();
+                byte[] chunkToSend = buffer.AsSpan(0, bytesRead).ToArray();
 
                 statusMessage = $"Enviando parte {i + 1} de {totalChunks}...";
                 var success = await UploadService.UploadChunkAsync(uploadId, chunkToSend, i, totalChunks);
