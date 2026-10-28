@@ -12,7 +12,8 @@ export function createTorrent(videoData, fileName) {
         const blob = new Blob([videoData], { type: 'video/mp4' });
         const file = new File([blob], fileName);
         
-        getClient().seed(file, (torrent) => {
+        const torrentClient = getClient();
+        torrentClient.seed(file, (torrent) => {
             console.log('Client is seeding:', torrent.magnetURI);
             resolve(torrent.magnetURI);
         });
@@ -108,4 +109,20 @@ export function updateConfig(maxDownloadSpeed, maxUploadSpeed) {
     // WebTorrent client-level throttling
     getClient().throttleDownload(maxDownloadSpeed || -1);
     getClient().throttleUpload(maxUploadSpeed || -1);
+}
+
+
+// Explicitly release downloads, seed connections and browser resources when the player shuts down.
+export function disposeWebTorrent() {
+    for (const [magnetUri, session] of activeDownloads) {
+        session.cancel();
+        activeDownloads.delete(magnetUri);
+    }
+    if (client) {
+        const current = client;
+        client = null;
+        current.destroy((error) => {
+            if (error) console.warn('WebTorrent cleanup failed:', error);
+        });
+    }
 }
