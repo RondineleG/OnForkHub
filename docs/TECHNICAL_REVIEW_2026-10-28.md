@@ -79,3 +79,23 @@ O uso de WebTorrent/WebRTC pode expor IPs aos peers; avaliar transparência ao u
 - `.husky/commit-msg`, `.husky/pre-commit`, `.husky/pre-push`, `.husky/task-runner.json`
 
 **Estado:** relatório para revisão; nenhuma alteração na aplicação, nenhum PR e nenhuma execução dos testes.
+
+
+## Atualização das remediações (28/10/2026)
+
+As evidências da seção inicial representam o estado na data da auditoria, antes das correções.
+
+| Achado | Situação atual | Evidência / limitação |
+|---|---|---|
+| 01 | Corrigido e anteriormente validado | Pipeline .NET 10 `40722118612` passou em restore/build/testes; mudanças posteriores ainda exigem validação consolidada. |
+| 02 | Correção de código aplicada; proteção pendente | Expressão do PR movida para `env`; exigência de status check na main não confirmada (GitHub 403). |
+| 03 | Parcial | Limpeza global de Docker removida dos scripts; imagem por SHA/digest e rollback com teste real ainda pendentes. |
+| 04 | Parcial | README alinhado ao .NET 10; ROADMAP e CHECKLIST históricos exigem revisão com evidências, não suposição. |
+| 05 | Corrigido no código | Hook aceita `feat/*` e pre-push usa Bash; validação de hooks locais pendente. |
+| 06 | Pendente | Compilação TypeScript bloqueada no projeto; não habilitar sem inspeção de toolchain/arquivos TS. |
+| 07 | Parcial | Função de descarte adicionada ao módulo WebTorrent; integração no ciclo de vida do Razor, falhas de tracker e fallback exigem testes de navegador. |
+| 08 | ADR registrado, não simplificado | `docs/ARCHITECTURE_DECISIONS_REVIEW_2026-10-28.md`; remover providers sem mapa de dependências seria arriscado. |
+| 09 | Parcial | CI coleta TRX/cobertura; testes de persistência real e inspeção de métricas ainda pendentes. |
+| 10 | Parcial | Hook deixa de executar `git add .`; CI acrescentou verificações; política de proteção GitHub não acessível. |
+
+**Não considerar o review totalmente encerrado** até executar a validação consolidada e tratar ou aceitar formalmente os itens bloqueados. **Nenhum deploy ou PR** faz parte desta rodada.
