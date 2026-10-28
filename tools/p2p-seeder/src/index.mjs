@@ -1,6 +1,6 @@
 import { readdir, mkdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import WebTorrent from 'webtorrent';
+import WebTorrent from 'webtorrent-hybrid';
 
 const mediaDir = process.env.MEDIA_DIR || '/media';
 const metadataDir = process.env.METADATA_DIR || '/metadata';
