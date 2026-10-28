@@ -41,9 +41,9 @@
     {
         <div class="row g-4">
             <div class="col-lg-8">
-                @if (video.IsTorrent)
+                @if (video.IsTorrent && !string.IsNullOrWhiteSpace(video.MagnetUri))
                 {
-                    <P2PVideoPlayer @key="video.Id" MagnetUri="@video.Url" FallbackUrl="@($"/api/v1/videos/{video.Id}/stream")" />
+                    <P2PVideoPlayer @key="video.Id" MagnetUri="@video.MagnetUri" FallbackUrl="@($"/api/v1/videos/{video.Id}/stream")" />
                 }
                 else
                 {
