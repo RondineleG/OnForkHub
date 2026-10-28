@@ -73,7 +73,7 @@
 
             // 2. Upload Chunks
             long totalSize = selectedFile.Size;
-            int totalChunks = (int)Math.Ceiling((double)totalSize / ChunkSize);
+            
 
             using var stream = selectedFile.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024);
             var buffer = new byte[ChunkSize];
