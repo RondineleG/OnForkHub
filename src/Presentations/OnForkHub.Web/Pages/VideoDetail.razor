@@ -43,7 +43,7 @@
             <div class="col-lg-8">
                 @if (video.IsTorrent)
                 {
-                    <P2PVideoPlayer MagnetUri="@video.Url" />
+                    <P2PVideoPlayer @key="video.Id" MagnetUri="@video.Url" FallbackUrl="@($"/api/v1/videos/{video.Id}/stream")" />
                 }
                 else
                 {
