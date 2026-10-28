@@ -71,7 +71,7 @@ public sealed partial class InitiateUploadEndpoint(ILogger<InitiateUploadEndpoin
                 LogInitiateStarted(request.UserId, request.FileName, request.FileSize, request.TotalChunks);
             }
 
-            var result = await _uploadService.InitiateUploadAsync(request.FileName, request.FileSize, request.ContentType, request.UserId);
+            var result = await _uploadService.InitiateUploadAsync(request.FileName, request.FileSize, request.ContentType, request.UserId, request.TotalChunks);
 
             if (result.Status != EResultStatus.Success || result.Data is null)
             {
