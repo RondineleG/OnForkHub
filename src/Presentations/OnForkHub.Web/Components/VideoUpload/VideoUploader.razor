@@ -110,6 +110,11 @@
             
             // 3. Aguardar conclusão (opcional, para feedback)
             string status = await UploadService.GetUploadStatusAsync(uploadId);
+            if (!string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Storage has not completed the upload. Status: {status}");
+            }
+            statusMessage = "Upload armazenado com sucesso.";
             
             if (OnUploadComplete.HasDelegate)
             {
