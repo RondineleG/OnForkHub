@@ -99,3 +99,5 @@ As evidências da seção inicial representam o estado na data da auditoria, ant
 | 10 | Parcial | Hook deixa de executar `git add .`; CI acrescentou verificações; política de proteção GitHub não acessível. |
 
 **Não considerar o review totalmente encerrado** até executar a validação consolidada e tratar ou aceitar formalmente os itens bloqueados. **Nenhum deploy ou PR** faz parte desta rodada.
+
+**Atualização ADR/P2:** registros concretos de EF Core/SQL Server e RavenDB identificados no DI; Cosmos possui repositório mas registro não foi confirmado no arquivo inspecionado; REST, HotChocolate e GraphQL.NET condicionados por `AppSettings:ApiMode`. Detalhes em `docs/ARCHITECTURE_DECISIONS_REVIEW_2026-10-28.md`. Nenhum provider ou endpoint removido.
