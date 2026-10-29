@@ -75,6 +75,7 @@ public sealed class PublishUploadedVideoEndpoint(
                         return Results.BadRequest(new { error = created.Message ?? "Invalid video metadata." });
                     }
 
+                    created.Data.AssociateUpload(uploadId);
                     var result = await videos.CreateAsync(created.Data);
                     if (result.Status != EResultStatus.Success || result.Data is null)
                     {
