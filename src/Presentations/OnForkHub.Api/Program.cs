@@ -1,3 +1,6 @@
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
+
 using OnForkHub.Api.Hubs;
 using OnForkHub.Api.Middlewares;
 using OnForkHub.Application.Extensions;
@@ -8,6 +11,7 @@ using OnForkHub.CrossCutting.GraphQL.Interfaces;
 using OnForkHub.CrossCutting.Middleware.RateLimiting;
 using OnForkHub.CrossCutting.Middleware.ResponseCompression;
 using OnForkHub.CrossCutting.Middleware.Security;
+using OnForkHub.CrossCutting.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +49,19 @@ builder.Services.AddCors(options =>
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
+
+// Serve stored videos from the same directory written by LocalFileStorageService.
+// Only the videos subdirectory is exposed; staging files and other paths stay private.
+var fileStorage = app.Services.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+var videoDirectory = Path.Combine(Directory.GetCurrentDirectory(), fileStorage.BasePath, "videos");
+Directory.CreateDirectory(videoDirectory);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(videoDirectory),
+    RequestPath = new PathString(fileStorage.BaseUrl.TrimEnd('/') + "/videos"),
+    ServeUnknownFileTypes = false,
+});
 
 app.UseCors("DefaultPolicy");
 app.UseAuthentication();
