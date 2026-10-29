@@ -93,8 +93,9 @@ public sealed class VideoService(HttpClient httpClient) : IVideoService
 
     public async Task<bool> UploadVideoAsync(Stream fileStream, string fileName, string title, string description, string categoryId)
     {
-        // Simple mock for existing component
-        return true;
+        // This legacy entry point is not wired to the chunked upload and catalog creation flow.
+        // Never report success without persisting the video.
+        return false;
     }
 
     private Video MapToWebModel(VideoResponse response)
