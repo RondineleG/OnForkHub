@@ -22,22 +22,19 @@
 
                         <div class="row g-4">
                             <div class="col-md-5">
-                                <div class="upload-dropzone p-5 border-dashed rounded text-center @(isDragging ? "active" : "")"
-                                     @ondragenter="() => isDragging = true"
-                                     @ondragleave="() => isDragging = false"
-                                     @onclick="TriggerFileInput">
+                                <label for="fileInput" class="upload-dropzone p-5 border-dashed rounded text-center d-block" style="cursor: pointer;">
                                     <InputFile id="fileInput" OnChange="OnFileChange" class="d-none" accept="video/mp4,video/x-m4v,video/*" />
                                     <i class="bi bi-camera-reels display-1 text-muted opacity-50 mb-3"></i>
                                     @if (selectedFile == null)
                                     {
-                                        <p class="mb-0 small text-muted">Arraste um vídeo ou clique para selecionar</p>
+                                        <p class="mb-0 small text-muted">Clique para selecionar um vídeo</p>
                                     }
                                     else
                                     {
                                         <p class="mb-0 fw-bold text-primary">@selectedFile.Name</p>
                                         <span class="text-muted small">@FormatSize(selectedFile.Size)</span>
                                     }
-                                </div>
+                                </label>
                                 <ValidationMessage For="@(() => selectedFile)" class="text-danger small mt-2" />
                             </div>
 
@@ -110,7 +107,6 @@
     private VideoUploadModel uploadModel = new();
     private IBrowserFile? selectedFile;
     private bool isUploading = false;
-    private bool isDragging = false;
     private int uploadProgress = 0;
     private string? errorMessage;
 
@@ -217,11 +213,6 @@
         {
             isUploading = false;
         }
-    }
-
-    private void TriggerFileInput()
-    {
-        // Simple placeholder for JS trigger
     }
 
     private string FormatSize(long bytes)
