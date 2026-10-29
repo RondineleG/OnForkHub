@@ -1,6 +1,9 @@
 @page "/upload"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
-@inject IVideoService VideoService
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject OnForkHub.Web.Services.Api.IVideoUploadService UploadService
 @inject ICategoryService CategoryService
 @inject NavigationManager Navigation
 
@@ -134,7 +137,10 @@
 
     private async Task HandleUploadAsync()
     {
-        if (selectedFile == null) return;
+        if (selectedFile is null || isUploading)
+        {
+            return;
+        }
 
         try
         {
@@ -142,23 +148,60 @@
             errorMessage = null;
             uploadProgress = 0;
 
-            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 100); // 100MB
-            
-            var success = await VideoService.UploadVideoAsync(
-                stream, 
-                selectedFile.Name, 
-                uploadModel.Title, 
-                uploadModel.Description, 
-                uploadModel.CategoryId);
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? authState.User.FindFirst("sub")?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new InvalidOperationException("Faça login para enviar vídeos.");
+            }
 
-            if (success)
+            const int chunkSize = 1024 * 1024;
+            var totalChunks = (int)((selectedFile.Size + chunkSize - 1) / chunkSize);
+            if (totalChunks < 1 || selectedFile.Size > 100L * 1024 * 1024)
             {
-                Navigation.NavigateTo("/videos");
+                throw new InvalidOperationException("O vídeo deve ter entre 1 byte e 100 MB.");
             }
-            else
+
+            var upload = await UploadService.InitiateUploadAsync(
+                selectedFile.Name, selectedFile.Size, selectedFile.ContentType, totalChunks, userId);
+            var uploadId = Guid.Parse(upload.Id);
+            using var stream = selectedFile.OpenReadStream(maxAllowedSize: 100L * 1024 * 1024);
+            var buffer = new byte[chunkSize];
+
+            for (var index = 0; index < totalChunks; index++)
             {
-                errorMessage = "Falha ao enviar vídeo. Tente novamente.";
+                var expected = (int)Math.Min(chunkSize, selectedFile.Size - (long)index * chunkSize);
+                var count = 0;
+                while (count < expected)
+                {
+                    var read = await stream.ReadAsync(buffer.AsMemory(count, expected - count));
+                    if (read == 0)
+                    {
+                        throw new EndOfStreamException("O arquivo terminou antes do esperado.");
+                    }
+
+                    count += read;
+                }
+
+                var payload = buffer.AsSpan(0, count).ToArray();
+                if (!await UploadService.UploadChunkAsync(uploadId, payload, index, totalChunks))
+                {
+                    throw new InvalidOperationException($"Falha ao enviar a parte {index + 1}.");
+                }
+
+                uploadProgress = (int)((index + 1L) * 100 / totalChunks);
+                StateHasChanged();
             }
+
+            var status = await UploadService.GetUploadStatusAsync(uploadId);
+            if (!string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"O arquivo não foi confirmado pelo armazenamento: {status}.");
+            }
+
+            uploadProgress = 100;
+            errorMessage = "Arquivo enviado e armazenado. A publicação no catálogo ainda não está disponível nesta tela.";
         }
         catch (Exception ex)
         {
