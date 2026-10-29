@@ -200,8 +200,9 @@
                 throw new InvalidOperationException($"O arquivo não foi confirmado pelo armazenamento: {status}.");
             }
 
+            await UploadService.PublishAsync(uploadId, uploadModel.Title, uploadModel.Description);
             uploadProgress = 100;
-            errorMessage = "Arquivo enviado e armazenado. A publicação no catálogo ainda não está disponível nesta tela.";
+            Navigation.NavigateTo("/videos");
         }
         catch (Exception ex)
         {
