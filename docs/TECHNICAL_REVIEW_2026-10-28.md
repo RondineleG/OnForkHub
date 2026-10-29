@@ -101,3 +101,27 @@ As evidências da seção inicial representam o estado na data da auditoria, ant
 **Não considerar o review totalmente encerrado** até executar a validação consolidada e tratar ou aceitar formalmente os itens bloqueados. **Nenhum deploy ou PR** faz parte desta rodada.
 
 **Atualização ADR/P2:** registros concretos de EF Core/SQL Server e RavenDB identificados no DI; Cosmos possui repositório mas registro não foi confirmado no arquivo inspecionado; REST, HotChocolate e GraphQL.NET condicionados por `AppSettings:ApiMode`. Detalhes em `docs/ARCHITECTURE_DECISIONS_REVIEW_2026-10-28.md`. Nenhum provider ou endpoint removido.
+
+
+## Rodada de remediação consolidada (29/10/2026)
+
+O escopo segue restrito à branch `feat/pair-programming`. Os estados abaixo distinguem código alterado de validação real.
+
+| Achado | Estado nesta rodada | Evidência / pendência |
+|---|---|---|
+| 02 / 10 | Parcial — dependência administrativa | Proteção obrigatória da `main` e rulesets requerem permissões administrativas da conta GitHub; não foram alterados nem verificados. |
+| 03 | Implementação atualizada, implantação não validada | `build-and-deploy.yml` agora usa tags por commit, remove limpeza prévia, verifica health de API/Web e tenta restaurar Compose anterior em falha. É necessário homologar em ambiente real com simulação de falha e confirmar retenção de imagens. |
+| 04 | Parcial | Documentação histórica ainda precisa conciliação de números com TRX e cobertura produzidos pelo CI. |
+| 06 | Checagem separada implementada | `validate-typescript.yml` usa Node 22 e `tsc --noEmit` no projeto Web.Components/npm. O bloqueio MSBuild permanece deliberadamente para evitar duplicação de build; validar CI. |
+| 07 | Parcial | Fallback de player e descarte presentes; testes de navegador, tracker offline, privacidade P2P e transcodificação real ainda necessários. |
+| 08 | Parcial | ADR documentado; inventário completo de persistências e prova de ownership pendentes. |
+| 09 | Em validação | Teste HTTP Range teve falha 403 por representação de GUID (com hífens no JWT e sem hífens no ValueObject); comparação alterada para Guid tipado. Ainda é necessário validar CI, SQL Server real e evidências de cobertura. |
+
+### Critérios ainda não atendidos
+
+- Proteger a `main` com status checks obrigatórios no GitHub Rulesets/Branch protection (ação administrativa).
+- Executar rollout e rollback controlados em VPS de testes, incluindo falha induzida e health gate (não executado; sem deploy autorizado nesta rodada).
+- Validar browser E2E do fluxo vídeo completo, latência/fallback e cobertura de dados real.
+- Atualizar e aprovar totais dos checklists históricos com resultados medidos; documentar custo, p95, peers e métricas operacionais.
+
+**Conclusão:** não marcar a revisão como 100% concluída apenas por commits de código. Nenhum deploy, PR ou merge foi realizado.
