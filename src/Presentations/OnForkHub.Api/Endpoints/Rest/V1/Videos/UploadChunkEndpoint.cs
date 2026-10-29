@@ -32,6 +32,7 @@ public sealed partial class UploadChunkEndpoint(ILogger<UploadChunkEndpoint> log
                 async (
                     [FromRoute] Guid uploadId,
                     IFormFile chunk,
+                    HttpContext context,
                     [FromForm] int chunkIndex,
                     [FromForm] int totalChunks,
                     CancellationToken cancellationToken
@@ -74,6 +75,7 @@ public sealed partial class UploadChunkEndpoint(ILogger<UploadChunkEndpoint> log
         IFormFile? chunk,
         int chunkIndex,
         int totalChunks,
+        HttpContext context,
         CancellationToken cancellationToken
     )
     {
