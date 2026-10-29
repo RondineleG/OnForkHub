@@ -61,7 +61,16 @@ public sealed class PublishUploadedVideoEndpoint(
                         return Results.Ok(VideoResponse.FromVideo(existing.Data));
                     }
 
-                    var created = Video.Create(request.Title, request.Description, upload.StoragePath, upload.UserId);
+                    // Local storage persists a root-relative path. Resolve it to the API's
+                    // public origin before constructing the domain URL value object.
+                    var storageUrl = upload.StoragePath;
+                    if (Uri.TryCreate(storageUrl, UriKind.Relative, out var relativeUrl))
+                    {
+                        var origin = new Uri($"{context.Request.Scheme}://{context.Request.Host}");
+                        storageUrl = new Uri(origin, relativeUrl).AbsoluteUri;
+                    }
+
+                    var created = Video.Create(request.Title, request.Description, storageUrl, upload.UserId);
                     if (created.Status != EResultStatus.Success || created.Data is null)
                     {
                         return Results.BadRequest(new { error = created.Message ?? "Invalid video metadata." });
