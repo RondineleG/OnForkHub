@@ -42,7 +42,7 @@ public sealed class StreamUploadedVideoEndpoint(
                     }
 
                     var upload = result.Data;
-                    if (!string.Equals(upload.UserId.ToString(), userId, StringComparison.OrdinalIgnoreCase))
+                    if (!Guid.TryParse(userId, out var authenticatedUserId) || upload.UserId.Value != authenticatedUserId)
                     {
                         return Results.Forbid();
                     }
