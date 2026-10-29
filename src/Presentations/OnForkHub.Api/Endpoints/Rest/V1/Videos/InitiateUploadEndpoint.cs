@@ -1,5 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.Video.Request;
@@ -27,9 +29,9 @@ public sealed partial class InitiateUploadEndpoint(ILogger<InitiateUploadEndpoin
 
         app.MapPost(
                 Route,
-                async ([FromBody] InitiateUploadRequest request, CancellationToken cancellationToken) =>
+                async ([FromBody] InitiateUploadRequest request, HttpContext context, CancellationToken cancellationToken) =>
                 {
-                    return await HandleInitiateAsync(request, cancellationToken);
+                    return await HandleInitiateAsync(request, context, cancellationToken);
                 }
             )
             .WithName("InitiateVideoUploadV1")
@@ -62,10 +64,22 @@ public sealed partial class InitiateUploadEndpoint(ILogger<InitiateUploadEndpoin
     [LoggerMessage(Level = LogLevel.Warning, Message = "Upload initiation was cancelled for user {UserId}")]
     private partial void LogInitiateCancelled(string userId);
 
-    private async Task<IResult> HandleInitiateAsync(InitiateUploadRequest request, CancellationToken cancellationToken)
+    private async Task<IResult> HandleInitiateAsync(InitiateUploadRequest request, HttpContext context, CancellationToken cancellationToken)
     {
         try
         {
+            var authenticatedUserId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? context.User.FindFirstValue("sub");
+            if (string.IsNullOrWhiteSpace(authenticatedUserId))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (!string.Equals(authenticatedUserId, request.UserId, StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.Forbid();
+            }
+
             if (_logger.IsEnabled(LogLevel.Information))
             {
                 LogInitiateStarted(request.UserId, request.FileName, request.FileSize, request.TotalChunks);
