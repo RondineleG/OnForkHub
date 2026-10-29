@@ -71,11 +71,11 @@ public sealed class VideoUploadService : IVideoUploadService
     }
 
     /// <inheritdoc/>
-    public async Task PublishAsync(Guid uploadId, string title, string description)
+    public async Task PublishAsync(Guid uploadId, string title, string description, long categoryId)
     {
         using var response = await _httpClient.PostAsJsonAsync(
             $"/api/v1/videos/upload/{uploadId}/publish",
-            new { title, description });
+            new { title, description, categoryId });
         response.EnsureSuccessStatusCode();
     }
 
