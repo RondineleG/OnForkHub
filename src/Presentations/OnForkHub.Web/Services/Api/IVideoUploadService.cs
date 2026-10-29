@@ -27,7 +27,7 @@ public interface IVideoUploadService
     Task<string> GetUploadStatusAsync(Guid uploadId);
 
     /// <summary>Publishes a completed upload in the video catalog.</summary>
-    Task PublishAsync(Guid uploadId, string title, string description);
+    Task PublishAsync(Guid uploadId, string title, string description, long categoryId);
 
     /// <summary>
     /// Gets the list of uploads for the current user.
