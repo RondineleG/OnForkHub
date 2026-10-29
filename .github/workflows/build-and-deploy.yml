@@ -45,21 +45,21 @@ jobs:
       - name: Set full branch name
         id: set-branch
         if: github.event_name == 'workflow_dispatch'
+        env:
+          BRANCH_TYPE: ${{ inputs.branch_type }}
+          BRANCH_NAME: ${{ inputs.branch_name }}
         run: |
-          if [[ "${{ github.event.inputs.branch_type }}" == "dev" || "${{ github.event.inputs.branch_type }}" == "main" || "${{ github.event.inputs.branch_type }}" == "uat" ]]; then
-            FULL_BRANCH="${{ github.event.inputs.branch_type }}"
+          if [[ "$BRANCH_TYPE" == "dev" || "$BRANCH_TYPE" == "main" || "$BRANCH_TYPE" == "uat" ]]; then
+            FULL_BRANCH="$BRANCH_TYPE"
           else
-            if [[ -z "${{ github.event.inputs.branch_name }}" ]]; then
-              echo "❌ Branch name is required for ${{ github.event.inputs.branch_type }} branches"
+            if [[ -z "$BRANCH_NAME" || "$BRANCH_NAME" == *$'\\n'* || "$BRANCH_NAME" == -* ]]; then
+              echo "Invalid branch name"
               exit 1
             fi
-            BRANCH_TYPE=$(echo "${{ github.event.inputs.branch_type }}" | sed 's#/$##')
-            BRANCH_NAME=$(echo "${{ github.event.inputs.branch_name }}" | sed 's#^/##')
-            FULL_BRANCH="${BRANCH_TYPE}/${BRANCH_NAME}"
+            FULL_BRANCH="${BRANCH_TYPE%/}/${BRANCH_NAME#/}"
           fi
-          echo "FULL_BRANCH=${FULL_BRANCH}" >> $GITHUB_ENV
-          echo "full_branch=${FULL_BRANCH}" >> $GITHUB_OUTPUT
-          echo "✅ Full branch set to: ${FULL_BRANCH}"
+          echo "FULL_BRANCH=$FULL_BRANCH" >> "$GITHUB_ENV"
+          echo "full_branch=$FULL_BRANCH" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -219,32 +219,15 @@ jobs:
             fi
           "
 
-      - name: Cleanup Previous Deployment
+      - name: Pin deployment images to validated commit
+        env:
+          IMAGE_SHA: ${{ github.sha }}
+          IMAGE_OWNER: ${{ github.repository_owner }}
         run: |
-          ssh deploy-server "
-            cd ~/onforkhub-deploy
-            chmod +x cleanup-services.sh
-            echo '🧹 Cleaning up previous deployment...'
-            timeout 120 bash ./cleanup-services.sh || echo 'Cleanup completed or timed out'
-          "
-
-      - name: Update Docker Compose Configuration
-        run: |
-          ssh deploy-server "
-            cd ~/onforkhub-deploy
-            GITHUB_USERNAME_LOWER=\$(echo '${{ github.actor }}' | tr '[:upper:]' '[:lower:]')
-            echo '🔄 Using lowercase username: \$GITHUB_USERNAME_LOWER'
-
-            # Update docker-compose.yml with correct image names
-            sed -i \"s|ghcr.io/.*/onforkhub-api:latest|ghcr.io/\$GITHUB_USERNAME_LOWER/onforkhub-api:latest|g\" docker-compose.yml
-            sed -i \"s|ghcr.io/.*/onforkhub-web:latest|ghcr.io/\$GITHUB_USERNAME_LOWER/onforkhub-web:latest|g\" docker-compose.yml
-
-            # Remove obsolete version from docker-compose.yml
-            sed -i '/^version:/d' docker-compose.yml
-
-            echo '✅ Docker compose updated'
-            grep 'image:' docker-compose.yml || echo 'No image lines found'
-          "
+          OWNER_LOWER="$(printf '%s' "$IMAGE_OWNER" | tr '[:upper:]' '[:lower:]')"
+          ssh deploy-server "mkdir -p ~/onforkhub-deploy"
+          scp .deploy/docker-compose.yml deploy-server:~/onforkhub-deploy/docker-compose.yml
+          ssh deploy-server "cd ~/onforkhub-deploy && sed -i -E 's#ghcr.io/[^/]+/onforkhub-api:[^ ]+#ghcr.io/$OWNER_LOWER/onforkhub-api:$IMAGE_SHA#; s#ghcr.io/[^/]+/onforkhub-web:[^ ]+#ghcr.io/$OWNER_LOWER/onforkhub-web:$IMAGE_SHA#' docker-compose.yml"
 
       - name: Start Deployment
         run: |
