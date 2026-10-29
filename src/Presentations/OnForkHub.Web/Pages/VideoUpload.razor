@@ -165,7 +165,7 @@
 
             var upload = await UploadService.InitiateUploadAsync(
                 selectedFile.Name, selectedFile.Size, selectedFile.ContentType, totalChunks, userId);
-            var uploadId = Guid.Parse(upload.Id);
+            var uploadId = Guid.Parse(upload.Id.Split('/').Last());
             using var stream = selectedFile.OpenReadStream(maxAllowedSize: 100L * 1024 * 1024);
             var buffer = new byte[chunkSize];
 
