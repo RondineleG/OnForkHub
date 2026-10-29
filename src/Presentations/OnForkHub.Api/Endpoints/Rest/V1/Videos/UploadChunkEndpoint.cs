@@ -1,5 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Core.Interfaces.Services;
@@ -9,7 +11,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// <summary>
 /// Endpoint for uploading a chunk of a video file.
 /// </summary>
-public sealed partial class UploadChunkEndpoint(ILogger<UploadChunkEndpoint> logger, IVideoUploadService uploadService) : IEndpointAsync
+public sealed partial class UploadChunkEndpoint(ILogger<UploadChunkEndpoint> logger, IVideoUploadService uploadService, OnForkHub.Core.Interfaces.Repositories.IVideoUploadRepository uploads) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -35,7 +37,7 @@ public sealed partial class UploadChunkEndpoint(ILogger<UploadChunkEndpoint> log
                     CancellationToken cancellationToken
                 ) =>
                 {
-                    return await HandleChunkAsync(uploadId, chunk, chunkIndex, totalChunks, cancellationToken);
+                    return await HandleChunkAsync(uploadId, chunk, chunkIndex, totalChunks, context, cancellationToken);
                 }
             )
             .WithName("UploadVideoChunkV1")
@@ -75,6 +77,24 @@ public sealed partial class UploadChunkEndpoint(ILogger<UploadChunkEndpoint> log
         CancellationToken cancellationToken
     )
     {
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? context.User.FindFirstValue("sub");
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var upload = await uploads.GetByIdAsync(uploadId);
+        if (upload.Status != EResultStatus.Success || upload.Data is null)
+        {
+            return Results.NotFound(new { error = "Upload not found" });
+        }
+
+        if (!string.Equals(upload.Data.UserId.ToString(), userId, StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.Forbid();
+        }
+
         if (chunk is null || chunk.Length == 0)
         {
             return Results.BadRequest(new { error = "No chunk data provided" });
