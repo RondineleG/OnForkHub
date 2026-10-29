@@ -226,6 +226,7 @@ jobs:
         run: |
           OWNER_LOWER="$(printf '%s' "$IMAGE_OWNER" | tr '[:upper:]' '[:lower:]')"
           ssh deploy-server "mkdir -p ~/onforkhub-deploy"
+          ssh deploy-server "cd ~/onforkhub-deploy && if [ -f docker-compose.yml ]; then cp docker-compose.yml docker-compose.previous.yml; fi"
           scp .deploy/docker-compose.yml deploy-server:~/onforkhub-deploy/docker-compose.yml
           ssh deploy-server "cd ~/onforkhub-deploy && sed -i -E 's#ghcr.io/[^/]+/onforkhub-api:[^ ]+#ghcr.io/$OWNER_LOWER/onforkhub-api:$IMAGE_SHA#; s#ghcr.io/[^/]+/onforkhub-web:[^ ]+#ghcr.io/$OWNER_LOWER/onforkhub-web:$IMAGE_SHA#' docker-compose.yml"
 
@@ -281,41 +282,43 @@ jobs:
             done
           "
 
-      - name: Test Services
+      - name: Verify deployment health
         run: |
-          ssh deploy-server "
-            echo '🧪 Testing services...'
-
-            # Test API health
-            echo 'Testing API health endpoint...'
-            for i in {1..5}; do
-              if curl -f -m 10 -k https://172.245.152.43:9443/health 2>/dev/null; then
-                echo '✅ API health check passed'
-                break
-              elif curl -f -m 10 -k https://172.245.152.43:9443/ 2>/dev/null; then
-                echo '✅ API root endpoint accessible'
-                break
-              else
-                echo \"API test attempt \$i/5 failed, retrying...\"
-                sleep 10
-              fi
+          ssh deploy-server '
+            set -eu
+            cd ~/onforkhub-deploy
+            for attempt in $(seq 1 20); do
+              API_HEALTH=$(docker inspect -f "{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}" onforkhub-api 2>/dev/null || true)
+              WEB_HEALTH=$(docker inspect -f "{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}" onforkhub-web 2>/dev/null || true)
+              if [ "$API_HEALTH" = healthy ] && [ "$WEB_HEALTH" = healthy ]; then exit 0; fi
+              if [ "$API_HEALTH" = unhealthy ] || [ "$WEB_HEALTH" = unhealthy ]; then exit 1; fi
+              sleep 15
             done
+            echo "Deployment health deadline exceeded"
+            exit 1
+          '
 
-            # Test Web
-            echo 'Testing Web endpoint...'
-            for i in {1..5}; do
-              if curl -f -m 10 -k https://172.245.152.43/ 2>/dev/null; then
-                echo '✅ Web endpoint accessible'
-                break
-              else
-                echo \"Web test attempt \$i/5 failed, retrying...\"
-                sleep 10
-              fi
+      - name: Roll back unhealthy deployment
+        if: failure()
+        run: |
+          ssh deploy-server '
+            set -eu
+            cd ~/onforkhub-deploy
+            if [ ! -f docker-compose.previous.yml ]; then
+              echo "No previous compose snapshot available for rollback"
+              exit 1
+            fi
+            cp docker-compose.previous.yml docker-compose.yml
+            docker compose pull onforkhub-api onforkhub-web
+            docker compose up -d onforkhub-api onforkhub-web
+            for attempt in $(seq 1 20); do
+              API_HEALTH=$(docker inspect -f "{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}" onforkhub-api 2>/dev/null || true)
+              WEB_HEALTH=$(docker inspect -f "{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}" onforkhub-web 2>/dev/null || true)
+              if [ "$API_HEALTH" = healthy ] && [ "$WEB_HEALTH" = healthy ]; then exit 0; fi
+              sleep 15
             done
-
-            echo '📋 Final status:'
-            docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
-          "
+            exit 1
+          '
 
       - name: Show Deployment Logs
         if: always()
