@@ -42,7 +42,7 @@ public sealed class VideoStreamingIntegrationTests(CustomWebApplicationFactory f
         using (var content = new MemoryStream(videoBytes))
         {
             var sent = await uploads.UploadChunkAsync(uploadId, content, 0, 1);
-            sent.Status.Should().Be(OnForkHub.Core.Enums.EResultStatus.Success);
+            sent.Status.Should().Be(OnForkHub.Core.Enums.EResultStatus.Success, sent.Message);
         }
 
         using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/videos/upload/{uploadId}/stream");
