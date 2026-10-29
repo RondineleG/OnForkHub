@@ -7,9 +7,8 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using OnForkHub.Core.Interfaces.Services;
-
 using OnForkHub.Api.IntegrationTests.Infrastructure;
+using OnForkHub.Core.Interfaces.Services;
 
 using Xunit;
 
@@ -54,6 +53,7 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
+
     /// <summary>
     /// Rejects reading another user's upload status.
     /// </summary>
@@ -98,5 +98,4 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
         result.Data.Should().NotBeNull();
         return Guid.Parse(result.Data!.Id);
     }
-
 }
