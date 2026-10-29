@@ -96,6 +96,6 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
             "other-user.mp4", 3, "video/mp4", Guid.NewGuid().ToString(), 1);
 
         result.Data.Should().NotBeNull();
-        return Guid.Parse(result.Data!.Id);
+        return Guid.Parse(result.Data!.Id.Split('/').Last());
     }
 }
