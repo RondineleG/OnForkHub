@@ -16,6 +16,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// </summary>
 public sealed class PublishUploadedVideoEndpoint(
     IVideoUploadRepository uploads,
+    IVideoRepositoryEF videoRepository,
     IVideoService videos) : IEndpointAsync
 {
     private const int V1 = 1;
@@ -53,20 +54,10 @@ public sealed class PublishUploadedVideoEndpoint(
                         return Results.Conflict(new { error = "The upload is not stored yet." });
                     }
 
-                    // Prevent sequential retries from creating another catalog entry for the same stored file.
-                    // Concurrent requests still require a database-enforced uniqueness constraint.
-                    var existing = await videos.SearchAsync(
-                        null, null, userId, null, null, 0, true, 1, 1000);
-                    if (existing.Status != EResultStatus.Success)
+                    var existing = await videoRepository.GetByUploadIdAsync(uploadId);
+                    if (existing.Status == EResultStatus.Success && existing.Data is not null)
                     {
-                        return Results.Problem("Unable to check for an existing publication.");
-                    }
-
-                    var published = existing.Data.Items.FirstOrDefault(
-                        video => string.Equals(video.Url.Value, upload.StoragePath, StringComparison.OrdinalIgnoreCase));
-                    if (published is not null)
-                    {
-                        return Results.Ok(VideoResponse.FromVideo(published));
+                        return Results.Ok(VideoResponse.FromVideo(existing.Data));
                     }
 
                     var created = Video.Create(request.Title, request.Description, upload.StoragePath, upload.UserId);
