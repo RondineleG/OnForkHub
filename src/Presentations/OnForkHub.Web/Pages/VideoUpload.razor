@@ -200,7 +200,12 @@
                 throw new InvalidOperationException($"O arquivo não foi confirmado pelo armazenamento: {status}.");
             }
 
-            await UploadService.PublishAsync(uploadId, uploadModel.Title, uploadModel.Description);
+            if (!long.TryParse(uploadModel.CategoryId, out var categoryId) || categoryId <= 0)
+            {
+                throw new InvalidOperationException("Selecione uma categoria válida.");
+            }
+
+            await UploadService.PublishAsync(uploadId, uploadModel.Title, uploadModel.Description, categoryId);
             uploadProgress = 100;
             Navigation.NavigateTo("/videos");
         }
