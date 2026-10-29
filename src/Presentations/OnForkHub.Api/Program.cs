@@ -56,12 +56,15 @@ var fileStorage = app.Services.GetRequiredService<IOptions<FileStorageOptions>>(
 var videoDirectory = Path.Combine(Directory.GetCurrentDirectory(), fileStorage.BasePath, "videos");
 Directory.CreateDirectory(videoDirectory);
 
-app.UseStaticFiles(new StaticFileOptions
+if (fileStorage.ServePublicVideos)
 {
-    FileProvider = new PhysicalFileProvider(videoDirectory),
-    RequestPath = new PathString(fileStorage.BaseUrl.TrimEnd('/') + "/videos"),
-    ServeUnknownFileTypes = false,
-});
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(videoDirectory),
+        RequestPath = new PathString(fileStorage.BaseUrl.TrimEnd('/') + "/videos"),
+        ServeUnknownFileTypes = false,
+    });
+}
 
 app.UseCors("DefaultPolicy");
 app.UseAuthentication();
