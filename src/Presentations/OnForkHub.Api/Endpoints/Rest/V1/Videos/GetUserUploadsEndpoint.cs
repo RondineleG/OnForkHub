@@ -1,5 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Core.Interfaces.Services;
@@ -29,12 +31,13 @@ public sealed partial class GetUserUploadsEndpoint(ILogger<GetUserUploadsEndpoin
                 [Authorize]
                 async (
                     [FromQuery] string userId,
+                    HttpContext context,
                     [FromQuery] int page = 1,
                     [FromQuery] int pageSize = 20,
                     CancellationToken cancellationToken = default
                 ) =>
                 {
-                    return await HandleGetUserUploadsAsync(userId, page, pageSize, cancellationToken);
+                    return await HandleGetUserUploadsAsync(userId, page, pageSize, context, cancellationToken);
                 }
             )
             .WithName("GetUserVideoUploadsV1")
@@ -60,8 +63,20 @@ public sealed partial class GetUserUploadsEndpoint(ILogger<GetUserUploadsEndpoin
     [LoggerMessage(Level = LogLevel.Warning, Message = "Get user uploads was cancelled for user {UserId}")]
     private partial void LogGetUploadsCancelled(string userId);
 
-    private async Task<IResult> HandleGetUserUploadsAsync(string userId, int page, int pageSize, CancellationToken cancellationToken)
+    private async Task<IResult> HandleGetUserUploadsAsync(string userId, int page, int pageSize, HttpContext context, CancellationToken cancellationToken)
     {
+        var authenticatedUserId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? context.User.FindFirstValue("sub");
+        if (string.IsNullOrWhiteSpace(authenticatedUserId))
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!string.Equals(authenticatedUserId, userId, StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.Forbid();
+        }
+
         if (string.IsNullOrWhiteSpace(userId))
         {
             return Results.BadRequest(new { error = "UserId is required" });
