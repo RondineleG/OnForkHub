@@ -32,15 +32,22 @@ public sealed class VideoStreamingIntegrationTests(CustomWebApplicationFactory f
         var userId = claims.First(c => c.Type is ClaimTypes.NameIdentifier or "nameid" or "sub").Value;
         byte[] videoBytes = [10, 20, 30, 40, 50, 60];
 
-        await using var scope = factory.CreateScopeAsync();
-        var uploads = scope.ServiceProvider.GetRequiredService<IVideoUploadService>();
-        var initiated = await uploads.InitiateUploadAsync(
-            "range-test.mp4", videoBytes.Length, "video/mp4", userId, 1);
-        initiated.Data.Should().NotBeNull();
-        var uploadId = Guid.Parse(initiated.Data!.Id.Split('/').Last());
-
-        using (var content = new MemoryStream(videoBytes))
+        Guid uploadId;
+        await using (var initiateScope = factory.CreateScopeAsync())
         {
+            var uploads = initiateScope.ServiceProvider.GetRequiredService<IVideoUploadService>();
+            var initiated = await uploads.InitiateUploadAsync(
+                "range-test.mp4", videoBytes.Length, "video/mp4", userId, 1);
+            initiated.Data.Should().NotBeNull();
+            uploadId = Guid.Parse(initiated.Data!.Id.Split('/').Last());
+        }
+
+        // Each API request gets its own DbContext. Keep the test's scopes isolated
+        // to avoid EF Core tracking a newly created upload alongside its reloaded copy.
+        await using (var chunkScope = factory.CreateScopeAsync())
+        {
+            var uploads = chunkScope.ServiceProvider.GetRequiredService<IVideoUploadService>();
+            using var content = new MemoryStream(videoBytes);
             var sent = await uploads.UploadChunkAsync(uploadId, content, 0, 1);
             sent.Status.Should().Be(OnForkHub.Core.Enums.EResultStatus.Success, sent.Message);
         }
