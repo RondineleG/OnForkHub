@@ -26,7 +26,8 @@ public sealed class PublishUploadedVideoEndpoint(
         var versions = app.NewApiVersionSet().HasApiVersion(new ApiVersion(V1)).ReportApiVersions().Build();
         app.MapPost(
                 $"/api/v{V1}/videos/upload/{{uploadId:guid}}/publish",
-                [Authorize] async (Guid uploadId, PublishUploadedVideoRequest request, HttpContext context) =>
+                [Authorize]
+                async (Guid uploadId, PublishUploadedVideoRequest request, HttpContext context) =>
                 {
                     var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
                         ?? context.User.FindFirstValue("sub");
@@ -75,8 +76,3 @@ public sealed class PublishUploadedVideoEndpoint(
         return Task.FromResult(RequestResult.Success());
     }
 }
-
-/// <summary>
-/// Metadata supplied when publishing a stored video.
-/// </summary>
-public sealed record PublishUploadedVideoRequest(string Title, string Description);
