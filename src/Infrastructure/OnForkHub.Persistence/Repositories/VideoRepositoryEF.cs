@@ -99,6 +99,23 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
     }
 
     /// <inheritdoc/>
+    public async Task<RequestResult<Video>> GetByUploadIdAsync(Guid uploadId)
+    {
+        try
+        {
+            var video = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                _context.Videos.AsNoTracking(), v => v.UploadId == uploadId);
+            return video is null
+                ? RequestResult<Video>.WithError("Video not found for upload.")
+                : RequestResult<Video>.Success(video);
+        }
+        catch (Exception ex)
+        {
+            return RequestResult<Video>.WithError($"Unable to find publication: {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<RequestResult<IEnumerable<Video>>> GetByUserIdAsync(Id userId, int page, int size)
     {
         try
