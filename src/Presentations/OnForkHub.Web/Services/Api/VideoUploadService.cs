@@ -71,6 +71,15 @@ public sealed class VideoUploadService : IVideoUploadService
     }
 
     /// <inheritdoc/>
+    public async Task PublishAsync(Guid uploadId, string title, string description)
+    {
+        using var response = await _httpClient.PostAsJsonAsync(
+            $"/api/v1/videos/upload/{uploadId}/publish",
+            new { title, description });
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc/>
     public async Task<List<VideoUploadResponse>> GetMyUploadsAsync(int page = 1, int pageSize = 20)
     {
         var response = await _httpClient.GetAsync($"/api/v1/videos/upload/my-uploads?page={page}&pageSize={pageSize}");
