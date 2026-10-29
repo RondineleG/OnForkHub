@@ -88,6 +88,21 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    /// <summary>
+    /// Rejects streaming content belonging to another user.
+    /// </summary>
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task StreamUpload_ForAnotherUsersUpload_ReturnsForbidden()
+    {
+        var uploadId = await CreateOtherUsersUploadAsync();
+        using var client = factory.CreateClientWithAuth();
+
+        using var response = await client.GetAsync($"/api/v1/videos/upload/{uploadId}/stream");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     private async Task<Guid> CreateOtherUsersUploadAsync()
     {
         await using var scope = factory.CreateScopeAsync();
