@@ -17,6 +17,7 @@ using OnForkHub.CrossCutting.Interfaces;
 public sealed class PublishUploadedVideoEndpoint(
     IVideoUploadRepository uploads,
     IVideoRepositoryEF videoRepository,
+    ICategoryRepositoryEF categories,
     IVideoService videos) : IEndpointAsync
 {
     private const int V1 = 1;
@@ -64,6 +65,23 @@ public sealed class PublishUploadedVideoEndpoint(
                     if (created.Status != EResultStatus.Success || created.Data is null)
                     {
                         return Results.BadRequest(new { error = created.Message ?? "Invalid video metadata." });
+                    }
+
+                    if (request.CategoryId <= 0)
+                    {
+                        return Results.BadRequest(new { error = "A valid category is required." });
+                    }
+
+                    var category = await categories.GetByIdAsync(request.CategoryId);
+                    if (category.Status != EResultStatus.Success || category.Data is null)
+                    {
+                        return Results.BadRequest(new { error = "Category not found." });
+                    }
+
+                    var linked = created.Data.AddCategory(category.Data);
+                    if (linked.Status != EResultStatus.Success)
+                    {
+                        return Results.BadRequest(new { error = linked.Message ?? "Unable to associate category." });
                     }
 
                     created.Data.AssociateUpload(uploadId);
