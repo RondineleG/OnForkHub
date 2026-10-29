@@ -297,6 +297,9 @@ namespace OnForkHub.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<Guid?>("UploadId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -312,6 +315,10 @@ namespace OnForkHub.Persistence.Migrations
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_Videos_CreatedAt");
+
+                    b.HasIndex("UploadId")
+                        .IsUnique()
+                        .HasFilter("[UploadId] IS NOT NULL");
 
                     b.HasIndex("UpdatedAt")
                         .HasDatabaseName("IX_Videos_UpdatedAt");
