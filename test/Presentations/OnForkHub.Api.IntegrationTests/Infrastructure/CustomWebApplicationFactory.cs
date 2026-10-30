@@ -63,7 +63,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 config.AddInMemoryCollection(
                     new Dictionary<string, string?>
                     {
-                        ["AppSettings:ApiMode"] = "Rest",
                         ["Cache:UseRedis"] = "false",
                         ["Cache:DefaultExpirationMinutes"] = "30",
                         ["RateLimiting:Enabled"] = "false",

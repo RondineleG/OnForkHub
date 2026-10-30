@@ -211,11 +211,12 @@ OnForkHub/
 ├── src/
 │   ├── Core/           # Business logic
 │   ├── Infrastructure/ # Data access
-│   ├── Presentations/  # UI (Web, API, App)
+│   ├── Presentations/  # UI (Web, API)
 │   └── Shared/         # Shared utilities
 ├── test/               # Test projects
 ├── docs/               # Documentation
-└── scripts/            # Build/utility scripts
+├── tests/              # JS player tests
+└── tools/              # P2P seeder
 ```
 
 ---
