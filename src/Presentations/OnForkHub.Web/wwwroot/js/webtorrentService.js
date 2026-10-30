@@ -3,7 +3,8 @@
 // torrent pieces, so the browser's native player handles every format it supports, including seeking.
 const LIBRARY_URL = '/lib/webtorrent/webtorrent.min.js';
 const WORKER_URL = '/webtorrent-sw.min.js';
-const LOAD_TIMEOUT_MS = 30000;
+// Give up on a torrent only after this long without receiving any data; slow but moving downloads keep going.
+const STALL_TIMEOUT_MS = 30000;
 
 let client = null;
 let clientPromise = null;
@@ -61,6 +62,39 @@ export async function createTorrent(videoData, fileName) {
     });
 }
 
+// Torrent pieces live in memory. The default browser store (OPFS) spends 20-30 s preparing a movie-sized file before
+// the first byte can play, and sometimes never finishes; streaming only needs the pieces for this session, and they
+// are released when the torrent is destroyed (the feed keeps at most the visible video and the next one).
+class MemoryChunkStore {
+    constructor(chunkLength) {
+        this.chunkLength = chunkLength;
+        this.chunks = [];
+    }
+
+    put(index, chunk, callback = () => {}) {
+        this.chunks[index] = chunk;
+        queueMicrotask(() => callback(null));
+    }
+
+    get(index, options, callback) {
+        if (typeof options === 'function') [callback, options] = [options, null];
+        const chunk = this.chunks[index];
+        if (!chunk) return queueMicrotask(() => callback(new Error('Chunk not found')));
+        const offset = options?.offset ?? 0;
+        const length = options?.length ?? chunk.length - offset;
+        queueMicrotask(() => callback(null, chunk.subarray(offset, offset + length)));
+    }
+
+    close(callback = () => {}) {
+        queueMicrotask(() => callback(null));
+    }
+
+    destroy(callback = () => {}) {
+        this.chunks = [];
+        queueMicrotask(() => callback(null));
+    }
+}
+
 const activeDownloads = new Map();
 
 export function stopDownload(magnetUri) {
@@ -98,9 +132,14 @@ export function startDownload(magnetUri, containerId, options = {}) {
             resolve(video);
         };
         const onVideoError = () => fail(new Error(video?.error?.message || 'The browser cannot play this video.'));
+        const armStallTimer = () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fail(new Error('The torrent stopped receiving data before the video could play.')), STALL_TIMEOUT_MS);
+        };
         const clearPending = () => {
             clearTimeout(timeout);
             torrent?.removeListener?.('error', fail);
+            torrent?.removeListener?.('download', armStallTimer);
             video?.removeEventListener('canplay', onCanPlay);
             video?.removeEventListener('error', onVideoError);
         };
@@ -124,11 +163,11 @@ export function startDownload(magnetUri, containerId, options = {}) {
             }
         };
         activeDownloads.set(magnetUri, { stop, get torrent() { return torrent; } });
-        timeout = setTimeout(() => fail(new Error('Timed out waiting for the torrent video to become playable.')), LOAD_TIMEOUT_MS);
+        armStallTimer();
 
         getClient().then((torrentClient) => {
             if (stopped || settled) return;
-            torrent = torrentClient.add(magnetUri, (readyTorrent) => {
+            torrent = torrentClient.add(magnetUri, { store: MemoryChunkStore }, (readyTorrent) => {
                 if (stopped || settled) return;
                 // The largest playable file is the movie; torrents often ship samples or extras alongside it.
                 const file = readyTorrent.files
@@ -149,6 +188,7 @@ export function startDownload(magnetUri, containerId, options = {}) {
                 catch (error) { fail(error); }
             });
             torrent?.on?.('error', fail);
+            torrent?.on?.('download', armStallTimer);
         }).catch(fail);
     });
 }
@@ -159,6 +199,7 @@ export function getTorrentStats(magnetUri) {
     if (!torrent) return null;
 
     return {
+        ready: Boolean(torrent.ready),
         peers: torrent.numPeers,
         progress: torrent.progress * 100,
         downloadSpeed: torrent.downloadSpeed,
