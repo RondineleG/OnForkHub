@@ -1,8 +1,14 @@
 let client = null;
 
+// WebTorrent 0.98 defaults to 'stun:...?transport=udp', which current browsers reject, so every WebRTC peer
+// connection would fail and only HTTP web seeds would work.
+const RTC_CONFIG = {
+    iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:global.stun.twilio.com:3478'] }]
+};
+
 function getClient() {
     if (!client) {
-        client = new WebTorrent();
+        client = new WebTorrent({ tracker: { rtcConfig: RTC_CONFIG } });
     }
     return client;
 }

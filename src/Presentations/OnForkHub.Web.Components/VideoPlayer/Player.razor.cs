@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components.Web;
-
 using OnForkHub.Web.Components.Models;
 
 namespace OnForkHub.Web.Components.VideoPlayer;
@@ -109,7 +107,15 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
     private string ErrorMessage { get; set; } = string.Empty;
 
+    private double TorrentDownloadSpeed { get; set; }
+
+    private string TorrentFileName { get; set; } = string.Empty;
+
+    private int TorrentPeers { get; set; }
+
     private int TorrentProgress { get; set; }
+
+    private ETorrentState TorrentState { get; set; } = ETorrentState.Idle;
 
     public ValueTask DisposeAsync()
     {
@@ -160,25 +166,42 @@ public partial class Player : ComponentBase, IAsyncDisposable
     public async Task OnTorrentErrorCallback(string error)
     {
         ErrorMessage = error;
-        TorrentProgress = 0;
+        TorrentState = ETorrentState.Error;
         await InvokeAsync(StateHasChanged);
         await OnTorrentError.InvokeAsync(error);
     }
 
     [JSInvokable]
-    public async Task OnTorrentProgressUpdate(int progress)
+    public async Task OnTorrentReadyCallback(string videoName)
     {
-        TorrentProgress = progress;
+        ErrorMessage = string.Empty;
+        TorrentFileName = videoName;
+        if (TorrentState != ETorrentState.Completed)
+        {
+            TorrentState = ETorrentState.Playing;
+        }
+
         await InvokeAsync(StateHasChanged);
-        await OnTorrentProgress.InvokeAsync(progress);
+        await OnTorrentReady.InvokeAsync();
     }
 
     [JSInvokable]
-    public async Task OnTorrentReadyCallback()
+    public async Task OnTorrentStatsUpdate(int progress, int peers, double downloadSpeed)
     {
-        ErrorMessage = string.Empty;
+        TorrentProgress = progress;
+        TorrentPeers = peers;
+        TorrentDownloadSpeed = downloadSpeed;
+        if (progress >= 100)
+        {
+            TorrentState = ETorrentState.Completed;
+        }
+        else if (TorrentState == ETorrentState.Idle)
+        {
+            TorrentState = ETorrentState.Connecting;
+        }
+
         await InvokeAsync(StateHasChanged);
-        await OnTorrentReady.InvokeAsync();
+        await OnTorrentProgress.InvokeAsync(progress);
     }
 
     protected override async Task OnInitializedAsync()
@@ -236,8 +259,25 @@ public partial class Player : ComponentBase, IAsyncDisposable
         }
     }
 
-    private async Task HandleTorrentFile(MouseEventArgs e)
+    private static string FormatSpeed(double bytesPerSecond) =>
+        bytesPerSecond >= 1024 * 1024 ? $"{bytesPerSecond / (1024 * 1024):0.0} MB/s" : $"{bytesPerSecond / 1024:0} KB/s";
+
+    // Starts as soon as a file is picked: selecting the .torrent is the only action the user has to take.
+    private async Task HandleTorrentFile(ChangeEventArgs e)
     {
+        var selectedPath = e.Value?.ToString();
+        if (string.IsNullOrEmpty(selectedPath))
+        {
+            return;
+        }
+
+        ErrorMessage = string.Empty;
+        TorrentFileName = Path.GetFileName(selectedPath.Replace('\\', '/'));
+        TorrentProgress = 0;
+        TorrentPeers = 0;
+        TorrentDownloadSpeed = 0;
+        TorrentState = ETorrentState.Connecting;
+
         try
         {
             if (InputAttributes != null && InputAttributes.TryGetValue("id", out var elementValue))
@@ -249,6 +289,7 @@ public partial class Player : ComponentBase, IAsyncDisposable
         catch (Exception ex)
         {
             ErrorMessage = $"Erro ao carregar arquivo torrent: {ex.Message}";
+            TorrentState = ETorrentState.Error;
             await InvokeAsync(StateHasChanged);
         }
     }

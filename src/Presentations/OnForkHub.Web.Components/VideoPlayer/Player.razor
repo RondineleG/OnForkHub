@@ -9,52 +9,78 @@
 
 @if (!string.IsNullOrEmpty(MagnetUri) || !string.IsNullOrEmpty(TorrentFilePath) || EnableTorrentFileUpload)
 {
-    <div style="width:100%; min-height:400px;">
+    var showPlaceholder = TorrentState == ETorrentState.Idle && string.IsNullOrEmpty(MagnetUri);
+
+    <div class="w-100">
         @if (EnableTorrentFileUpload)
         {
-            <div style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f8f9fa;">
-                <div style="margin-bottom: 10px;">
-                    <label for="torrent-file-@InputAttributes["id"]" style="display: block; margin-bottom: 5px; font-weight: 500;">
-                        Selecionar arquivo .torrent:
-                    </label>
-                    <input type="file"
-                           accept=".torrent"
-                           id="torrent-file-@InputAttributes["id"]"
-                           style="margin-bottom: 10px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; width: 100%;" />
-                </div>
-                <button type="button"
-                        @onclick="HandleTorrentFile"
-                        style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">
-                    📁 Carregar Arquivo Torrent
-                </button>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <label for="torrent-file-@InputAttributes["id"]" class="btn btn-primary mb-0 text-nowrap">
+                    <i class="bi bi-folder2-open me-1"></i> Escolher arquivo .torrent
+                </label>
+                <input type="file" accept=".torrent" id="torrent-file-@InputAttributes["id"]" class="d-none" @onchange="HandleTorrentFile" />
+                <span class="text-muted text-truncate">@(string.IsNullOrEmpty(TorrentFileName) ? "Nenhum arquivo selecionado" : TorrentFileName)</span>
             </div>
         }
 
-        @if (!string.IsNullOrEmpty(ErrorMessage))
-        {
-            <div style="margin-bottom: 15px; padding: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 6px;">
-                <strong>Erro:</strong> @ErrorMessage
-            </div>
-        }
+        <div class="position-relative rounded overflow-hidden bg-black" style="min-height: 400px;">
+            @* The element with the player id is owned by JavaScript: Blazor never renders children inside it. *@
+            <div id="@InputAttributes["id"]"></div>
 
-        @if (TorrentProgress > 0 && TorrentProgress < 100)
-        {
-            <div style="margin-bottom: 15px; padding: 10px; background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; border-radius: 6px;">
-                <div style="margin-bottom: 5px;">📥 Download em progresso: @TorrentProgress%</div>
-                <div style="width: 100%; background-color: #e9ecef; border-radius: 10px; height: 20px;">
-                    <div style="width: @(TorrentProgress)%; background-color: #007bff; height: 100%; border-radius: 10px; transition: width 0.3s ease;"></div>
+            @if (showPlaceholder)
+            {
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                    <i class="bi bi-film fs-1 mb-2"></i>
+                    <span>Escolha um arquivo .torrent para começar</span>
+                    <small class="mt-1">O vídeo começa a tocar assim que os primeiros pedaços chegam.</small>
                 </div>
-            </div>
-        }
+            }
 
-        <div id="@InputAttributes["id"]" style="width:100%; min-height:400px; background:#000; border-radius: 8px; overflow: hidden;">
-            <div style="display: flex; align-items: center; justify-content: center; height: 400px; color: white;">
-                <div style="text-align: center;">
-                    <div style="font-size: 24px; margin-bottom: 10px;">🎬</div>
-                    <span>@(string.IsNullOrEmpty(MagnetUri) ? "Aguardando seleção de torrent..." : "Carregando torrent...")</span>
+            @if (TorrentState == ETorrentState.Error)
+            {
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-black text-white p-4 text-center">
+                    <i class="bi bi-exclamation-triangle fs-1 text-warning mb-2"></i>
+                    <span>@ErrorMessage</span>
                 </div>
-            </div>
+            }
         </div>
+
+        @if (TorrentState is ETorrentState.Connecting or ETorrentState.Playing or ETorrentState.Completed)
+        {
+            <div class="mt-2">
+                <div class="progress" style="height: 4px;">
+                    <div class="progress-bar @(TorrentState == ETorrentState.Completed ? "bg-success" : string.Empty)"
+                         role="progressbar"
+                         style="width: @(TorrentProgress)%"
+                         aria-valuenow="@TorrentProgress"
+                         aria-valuemin="0"
+                         aria-valuemax="100"></div>
+                </div>
+                <div class="d-flex justify-content-between small text-muted mt-1">
+                    <span>
+                        @switch (TorrentState)
+                        {
+                            case ETorrentState.Connecting:
+                                <text><span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Conectando aos peers...</text>
+                                break;
+                            case ETorrentState.Playing:
+                                <text><i class="bi bi-play-circle me-1"></i> Reproduzindo enquanto baixa</text>
+                                break;
+                            default:
+                                <text><i class="bi bi-check-circle text-success me-1"></i> Download completo</text>
+                                break;
+                        }
+                    </span>
+                    <span>
+                        @TorrentProgress% · @TorrentPeers @(TorrentPeers == 1 ? "peer" : "peers")
+                        @if (TorrentState != ETorrentState.Completed)
+                        {
+                            <text> · @FormatSpeed(TorrentDownloadSpeed)</text>
+                        }
+                    </span>
+                </div>
+            </div>
+        }
     </div>
 }
 else if (Sources?.Any() == true)
