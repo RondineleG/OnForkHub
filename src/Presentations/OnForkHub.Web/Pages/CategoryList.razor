@@ -281,7 +281,7 @@
 }
 
 @code {
-    private PagedResult<CategoryDto> categories = new();
+    private PagedResult<CategoryResponse> categories = new();
     private bool isLoading = true;
     private bool showModal;
     private bool showDeleteModal;
@@ -291,8 +291,8 @@
     private string searchText = string.Empty;
     private string? errorMessage;
     private string? successMessage;
-    private CategoryDto? categoryToDelete;
-    private CategoryDto? editingCategory;
+    private CategoryResponse? categoryToDelete;
+    private CategoryResponse? editingCategory;
     private readonly CategoryCreateModel categoryModel = new();
     private int currentPage = 1;
     private const int pageSize = 20;
@@ -319,7 +319,7 @@
         catch (Exception ex)
         {
             errorMessage = $"Erro ao carregar categorias: {ex.Message}";
-            categories = new PagedResult<CategoryDto>();
+            categories = new PagedResult<CategoryResponse>();
         }
         finally
         {
@@ -363,7 +363,7 @@
         showModal = true;
     }
 
-    private void OpenEditModal(CategoryDto category)
+    private void OpenEditModal(CategoryResponse category)
     {
         isEditing = true;
         editingCategory = category;
@@ -444,7 +444,7 @@
         editingCategory = null;
     }
 
-    private void ConfirmDeleteAsync(CategoryDto category)
+    private void ConfirmDeleteAsync(CategoryResponse category)
     {
         categoryToDelete = category;
         showDeleteModal = true;

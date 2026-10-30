@@ -6,7 +6,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// <summary>
 /// Endpoint for creating videos.
 /// </summary>
-public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<VideoCreateRequestDto, Video> useCase) : BaseEndPoint<Video>, IEndpointAsync
+public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<VideoCreateRequest, Video> useCase) : BaseEndPoint<Video>, IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -14,7 +14,7 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<VideoCreate
 
     private readonly ILogger<CreateEndpoint> _logger = logger;
 
-    private readonly IUseCase<VideoCreateRequestDto, Video> _useCase = useCase;
+    private readonly IUseCase<VideoCreateRequest, Video> _useCase = useCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -24,7 +24,7 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<VideoCreate
         ConfigureEndpoint(
                 app.MapPost(
                     Route,
-                    async ([FromBody] VideoCreateRequestDto request, CancellationToken cancellationToken) =>
+                    async ([FromBody] VideoCreateRequest request, CancellationToken cancellationToken) =>
                     {
                         return await HandleCreateUseCase(_useCase, _logger, request);
                     }

@@ -2,48 +2,42 @@
 
 ## Overview
 
-This document provides an overview of the architectural decisions and improvements made to the OnForkHub application. The primary goal of these changes is to implement SOLID principles, reduce strong coupling between components, and optimize class responsibilities.
+OnForkHub follows a layered architecture. Dependencies point inward: presentation depends on application and infrastructure, which depend on the core domain.
 
-## Architectural Improvements
+| Layer | Project | Responsibility |
+|---|---|---|
+| Domain | `OnForkHub.Core` | Entities, value objects, validation rules and the contracts (`Interfaces/Services`, `Interfaces/Repositories`, `Interfaces/UseCases`) |
+| Application | `OnForkHub.Application` | Use cases, application services and request/response models (`Dtos`) |
+| Infrastructure | `OnForkHub.Persistence` | Entity Framework Core (SQL Server) repositories and migrations |
+| Shared | `OnForkHub.CrossCutting` | Authentication, caching, storage, middleware and dependency injection scanning |
+| Presentation | `OnForkHub.Api`, `OnForkHub.Web` | Minimal API endpoints and the Blazor WebAssembly client |
 
-### 1. Dependency Injection and Interfaces
+## Naming
 
-To reduce strong coupling and improve testability, interfaces were created for all major services and dependencies. The following interfaces were introduced:
+- Request and response models end with `Request` / `Response` (for example `CategoryRequest`, `CategorySearchResponse`, `PagedResponse<T>`). The `Dto` suffix is not used.
+- Repository implementations are named after their storage, for example `CategoryRepositoryEF` implementing `ICategoryRepositoryEF`.
 
-- `ICategoryService`
-- `ICategoryRepositoryEF`
-- `ICategoryRepositoryRavenDB`
-- `IValidationService<Category>`
+## Dependency Injection by Convention
 
-These interfaces were registered in the dependency injection container in `src/Core/OnForkHub.Application/Extensions/DependencyInjection.cs`.
+Registration lives in `src/Presentations/OnForkHub.Api/Extensions/CommonServicesExtension.cs` and uses the scanner from `src/Shared/OnForkHub.CrossCutting/DependencyInjection`. New types that follow a convention need no manual registration:
 
-### 2. Single Responsibility Principle
+| Convention | Scanned assembly | Registered as | Lifetime |
+|---|---|---|---|
+| Implements `IEndpointAsync` | `OnForkHub.Api` | `IEndpointAsync` | Scoped |
+| Implements `IEntityValidator<>`, `IValidationRule<>` or `IValidationService<>` | `OnForkHub.Core` | Implemented interfaces | Scoped |
+| Implements `IUseCase<,>` | `OnForkHub.Application` | Itself and implemented interfaces | Scoped |
+| Implements an interface from `OnForkHub.Core.Interfaces.Services` or `OnForkHub.Core.Interfaces.Repositories` | `OnForkHub.Application`, `OnForkHub.Persistence` | Implemented interfaces | Scoped |
 
-Services were refactored to ensure they have single, well-defined responsibilities. For example, the `CategoryService` in `src/Core/OnForkHub.Application/Services/CategoryService.cs` was refactored to handle only category-related operations. Validation logic was extracted into separate validation services, such as `CategoryValidationService` in `src/Core/OnForkHub.Core/Validations/Categories/CategoryValidationService.cs`.
+Only public, concrete, non-nested classes are picked up. To opt a class out, mark it with `[ExcludeFromRegistration]`. To control lifetime or service types for a single class, mark it with `[AutoRegister]`.
 
-### 3. Class Hierarchies
+Registrations that do not fit a convention stay explicit in `AddExplicitServices`: open generics, singletons, hosted services and types without a contract. File storage is chosen by configuration (`FileStorage:Provider`).
 
-Class hierarchies were reviewed and optimized to ensure they are well-structured and follow SOLID principles. Base classes like `BaseService` in `src/Core/OnForkHub.Application/Services/Base/BaseService.cs` and `BaseEntity` in `src/Core/OnForkHub.Core/Entities/Base/BaseEntity.cs` were reviewed to ensure they do not contain unnecessary logic.
+The scanner exposes a fluent API for new conventions:
 
-### 4. Refactored Services and Their Responsibilities
-
-The following services were refactored to follow the Single Responsibility Principle:
-
-- `CategoryService`: Handles only category-related operations.
-- `CategoryServiceRavenDB`: Handles only category-related operations for RavenDB.
-- `BaseService`: Provides common service functionalities and delegates validation to separate validation services.
-
-### 5. New Interfaces and Their Purpose
-
-The following new interfaces were introduced to decouple dependencies and improve testability:
-
-- `ICategoryService`: Defines the contract for category-related operations.
-- `ICategoryRepositoryEF`: Defines the contract for category-related operations using Entity Framework.
-- `ICategoryRepositoryRavenDB`: Defines the contract for category-related operations using RavenDB.
-- `IValidationService<Category>`: Defines the contract for validating `Category` entities.
-
-These interfaces were registered in the dependency injection container to ensure that the services are properly injected and can be easily replaced with mock implementations for testing.
-
-## Conclusion
-
-These architectural improvements aim to enhance the maintainability, testability, and scalability of the OnForkHub application. By adhering to SOLID principles and reducing strong coupling, the application is better structured and easier to extend in the future.
+```csharp
+services.Scan(scan => scan
+    .FromAssemblyOf<SomeMarker>()
+    .AddClassesImplementing(typeof(IHandler<>))
+    .AsImplementedInterfaces()
+    .WithScopedLifetime());
+```

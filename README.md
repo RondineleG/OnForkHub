@@ -29,7 +29,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
 - **🎯 Backend**: .NET 10 with ASP.NET Core
 - **🌐 Frontend**: Blazor WebAssembly
-- **💾 Databases**: RavenDB, CosmosDB, SQL Server
+- **💾 Databases**: SQL Server (EF Core), Redis cache
 - **📦 Storage**: Azure Blob Storage/AWS S3
 - **🔄 P2P**: WebTorrent
 - **🐳 Containers**: Docker

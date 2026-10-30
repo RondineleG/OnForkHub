@@ -29,7 +29,7 @@ public static class RouteGroupExtension
         group
             .MapPost(
                 "/categories",
-                async (CategoryRequestDto request, [FromServices] IUseCase<CategoryRequestDto, Category> useCase) =>
+                async (CategoryRequest request, [FromServices] IUseCase<CategoryRequest, Category> useCase) =>
                 {
                     var result = await useCase.ExecuteAsync(request);
                     return Results.Created("/categories", result);

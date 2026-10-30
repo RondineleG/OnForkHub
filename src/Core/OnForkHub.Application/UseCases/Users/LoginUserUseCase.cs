@@ -5,12 +5,12 @@ using OnForkHub.Application.Dtos.User.Request;
 /// <summary>
 /// Use case for user login/authentication.
 /// </summary>
-public class LoginUserUseCase(IUserService userService) : IUseCase<UserLoginRequestDto, UserEntity>
+public class LoginUserUseCase(IUserService userService) : IUseCase<UserLoginRequest, UserEntity>
 {
     private readonly IUserService _userService = userService;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<UserEntity>> ExecuteAsync(UserLoginRequestDto request)
+    public async Task<RequestResult<UserEntity>> ExecuteAsync(UserLoginRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 

@@ -3,7 +3,7 @@ using OnForkHub.CrossCutting.Interfaces;
 
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
-public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationRequestDto, IEnumerable<Category>> useCase)
+public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationRequest, IEnumerable<Category>> useCase)
     : BaseEndPoint<Category>,
         IEndpointAsync
 {
@@ -13,7 +13,7 @@ public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationR
 
     private readonly ILogger<GetAllEndpoint> _logger = logger;
 
-    private readonly IUseCase<PaginationRequestDto, IEnumerable<Category>> _useCase = useCase;
+    private readonly IUseCase<PaginationRequest, IEnumerable<Category>> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
@@ -24,7 +24,7 @@ public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationR
                     Route,
                     async (CancellationToken cancellationToken) =>
                     {
-                        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+                        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
                         return await HandleUseCaseAsync(
                             _useCase,
                             _logger,

@@ -355,59 +355,6 @@ docker volume prune
 
 ## Database Issues
 
-### Issue: RavenDB Connection Fails
-
-**Symptoms:**
-- "Cannot connect to RavenDB"
-- Connection timeout errors
-- 401 Unauthorized errors
-
-**Solutions:**
-
-```bash
-# Verify RavenDB is running
-docker ps | grep ravendb
-
-# Check connection string in settings
-cat appsettings.json | grep -i ravendb
-
-# Test connection manually
-curl http://localhost:8080
-
-# Restart RavenDB container
-docker restart ravendb
-
-# Check RavenDB logs
-docker logs ravendb
-```
-
-### Issue: CosmosDB Authentication Failed
-
-**Symptoms:**
-- "Unauthorized" errors
-- Authentication failed
-- Connection timeout
-
-**Solutions:**
-
-```bash
-# Verify connection string
-echo $COSMOS_CONNECTION_STRING
-
-# Check account key
-# Get from Azure Portal -> Azure Cosmos DB account -> Keys
-
-# Verify network connectivity
-ping cosmos.azure.com
-
-# Test connection with Azure CLI
-az cosmosdb database list --resource-group <rg-name> --account-name <account>
-
-# Update connection string
-# In appsettings.json or user secrets:
-dotnet user-secrets set "CosmosDb:ConnectionString" "your-connection-string"
-```
-
 ### Issue: SQL Server Connection Fails
 
 **Symptoms:**

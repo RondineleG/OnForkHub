@@ -85,7 +85,5 @@
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.9.1" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.9.1" />
-    <PackageVersion Include="RavenDB.Client" Version="6.2.4" />
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.43.0" />
   </ItemGroup>
 </Project>

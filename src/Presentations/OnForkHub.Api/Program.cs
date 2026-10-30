@@ -2,7 +2,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 
 using OnForkHub.Api.Hubs;
-using OnForkHub.Application.Extensions;
 using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.CrossCutting.Caching;
 using OnForkHub.CrossCutting.Extensions;

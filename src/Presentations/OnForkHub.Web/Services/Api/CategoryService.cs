@@ -24,7 +24,7 @@ public sealed class CategoryService : ICategoryService
     }
 
     /// <inheritdoc/>
-    public async Task<PagedResult<CategoryDto>> GetCategoriesAsync(int page = 1, int pageSize = 20, string? search = null)
+    public async Task<PagedResult<CategoryResponse>> GetCategoriesAsync(int page = 1, int pageSize = 20, string? search = null)
     {
         var url = $"/api/v1/categories?page={page}&size={pageSize}";
 
@@ -36,28 +36,28 @@ public sealed class CategoryService : ICategoryService
         var response = await _httpClient.GetAsync(url);
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync<PagedResult<CategoryDto>>(_jsonOptions);
-        return result ?? new PagedResult<CategoryDto>();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<CategoryResponse>>(_jsonOptions);
+        return result ?? new PagedResult<CategoryResponse>();
     }
 
     /// <inheritdoc/>
-    public async Task<List<CategoryDto>> GetAllCategoriesAsync()
+    public async Task<List<CategoryResponse>> GetAllCategoriesAsync()
     {
         var response = await _httpClient.GetAsync("/api/v1/categories?size=1000");
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            return new List<CategoryDto>();
+            return new List<CategoryResponse>();
         }
 
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync<PagedResult<CategoryDto>>(_jsonOptions);
-        return result?.Items ?? new List<CategoryDto>();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<CategoryResponse>>(_jsonOptions);
+        return result?.Items ?? new List<CategoryResponse>();
     }
 
     /// <inheritdoc/>
-    public async Task<CategoryDto?> GetCategoryByIdAsync(long id)
+    public async Task<CategoryResponse?> GetCategoryByIdAsync(long id)
     {
         var response = await _httpClient.GetAsync($"/api/v1/categories/{id}");
 
@@ -68,29 +68,29 @@ public sealed class CategoryService : ICategoryService
 
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync<CategoryDto>(_jsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<CategoryResponse>(_jsonOptions);
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<CategoryDto> CreateCategoryAsync(string name, string description)
+    public async Task<CategoryResponse> CreateCategoryAsync(string name, string description)
     {
         var response = await _httpClient.PostAsJsonAsync("/api/v1/categories", new { Name = name, Description = description });
 
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync<CategoryDto>(_jsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<CategoryResponse>(_jsonOptions);
         return result ?? throw new InvalidOperationException("Failed to parse create category response");
     }
 
     /// <inheritdoc/>
-    public async Task<CategoryDto> UpdateCategoryAsync(long id, string name, string description)
+    public async Task<CategoryResponse> UpdateCategoryAsync(long id, string name, string description)
     {
         var response = await _httpClient.PutAsJsonAsync($"/api/v1/categories/{id}", new { Name = name, Description = description });
 
         response.EnsureSuccessStatusCode();
 
-        var result = await response.Content.ReadFromJsonAsync<CategoryDto>(_jsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<CategoryResponse>(_jsonOptions);
         return result ?? throw new InvalidOperationException("Failed to parse update category response");
     }
 

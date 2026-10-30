@@ -21,8 +21,6 @@ using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;
 
-using Raven.Client.Documents;
-
 using Xunit;
 
 /// <summary>
@@ -77,8 +75,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                         ["Jwt:ValidateIssuerSigningKey"] = "true",
                         ["Jwt:AccessTokenExpirationMinutes"] = "15",
                         ["Jwt:RefreshTokenExpirationDays"] = "7",
-                        ["RavenDbSettings:Urls:0"] = "http://localhost:8080",
-                        ["RavenDbSettings:Database"] = "OnForkHub_Test",
                     }
                 );
             }
@@ -91,8 +87,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                     d.ServiceType.Name.Contains("DbContext")
                     || d.ServiceType.Name.Contains("DbContextOptions")
                     || d.ServiceType == typeof(EntityFrameworkDataContext)
-                    || d.ServiceType == typeof(IDocumentStore)
-                    || d.ServiceType == typeof(ICategoryServiceRavenDB)
                     || d.ServiceType == typeof(IUserService)
                     || d.ServiceType == typeof(ITokenService)
                 )
@@ -107,13 +101,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase($"TestDatabase_{_databaseId}");
             });
-
-            var mockStore = Substitute.For<IDocumentStore>();
-            services.AddSingleton(mockStore);
-
-            var mockRavenService = Substitute.For<ICategoryServiceRavenDB>();
-            mockRavenService.CreateAsync(Arg.Any<Category>()).Returns(args => Task.FromResult(RequestResult<Category>.Success((Category)args[0])));
-            services.AddScoped(_ => mockRavenService);
 
             var mockTokenService = Substitute.For<ITokenService>();
             var tokenResult = new TokenResult

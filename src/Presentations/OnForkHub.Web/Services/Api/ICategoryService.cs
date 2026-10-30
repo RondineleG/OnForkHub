@@ -11,31 +11,31 @@ public interface ICategoryService
     /// Gets a paginated list of categories.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<PagedResult<CategoryDto>> GetCategoriesAsync(int page = 1, int pageSize = 20, string? search = null);
+    Task<PagedResult<CategoryResponse>> GetCategoriesAsync(int page = 1, int pageSize = 20, string? search = null);
 
     /// <summary>
     /// Gets all categories (no pagination, for dropdowns).
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<List<CategoryDto>> GetAllCategoriesAsync();
+    Task<List<CategoryResponse>> GetAllCategoriesAsync();
 
     /// <summary>
     /// Gets a single category by its ID.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<CategoryDto?> GetCategoryByIdAsync(long id);
+    Task<CategoryResponse?> GetCategoryByIdAsync(long id);
 
     /// <summary>
     /// Creates a new category.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<CategoryDto> CreateCategoryAsync(string name, string description);
+    Task<CategoryResponse> CreateCategoryAsync(string name, string description);
 
     /// <summary>
     /// Updates an existing category.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    Task<CategoryDto> UpdateCategoryAsync(long id, string name, string description);
+    Task<CategoryResponse> UpdateCategoryAsync(long id, string name, string description);
 
     /// <summary>
     /// Deletes a category by its ID.

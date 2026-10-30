@@ -35,9 +35,9 @@ public static class TestDataFactory
     /// <param name="email">Optional user email.</param>
     /// <param name="password">Optional password.</param>
     /// <returns>User registration request DTO.</returns>
-    public static UserRegisterRequestDto CreateRegisterRequest(string? name = null, string? email = null, string password = "Test@123456")
+    public static UserRegisterRequest CreateRegisterRequest(string? name = null, string? email = null, string password = "Test@123456")
     {
-        return new UserRegisterRequestDto
+        return new UserRegisterRequest
         {
             Name = name ?? CreateUniqueName("User"),
             Email = email ?? CreateUniqueEmail(),
@@ -51,9 +51,9 @@ public static class TestDataFactory
     /// <param name="email">User email.</param>
     /// <param name="password">User password.</param>
     /// <returns>User login request DTO.</returns>
-    public static UserLoginRequestDto CreateLoginRequest(string email, string password)
+    public static UserLoginRequest CreateLoginRequest(string email, string password)
     {
-        return new UserLoginRequestDto { Email = email, Password = password };
+        return new UserLoginRequest { Email = email, Password = password };
     }
 
     /// <summary>
@@ -62,9 +62,9 @@ public static class TestDataFactory
     /// <param name="name">Optional category name.</param>
     /// <param name="description">Optional description.</param>
     /// <returns>Category request DTO.</returns>
-    public static CategoryRequestDto CreateCategoryRequest(string? name = null, string? description = null)
+    public static CategoryRequest CreateCategoryRequest(string? name = null, string? description = null)
     {
-        return new CategoryRequestDto { Name = name ?? CreateUniqueName("Category"), Description = description ?? "Test category description" };
+        return new CategoryRequest { Name = name ?? CreateUniqueName("Category"), Description = description ?? "Test category description" };
     }
 
     /// <summary>
@@ -74,9 +74,9 @@ public static class TestDataFactory
     /// <param name="userId">Optional user ID.</param>
     /// <param name="categoryIds">Optional category IDs.</param>
     /// <returns>Video creation request DTO.</returns>
-    public static VideoCreateRequestDto CreateVideoRequest(string? title = null, string? userId = null, IReadOnlyList<long>? categoryIds = null)
+    public static VideoCreateRequest CreateVideoRequest(string? title = null, string? userId = null, IReadOnlyList<long>? categoryIds = null)
     {
-        return new VideoCreateRequestDto
+        return new VideoCreateRequest
         {
             Title = title ?? CreateUniqueName("Video"),
             Description = "This is a test video description for integration testing purposes.",
@@ -92,9 +92,9 @@ public static class TestDataFactory
     /// <param name="id">Video ID.</param>
     /// <param name="title">Optional title.</param>
     /// <returns>Video update request DTO.</returns>
-    public static VideoUpdateRequestDto CreateVideoUpdateRequest(string id, string? title = null)
+    public static VideoUpdateRequest CreateVideoUpdateRequest(string id, string? title = null)
     {
-        return new VideoUpdateRequestDto
+        return new VideoUpdateRequest
         {
             Id = id,
             Title = title ?? CreateUniqueName("UpdatedVideo"),
@@ -109,9 +109,9 @@ public static class TestDataFactory
     /// <param name="name">Optional category name.</param>
     /// <param name="description">Optional description.</param>
     /// <returns>Category request DTO for update.</returns>
-    public static CategoryRequestDto CreateCategoryUpdateRequest(string? name = null, string? description = null)
+    public static CategoryRequest CreateCategoryUpdateRequest(string? name = null, string? description = null)
     {
-        return new CategoryRequestDto
+        return new CategoryRequest
         {
             Name = name ?? CreateUniqueName("UpdatedCategory"),
             Description = description ?? "Updated test category description",

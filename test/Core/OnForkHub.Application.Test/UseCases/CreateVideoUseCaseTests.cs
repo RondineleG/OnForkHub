@@ -22,7 +22,7 @@ public class CreateVideoUseCaseTests
     [DisplayName("ExecuteAsync should throw ArgumentNullException when request is null")]
     public async Task ExecuteAsyncShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
-        VideoCreateRequestDto? request = null;
+        VideoCreateRequest? request = null;
 
         var act = async () => await _useCase.ExecuteAsync(request!);
 
@@ -34,7 +34,7 @@ public class CreateVideoUseCaseTests
     [DisplayName("ExecuteAsync should return error when video creation fails")]
     public async Task ExecuteAsyncShouldReturnErrorWhenVideoCreationFails()
     {
-        var request = new VideoCreateRequestDto
+        var request = new VideoCreateRequest
         {
             Title = string.Empty,
             Description = "Description",
@@ -53,7 +53,7 @@ public class CreateVideoUseCaseTests
     public async Task ExecuteAsyncShouldReturnValidationErrorsWhenValidationFails()
     {
         var userId = Id.Create();
-        var request = new VideoCreateRequestDto
+        var request = new VideoCreateRequest
         {
             Title = "Valid Title",
             Description = "Valid Description",
@@ -78,7 +78,7 @@ public class CreateVideoUseCaseTests
     public async Task ExecuteAsyncShouldReturnSuccessWhenVideoIsCreated()
     {
         var userId = Id.Create();
-        var request = new VideoCreateRequestDto
+        var request = new VideoCreateRequest
         {
             Title = "Valid Video Title",
             Description = "Valid Description",
@@ -105,7 +105,7 @@ public class CreateVideoUseCaseTests
     public async Task ExecuteAsyncShouldReturnErrorWhenServiceFails()
     {
         var userId = Id.Create();
-        var request = new VideoCreateRequestDto
+        var request = new VideoCreateRequest
         {
             Title = "Valid Video Title",
             Description = "Valid Description",
