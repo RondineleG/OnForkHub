@@ -19,7 +19,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseU
 // Register authentication services
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 builder.Services.AddAuthorizationCore();
 
 // Real-time notifications
