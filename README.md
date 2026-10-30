@@ -18,10 +18,29 @@
 OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN delivery with P2P distribution through WebTorrent. Supporting videos up to 2 minutes, it offers:
 
 - 🚀 Hybrid content delivery (CDN + P2P)
-- 📱 Responsive web interface
-- 🔒 Secure authentication
+- 📱 Full-screen shorts feed for mobile and desktop
+- 🌗 Light and dark themes built on the MrBur design system
 - 🎬 Automatic video transcoding
 - 📊 Analytics and monitoring
+
+## 🖥 Interface
+
+The web app is a vertical shorts feed. Each video streams over WebTorrent 2.x and plays while it downloads.
+
+| Web · dark | Web · light |
+| :---: | :---: |
+| <img src="docs/assets/screenshots/web-dark.png" width="420" alt="Desktop feed, dark theme"/> | <img src="docs/assets/screenshots/web-light.png" width="420" alt="Desktop feed, light theme"/> |
+
+| Mobile · dark | Mobile · light |
+| :---: | :---: |
+| <img src="docs/assets/screenshots/mobile-dark.png" width="240" alt="Mobile feed, dark theme"/> | <img src="docs/assets/screenshots/mobile-light.png" width="240" alt="Mobile feed, light theme"/> |
+
+- **Feed**: swipe or scroll to move between videos; on desktop, use the arrow buttons or the ↑/↓ keys.
+- **Gestures**: tap to pause, double-tap a side to seek ±10 s, hold to play at 2×.
+- **Controls**: sound, playback speed and framing (fill or full frame), and fullscreen.
+- **Loading**: the spinner shows each step (connecting, finding peers, downloading with peers and speed). The next video preloads once the current one is playing.
+- **Theme**: follows the system setting; the sun/moon button switches it and the choice is saved.
+- **Design system**: tokens in `wwwroot/css/mrbur`, OnForkHub components in `wwwroot/css/ofh.css`, and a style guide at `/design-system.html`.
 
 ## 🛠 Tech Stack
 
