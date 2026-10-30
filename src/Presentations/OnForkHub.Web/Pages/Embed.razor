@@ -1,8 +1,5 @@
 @page "/embed/{Id}"
-@layout OnForkHub.Web.Shared.EmbedLayout
-@attribute [AllowAnonymous]
 @inject IVideoService VideoService
-@inject NavigationManager Navigation
 
 <PageTitle>Embed - OnForkHub</PageTitle>
 
@@ -13,28 +10,25 @@
     </HeadContent>
 }
 
-<div class="embed-player-wrapper bg-black position-fixed top-0 start-0 w-100 h-100">
+<div class="embed-player">
     @if (isLoading)
     {
-        <div class="d-flex justify-content-center align-items-center h-100">
-            <div class="spinner-border text-primary" role="status"></div>
+        <div class="spinner" role="status" aria-label="Carregando">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-sweep"></div>
+            <div class="spinner-icon">✦</div>
         </div>
     }
     else if (video == null)
     {
-        <div class="d-flex justify-content-center align-items-center h-100 text-white">
-            <p>Vídeo não encontrado.</p>
-        </div>
+        <span class="t-mono">Vídeo não encontrado</span>
     }
     else
     {
         <AdaptiveVideoPlayer ManifestUrl="@($"/api/v1/videos/{video.Id}/stream/manifest.mpd")" AutoPlay="false" />
-        
-        <div class="embed-overlay position-absolute bottom-0 end-0 p-2">
-            <a href="/video/@video.Id" target="_blank" class="text-white opacity-75 text-decoration-none small">
-                Assistir no OnForkHub <i class="bi bi-box-arrow-up-right"></i>
-            </a>
-        </div>
+
+        <a href="/" target="_blank" class="embed-link t-mono-sm">Assistir no OnForkHub ↗</a>
     }
 </div>
 

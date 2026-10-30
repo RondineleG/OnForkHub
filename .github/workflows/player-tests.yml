@@ -5,6 +5,7 @@ on:
       - feat/pair-programming
     paths:
       - 'src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js'
+      - 'src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js'
       - 'tests/webtorrentService.test.mjs'
       - 'tools/p2p-seeder/**'
       - '.github/workflows/player-tests.yml'
@@ -21,6 +22,8 @@ jobs:
           node-version: '22'
       - name: Run JavaScript player unit tests
         run: node --test tests/webtorrentService.test.mjs
+      - name: Validate shorts feed JavaScript syntax
+        run: node --check src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js
       - name: Validate seeder JavaScript syntax
         run: node --check tools/p2p-seeder/src/index.mjs && node --check tools/p2p-seeder/src/catalog-sync.mjs
       - name: Test catalog synchronizer

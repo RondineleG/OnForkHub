@@ -1,33 +1,22 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<div class="adaptive-player-container">
-    <div id="@containerId" class="dash-video-container mb-3 bg-black" style="min-height: 400px; position: relative;">
-        <video id="@playerId" controls class="w-100 h-100"></video>
-        
-        @if (isLoading)
-        {
-            <div class="position-absolute top-50 start-50 translate-middle">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Carregando Player Adaptativo...</span>
-                </div>
-            </div>
-        }
-    </div>
+<div id="@containerId" class="adaptive-player">
+    <video id="@playerId" controls class="adaptive-player-video"></video>
 
-    <div class="player-info card bg-light mt-2">
-        <div class="card-body py-2">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="badge bg-primary">DASH</span>
-                    <span class="ms-2 small text-muted">Qualidade Adaptativa Ativada</span>
-                </div>
-                <div id="@statsId" class="small text-muted">
-                    Iniciando métricas...
-                </div>
+    @if (isLoading)
+    {
+        <div class="adaptive-player-loading" role="status" aria-label="Carregando player">
+            <div class="spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-sweep"></div>
+                <div class="spinner-icon">✦</div>
             </div>
         </div>
-    </div>
+    }
+
+    <div id="@statsId" class="adaptive-player-stats t-mono-sm"></div>
 </div>
 
 @code {
