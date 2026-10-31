@@ -12,6 +12,8 @@ using OnForkHub.CrossCutting.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.ValidateProductionConfiguration();
+
 builder.Services.AddSwaggerServices();
 builder.Services.AddCustomServices(builder.Configuration);
 builder.Services.AddResponseCompressionServices();
@@ -42,6 +44,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
+
+await app.MigrateDatabaseIfRequestedAsync();
 
 // Serve stored videos from the same directory written by LocalFileStorageService.
 // Only the videos subdirectory is exposed; staging files and other paths stay private.
