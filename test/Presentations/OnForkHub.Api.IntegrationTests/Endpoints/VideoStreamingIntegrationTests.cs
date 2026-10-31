@@ -22,7 +22,7 @@ public sealed class VideoStreamingIntegrationTests(CustomWebApplicationFactory f
     /// <summary>
     /// A completed upload supports byte-range playback for its owner.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [Trait("Category", "Integration")]
     public async Task StreamCompletedUpload_WithRange_ReturnsRequestedBytes()
