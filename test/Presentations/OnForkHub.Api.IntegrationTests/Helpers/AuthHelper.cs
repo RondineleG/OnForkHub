@@ -60,7 +60,7 @@ public static class AuthHelper
 
     public static async Task<AuthResponse?> RefreshTokenAsync(HttpClient client, string accessToken, string refreshToken)
     {
-        var refreshRequest = new RefreshTokenRequestDto { AccessToken = accessToken, RefreshToken = refreshToken };
+        var refreshRequest = new RefreshTokenRequest { AccessToken = accessToken, RefreshToken = refreshToken };
 
         var response = await client.PostAsJsonAsync("/api/v1/auth/refresh", refreshRequest);
 

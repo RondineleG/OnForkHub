@@ -4,7 +4,7 @@ using OnForkHub.CrossCutting.Interfaces;
 
 namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
-public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryRequestDto, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
+public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryRequest, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -12,7 +12,7 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryReq
 
     private readonly ILogger<CreateEndpoint> _logger = logger;
 
-    private readonly IUseCase<CategoryRequestDto, Category> _useCase = useCase;
+    private readonly IUseCase<CategoryRequest, Category> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
@@ -21,7 +21,7 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryReq
         ConfigureEndpoint(
                 app.MapPost(
                     Route,
-                    async ([FromBody] CategoryRequestDto request, CancellationToken cancellationToken) =>
+                    async ([FromBody] CategoryRequest request, CancellationToken cancellationToken) =>
                     {
                         return await HandleUseCaseAsync(
                             _useCase,

@@ -8,7 +8,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// <summary>
 /// Endpoint for searching categories.
 /// </summary>
-public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<CategorySearchRequestDto, PagedResultDto<CategoryResponseDto>> useCase)
+public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<CategorySearchRequest, PagedResponse<CategorySearchResponse>> useCase)
     : BaseEndPoint<Category>,
         IEndpointAsync
 {
@@ -18,7 +18,7 @@ public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<CategorySea
 
     private readonly ILogger<SearchEndpoint> _logger = logger;
 
-    private readonly IUseCase<CategorySearchRequestDto, PagedResultDto<CategoryResponseDto>> _useCase = useCase;
+    private readonly IUseCase<CategorySearchRequest, PagedResponse<CategorySearchResponse>> _useCase = useCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -37,7 +37,7 @@ public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<CategorySea
                         CancellationToken cancellationToken = default
                     ) =>
                     {
-                        var request = new CategorySearchRequestDto
+                        var request = new CategorySearchRequest
                         {
                             SearchTerm = searchTerm,
                             SortBy = sortBy,
@@ -55,7 +55,7 @@ public class SearchEndpoint(ILogger<SearchEndpoint> logger, IUseCase<CategorySea
             .WithDescription("Searches categories with filters and pagination")
             .WithSummary("Search categories")
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
-            .Produces<RequestResult<PagedResultDto<CategoryResponseDto>>>(StatusCodes.Status200OK)
+            .Produces<RequestResult<PagedResponse<CategorySearchResponse>>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status204NoContent);
 
         return Task.FromResult(RequestResult.Success());

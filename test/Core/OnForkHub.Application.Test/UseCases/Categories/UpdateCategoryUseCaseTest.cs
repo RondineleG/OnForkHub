@@ -45,7 +45,7 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
         // Arrange
-        CategoryUpdateRequestDto? request = null;
+        CategoryUpdateRequest? request = null;
 
         // Act
         var act = () => _useCase.ExecuteAsync(request!);
@@ -180,12 +180,12 @@ public class UpdateCategoryUseCaseTest
         result.Message.Should().Be("Failed to update category");
     }
 
-    private static CategoryUpdateRequestDto CreateValidUpdateRequest(long id)
+    private static CategoryUpdateRequest CreateValidUpdateRequest(long id)
     {
-        return new CategoryUpdateRequestDto
+        return new CategoryUpdateRequest
         {
             Id = id,
-            Category = new CategoryRequestDto { Name = "Updated Category", Description = "Updated Description" },
+            Category = new CategoryRequest { Name = "Updated Category", Description = "Updated Description" },
         };
     }
 

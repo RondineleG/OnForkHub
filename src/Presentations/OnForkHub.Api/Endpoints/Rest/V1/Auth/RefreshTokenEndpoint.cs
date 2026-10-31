@@ -27,7 +27,7 @@ public sealed partial class RefreshTokenEndpoint(ILogger<RefreshTokenEndpoint> l
         app.MapPost(
                 Route,
                 [AllowAnonymous]
-                async ([FromBody] RefreshTokenRequestDto request, CancellationToken cancellationToken) =>
+                async ([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken) =>
                 {
                     return await HandleRefreshAsync(request);
                 }
@@ -52,7 +52,7 @@ public sealed partial class RefreshTokenEndpoint(ILogger<RefreshTokenEndpoint> l
     [LoggerMessage(Level = LogLevel.Warning, Message = "Token refresh failed - invalid tokens")]
     private partial void LogTokenRefreshFailed();
 
-    private Task<IResult> HandleRefreshAsync(RefreshTokenRequestDto request)
+    private Task<IResult> HandleRefreshAsync(RefreshTokenRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 

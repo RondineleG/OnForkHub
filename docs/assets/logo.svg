@@ -1,73 +1,36 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
-  <defs>
-    <!-- Glow Effect -->
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-      <feFlood flood-color="#4ade80" flood-opacity="0.3" result="glowColor"/>
-      <feComposite in="glowColor" in2="coloredBlur" operator="in" result="softGlow"/>
-      <feMerge>
-        <feMergeNode in="softGlow"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-
-    <!-- Gradients -->
-    <linearGradient id="nodeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4ade80"/>
-      <stop offset="50%" style="stop-color:#22c55e"/>
-      <stop offset="100%" style="stop-color:#16a34a"/>
-    </linearGradient>
-    <linearGradient id="flowGradient" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#6d28d9;stop-opacity:1"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Outer Rotating Dotted Circle -->
-  <g transform="translate(300, 300)" filter="url(#glow)">
-    <circle cx="0" cy="0" r="120" fill="none" stroke="#8b5cf6" 
-            stroke-width="3" stroke-dasharray="6,12" opacity="0.8">
-      <animateTransform attributeName="transform" 
-                        type="rotate" 
-                        from="0" 
-                        to="360" 
-                        dur="10s" 
-                        repeatCount="indefinite"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 386 120">
+  <!-- OnForkHub lockup: the hub mark (from logo-original.svg, animated) and the OnForkHub wordmark (Inter 800 outlines).
+       On/Hub follow the viewer's color scheme, Fork is the DS gold. -->
+  <style>
+    .ink { fill: #1A0F00; } .tag { fill: #8A5500; }
+    @media (prefers-color-scheme: dark) { .ink { fill: #F0E6D0; } .tag { fill: #8A6C2A; } }
+  </style>
+  <g transform="translate(-2 -2) scale(1.9)">
+    <defs>
+      <linearGradient id="hub" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#E8C97D"/><stop offset=".5" stop-color="#C9A84C"/><stop offset="1" stop-color="#8A6C2A"/>
+      </linearGradient>
+    </defs>
+    <circle cx="32" cy="32" r="24" fill="none" stroke="#C9A84C" stroke-width="1.6" stroke-dasharray="1.6 3.2" stroke-linecap="round" opacity=".85">
+      <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="10s" repeatCount="indefinite"/>
     </circle>
-
-    <!-- Connection Points -->
-    <g>
-      <circle cx="120" cy="0" r="12" fill="url(#nodeGradient)">
-        <animate attributeName="r" values="12;14;12" dur="5s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="85" cy="-85" r="12" fill="url(#nodeGradient)"/>
-      <circle cx="0" cy="-120" r="12" fill="url(#nodeGradient)"/>
-      <circle cx="-85" cy="-85" r="12" fill="url(#nodeGradient)"/>
-      <circle cx="-120" cy="0" r="12" fill="url(#nodeGradient)"/>
-      <circle cx="-85" cy="85" r="12" fill="url(#nodeGradient)"/>
-      <circle cx="0" cy="120" r="12" fill="url(#nodeGradient)"/>
-      <circle cx="85" cy="85" r="12" fill="url(#nodeGradient)"/>
-    </g>
-
-    <!-- Central Circle -->
-    <circle cx="0" cy="0" r="50" fill="url(#nodeGradient)">
-      <animate attributeName="r" values="40;42;40" dur="2s" repeatCount="indefinite"/>
-    </circle>
-
-    <!-- Connecting Lines -->
-    <path d="M0,0 L120,0 M0,0 L85,-85 M0,0 L0,-120 M0,0 L-85,-85 M0,0 L-120,0 M0,0 L-85,85 M0,0 L0,120 M0,0 L85,85" 
-          stroke="url(#flowGradient)" stroke-width="3" stroke-dasharray="6" stroke-linecap="round">
-      <animate attributeName="stroke-dashoffset" values="0;-48" dur="4s" repeatCount="indefinite"/>
+    <path d="M45 32L51.4 32M41.19 41.19L45.72 45.72M32 45L32 51.4M22.81 41.19L18.28 45.72M19 32L12.6 32M22.81 22.81L18.28 18.28M32 19L32 12.6M41.19 22.81L45.72 18.28" fill="none" stroke="#8A6C2A" stroke-width="1.3" stroke-dasharray="1.6 1.6" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" values="0;-6.4" dur="1.6s" repeatCount="indefinite"/>
     </path>
-
-    <!-- Play Icon (Moved Last to Appear on Top) -->
-    <path d="M-15,-22 L20,0 L-15,22 Z" fill="#fff">
-      <animateTransform attributeName="transform" 
-                        type="scale" 
-                        values="1;1.1;1" 
-                        dur="2s" 
-                        repeatCount="indefinite"/>
-    </path>
+    <circle cx="56" cy="32" r="3.1" fill="url(#hub)"/>
+    <circle cx="48.97" cy="48.97" r="3.1" fill="url(#hub)"/>
+    <circle cx="32" cy="56" r="3.1" fill="url(#hub)"/>
+    <circle cx="15.03" cy="48.97" r="3.1" fill="url(#hub)"/>
+    <circle cx="8" cy="32" r="3.1" fill="url(#hub)"/>
+    <circle cx="15.03" cy="15.03" r="3.1" fill="url(#hub)"/>
+    <circle cx="32" cy="8" r="3.1" fill="url(#hub)"/>
+    <circle cx="48.97" cy="15.03" r="3.1" fill="url(#hub)"/>
+    <circle cx="32" cy="32" r="11" fill="url(#hub)"/>
+    <path d="M28.6 26.2Q28.6 24.6 30 25.4L37.8 30.9Q39.2 32 37.8 33.1L30 38.6Q28.6 39.4 28.6 37.8Z" fill="#0a0806" stroke="#0a0806" stroke-width=".6" stroke-linejoin="round"/>
   </g>
+  <g transform="translate(126.18 60) scale(0.4548)">
+    <path class="ink" d="M38.67 0.98L38.67 0.98Q28.86 0.98 21.02-3.37Q13.18-7.71 8.59-16.06Q4.00-24.41 4.00-36.33L4.00-36.33Q4.00-48.34 8.59-56.69Q13.18-65.04 21.02-69.38Q28.86-73.73 38.67-73.73L38.67-73.73Q48.44-73.73 56.27-69.38Q64.11-65.04 68.68-56.69Q73.24-48.34 73.24-36.33L73.24-36.33Q73.24-24.37 68.68-16.02Q64.11-7.67 56.27-3.34Q48.44 0.98 38.67 0.98ZM38.67-14.16L38.67-14.16Q43.95-14.16 47.75-16.70Q51.56-19.24 53.61-24.19Q55.66-29.15 55.66-36.33L55.66-36.33Q55.66-43.55 53.61-48.54Q51.56-53.52 47.75-56.05Q43.95-58.59 38.67-58.59L38.67-58.59Q33.35-58.59 29.54-56.03Q25.73-53.47 23.68-48.51Q21.63-43.55 21.63-36.33L21.63-36.33Q21.63-29.15 23.68-24.22Q25.73-19.29 29.54-16.72Q33.35-14.16 38.67-14.16ZM97.95-31.15L97.95-31.15L97.95 0L80.91 0L80.91-54.59L96.93-54.59L97.27-40.82L96.54-40.82Q98.54-47.31 102.81-51.29Q107.08-55.27 114.31-55.27L114.31-55.27Q120.02-55.27 124.27-52.73Q128.52-50.20 130.86-45.56Q133.21-40.92 133.21-34.77L133.21-34.77L133.21 0L116.16 0L116.16-31.45Q116.16-36.04 113.82-38.65Q111.48-41.26 107.28-41.26L107.28-41.26Q104.54-41.26 102.42-40.06Q100.29-38.87 99.12-36.62Q97.95-34.38 97.95-31.15ZM373.45 0L356.21 0L356.21-72.75L373.45-72.75L373.45-44.19L402.50-44.19L402.50-72.75L419.69-72.75L419.69 0L402.50 0L402.50-30.13L373.45-30.13L373.45 0ZM447.96 0.68L447.96 0.68Q442.25 0.68 437.98-1.86Q433.71-4.39 431.36-9.03Q429.02-13.67 429.02-19.82L429.02-19.82L429.02-54.59L446.06-54.59L446.06-23.14Q446.06-18.55 448.43-15.94Q450.79-13.33 454.95-13.33L454.95-13.33Q457.78-13.33 459.85-14.53Q461.93-15.72 463.10-17.99Q464.27-20.26 464.27-23.44L464.27-23.44L464.27-54.59L481.31-54.59L481.31 0L465.30 0L465.00-13.77L465.74-13.77Q463.69-7.23 459.39-3.27Q455.09 0.68 447.96 0.68ZM523.31 0.78L523.31 0.78Q519.16 0.78 516.10-0.61Q513.05-2.00 511.05-4.20Q509.05-6.40 507.97-8.84L507.97-8.84L507.39-8.84L507.39 0L490.54 0L490.54-72.75L507.58-72.75L507.58-45.21L507.97-45.21Q509-47.71 510.98-50Q512.96-52.29 516.01-53.78Q519.06-55.27 523.40-55.27L523.40-55.27Q529.17-55.27 534.12-52.27Q539.08-49.27 542.13-43.04Q545.18-36.82 545.18-27.25L545.18-27.25Q545.18-17.97 542.25-11.74Q539.32-5.52 534.34-2.37Q529.36 0.78 523.31 0.78ZM517.50-12.50L517.50-12.50Q520.77-12.50 523.04-14.33Q525.31-16.16 526.48-19.51Q527.65-22.85 527.65-27.25L527.65-27.25Q527.65-31.69 526.48-34.99Q525.31-38.28 523.06-40.11Q520.82-41.94 517.50-41.94L517.50-41.94Q514.22-41.94 511.93-40.16Q509.63-38.38 508.41-35.08Q507.19-31.79 507.19-27.25L507.19-27.25Q507.19-22.80 508.41-19.48Q509.63-16.16 511.95-14.33Q514.27-12.50 517.50-12.50Z"/>
+    <path fill="#C9A84C" d="M159.72 0L142.48 0L142.48-72.75L191.95-72.75L191.95-58.69L159.72-58.69L159.72-40.23L188.77-40.23L188.77-26.46L159.72-26.46L159.72 0ZM224.32 1.03L224.32 1.03Q215.78 1.03 209.63-2.51Q203.47-6.05 200.18-12.38Q196.88-18.70 196.88-27.10L196.88-27.10Q196.88-35.55 200.18-41.87Q203.47-48.19 209.63-51.73Q215.78-55.27 224.32-55.27L224.32-55.27Q232.87-55.27 239.02-51.73Q245.17-48.19 248.44-41.87Q251.71-35.55 251.71-27.10L251.71-27.10Q251.71-18.70 248.44-12.38Q245.17-6.05 239.02-2.51Q232.87 1.03 224.32 1.03ZM224.32-12.01L224.32-12.01Q227.59-12.01 229.84-13.92Q232.09-15.82 233.23-19.24Q234.38-22.66 234.38-27.20L234.38-27.20Q234.38-31.74 233.23-35.13Q232.09-38.53 229.84-40.38Q227.59-42.24 224.32-42.24L224.32-42.24Q221.05-42.24 218.80-40.38Q216.56-38.53 215.41-35.13Q214.26-31.74 214.26-27.20L214.26-27.20Q214.26-22.66 215.41-19.24Q216.56-15.82 218.80-13.92Q221.05-12.01 224.32-12.01ZM275.94 0L258.89 0L258.89-54.59L275.45-54.59L275.45-44.63L276.03-44.63Q277.50-50.05 280.89-52.66Q284.29-55.27 288.78-55.27L288.78-55.27Q289.95-55.27 291.24-55.13Q292.54-54.98 293.61-54.69L293.61-54.69L293.61-39.84Q292.39-40.28 290.41-40.50Q288.44-40.72 286.87-40.72L286.87-40.72Q283.75-40.72 281.26-39.33Q278.77-37.94 277.35-35.50Q275.94-33.06 275.94-29.79L275.94-29.79L275.94 0ZM324.33-26.61L314.27-14.50L314.27-34.86L316.71-34.86L332.33-54.59L351.72-54.59L328.82-26.61L324.33-26.61ZM315.93 0L298.89 0L298.89-72.75L315.93-72.75L315.93 0ZM352.50 0L332.82 0L318.27-22.80L329.50-34.91L352.50 0Z"/>
+  </g>
+  <text class="tag" x="129" y="88" font-family="'Share Tech Mono', 'Courier New', monospace" font-size="11" letter-spacing="4.4">VÍDEOS · PAR · A · PAR</text>
 </svg>

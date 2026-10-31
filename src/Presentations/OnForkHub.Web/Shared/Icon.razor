@@ -1,0 +1,35 @@
+@* OnForkHub DS icon set: 24-unit outline icons, one stroke weight, round caps and joins. Size and color come from CSS (.ofh-icon). *@
+<svg class="ofh-icon @Class" viewBox="0 0 24 24" width="@Size" height="@Size" aria-hidden="true" focusable="false" @attributes="Attributes">
+    @((MarkupString)Paths.GetValueOrDefault(Name, string.Empty))
+</svg>
+
+@code {
+    private static readonly Dictionary<string, string> Paths = new(StringComparer.Ordinal)
+    {
+        ["volume-off"] = """<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/>""",
+        ["volume-on"] = """<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>""",
+        ["gauge"] = """<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>""",
+        ["expand"] = """<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>""",
+        ["collapse"] = """<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>""",
+        ["chevron-up"] = """<path d="m18 15-6-6-6 6"/>""",
+        ["chevron-down"] = """<path d="m6 9 6 6 6-6"/>""",
+        ["play"] = """<path d="M7 4.5v15l12.5-7.5z"/>""",
+        ["pause"] = """<rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/>""",
+        ["rewind"] = """<path d="M11 19 2 12l9-7v14zM22 19l-9-7 9-7v14z"/>""",
+        ["forward"] = """<path d="m13 19 9-7-9-7v14zM2 19l9-7-9-7v14z"/>""",
+        ["sun"] = """<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/>""",
+        ["moon"] = """<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>""",
+    };
+
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Size { get; set; } = 22;
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? Attributes { get; set; }
+}

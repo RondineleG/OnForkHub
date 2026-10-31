@@ -20,7 +20,7 @@ public class GetAllVideoUseCaseTest
     public async Task ShouldGetAllVideosSuccessfully()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
         var videos = CreateValidVideosList(3);
 
         _videoService
@@ -43,7 +43,7 @@ public class GetAllVideoUseCaseTest
     public async Task ShouldReturnNoContentWhenVideosListIsNull()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
 
         _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Video>>.Success(null!));
 
@@ -61,7 +61,7 @@ public class GetAllVideoUseCaseTest
     public async Task ShouldReturnNoContentWhenServiceReturnsNullResult()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
 
         _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns((RequestResult<IEnumerable<Video>>?)null);
 
@@ -79,7 +79,7 @@ public class GetAllVideoUseCaseTest
     public async Task ShouldReturnEmptyListWhenNoVideosExist()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
         var emptyList = Enumerable.Empty<Video>().ToList();
 
         _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Video>>.Success(emptyList));
@@ -100,7 +100,7 @@ public class GetAllVideoUseCaseTest
     public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
         // Arrange
-        PaginationRequestDto? request = null;
+        PaginationRequest? request = null;
 
         // Act
         var act = () => _useCase.ExecuteAsync(request!);
@@ -116,7 +116,7 @@ public class GetAllVideoUseCaseTest
     public async Task ShouldHandlePaginationCorrectly()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 5, ItemsPerPage = 50 };
+        var request = new PaginationRequest { Page = 5, ItemsPerPage = 50 };
         var videos = CreateValidVideosList(10);
 
         _videoService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Video>>.Success(videos));

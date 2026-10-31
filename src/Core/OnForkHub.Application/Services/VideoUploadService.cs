@@ -1,5 +1,8 @@
 namespace OnForkHub.Application.Services;
 
+using System.Globalization;
+using System.IO;
+
 using Microsoft.Extensions.Logging;
 
 using OnForkHub.Core.Entities;
@@ -22,16 +25,16 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
     private readonly ILogger<VideoUploadService> _logger = logger;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(string fileName, long fileSize, string contentType, string userId)
+    public async Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(string fileName, long fileSize, string contentType, string userId, int totalChunks)
     {
         return await ExecuteAsync(async () =>
         {
-            if (fileSize > MaxFileSize)
+            if (fileSize <= 0 || fileSize > MaxFileSize || totalChunks < 1 || totalChunks > 2048)
             {
                 return RequestResult<VideoUploadResponse>.WithError($"File size exceeds the maximum limit of {MaxFileSize / 1024 / 1024}MB");
             }
 
-            var uploadResult = VideoUpload.Create(fileName, fileSize, contentType, userId);
+            var uploadResult = VideoUpload.Create(fileName, fileSize, contentType, userId, totalChunks);
             if (!uploadResult.Status.Equals(EResultStatus.Success) || uploadResult.Data is null)
             {
                 return RequestResult<VideoUploadResponse>.WithError(uploadResult.Message ?? "Failed to create upload entity");
@@ -60,18 +63,96 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
 
             var upload = uploadResult.Data;
 
-            // TODO: In a real implementation, we would save the chunk to temporary storage
-            // For now, we just update the progress
+            if (totalChunks != upload.TotalChunks || chunkIndex != upload.ReceivedChunks ||
+                chunkIndex < 0 || chunkIndex >= totalChunks ||
+                (upload.Status != EVideoUploadStatus.Pending && upload.Status != EVideoUploadStatus.Uploading))
+            {
+                return RequestResult<bool>.WithError("Invalid upload chunk sequence or state.");
+            }
+
+            // A single-node staging implementation. Multi-node deployments require shared storage
+            // and per-upload coordination before chunk processing can be scaled horizontally.
+            var stagingRoot = Path.Combine(Path.GetTempPath(), "onforkhub-uploads");
+            var uploadDirectory = Path.Combine(stagingRoot, uploadId.ToString("N"));
+            Directory.CreateDirectory(uploadDirectory);
+            var chunkPath = Path.Combine(uploadDirectory, chunkIndex.ToString("D6", CultureInfo.InvariantCulture) + ".part");
+            if (File.Exists(chunkPath))
+            {
+                return RequestResult<bool>.WithError("Chunk already exists.");
+            }
+
+            await using (var destination = new FileStream(chunkPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                await chunk.CopyToAsync(destination);
+            }
+            if (new FileInfo(chunkPath).Length == 0 ||
+                new FileInfo(chunkPath).Length > upload.FileSize)
+            {
+                File.Delete(chunkPath);
+                return RequestResult<bool>.WithError("Chunk size exceeds allowed upload size.");
+            }
+
+            if (upload.Status == EVideoUploadStatus.Pending)
+            {
+                upload.MarkAsUploading();
+            }
+
             upload.IncrementReceivedChunks();
 
             if (upload.ReceivedChunks == upload.TotalChunks)
             {
-                // Last chunk received, mark as processing
-                // In a real implementation, we would assemble the file and upload to final storage
                 upload.MarkAsProcessing();
+                var assembledPath = Path.Combine(uploadDirectory, "assembled.video");
+                await using (var assembled = new FileStream(assembledPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    for (var index = 0; index < totalChunks; index++)
+                    {
+                        var partPath = Path.Combine(uploadDirectory, index.ToString("D6", CultureInfo.InvariantCulture) + ".part");
+                        await using var part = new FileStream(partPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        await part.CopyToAsync(assembled);
+                    }
+                }
+
+                var actualSize = new FileInfo(assembledPath).Length;
+                if (actualSize != upload.FileSize)
+                {
+                    upload.MarkAsFailed("Upload size mismatch.");
+                    await _repository.UpdateAsync(upload);
+                    return RequestResult<bool>.WithError("Upload size mismatch.");
+                }
+
+                await using var source = new FileStream(assembledPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var stored = await _fileStorageService.UploadAsync(source, upload.FileName, upload.ContentType);
+                if (stored.Status != EResultStatus.Success || string.IsNullOrWhiteSpace(stored.Data))
+                {
+                    upload.MarkAsFailed(stored.Message ?? "Unable to persist uploaded file.");
+                    await _repository.UpdateAsync(upload);
+                    return RequestResult<bool>.WithError(stored.Message ?? "Unable to persist uploaded file.");
+                }
+
+                upload.MarkAsCompleted(stored.Data);
             }
 
-            await _repository.UpdateAsync(upload);
+            var updateResult = await _repository.UpdateAsync(upload);
+            if (updateResult.Status != EResultStatus.Success)
+            {
+                return RequestResult<bool>.WithError(updateResult.Message ?? "Unable to save upload progress.");
+            }
+            if (upload.Status == EVideoUploadStatus.Completed)
+            {
+                try
+                {
+                    Directory.Delete(uploadDirectory, recursive: true);
+                }
+                catch (IOException)
+                {
+                    // Cleanup can be retried by maintenance.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Do not undo completed upload.
+                }
+            }
             return RequestResult<bool>.Success(true);
         });
     }

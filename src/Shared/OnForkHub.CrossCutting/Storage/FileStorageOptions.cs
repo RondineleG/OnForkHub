@@ -35,4 +35,10 @@ public sealed class FileStorageOptions
     /// Gets or sets the base URL for accessing files.
     /// </summary>
     public string BaseUrl { get; set; } = "/files";
+
+    /// <summary>
+    /// Explicitly permits anonymous access to locally stored videos.
+    /// Keep disabled when uploads can be private.
+    /// </summary>
+    public bool ServePublicVideos { get; set; }
 }

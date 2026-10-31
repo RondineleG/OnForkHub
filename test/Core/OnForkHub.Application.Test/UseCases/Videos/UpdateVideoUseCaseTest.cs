@@ -45,7 +45,7 @@ public class UpdateVideoUseCaseTest
     public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
         // Arrange
-        VideoUpdateRequestDto? request = null;
+        VideoUpdateRequest? request = null;
 
         // Act
         var act = () => _useCase.ExecuteAsync(request!);
@@ -199,9 +199,9 @@ public class UpdateVideoUseCaseTest
         await _videoService.Received(1).UpdateAsync(existingVideo);
     }
 
-    private static VideoUpdateRequestDto CreateValidUpdateRequest()
+    private static VideoUpdateRequest CreateValidUpdateRequest()
     {
-        return new VideoUpdateRequestDto
+        return new VideoUpdateRequest
         {
             Id = Guid.NewGuid().ToString(),
             Title = "Updated Video Title",

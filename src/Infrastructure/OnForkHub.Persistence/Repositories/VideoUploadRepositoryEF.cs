@@ -38,7 +38,7 @@ public class VideoUploadRepositoryEF(IEntityFrameworkDataContext context) : IVid
         {
             var upload = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
                 _context.VideoUploads.AsNoTracking(),
-                x => x.Id == id.ToString()
+                x => x.Id == "VideoUpload/" + id.ToString("N")
             );
 
             return upload != null

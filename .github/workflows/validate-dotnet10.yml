@@ -1,0 +1,61 @@
+name: Validate .NET 10 Build and Tests
+
+on:
+  push:
+    branches:
+      - feat/pair-programming
+    paths:
+      - .github/workflows/validate-dotnet10.yml
+      - Directory.Packages.props
+      - 'test/**'
+      - 'src/**'
+      - 'Directory.Build.props'
+      - 'global.json'
+      - 'OnForkHub.slnx'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Restore, Build and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET from global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Verify SDK
+        run: dotnet --version
+
+      - name: Check WebTorrent JavaScript syntax
+        run: node --check src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js
+
+      - name: Restore
+        run: dotnet restore OnForkHub.slnx
+
+      - name: Build
+        run: dotnet build OnForkHub.slnx --no-restore --configuration Release
+
+      - name: Check code style
+        run: dotnet format style OnForkHub.slnx --no-restore --verify-no-changes --severity error
+
+      - name: Check analyzers
+        run: dotnet format analyzers OnForkHub.slnx --no-restore --verify-no-changes --severity error
+
+      - name: Test
+        run: dotnet test OnForkHub.slnx --no-build --configuration Release --collect:"XPlat Code Coverage" --logger "trx;LogFileName=tests.trx" --results-directory ./test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet10-test-results-and-coverage
+          path: test-results/
+          if-no-files-found: warn

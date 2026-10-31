@@ -44,6 +44,8 @@ public class VideoConfiguration : IEntityTypeConfiguration<Video>
 
         builder.Property(v => v.MagnetUri).HasMaxLength(2000);
 
+        builder.HasIndex(v => v.UploadId).IsUnique();
+
         builder.Property(v => v.IsTorrentEnabled).IsRequired().HasDefaultValue(false);
 
         builder.Property(v => v.ViewCount).IsRequired().HasDefaultValue(0);

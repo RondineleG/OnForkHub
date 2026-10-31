@@ -3,7 +3,7 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 using OnForkHub.Application.Dtos.Category.Request;
 using OnForkHub.CrossCutting.Interfaces;
 
-public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<CategoryUpdateRequestDto, Category> useCase)
+public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<CategoryUpdateRequest, Category> useCase)
     : BaseEndPoint<Category>,
         IEndpointAsync
 {
@@ -13,7 +13,7 @@ public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<CategoryUpd
 
     private readonly ILogger<UpdateEndpoint> _logger = logger;
 
-    private readonly IUseCase<CategoryUpdateRequestDto, Category> _useCase = useCase;
+    private readonly IUseCase<CategoryUpdateRequest, Category> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
@@ -22,9 +22,9 @@ public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<CategoryUpd
         ConfigureEndpoint(
                 app.MapPut(
                     Route,
-                    async ([FromRoute] long id, [FromBody] CategoryRequestDto request, CancellationToken cancellationToken) =>
+                    async ([FromRoute] long id, [FromBody] CategoryRequest request, CancellationToken cancellationToken) =>
                     {
-                        var updateRequest = new CategoryUpdateRequestDto { Id = id, Category = request };
+                        var updateRequest = new CategoryUpdateRequest { Id = id, Category = request };
                         return await HandleUseCase(_useCase, _logger, updateRequest, cancellationToken);
                     }
                 )

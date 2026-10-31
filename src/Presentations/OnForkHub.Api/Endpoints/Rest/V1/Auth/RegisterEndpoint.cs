@@ -19,7 +19,7 @@ using UserEntity = OnForkHub.Core.Entities.User;
 public sealed partial class RegisterEndpoint(
     ILogger<RegisterEndpoint> logger,
     ITokenService tokenService,
-    IUseCase<UserRegisterRequestDto, UserEntity> registerUserUseCase
+    IUseCase<UserRegisterRequest, UserEntity> registerUserUseCase
 ) : IEndpointAsync
 {
     private const int V1 = 1;
@@ -30,7 +30,7 @@ public sealed partial class RegisterEndpoint(
 
     private readonly ITokenService _tokenService = tokenService;
 
-    private readonly IUseCase<UserRegisterRequestDto, UserEntity> _registerUserUseCase = registerUserUseCase;
+    private readonly IUseCase<UserRegisterRequest, UserEntity> _registerUserUseCase = registerUserUseCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -40,7 +40,7 @@ public sealed partial class RegisterEndpoint(
         app.MapPost(
                 Route,
                 [AllowAnonymous]
-                async ([FromBody] UserRegisterRequestDto request, CancellationToken cancellationToken) =>
+                async ([FromBody] UserRegisterRequest request, CancellationToken cancellationToken) =>
                 {
                     return await HandleRegisterAsync(request);
                 }
@@ -63,7 +63,7 @@ public sealed partial class RegisterEndpoint(
     [LoggerMessage(Level = LogLevel.Information, Message = "Registration attempt for user: {Email}")]
     private partial void LogRegistrationAttempt(string email);
 
-    private async Task<IResult> HandleRegisterAsync(UserRegisterRequestDto request)
+    private async Task<IResult> HandleRegisterAsync(UserRegisterRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 

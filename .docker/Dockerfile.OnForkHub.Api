@@ -5,11 +5,12 @@ RUN apt-get update && apt-get install -y curl ffmpeg && rm -rf /var/lib/apt/list
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY ["Directory.Build.props", "."]
+COPY ["Directory.Build.props", "Directory.Packages.props", "NuGet.config", "./"]
 COPY ["src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj", "src/Presentations/OnForkHub.Api/"]
 COPY ["src/Core/OnForkHub.Application/OnForkHub.Application.csproj", "src/Core/OnForkHub.Application/"]
 COPY ["src/Core/OnForkHub.Core/OnForkHub.Core.csproj", "src/Core/OnForkHub.Core/"]
 COPY ["src/Shared/OnForkHub.Abstractions/OnForkHub.Abstractions.csproj", "src/Shared/OnForkHub.Abstractions/"]
+COPY ["src/Shared/OnForkHub.CrossCutting/OnForkHub.CrossCutting.csproj", "src/Shared/OnForkHub.CrossCutting/"]
 COPY ["src/Infrastructure/OnForkHub.Persistence/OnForkHub.Persistence.csproj", "src/Infrastructure/OnForkHub.Persistence/"]
 RUN dotnet restore "./src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj"
 COPY . .

@@ -5,7 +5,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// <summary>
 /// Endpoint for getting all videos.
 /// </summary>
-public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationRequestDto, IEnumerable<Video>> useCase)
+public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationRequest, IEnumerable<Video>> useCase)
     : BaseEndPoint<Video>,
         IEndpointAsync
 {
@@ -15,7 +15,7 @@ public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationR
 
     private readonly ILogger<GetAllEndpoint> _logger = logger;
 
-    private readonly IUseCase<PaginationRequestDto, IEnumerable<Video>> _useCase = useCase;
+    private readonly IUseCase<PaginationRequest, IEnumerable<Video>> _useCase = useCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -27,7 +27,7 @@ public class GetAllEndpoint(ILogger<GetAllEndpoint> logger, IUseCase<PaginationR
                     Route,
                     async ([FromQuery] int page = 1, [FromQuery] int itemsPerPage = 10, CancellationToken cancellationToken = default) =>
                     {
-                        var request = new PaginationRequestDto { Page = page, ItemsPerPage = itemsPerPage };
+                        var request = new PaginationRequest { Page = page, ItemsPerPage = itemsPerPage };
                         return await HandleUseCase(_useCase, _logger, request);
                     }
                 )

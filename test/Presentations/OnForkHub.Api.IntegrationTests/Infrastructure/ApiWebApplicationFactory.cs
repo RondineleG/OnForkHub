@@ -30,7 +30,6 @@ internal sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
                 config.AddInMemoryCollection(
                     new Dictionary<string, string?>
                     {
-                        ["AppSettings:ApiMode"] = "Rest",
                         ["Cache:UseRedis"] = "false",
                         ["Cache:DefaultExpirationMinutes"] = "30",
                         ["RateLimiting:Enabled"] = "true",
@@ -60,13 +59,6 @@ internal sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase($"TestDatabase_{Guid.NewGuid()}");
             });
-
-            var mockTorrentTracker = Substitute.For<ITorrentTrackerService>();
-            mockTorrentTracker.GetPeerCountAsync(Arg.Any<string>()).Returns(0);
-            mockTorrentTracker.IsHealthyAsync(Arg.Any<string>()).Returns(false);
-            mockTorrentTracker.GetStatsAsync(Arg.Any<string>()).Returns(new TorrentHealthStats());
-            mockTorrentTracker.ReannounceAsync(Arg.Any<string>()).Returns(Task.CompletedTask);
-            services.AddScoped(_ => mockTorrentTracker);
         });
     }
 }

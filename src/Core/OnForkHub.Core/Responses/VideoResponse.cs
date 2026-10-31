@@ -62,6 +62,9 @@ public sealed class VideoResponse
     /// </summary>
     public bool IsTorrentEnabled { get; set; }
 
+    /// <summary>Gets or sets the magnet URI when P2P is enabled.</summary>
+    public string? MagnetUri { get; set; }
+
     /// <summary>
     /// Creates a VideoResponse from a Video entity.
     /// </summary>
@@ -80,6 +83,7 @@ public sealed class VideoResponse
             OwnerId = video.UserId?.ToString() ?? string.Empty,
             CreatedAt = video.CreatedAt,
             IsTorrentEnabled = video.IsTorrentEnabled,
+            MagnetUri = video.MagnetUri,
         };
     }
 }

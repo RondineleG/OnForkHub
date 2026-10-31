@@ -16,7 +16,7 @@ public interface IVideoUploadService
     /// <param name="contentType">The content type.</param>
     /// <param name="userId">The user identifier.</param>
     /// <returns>The initiated upload response.</returns>
-    Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(string fileName, long fileSize, string contentType, string userId);
+    Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(string fileName, long fileSize, string contentType, string userId, int totalChunks);
 
     /// <summary>
     /// Uploads a chunk of the video file.
