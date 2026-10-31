@@ -42,15 +42,58 @@ The web app is a vertical shorts feed. Each video streams over WebTorrent 2.x an
 - **Theme**: follows the system setting; the sun/moon button switches it and the choice is saved.
 - **Design system**: tokens in `wwwroot/css/mrbur`, OnForkHub components in `wwwroot/css/ofh.css`, and a style guide at `/design-system.html`.
 
+## 🧱 Architecture
+
+The solution (`OnForkHub.slnx`) follows a layered, DDD-style layout. Dependencies point inward: presentations depend on application and core, never the reverse.
+
+| Layer | Project | Responsibility |
+| --- | --- | --- |
+| Core | `OnForkHub.Core` | Entities, value objects, validations and service/repository interfaces |
+| Core | `OnForkHub.Application` | Use cases: videos, uploads, torrents, notifications, users, transcoding |
+| Infrastructure | `OnForkHub.Persistence` | EF Core contexts, mappings, migrations and repositories |
+| Shared | `OnForkHub.Abstractions` | Result types, request/response contracts and shared helpers |
+| Shared | `OnForkHub.CrossCutting` | Convention-based dependency injection, caching, logging and localization |
+| Shared | `OnForkHub.Scripts` | Build and developer scripts |
+| Presentation | `OnForkHub.Api` | Minimal-API REST endpoints (`/api/v1`), JWT auth, SignalR hub, Swagger |
+| Presentation | `OnForkHub.Web` | Blazor WebAssembly app: the shorts feed and the embed player |
+| Tooling | `tools/p2p-seeder` | Experimental Node worker that seeds stored videos over WebRTC |
+
+Services and repositories are registered by convention in `OnForkHub.CrossCutting`, so a new implementation only needs to follow the naming rules instead of being wired by hand. Request and response models end in `Request` / `Response`.
+
+### API
+
+Endpoints live under `src/Presentations/OnForkHub.Api/Endpoints/Rest/V1`, one class per route:
+
+- **Auth**: register, login, refresh token
+- **Videos**: create, update, delete, list, search, recommendations, ratings, comments, views, chunked upload (initiate, chunk, status, publish), streaming, torrent enable and stats
+- **Categories**: CRUD and search
+- **Users**: profile, favorites, view history
+- **Notifications**: list, unread, mark read, archive, delete, plus the `NotificationHub` for live updates
+
+Swagger is available at `/swagger` when the API runs in Development. See [docs/API_REFERENCE.md](docs/API_REFERENCE.md) for details.
+
+### Web app and P2P playback
+
+The home route (`/`) is the shorts feed, fed by a fixed catalog of open Blender Foundation movies (`Services/ShortsCatalog.cs`) published as torrents with HTTP web seeds, so they play even when no peer is online. `/embed/{id}` embeds a single video.
+
+Playback is handled by two modules in `wwwroot/js`:
+
+- `webtorrentService.js` wraps WebTorrent 2.x. Files stream through a service worker (`webtorrent-sw.min.js`) straight into the `<video>` element, so the browser handles seeking and formats. Pieces are kept in memory (the default OPFS store took 20-30 s to prepare a movie-sized file), and a download is abandoned only after 30 s without any data.
+- `shortsFeed.js` drives the feed: one active video at a time, next-video preload once the current one plays, gestures, speed and framing preferences, fullscreen, and the light/dark theme.
+
+Service workers need HTTPS or `localhost`. To test on a phone, expose the app through an HTTPS tunnel.
+
 ## 🛠 Tech Stack
 
 ### Core Technologies
 
 - **🎯 Backend**: .NET 10 with ASP.NET Core
-- **🌐 Frontend**: Blazor WebAssembly
-- **💾 Databases**: SQL Server (EF Core), Redis cache
-- **📦 Storage**: Azure Blob Storage/AWS S3
-- **🔄 P2P**: WebTorrent
+- **🌐 Frontend**: Blazor WebAssembly (shorts feed, MrBur design system)
+- **💾 Data**: SQL Server (EF Core, ASP.NET Identity), Redis distributed cache
+- **📦 Storage**: Local file storage or Azure Blob Storage
+- **🔐 Auth & real time**: JWT bearer tokens, SignalR notifications hub
+- **🔄 P2P**: WebTorrent 2.x in the browser (service-worker streaming), optional Node seeder
+- **🧪 Tests**: xUnit, FluentAssertions, NSubstitute, Node test runner
 - **🐳 Containers**: Docker
 
 ### Development Tools
@@ -262,6 +305,22 @@ cd src/Presentations/OnForkHub.Web
 dotnet watch run
 ```
 
+The shorts feed only needs the Web project: it does not call the API.
+
+#### Tests
+
+```bash
+# .NET: projects under test/
+dotnet test
+
+# JavaScript: player module, shorts feed syntax and seeder
+node --test tests/webtorrentService.test.mjs
+node --check src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js
+node --test tools/p2p-seeder/tests/*.test.mjs
+```
+
+The API integration tests need the services they target (see `test/Presentations/OnForkHub.Api.IntegrationTests`). The JavaScript checks also run in CI (`player-tests.yml`).
+
 #### 4. Git Aliases
 
 After setting up the project, you will have access to convenient Git aliases. They become available after restarting your terminal or running `. $PROFILE` in your terminal:
@@ -363,6 +422,10 @@ Comprehensive guides and references:
 - **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Solutions for common issues
 - **[FAQ](docs/FAQ.md)** - Frequently asked questions
 - **[Architecture](docs/ARCHITECTURE.md)** - System design and improvements
+- **[WebTorrent Integration](docs/WEBTORRENT_INTEGRATION.md)** - How P2P playback works
+- **[P2P Seeder](tools/p2p-seeder/README.md)** - Experimental WebRTC seeding worker
+- **[Roadmap](ROADMAP.md)** - Status and planned work
+- **[Design system](src/Presentations/OnForkHub.Web/wwwroot/design-system.html)** - Brand, tokens, icons and controls (served at `/design-system.html`)
 
 ## 🤝 Contributing
 

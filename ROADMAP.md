@@ -1,6 +1,6 @@
 # OnForkHub Development Roadmap
 
-Last Updated: January 11, 2026
+Last Updated: October 31, 2026
 
 ---
 
@@ -9,13 +9,16 @@ Last Updated: January 11, 2026
 ### Completed
 - **Core Architecture**: DDD, SOLID principles implementation
 - **Build System**: Clean, StyleCop compliant (SA1412, SA1305, SA1210, SA1501 fixed)
-- **Tests**: 372 unit tests passing
+- **Tests**: 606 .NET unit tests (Core 293, Application 155, CrossCutting 149, Persistence 9) and 17 JavaScript tests passing
 - **Documentation**: Comprehensive guides (API, Architecture, FAQ, Troubleshooting)
 - **Git Flow**: Configured with automatic PR creation via `dtn` CLI
 - **Deployment**: Docker containerization and VPS deployment functional
 - **Phase 1**: Error Handling & Validation (GlobalExceptionHandlerMiddleware, ValidationException, InMemoryErrorLogger, Localization EN/PT-BR)
 - **Phase 2**: Performance & Caching (Redis distributed caching, Response compression, Pagination utilities)
 - **Phase 3**: Security Enhancement (Rate Limiting, JWT Authentication, Security Headers)
+- **Shorts feed**: full-screen vertical feed for mobile and desktop, with gestures, speed and framing controls
+- **P2P playback**: WebTorrent 2.x streaming through a service worker, in-memory pieces, stall-based timeout, next-video preload
+- **Design system**: MrBur tokens plus the OnForkHub layer (brand mark, wordmark, icons, light and dark themes)
 
 ### In Progress
 - Integration tests for API endpoints
@@ -36,7 +39,7 @@ Last Updated: January 11, 2026
 - [ ] Torrent file generation for videos
 - [ ] Seeding/peer management
 - [ ] Bandwidth throttling
-- [ ] Progress tracking UI improvements
+- [x] Progress tracking UI improvements (loading steps, peers and speed in the feed)
 
 #### Phase 6: Analytics & Monitoring
 - [ ] View count tracking
@@ -47,7 +50,7 @@ Last Updated: January 11, 2026
 - [ ] Real-time monitoring alerts
 
 #### Phase 7: Mobile Support
-- [ ] Responsive UI improvements for mobile
+- [x] Responsive UI improvements for mobile
 - [ ] Mobile app consideration (React Native/Flutter)
 - [ ] Progressive Web App (PWA) enhancements
 - [ ] Offline capability study
