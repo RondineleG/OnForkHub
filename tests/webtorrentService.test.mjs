@@ -44,7 +44,8 @@ const torrents = new Map();
 let serverController = null;
 const client = {
   createServer({ controller }) { serverController = controller; },
-  add(uri, callback) {
+  add(uri, options, callback) {
+    assert.equal(typeof options.store, 'function', 'pieces are kept in the in-memory store');
     const torrent = {
       files: [playableFile()],
       numPeers: 3, progress: 0.5, downloadSpeed: 1024, uploadSpeed: 0,
@@ -97,7 +98,7 @@ test('applies playback options to the created video', async () => {
 });
 
 test('streams the largest playable file', async () => {
-  await withAdd((uri, callback) => {
+  await withAdd((uri, options, callback) => {
     const torrent = { files: [playableFile('sample.mp4', 5), { name: 'notes.txt', length: 50 }, playableFile('movie.webm', 20)], on() {}, removeListener() {} };
     torrents.set(uri, torrent);
     queueMicrotask(() => callback(torrent));
@@ -110,7 +111,7 @@ test('streams the largest playable file', async () => {
 });
 
 test('rejects unsupported video format', async () => {
-  await withAdd((uri, callback) => {
+  await withAdd((uri, options, callback) => {
     const torrent = { files: [{ name: 'notes.txt' }], on() {}, removeListener() {} };
     torrents.set(uri, torrent);
     queueMicrotask(() => callback(torrent));
@@ -121,7 +122,7 @@ test('rejects unsupported video format', async () => {
 });
 
 test('rejects when the browser cannot play the video', async () => {
-  await withAdd((uri, callback) => {
+  await withAdd((uri, options, callback) => {
     const file = {
       name: 'broken.mp4',
       streamTo(video) { video.error = { message: 'MEDIA_ERR_SRC_NOT_SUPPORTED' }; queueMicrotask(() => video.dispatchEvent(new Event('error'))); }
@@ -181,7 +182,7 @@ test('reports torrent errors and releases the session', async () => {
 test('reports stats for active sessions started from a .torrent URL', async () => {
   const url = 'https://example.com/sample.torrent';
   await startDownload(url, 'video');
-  assert.deepEqual(getTorrentStats(url), { peers: 3, progress: 50, downloadSpeed: 1024, uploadSpeed: 0 });
+  assert.deepEqual(getTorrentStats(url), { ready: false, peers: 3, progress: 50, downloadSpeed: 1024, uploadSpeed: 0 });
   stopDownload(url);
   assert.equal(getTorrentStats(url), null);
 });
