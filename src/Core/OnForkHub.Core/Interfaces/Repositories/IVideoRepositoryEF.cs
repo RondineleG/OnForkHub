@@ -35,7 +35,7 @@ public interface IVideoRepositoryEF
     Task<RequestResult<Video>> GetByIdAsync(Id id);
 
     /// <summary>Finds a video by its originating upload identifier.</summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<RequestResult<Video>> GetByUploadIdAsync(Guid uploadId);
 
     /// <summary>
