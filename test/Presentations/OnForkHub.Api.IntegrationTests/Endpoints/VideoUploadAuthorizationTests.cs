@@ -20,6 +20,7 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
     /// <summary>
     /// Rejects a cross-account upload list request.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
     [Fact]
     [Trait("Category", "Integration")]
     public async Task GetUploads_WithAnotherUserId_ReturnsForbidden()
@@ -35,6 +36,7 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
     /// <summary>
     /// Rejects an attempt to initiate an upload for another account.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
     [Fact]
     [Trait("Category", "Integration")]
     public async Task InitiateUpload_WithAnotherUserId_ReturnsForbidden()
@@ -57,6 +59,7 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
     /// <summary>
     /// Rejects reading another user's upload status.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
     [Fact]
     [Trait("Category", "Integration")]
     public async Task GetStatus_ForAnotherUsersUpload_ReturnsForbidden()
@@ -72,6 +75,7 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
     /// <summary>
     /// Rejects modifying another user's upload through the chunk endpoint.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
     [Fact]
     [Trait("Category", "Integration")]
     public async Task UploadChunk_ForAnotherUsersUpload_ReturnsForbidden()
@@ -91,6 +95,7 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
     /// <summary>
     /// Rejects streaming content belonging to another user.
     /// </summary>
+    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous unit test.</placeholder></returns>
     [Fact]
     [Trait("Category", "Integration")]
     public async Task StreamUpload_ForAnotherUsersUpload_ReturnsForbidden()
