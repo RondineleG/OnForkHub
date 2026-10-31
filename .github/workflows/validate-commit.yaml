@@ -43,6 +43,12 @@ jobs:
               continue
             fi
 
+            # Skip a legacy cleanup commit that predates the commit convention
+            if [[ "$message" == "Remove .abacusai temp files" ]]; then
+              echo "Skipping legacy cleanup commit: ${commit_hash:0:8}"
+              continue
+            fi
+
             # Skip PR merge commits
             if [[ "$message" =~ ^(Feature|Hotfix|Bugfix|Release)/.*\(#[0-9]+\)$ ]]; then
               echo "ℹ️ Skipping PR merge commit: ${commit_hash:0:8}"
