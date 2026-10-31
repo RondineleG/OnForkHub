@@ -28,7 +28,7 @@ body {
 
 /* Header: brand and theme switch over the top of the video. */
 .feed-top {
-    --wordmark-h: 11px;
+    --wordmark-h: 17px;
     position: fixed;
     top: 0;
     left: 0;
@@ -559,7 +559,7 @@ body {
     }
 
     .feed-top {
-        --wordmark-h: 12px;
+        --wordmark-h: 18px;
         height: var(--bar-h);
         padding: 0 var(--s-6);
         background: var(--bg);

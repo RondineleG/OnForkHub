@@ -4,7 +4,7 @@
    semantic tokens and components a video app needs. Pages compose these; app.css only lays them out.
 
    Rules
-   - Brand is MrBur gold: the hub mark from docs/assets/logo-original.svg, the Cinzel wordmark.
+   - Brand is MrBur gold: the hub mark from docs/assets/logo-original.svg, the OnForkHub wordmark (Inter 800, "Fork" in gold).
    - The player is Shorts-like: loose white outline icons over the picture (.ofh-action), strong sans type (Inter).
    - Both themes reach the player: dark floats white ink on the picture, light puts dark ink on parchment glass.
    - Glass circles (.ofh-icon-btn) only where a control floats over the page: nav, theme, the big play.
@@ -89,10 +89,11 @@
 
 .brand-wordmark {
     display: block;
-    height: var(--wordmark-h, 12px);
+    height: var(--wordmark-h, 18px);
     width: auto;
-    color: var(--gold);
 }
+.brand-wordmark-ink { fill: var(--tx); }
+.brand-wordmark-accent { fill: var(--gold); }
 
 /* Mark + wordmark lockup. */
 .ofh-brand {
