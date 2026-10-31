@@ -50,7 +50,7 @@ jobs:
             fi
 
             # Skip a PR merge commit created with the typo "fear" instead of "feat"
-            if [[ "$message" =~ ^fear: merge pull request #[0-9]+ ]]; then
+            if [[ "$message" == "fear: merge pull request #"* ]]; then
               echo "Skipping typo PR merge commit: ${commit_hash:0:8}"
               continue
             fi
