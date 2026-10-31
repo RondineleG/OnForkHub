@@ -12,8 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check Source Branch
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
-          SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}
           if [ "$SOURCE_BRANCH" != "dev" ]; then
               echo "❌ Only pull requests from 'dev' are allowed to 'main'."
               exit 1

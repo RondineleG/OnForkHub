@@ -1,5 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Application.Dtos.Video.Request;
@@ -27,9 +29,9 @@ public sealed partial class EnableTorrentEndpoint(ILogger<EnableTorrentEndpoint>
         app.MapPost(
                 Route,
                 [Authorize]
-                async ([FromRoute] Guid id, [FromBody] EnableTorrentRequest request, CancellationToken cancellationToken) =>
+                async ([FromRoute] Guid id, [FromBody] EnableTorrentRequest request, HttpContext context, CancellationToken cancellationToken) =>
                 {
-                    return await HandleEnableTorrentAsync(id, request, cancellationToken);
+                    return await HandleEnableTorrentAsync(id, request, context, cancellationToken);
                 }
             )
             .WithName("EnableVideoTorrentV1")
@@ -53,8 +55,33 @@ public sealed partial class EnableTorrentEndpoint(ILogger<EnableTorrentEndpoint>
     [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to enable torrent for video {VideoId}: {Message}")]
     private partial void LogEnableTorrentFailed(Guid videoId, string? message);
 
-    private async Task<IResult> HandleEnableTorrentAsync(Guid id, EnableTorrentRequest request, CancellationToken cancellationToken)
+    private async Task<IResult> HandleEnableTorrentAsync(Guid id, EnableTorrentRequest request, HttpContext context, CancellationToken cancellationToken)
     {
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? context.User.FindFirstValue("sub");
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var video = await _videoService.GetByIdAsync(id.ToString());
+        if (video.Status != EResultStatus.Success || video.Data is null)
+        {
+            return Results.NotFound(new { error = "Video not found", videoId = id });
+        }
+
+        if (!string.Equals(video.Data.UserId?.ToString(), userId, StringComparison.OrdinalIgnoreCase)
+            && !context.User.IsInRole("Admin"))
+        {
+            return Results.Forbid();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.MagnetUri) ||
+            !request.MagnetUri.StartsWith("magnet:?xt=urn:btih:", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest(new { error = "A valid BitTorrent magnet URI is required." });
+        }
+
         LogEnablingTorrent(id, request.MagnetUri);
 
         var result = await _videoService.EnableTorrentAsync(id, request.MagnetUri);

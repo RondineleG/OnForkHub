@@ -17,7 +17,8 @@ else
     echo "${RED}❌ Some files need formatting. Formatting now...${RESET}"
     dotnet csharpier .
     echo "${GREEN}✅ Files formatted successfully. Adding to commit...${RESET}"
-    git add .
+    echo 'Review and stage formatter changes explicitly; commit blocked.'
+    exit 1
 fi
 
 echo "🛠️ Verifying code style with 'dotnet format style --severity info'..."
@@ -27,7 +28,8 @@ else
     echo "${RED}❌ Code style issues found. Formatting now...${RESET}"
     dotnet format style --severity info
     echo "${GREEN}✅ Code style issues fixed. Adding to commit...${RESET}"
-    git add .
+    echo 'Review and stage formatter changes explicitly; commit blocked.'
+    exit 1
 fi
 
 echo "🔍 Running analyzers with 'dotnet format analyzers --severity info'..."
@@ -37,7 +39,8 @@ else
     echo "${RED}❌ Analyzer issues found. Fixing now...${RESET}"
     dotnet format analyzers --severity info
     echo "${GREEN}✅ Analyzer issues fixed. Adding to commit...${RESET}"
-    git add .
+    echo 'Review and stage formatter changes explicitly; commit blocked.'
+    exit 1
 fi
 
 echo "----------------------------------"

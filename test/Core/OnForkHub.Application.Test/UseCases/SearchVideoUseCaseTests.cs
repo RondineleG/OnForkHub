@@ -22,7 +22,7 @@ public class SearchVideoUseCaseTests
     [DisplayName("ExecuteAsync should throw ArgumentNullException when request is null")]
     public async Task ExecuteAsyncShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
-        VideoSearchRequestDto? request = null;
+        VideoSearchRequest? request = null;
 
         var act = async () => await _useCase.ExecuteAsync(request!);
 
@@ -40,7 +40,7 @@ public class SearchVideoUseCaseTests
             Video.Create("Video 2", "Description 2", "https://example.com/video2.mp4", Id.Create()).Data!,
         };
 
-        var request = new VideoSearchRequestDto
+        var request = new VideoSearchRequest
         {
             SearchTerm = "Video",
             Page = 1,
@@ -76,7 +76,7 @@ public class SearchVideoUseCaseTests
     [DisplayName("ExecuteAsync should return error when repository fails")]
     public async Task ExecuteAsyncShouldReturnErrorWhenRepositoryFails()
     {
-        var request = new VideoSearchRequestDto
+        var request = new VideoSearchRequest
         {
             SearchTerm = "Test",
             Page = 1,
@@ -107,7 +107,7 @@ public class SearchVideoUseCaseTests
     [DisplayName("ExecuteAsync should handle empty search results")]
     public async Task ExecuteAsyncShouldHandleEmptySearchResults()
     {
-        var request = new VideoSearchRequestDto
+        var request = new VideoSearchRequest
         {
             SearchTerm = "NonExistent",
             Page = 1,
@@ -143,7 +143,7 @@ public class SearchVideoUseCaseTests
     [DisplayName("ExecuteAsync should filter by category ID")]
     public async Task ExecuteAsyncShouldFilterByCategoryId()
     {
-        var request = new VideoSearchRequestDto
+        var request = new VideoSearchRequest
         {
             CategoryId = 123,
             Page = 1,
@@ -166,7 +166,7 @@ public class SearchVideoUseCaseTests
     [DisplayName("ExecuteAsync should filter by user ID")]
     public async Task ExecuteAsyncShouldFilterByUserId()
     {
-        var request = new VideoSearchRequestDto
+        var request = new VideoSearchRequest
         {
             UserId = "user-123",
             Page = 1,
@@ -192,7 +192,7 @@ public class SearchVideoUseCaseTests
         var fromDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var toDate = new DateTime(2024, 12, 31, 23, 59, 59, DateTimeKind.Utc);
 
-        var request = new VideoSearchRequestDto
+        var request = new VideoSearchRequest
         {
             FromDate = fromDate,
             ToDate = toDate,
@@ -216,7 +216,7 @@ public class SearchVideoUseCaseTests
     [DisplayName("ExecuteAsync should use default sort values")]
     public async Task ExecuteAsyncShouldUseDefaultSortValues()
     {
-        var request = new VideoSearchRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new VideoSearchRequest { Page = 1, ItemsPerPage = 10 };
 
         var emptyVideos = Enumerable.Empty<Video>();
 

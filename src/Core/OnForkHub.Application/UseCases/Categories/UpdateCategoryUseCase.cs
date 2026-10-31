@@ -1,13 +1,13 @@
 namespace OnForkHub.Application.UseCases.Categories;
 
 public class UpdateCategoryUseCase(ICategoryRepositoryEF categoryRepositoryEF, IEntityValidator<Category> validator)
-    : IUseCase<CategoryUpdateRequestDto, Category>
+    : IUseCase<CategoryUpdateRequest, Category>
 {
     private readonly ICategoryRepositoryEF _categoryRepositoryEF = categoryRepositoryEF;
 
     private readonly IEntityValidator<Category> _validator = validator;
 
-    public async Task<RequestResult<Category>> ExecuteAsync(CategoryUpdateRequestDto request)
+    public async Task<RequestResult<Category>> ExecuteAsync(CategoryUpdateRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 

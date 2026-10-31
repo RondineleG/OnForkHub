@@ -1,0 +1,47 @@
+name: Player JavaScript tests
+on:
+  push:
+    branches:
+      - feat/pair-programming
+    paths:
+      - 'src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js'
+      - 'src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js'
+      - 'tests/webtorrentService.test.mjs'
+      - 'tools/p2p-seeder/**'
+      - '.github/workflows/player-tests.yml'
+  workflow_dispatch:
+jobs:
+  player-unit-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run JavaScript player unit tests
+        run: node --test tests/webtorrentService.test.mjs
+      - name: Validate shorts feed JavaScript syntax
+        run: node --check src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js
+      - name: Validate seeder JavaScript syntax
+        run: node --check tools/p2p-seeder/src/index.mjs && node --check tools/p2p-seeder/src/catalog-sync.mjs
+      - name: Test catalog synchronizer
+        run: node --test tools/p2p-seeder/tests/*.test.mjs
+
+  seeder-runtime:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: tools/p2p-seeder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install seeder dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify hybrid WebRTC support
+        run: node --input-type=module -e "import WebTorrent from 'webtorrent-hybrid'; if (!WebTorrent.WEBRTC_SUPPORT) process.exit(1);"

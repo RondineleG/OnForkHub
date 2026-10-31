@@ -5,13 +5,13 @@ namespace OnForkHub.Application.Test.UseCases.Categories;
 
 public class GetAllCategoryUseCaseTest
 {
-    private readonly ICategoryServiceRavenDB _categoryService;
+    private readonly ICategoryRepositoryEF _categoryRepository;
     private readonly GetAllCategoryUseCase _useCase;
 
     public GetAllCategoryUseCaseTest()
     {
-        _categoryService = Substitute.For<ICategoryServiceRavenDB>();
-        _useCase = new GetAllCategoryUseCase(_categoryService);
+        _categoryRepository = Substitute.For<ICategoryRepositoryEF>();
+        _useCase = new GetAllCategoryUseCase(_categoryRepository);
     }
 
     [Fact]
@@ -20,10 +20,10 @@ public class GetAllCategoryUseCaseTest
     public async Task ShouldGetAllCategoriesSuccessfully()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
         var categories = CreateValidCategoriesList(3);
 
-        _categoryService
+        _categoryRepository
             .GetAllAsync(request.Page, request.ItemsPerPage)
             .Returns((RequestResult<IEnumerable<Category>>?)RequestResult<IEnumerable<Category>>.Success(categories));
 
@@ -34,7 +34,7 @@ public class GetAllCategoryUseCaseTest
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
         result.Data.Should().HaveCount(3);
-        await _categoryService.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
+        await _categoryRepository.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
     }
 
     [Fact]
@@ -43,34 +43,34 @@ public class GetAllCategoryUseCaseTest
     public async Task ShouldReturnNoContentWhenCategoriesListIsNull()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(null!));
+        _categoryRepository.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(null!));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
         result.Status.Should().Be(EResultStatus.NoContent);
-        await _categoryService.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
+        await _categoryRepository.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should return no content when service returns null result")]
-    public async Task ShouldReturnNoContentWhenServiceReturnsNullResult()
+    [DisplayName("Should return no content when repository returns null result")]
+    public async Task ShouldReturnNoContentWhenRepositoryReturnsNullResult()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns((RequestResult<IEnumerable<Category>>?)null);
+        _categoryRepository.GetAllAsync(request.Page, request.ItemsPerPage).Returns((RequestResult<IEnumerable<Category>>?)null);
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
         result.Status.Should().Be(EResultStatus.NoContent);
-        await _categoryService.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
+        await _categoryRepository.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
     }
 
     [Fact]
@@ -79,10 +79,10 @@ public class GetAllCategoryUseCaseTest
     public async Task ShouldReturnEmptyListWhenNoCategoriesExist()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new PaginationRequest { Page = 1, ItemsPerPage = 10 };
         var emptyList = Enumerable.Empty<Category>().ToList();
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(emptyList));
+        _categoryRepository.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(emptyList));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -91,7 +91,7 @@ public class GetAllCategoryUseCaseTest
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
         result.Data.Should().BeEmpty();
-        await _categoryService.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
+        await _categoryRepository.Received(1).GetAllAsync(request.Page, request.ItemsPerPage);
     }
 
     [Fact]
@@ -100,14 +100,14 @@ public class GetAllCategoryUseCaseTest
     public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
         // Arrange
-        PaginationRequestDto? request = null;
+        PaginationRequest? request = null;
 
         // Act
         var act = () => _useCase.ExecuteAsync(request!);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>();
-        await _categoryService.DidNotReceive().GetAllAsync(Arg.Any<int>(), Arg.Any<int>());
+        await _categoryRepository.DidNotReceive().GetAllAsync(Arg.Any<int>(), Arg.Any<int>());
     }
 
     [Fact]
@@ -116,10 +116,10 @@ public class GetAllCategoryUseCaseTest
     public async Task ShouldHandlePaginationCorrectly()
     {
         // Arrange
-        var request = new PaginationRequestDto { Page = 5, ItemsPerPage = 50 };
+        var request = new PaginationRequest { Page = 5, ItemsPerPage = 50 };
         var categories = CreateValidCategoriesList(10);
 
-        _categoryService.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(categories));
+        _categoryRepository.GetAllAsync(request.Page, request.ItemsPerPage).Returns(RequestResult<IEnumerable<Category>>.Success(categories));
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
@@ -127,7 +127,7 @@ public class GetAllCategoryUseCaseTest
         // Assert
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().HaveCount(10);
-        await _categoryService.Received(1).GetAllAsync(5, 50);
+        await _categoryRepository.Received(1).GetAllAsync(5, 50);
     }
 
     private static List<Category> CreateValidCategoriesList(int count)

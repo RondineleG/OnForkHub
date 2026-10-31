@@ -1,0 +1,116 @@
+/* ═══════════════════════════════════════════════════════════════
+   MRBUR DESIGN SYSTEM — TOKENS
+   Clube Secreto Gastronômico
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Motion */
+  --dur-xs: 120ms;
+  --dur-sm: 240ms;
+  --dur-md: 380ms;
+  --dur-lg: 600ms;
+  --dur-xl: 900ms;
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 0.55, 0.2);
+  --ease-emphasis: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Radius */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* Spacing (4pt) */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px;
+  --s-12: 48px; --s-16: 64px; --s-20: 80px;
+
+  /* Type */
+  --f-display: 'Cinzel', 'Georgia', serif;
+  --f-serif: 'Cormorant Garamond', 'Georgia', serif;
+  --f-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --f-ui: 'Georgia', system-ui, serif;
+}
+
+/* DARK — identidade primária do clube */
+[data-theme="dark"] {
+  --bg:     #0a0806;
+  --bg-2:   #141008;
+  --bg-3:   #1e1a0c;
+  --bg-card:rgba(14, 11, 7, 0.96);
+  --bg-input:#100c07;
+  --bg-elev:#1c1810;
+
+  --gold:    #C9A84C;
+  --gold-l:  #E8C97D;
+  --gold-d:  #8A6C2A;
+  --gold-glow: rgba(201, 168, 76, 0.28);
+  --gold-soft: rgba(201, 168, 76, 0.12);
+  --gold-border: rgba(201, 168, 76, 0.25);
+
+  --tx:    #F0E6D0;
+  --tx-2:  rgba(240, 230, 208, 0.55);
+  --tx-3:  rgba(240, 230, 208, 0.28);
+  --tx-dim:rgba(240, 230, 208, 0.14);
+
+  --border:    rgba(201, 168, 76, 0.13);
+  --border-2:  rgba(201, 168, 76, 0.22);
+  --surface:   rgba(255, 255, 255, 0.03);
+
+  --ok:    #4E8840;
+  --ok-bg: rgba(78, 136, 64, 0.10);
+  --er:    #A03A3A;
+  --er-bg: rgba(160, 58, 58, 0.10);
+  --warn:  #C9893A;
+  --info:  #4A8FB5;
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.35);
+  --shadow-md: 0 8px 32px rgba(0,0,0,.5);
+  --shadow-lg: 0 40px 100px rgba(0,0,0,.7), 0 8px 32px rgba(0,0,0,.5);
+  --shadow-glow: 0 0 24px rgba(201,168,76,.35);
+
+  --grain-opacity: .07;
+}
+
+/* LIGHT — variação diurna (pergaminho) */
+[data-theme="light"] {
+  --bg:     #F2EBD9;
+  --bg-2:   #E8DEC8;
+  --bg-3:   #D8CBAA;
+  --bg-card: rgba(254, 250, 243, 1);
+  --bg-input:#FAF5E8;
+  --bg-elev: #FCF8EE;
+
+  --gold:    #8A5500;
+  --gold-l:  #C9A84C;
+  --gold-d:  #5A3200;
+  --gold-glow: rgba(138, 85, 0, 0.16);
+  --gold-soft: rgba(138, 85, 0, 0.08);
+  --gold-border: rgba(138, 85, 0, 0.28);
+
+  --tx:    #1A0F00;
+  --tx-2:  rgba(26, 15, 0, 0.55);
+  --tx-3:  rgba(26, 15, 0, 0.32);
+  --tx-dim:rgba(26, 15, 0, 0.16);
+
+  --border:   rgba(138, 85, 0, 0.18);
+  --border-2: rgba(138, 85, 0, 0.32);
+  --surface:  rgba(138, 85, 0, 0.04);
+
+  --ok:    #2E6830;
+  --ok-bg: rgba(46, 104, 48, 0.10);
+  --er:    #9A1A1A;
+  --er-bg: rgba(154, 26, 26, 0.10);
+  --warn:  #8A5500;
+  --info:  #2D6E94;
+
+  --shadow-sm: 0 2px 8px rgba(80,40,0,.06);
+  --shadow-md: 0 8px 28px rgba(80,40,0,.10);
+  --shadow-lg: 0 24px 60px rgba(80,40,0,.14), 0 4px 16px rgba(80,40,0,.08);
+  --shadow-glow: 0 0 24px rgba(138,85,0,.18);
+
+  --grain-opacity: .04;
+}

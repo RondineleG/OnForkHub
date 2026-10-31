@@ -18,20 +18,82 @@
 OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN delivery with P2P distribution through WebTorrent. Supporting videos up to 2 minutes, it offers:
 
 - 🚀 Hybrid content delivery (CDN + P2P)
-- 📱 Responsive web interface
-- 🔒 Secure authentication
+- 📱 Full-screen shorts feed for mobile and desktop
+- 🌗 Light and dark themes built on the MrBur design system
 - 🎬 Automatic video transcoding
 - 📊 Analytics and monitoring
+
+## 🖥 Interface
+
+The web app is a vertical shorts feed. Each video streams over WebTorrent 2.x and plays while it downloads.
+
+| Web · dark | Web · light |
+| :---: | :---: |
+| <img src="docs/assets/screenshots/web-dark.png" width="420" alt="Desktop feed, dark theme"/> | <img src="docs/assets/screenshots/web-light.png" width="420" alt="Desktop feed, light theme"/> |
+
+| Mobile · dark | Mobile · light |
+| :---: | :---: |
+| <img src="docs/assets/screenshots/mobile-dark.png" width="240" alt="Mobile feed, dark theme"/> | <img src="docs/assets/screenshots/mobile-light.png" width="240" alt="Mobile feed, light theme"/> |
+
+- **Feed**: swipe or scroll to move between videos; on desktop, use the arrow buttons or the ↑/↓ keys.
+- **Gestures**: tap to pause, double-tap a side to seek ±10 s, hold to play at 2×.
+- **Controls**: sound, playback speed and framing (fill or full frame), and fullscreen.
+- **Loading**: the spinner shows each step (connecting, finding peers, downloading with peers and speed). The next video preloads once the current one is playing.
+- **Theme**: follows the system setting; the sun/moon button switches it and the choice is saved.
+- **Design system**: tokens in `wwwroot/css/mrbur`, OnForkHub components in `wwwroot/css/ofh.css`, and a style guide at `/design-system.html`.
+
+## 🧱 Architecture
+
+The solution (`OnForkHub.slnx`) follows a layered, DDD-style layout. Dependencies point inward: presentations depend on application and core, never the reverse.
+
+| Layer | Project | Responsibility |
+| --- | --- | --- |
+| Core | `OnForkHub.Core` | Entities, value objects, validations and service/repository interfaces |
+| Core | `OnForkHub.Application` | Use cases: videos, uploads, torrents, notifications, users, transcoding |
+| Infrastructure | `OnForkHub.Persistence` | EF Core contexts, mappings, migrations and repositories |
+| Shared | `OnForkHub.Abstractions` | Result types, request/response contracts and shared helpers |
+| Shared | `OnForkHub.CrossCutting` | Convention-based dependency injection, caching, logging and localization |
+| Shared | `OnForkHub.Scripts` | Build and developer scripts |
+| Presentation | `OnForkHub.Api` | Minimal-API REST endpoints (`/api/v1`), JWT auth, SignalR hub, Swagger |
+| Presentation | `OnForkHub.Web` | Blazor WebAssembly app: the shorts feed and the embed player |
+| Tooling | `tools/p2p-seeder` | Experimental Node worker that seeds stored videos over WebRTC |
+
+Services and repositories are registered by convention in `OnForkHub.CrossCutting`, so a new implementation only needs to follow the naming rules instead of being wired by hand. Request and response models end in `Request` / `Response`.
+
+### API
+
+Endpoints live under `src/Presentations/OnForkHub.Api/Endpoints/Rest/V1`, one class per route:
+
+- **Auth**: register, login, refresh token
+- **Videos**: create, update, delete, list, search, recommendations, ratings, comments, views, chunked upload (initiate, chunk, status, publish), streaming, torrent enable
+- **Categories**: CRUD and search
+- **Users**: profile, favorites, view history
+- **Notifications**: list, unread, mark read, archive, delete, plus the `NotificationHub` for live updates
+
+Swagger is available at `/swagger` when the API runs in Development. See [docs/API_REFERENCE.md](docs/API_REFERENCE.md) for details.
+
+### Web app and P2P playback
+
+The home route (`/`) is the shorts feed, fed by a fixed catalog of open Blender Foundation movies (`Services/ShortsCatalog.cs`) published as torrents with HTTP web seeds, so they play even when no peer is online. `/embed/{id}` embeds a single video.
+
+Playback is handled by two modules in `wwwroot/js`:
+
+- `webtorrentService.js` wraps WebTorrent 2.x. Files stream through a service worker (`webtorrent-sw.min.js`) straight into the `<video>` element, so the browser handles seeking and formats. Pieces are kept in memory (the default OPFS store took 20-30 s to prepare a movie-sized file), and a download is abandoned only after 30 s without any data.
+- `shortsFeed.js` drives the feed: one active video at a time, next-video preload once the current one plays, gestures, speed and framing preferences, fullscreen, and the light/dark theme.
+
+Service workers need HTTPS or `localhost`. To test on a phone, expose the app through an HTTPS tunnel.
 
 ## 🛠 Tech Stack
 
 ### Core Technologies
 
-- **🎯 Backend**: .NET 9 with ASP.NET Core
-- **🌐 Frontend**: Blazor WebAssembly
-- **💾 Databases**: RavenDB, CosmosDB, SQL Server
-- **📦 Storage**: Azure Blob Storage/AWS S3
-- **🔄 P2P**: WebTorrent
+- **🎯 Backend**: .NET 10 with ASP.NET Core
+- **🌐 Frontend**: Blazor WebAssembly (shorts feed, MrBur design system)
+- **💾 Data**: SQL Server (EF Core, ASP.NET Identity), Redis distributed cache
+- **📦 Storage**: Local file storage or Azure Blob Storage
+- **🔐 Auth & real time**: JWT bearer tokens, SignalR notifications hub
+- **🔄 P2P**: WebTorrent 2.x in the browser (service-worker streaming), optional Node seeder
+- **🧪 Tests**: xUnit, FluentAssertions, NSubstitute, Node test runner
 - **🐳 Containers**: Docker
 
 ### Development Tools
@@ -46,7 +108,7 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
 
 ### Required Software
 
-- **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/9.0)
+- **.NET 10 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **Git** - [Download](https://git-scm.com/)
 - **GitHub CLI** - [Download](https://cli.github.com/)
 - **Node.js** - [Download](https://nodejs.org/)
@@ -64,25 +126,36 @@ OnForkHub is a cutting-edge video-sharing platform that combines traditional CDN
   - Git Flow
   - CSharpier
 
-  ## 🚀 Deployment Guide
-### VPS Specifications
-The project has been successfully deployed and tested on a minimal VPS configuration from Azure free tier:
+## 🚀 Deployment
 
-### Public Access
-Development  environment  deployment is available at:
-- **Frontend**: http://172.245.152.43/
-- **API Documentation**: http://172.245.152.43:9000/swagger/index.html
+Images are built by `.github/workflows/build-and-deploy.yml` (`.docker/Dockerfile.OnForkHub.Api` and `.docker/Dockerfile.OnForkHub.Web`) and started on the server with `.deploy/docker-compose.yml`.
 
-### Docker Setup
-The deployment uses Docker with a reverse proxy configuration:
-- Frontend accessible on port 80
-- API accessible on port 9000
+| Service | Image | Notes |
+| --- | --- | --- |
+| `onforkhub-web` | nginx serving the Blazor WebAssembly build | `.docker/nginx.conf` |
+| `onforkhub-api` | ASP.NET Core API | applies EF Core migrations on start (`Database__MigrateOnStartup`) |
+| `sqlserver` | SQL Server 2022 Express | data in the `sqlserver-data` volume |
+| `redis`, `jaeger` | cache and tracing | internal network only |
+| `reverse-proxy` | nginx with TLS | `.deploy/custom.conf`: site on 443, API on 9443 |
 
-#### Configuration Files
-- `proxy.yml`: Nginx reverse proxy setup
-- `custom.conf`: Nginx configuration
-- `services.yml`: Application services configuration
+### Required settings
 
+The API refuses to start in Production without real secrets. Create a `.env` next to `docker-compose.yml` on the server:
+
+```env
+SQL_SA_PASSWORD=<strong password>
+JWT_SECRET_KEY=<at least 32 random characters>
+CORS_ALLOWED_ORIGIN=https://<site origin>
+# optional: JWT_ISSUER, JWT_AUDIENCE
+```
+
+These become `ConnectionStrings__DefaultConnection`, `Jwt__SecretKey` and `Cors__AllowedOrigins__0`. The `${VAR}` syntax is not expanded by .NET, so never put it in an `appsettings` file.
+
+### Front-end caching
+
+Everything under `_framework/` is fingerprinted and cached for a year. `index.html`, `css`, `js` and the WebTorrent service worker keep stable names, so nginx sends `Cache-Control: no-cache` and browsers revalidate on each visit. The API address for production is in `wwwroot/appsettings.Production.json`. The service worker needs HTTPS.
+
+Swagger is only enabled when the API runs in Development.
 
 ## 🚀 Starting to develop
 
@@ -164,7 +237,8 @@ We follow Git Flow with kebab-case naming convention for all branches (using low
 # Branch Types and Naming Convention
 main        # Production branch
 dev         # Development branch
-feature/    # New features (e.g., feature/add-user-auth)
+feat/       # New features (feature/ also supported)
+feature/    # Legacy feature branch prefix (e.g., feature/add-user-auth)
 hotfix/     # Production fixes (e.g., hotfix/fix-login-bug)
 release/    # Release preparation (e.g., release/v1.2.0)
 bugfix/     # Non-urgent fixes (e.g., bugfix/improve-error-handling)
@@ -241,6 +315,22 @@ dotnet watch run
 cd src/Presentations/OnForkHub.Web
 dotnet watch run
 ```
+
+The shorts feed only needs the Web project: it does not call the API.
+
+#### Tests
+
+```bash
+# .NET: projects under test/
+dotnet test
+
+# JavaScript: player module, shorts feed syntax and seeder
+node --test tests/webtorrentService.test.mjs
+node --check src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js
+node --test tools/p2p-seeder/tests/*.test.mjs
+```
+
+The API integration tests need the services they target (see `test/Presentations/OnForkHub.Api.IntegrationTests`). The JavaScript checks also run in CI (`player-tests.yml`).
 
 #### 4. Git Aliases
 
@@ -343,6 +433,10 @@ Comprehensive guides and references:
 - **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Solutions for common issues
 - **[FAQ](docs/FAQ.md)** - Frequently asked questions
 - **[Architecture](docs/ARCHITECTURE.md)** - System design and improvements
+- **[WebTorrent Integration](docs/WEBTORRENT_INTEGRATION.md)** - How P2P playback works
+- **[P2P Seeder](tools/p2p-seeder/README.md)** - Experimental WebRTC seeding worker
+- **[Roadmap](ROADMAP.md)** - Status and planned work
+- **[Design system](src/Presentations/OnForkHub.Web/wwwroot/design-system.html)** - Brand, tokens, icons and controls (served at `/design-system.html`)
 
 ## 🤝 Contributing
 

@@ -19,6 +19,22 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
             await _context.SaveChangesAsync();
             return RequestResult<Video>.Success(video);
         }
+        catch (DbUpdateException ex) when (
+            video.UploadId.HasValue &&
+            ex.InnerException is Microsoft.Data.SqlClient.SqlException sql &&
+            (sql.Number == 2601 || sql.Number == 2627))
+        {
+            // The unique UploadId index resolves concurrent publication attempts.
+            // Only return an existing video when its originating upload matches.
+            var existing = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                _context.Videos.AsNoTracking(), v => v.UploadId == video.UploadId);
+            if (existing is not null)
+            {
+                return RequestResult<Video>.Success(existing);
+            }
+
+            throw PersistenceExceptionHandler.HandleDbException(ex, "create", EntityName);
+        }
         catch (DbUpdateException ex)
         {
             var persistenceException = PersistenceExceptionHandler.HandleDbException(ex, "create", EntityName);
@@ -95,6 +111,23 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
         catch (Exception ex)
         {
             return RequestResult<Video>.WithError($"Error retrieving {EntityName}: {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<RequestResult<Video>> GetByUploadIdAsync(Guid uploadId)
+    {
+        try
+        {
+            var video = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                _context.Videos.AsNoTracking(), v => v.UploadId == uploadId);
+            return video is null
+                ? RequestResult<Video>.WithError("Video not found for upload.")
+                : RequestResult<Video>.Success(video);
+        }
+        catch (Exception ex)
+        {
+            return RequestResult<Video>.WithError($"Unable to find publication: {ex.Message}");
         }
     }
 

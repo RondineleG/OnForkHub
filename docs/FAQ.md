@@ -26,7 +26,7 @@ Common questions and answers about OnForkHub development and usage.
 **A:** OnForkHub uses:
 - **Backend:** .NET 9 with ASP.NET Core
 - **Frontend:** Blazor WebAssembly
-- **Databases:** RavenDB, CosmosDB, SQL Server
+- **Databases:** SQL Server (EF Core), Redis cache
 - **Storage:** Azure Blob Storage or AWS S3
 - **P2P:** WebTorrent for peer-to-peer distribution
 - **Containers:** Docker for deployment
@@ -211,11 +211,12 @@ OnForkHub/
 ├── src/
 │   ├── Core/           # Business logic
 │   ├── Infrastructure/ # Data access
-│   ├── Presentations/  # UI (Web, API, App)
+│   ├── Presentations/  # UI (Web, API)
 │   └── Shared/         # Shared utilities
 ├── test/               # Test projects
 ├── docs/               # Documentation
-└── scripts/            # Build/utility scripts
+├── tests/              # JS player tests
+└── tools/              # P2P seeder
 ```
 
 ---
@@ -316,7 +317,7 @@ docker run -d -p 80:80 -p 5000:5000 onforkhub:latest
 **A:** OnForkHub uses:
 - Docker containers
 - Nginx reverse proxy
-- Database services (RavenDB, CosmosDB, SQL)
+- SQL Server database
 - Cloud storage (Azure Blob/AWS S3)
 
 ### Q: How do I configure environment variables?

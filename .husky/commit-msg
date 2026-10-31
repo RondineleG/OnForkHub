@@ -10,7 +10,7 @@ COMMIT_PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|m
 
 # === Functions ===
 normalize_merge_commit() {
-  local commit_msg="$(cat "$COMMIT_FILE")"
+  commit_msg="$(cat "$COMMIT_FILE")"
   case "$commit_msg" in
     Merge*)
       if ! echo "$commit_msg" | grep -Eq "^merge: "; then
@@ -25,7 +25,7 @@ normalize_merge_commit() {
 show_allowed_types() {
   echo "For this branch type, commit messages must start with one of the following types:"
   case "$1" in
-    feature/*)
+    feature/*|feat/*)
       echo "  - feat:     ➡️ For new features"
       echo "  - refactor: ➡️ For code refactoring"
       echo "  - fix:      ➡️ For bug fixes"
@@ -57,7 +57,7 @@ show_allowed_types() {
 
 get_valid_types_regex() {
   case "$1" in
-    feature/*) echo "^(feat|refactor|fix|test|docs|style|merge).*" ;;
+    feature/*|feat/*) echo "^(feat|refactor|fix|test|docs|style|merge).*" ;;
     hotfix/*)  echo "^(fix|hotfix|perf|merge).*" ;;
     bugfix/*)  echo "^(fix|bugfix|perf|merge).*" ;;
     release/*) echo "^(release|chore|docs|merge).*" ;;
@@ -71,7 +71,7 @@ normalize_merge_commit
 
 COMMIT_MESSAGE="$(cat "$COMMIT_FILE")"
 
-if ! grep -Eq "$COMMIT_PATTERN" <<< "$COMMIT_MESSAGE"; then
+if ! printf "%s\n" "$COMMIT_MESSAGE" | grep -Eq "$COMMIT_PATTERN"; then
   echo "❌ Invalid commit message format!"
   echo "The commit message should follow the Conventional Commits format:"
   echo "  <type>[optional scope]: <description>"
@@ -101,7 +101,7 @@ fi
 
 VALID_TYPES_REGEX="$(get_valid_types_regex "$CURRENT_BRANCH")"
 
-if [ -n "$VALID_TYPES_REGEX" ] && ! grep -Eq "$VALID_TYPES_REGEX" <<< "$COMMIT_MESSAGE"; then
+if [ -n "$VALID_TYPES_REGEX" ] && ! printf "%s\n" "$COMMIT_MESSAGE" | grep -Eq "$VALID_TYPES_REGEX"; then
   echo "❌ Invalid commit type for branch '$CURRENT_BRANCH'!"
   show_allowed_types "$CURRENT_BRANCH"
   exit 1
