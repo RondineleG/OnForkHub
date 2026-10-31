@@ -1,5 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authorization;
 
 using OnForkHub.Core.Interfaces.Services;
@@ -9,7 +11,7 @@ using OnForkHub.CrossCutting.Interfaces;
 /// <summary>
 /// Endpoint for getting the status of a video upload.
 /// </summary>
-public sealed partial class GetUploadStatusEndpoint(ILogger<GetUploadStatusEndpoint> logger, IVideoUploadService uploadService) : IEndpointAsync
+public sealed partial class GetUploadStatusEndpoint(ILogger<GetUploadStatusEndpoint> logger, IVideoUploadService uploadService, OnForkHub.Core.Interfaces.Repositories.IVideoUploadRepository uploads) : IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -27,9 +29,9 @@ public sealed partial class GetUploadStatusEndpoint(ILogger<GetUploadStatusEndpo
         app.MapGet(
                 Route,
                 [Authorize]
-                async ([FromRoute] Guid uploadId, CancellationToken cancellationToken) =>
+                async ([FromRoute] Guid uploadId, HttpContext context, CancellationToken cancellationToken) =>
                 {
-                    return await HandleGetStatusAsync(uploadId, cancellationToken);
+                    return await HandleGetStatusAsync(uploadId, context, cancellationToken);
                 }
             )
             .WithName("GetVideoUploadStatusV1")
@@ -55,10 +57,28 @@ public sealed partial class GetUploadStatusEndpoint(ILogger<GetUploadStatusEndpo
     [LoggerMessage(Level = LogLevel.Warning, Message = "Get upload status was cancelled for {UploadId}")]
     private partial void LogGetStatusCancelled(Guid uploadId);
 
-    private async Task<IResult> HandleGetStatusAsync(Guid uploadId, CancellationToken cancellationToken)
+    private async Task<IResult> HandleGetStatusAsync(Guid uploadId, HttpContext context, CancellationToken cancellationToken)
     {
         try
         {
+            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? context.User.FindFirstValue("sub");
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Results.Unauthorized();
+            }
+
+            var upload = await uploads.GetByIdAsync(uploadId);
+            if (upload.Status != EResultStatus.Success || upload.Data is null)
+            {
+                return Results.NotFound(new { error = "Upload not found", uploadId });
+            }
+
+            if (!string.Equals(upload.Data.UserId.ToString(), userId, StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.Forbid();
+            }
+
             LogGettingStatus(uploadId);
 
             var statusResult = await _uploadService.GetUploadStatusAsync(uploadId);

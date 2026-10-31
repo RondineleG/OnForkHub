@@ -23,6 +23,20 @@ public class Video : BaseEntity
 
     public string? MagnetUri { get; private set; }
 
+    /// <summary>Gets the upload that originated this catalog entry, if any.</summary>
+    public Guid? UploadId { get; private set; }
+
+    /// <summary>Associates this video with its completed upload.</summary>
+    public void AssociateUpload(Guid uploadId)
+    {
+        if (uploadId == Guid.Empty || (UploadId.HasValue && UploadId != uploadId))
+        {
+            throw new ArgumentException("Invalid or conflicting upload identifier.", nameof(uploadId));
+        }
+
+        UploadId = uploadId;
+    }
+
     public long ViewCount { get; private set; }
 
     public bool IsTorrentEnabled { get; private set; }

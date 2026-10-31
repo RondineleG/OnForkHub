@@ -19,7 +19,7 @@ using UserEntity = OnForkHub.Core.Entities.User;
 public sealed partial class LoginEndpoint(
     ILogger<LoginEndpoint> logger,
     ITokenService tokenService,
-    IUseCase<UserLoginRequestDto, UserEntity> loginUserUseCase
+    IUseCase<UserLoginRequest, UserEntity> loginUserUseCase
 ) : IEndpointAsync
 {
     private const int V1 = 1;
@@ -30,7 +30,7 @@ public sealed partial class LoginEndpoint(
 
     private readonly ITokenService _tokenService = tokenService;
 
-    private readonly IUseCase<UserLoginRequestDto, UserEntity> _loginUserUseCase = loginUserUseCase;
+    private readonly IUseCase<UserLoginRequest, UserEntity> _loginUserUseCase = loginUserUseCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -40,7 +40,7 @@ public sealed partial class LoginEndpoint(
         app.MapPost(
                 Route,
                 [AllowAnonymous]
-                async ([FromBody] UserLoginRequestDto request, CancellationToken cancellationToken) =>
+                async ([FromBody] UserLoginRequest request, CancellationToken cancellationToken) =>
                 {
                     return await HandleLoginAsync(request);
                 }
@@ -63,7 +63,7 @@ public sealed partial class LoginEndpoint(
     [LoggerMessage(Level = LogLevel.Information, Message = "Login attempt for user: {Email}")]
     private partial void LogLoginAttempt(string email);
 
-    private async Task<IResult> HandleLoginAsync(UserLoginRequestDto request)
+    private async Task<IResult> HandleLoginAsync(UserLoginRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 

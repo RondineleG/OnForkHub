@@ -21,7 +21,7 @@ public class SearchCategoryUseCaseTests
     [DisplayName("ExecuteAsync should throw ArgumentNullException when request is null")]
     public async Task ExecuteAsyncShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
-        CategorySearchRequestDto? request = null;
+        CategorySearchRequest? request = null;
 
         var act = async () => await _useCase.ExecuteAsync(request!);
 
@@ -41,7 +41,7 @@ public class SearchCategoryUseCaseTests
         SetCategoryId(categories[0], "Categories/1");
         SetCategoryId(categories[1], "Categories/2");
 
-        var request = new CategorySearchRequestDto
+        var request = new CategorySearchRequest
         {
             SearchTerm = "Category",
             Page = 1,
@@ -67,7 +67,7 @@ public class SearchCategoryUseCaseTests
     [DisplayName("ExecuteAsync should return error when repository fails")]
     public async Task ExecuteAsyncShouldReturnErrorWhenRepositoryFails()
     {
-        var request = new CategorySearchRequestDto
+        var request = new CategorySearchRequest
         {
             SearchTerm = "Test",
             Page = 1,
@@ -88,7 +88,7 @@ public class SearchCategoryUseCaseTests
     [DisplayName("ExecuteAsync should handle empty search results")]
     public async Task ExecuteAsyncShouldHandleEmptySearchResults()
     {
-        var request = new CategorySearchRequestDto
+        var request = new CategorySearchRequest
         {
             SearchTerm = "NonExistent",
             Page = 1,
@@ -114,7 +114,7 @@ public class SearchCategoryUseCaseTests
     [DisplayName("ExecuteAsync should use default sort values")]
     public async Task ExecuteAsyncShouldUseDefaultSortValues()
     {
-        var request = new CategorySearchRequestDto { Page = 1, ItemsPerPage = 10 };
+        var request = new CategorySearchRequest { Page = 1, ItemsPerPage = 10 };
 
         var categories = new List<Category>();
 

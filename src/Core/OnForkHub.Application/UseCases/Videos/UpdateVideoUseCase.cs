@@ -6,13 +6,13 @@ using OnForkHub.Core.ValueObjects;
 /// <summary>
 /// Use case for updating a video.
 /// </summary>
-public class UpdateVideoUseCase(IVideoService videoService, IEntityValidator<Video> validator) : IUseCase<VideoUpdateRequestDto, Video>
+public class UpdateVideoUseCase(IVideoService videoService, IEntityValidator<Video> validator) : IUseCase<VideoUpdateRequest, Video>
 {
     private readonly IVideoService _videoService = videoService;
     private readonly IEntityValidator<Video> _validator = validator;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<Video>> ExecuteAsync(VideoUpdateRequestDto request)
+    public async Task<RequestResult<Video>> ExecuteAsync(VideoUpdateRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 

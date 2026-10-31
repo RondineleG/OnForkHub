@@ -8,12 +8,12 @@ using OnForkHub.Core.Responses;
 /// <summary>
 /// Use case for searching videos with filters.
 /// </summary>
-public class SearchVideoUseCase(IVideoRepositoryEF repository) : IUseCase<VideoSearchRequestDto, PagedResultDto<VideoResponse>>
+public class SearchVideoUseCase(IVideoRepositoryEF repository) : IUseCase<VideoSearchRequest, PagedResponse<VideoResponse>>
 {
     private readonly IVideoRepositoryEF _repository = repository;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<PagedResultDto<VideoResponse>>> ExecuteAsync(VideoSearchRequestDto request)
+    public async Task<RequestResult<PagedResponse<VideoResponse>>> ExecuteAsync(VideoSearchRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -31,13 +31,13 @@ public class SearchVideoUseCase(IVideoRepositoryEF repository) : IUseCase<VideoS
 
         if (result.Status != EResultStatus.Success || result.Data.Items is null)
         {
-            return RequestResult<PagedResultDto<VideoResponse>>.WithError(result.Message ?? "Failed to search videos");
+            return RequestResult<PagedResponse<VideoResponse>>.WithError(result.Message ?? "Failed to search videos");
         }
 
-        var responseDtos = result.Data.Items.Select(VideoResponse.FromVideo).ToList();
+        var responses = result.Data.Items.Select(VideoResponse.FromVideo).ToList();
 
-        var pagedResult = PagedResultDto<VideoResponse>.Create(responseDtos, request.Page, request.ItemsPerPage, result.Data.TotalCount);
+        var pagedResult = PagedResponse<VideoResponse>.Create(responses, request.Page, request.ItemsPerPage, result.Data.TotalCount);
 
-        return RequestResult<PagedResultDto<VideoResponse>>.Success(pagedResult);
+        return RequestResult<PagedResponse<VideoResponse>>.Success(pagedResult);
     }
 }

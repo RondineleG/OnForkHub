@@ -1,22 +1,21 @@
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
+
 using OnForkHub.Api.Hubs;
-using OnForkHub.Api.Middlewares;
-using OnForkHub.Application.Extensions;
 using OnForkHub.CrossCutting.Authentication;
 using OnForkHub.CrossCutting.Caching;
 using OnForkHub.CrossCutting.Extensions;
-using OnForkHub.CrossCutting.GraphQL.Interfaces;
 using OnForkHub.CrossCutting.Middleware.RateLimiting;
 using OnForkHub.CrossCutting.Middleware.ResponseCompression;
 using OnForkHub.CrossCutting.Middleware.Security;
+using OnForkHub.CrossCutting.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var apiMode = builder.Configuration.GetValue<string>("AppSettings:ApiMode") ?? "All";
+builder.ValidateProductionConfiguration();
 
 builder.Services.AddSwaggerServices();
 builder.Services.AddCustomServices(builder.Configuration);
-builder.Services.AddGraphQLFromCrossCutting();
-builder.Services.AddGraphQLAdapters();
 builder.Services.AddResponseCompressionServices();
 builder.Services.AddCachingServices(builder.Configuration);
 builder.Services.AddRateLimitingServices(builder.Configuration);
@@ -46,6 +45,24 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 var app = builder.Build();
 
+await app.MigrateDatabaseIfRequestedAsync();
+
+// Serve stored videos from the same directory written by LocalFileStorageService.
+// Only the videos subdirectory is exposed; staging files and other paths stay private.
+var fileStorage = app.Services.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+var videoDirectory = Path.Combine(Directory.GetCurrentDirectory(), fileStorage.BasePath, "videos");
+Directory.CreateDirectory(videoDirectory);
+
+if (fileStorage.ServePublicVideos)
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(videoDirectory),
+        RequestPath = new PathString(fileStorage.BaseUrl.TrimEnd('/') + "/videos"),
+        ServeUnknownFileTypes = false,
+    });
+}
+
 app.UseCors("DefaultPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -62,22 +79,7 @@ if (app.Environment.IsDevelopment())
 // Global exception handler should be after other middleware to catch all exceptions
 app.UseGlobalExceptionHandler();
 
-app.UseMiddleware<ApiTypeDetectionMiddleware>();
-
-if (apiMode is "Rest" or "All")
-{
-    await app.MapRegisteredEndpointsAsync();
-}
-
-if (apiMode is "HotChocolate" or "All")
-{
-    app.MapGroup("/api/v1/graph/hc").MapHotChocolateEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
-}
-
-if (apiMode is "GraphQLNet" or "All")
-{
-    app.MapGroup("/api/v1/graph/gn").MapGraphQLNetEndpoints(app.Services.GetRequiredService<GraphQLEndpointManager>());
-}
+await app.MapRegisteredEndpointsAsync();
 
 app.MapHub<NotificationHub>("/hubs/notifications");
 

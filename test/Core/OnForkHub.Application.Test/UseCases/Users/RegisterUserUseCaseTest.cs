@@ -22,7 +22,7 @@ public class RegisterUserUseCaseTest
     [DisplayName("Should register user successfully")]
     public async Task ShouldRegisterUserSuccessfully()
     {
-        var request = new UserRegisterRequestDto
+        var request = new UserRegisterRequest
         {
             Name = "John Silva",
             Email = "john@email.com",
@@ -47,7 +47,7 @@ public class RegisterUserUseCaseTest
     [DisplayName("Should return error when service returns error")]
     public async Task ShouldReturnErrorWhenServiceReturnsError()
     {
-        var request = new UserRegisterRequestDto
+        var request = new UserRegisterRequest
         {
             Name = "John Silva",
             Email = "existing@email.com",
@@ -67,7 +67,7 @@ public class RegisterUserUseCaseTest
     [DisplayName("Should throw ArgumentNullException when request is null")]
     public async Task ShouldThrowArgumentNullExceptionWhenRequestIsNull()
     {
-        UserRegisterRequestDto? request = null;
+        UserRegisterRequest? request = null;
 
         var act = () => _registerUserUseCase.ExecuteAsync(request!);
 
@@ -80,7 +80,7 @@ public class RegisterUserUseCaseTest
     [DisplayName("Should return error when service returns null user")]
     public async Task ShouldReturnErrorWhenServiceReturnsNullUser()
     {
-        var request = new UserRegisterRequestDto
+        var request = new UserRegisterRequest
         {
             Name = "John Silva",
             Email = "john@email.com",

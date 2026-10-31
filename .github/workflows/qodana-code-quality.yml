@@ -24,20 +24,10 @@ jobs:
       - name: Print environment variables (debug)
         run: printenv | sort
 
-      - name: Remove global.json if exists
-        run: rm -f global.json
-        continue-on-error: true
-
-      # ✅ Configurando .NET 9
-      - name: Setup .NET 9
+      - name: Setup .NET from global.json
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
-
-      - name: Create global.json
-        run: |
-          dotnet new globaljson --roll-forward feature --force
-          cat global.json
+          global-json-file: global.json
 
       - name: Verify .NET installation
         run: |
@@ -124,7 +114,7 @@ jobs:
 
                 These changes are automated to help maintain code quality standards.
 
-                > Using .NET 9.0 for all formatting and analysis tools.`,
+                > Using the .NET SDK specified by global.json for formatting and analysis tools.`,
                 head: branchName,
                 base: context.payload.pull_request.head.ref,
                 maintainer_can_modify: true

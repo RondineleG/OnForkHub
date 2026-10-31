@@ -11,11 +11,7 @@
   <Folder Name="/src/Presentations/Api/">
     <Project Path="src/Presentations/OnForkHub.Api/OnForkHub.Api.csproj" />
   </Folder>
-  <Folder Name="/src/Presentations/Console/">
-    <Project Path="src/Presentations/OnForkHub.App/OnForkHub.App.csproj" />
-  </Folder>
   <Folder Name="/src/Presentations/Web/">
-    <Project Path="src/Presentations/OnForkHub.Web.Components/OnForkHub.Web.Components.csproj" />
     <Project Path="src/Presentations/OnForkHub.Web/OnForkHub.Web.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">

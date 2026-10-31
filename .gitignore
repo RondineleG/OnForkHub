@@ -393,11 +393,13 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/src/Presentations/OnForkHub.Web/wwwroot/npm/package-lock.json
-/src/Presentations/OnForkHub.Web.Components/wwwroot/npm/package-lock.json
 
 # Vite temp files
 *.timestamp-*.mjs
 vite.config.ts.timestamp-*
 
 coverage/
+
+# Local media and uploads
+/videos/
+/src/Presentations/OnForkHub.Api/uploads/

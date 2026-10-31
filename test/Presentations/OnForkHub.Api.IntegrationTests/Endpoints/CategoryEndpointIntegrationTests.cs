@@ -50,7 +50,7 @@ public sealed class CategoryEndpointIntegrationTests(CustomWebApplicationFactory
     public async Task CreateCategory_ShouldReturnBadRequest_WithInvalidData(string name)
     {
         // Arrange
-        var request = new CategoryRequestDto { Name = name, Description = "Test description" };
+        var request = new CategoryRequest { Name = name, Description = "Test description" };
 
         // Act
         var client = factory.CreateClientWithAuth();
