@@ -51,7 +51,7 @@ public static class ProductionConfigurationExtension
     /// <summary>
     /// Applies pending EF Core migrations when <c>Database:MigrateOnStartup</c> is true.
     /// </summary>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task MigrateDatabaseIfRequestedAsync(this WebApplication app)
     {
         if (!app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
