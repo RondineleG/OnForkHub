@@ -2,6 +2,9 @@ networks:
   onforkhub-network:
     driver: bridge
 
+volumes:
+  sqlserver-data:
+
 services:
   onforkhub-api:
     image: ghcr.io/rondineleg/onforkhub-api:latest
@@ -14,11 +17,18 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
       - ASPNETCORE_HTTPSREDIRECTION_ENABLED=false
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=OnForkHub;User Id=sa;Password=${SQL_SA_PASSWORD:?set SQL_SA_PASSWORD in .env};TrustServerCertificate=True
+      - Jwt__SecretKey=${JWT_SECRET_KEY:?set JWT_SECRET_KEY in .env (32+ characters)}
+      - Jwt__Issuer=${JWT_ISSUER:-OnForkHub.Api}
+      - Jwt__Audience=${JWT_AUDIENCE:-OnForkHub.Client}
+      - Cors__AllowedOrigins__0=${CORS_ALLOWED_ORIGIN:?set CORS_ALLOWED_ORIGIN in .env (the site origin)}
+      - Database__MigrateOnStartup=true
       - Cache__UseRedis=true
       - Cache__RedisConnectionString=redis:6379
       - Jaeger__Host=jaeger
       - Jaeger__Port=4317
     depends_on:
+      - sqlserver
       - redis
       - jaeger
     healthcheck:
@@ -53,14 +63,29 @@ services:
         reservations:
           memory: 128M
 
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: onforkhub-sqlserver
+    restart: unless-stopped
+    networks:
+      - onforkhub-network
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SQL_SA_PASSWORD:?set SQL_SA_PASSWORD in .env}
+      - MSSQL_PID=Express
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+
   redis:
     image: redis:alpine
     container_name: onforkhub-redis
     restart: unless-stopped
     networks:
       - onforkhub-network
-    ports:
-      - "6379:6379"
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -68,10 +93,6 @@ services:
     restart: unless-stopped
     networks:
       - onforkhub-network
-    ports:
-      - "16686:16686" # UI
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
 
   reverse-proxy:
     image: nginx:alpine

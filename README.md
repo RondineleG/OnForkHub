@@ -65,7 +65,7 @@ Services and repositories are registered by convention in `OnForkHub.CrossCuttin
 Endpoints live under `src/Presentations/OnForkHub.Api/Endpoints/Rest/V1`, one class per route:
 
 - **Auth**: register, login, refresh token
-- **Videos**: create, update, delete, list, search, recommendations, ratings, comments, views, chunked upload (initiate, chunk, status, publish), streaming, torrent enable and stats
+- **Videos**: create, update, delete, list, search, recommendations, ratings, comments, views, chunked upload (initiate, chunk, status, publish), streaming, torrent enable
 - **Categories**: CRUD and search
 - **Users**: profile, favorites, view history
 - **Notifications**: list, unread, mark read, archive, delete, plus the `NotificationHub` for live updates
@@ -126,25 +126,36 @@ Service workers need HTTPS or `localhost`. To test on a phone, expose the app th
   - Git Flow
   - CSharpier
 
-  ## 🚀 Deployment Guide
-### VPS Specifications
-The project has been successfully deployed and tested on a minimal VPS configuration from Azure free tier:
+## 🚀 Deployment
 
-### Public Access
-Development  environment  deployment is available at:
-- **Frontend**: http://172.245.152.43/
-- **API Documentation**: http://172.245.152.43:9000/swagger/index.html
+Images are built by `.github/workflows/build-and-deploy.yml` (`.docker/Dockerfile.OnForkHub.Api` and `.docker/Dockerfile.OnForkHub.Web`) and started on the server with `.deploy/docker-compose.yml`.
 
-### Docker Setup
-The deployment uses Docker with a reverse proxy configuration:
-- Frontend accessible on port 80
-- API accessible on port 9000
+| Service | Image | Notes |
+| --- | --- | --- |
+| `onforkhub-web` | nginx serving the Blazor WebAssembly build | `.docker/nginx.conf` |
+| `onforkhub-api` | ASP.NET Core API | applies EF Core migrations on start (`Database__MigrateOnStartup`) |
+| `sqlserver` | SQL Server 2022 Express | data in the `sqlserver-data` volume |
+| `redis`, `jaeger` | cache and tracing | internal network only |
+| `reverse-proxy` | nginx with TLS | `.deploy/custom.conf`: site on 443, API on 9443 |
 
-#### Configuration Files
-- `proxy.yml`: Nginx reverse proxy setup
-- `custom.conf`: Nginx configuration
-- `services.yml`: Application services configuration
+### Required settings
 
+The API refuses to start in Production without real secrets. Create a `.env` next to `docker-compose.yml` on the server:
+
+```env
+SQL_SA_PASSWORD=<strong password>
+JWT_SECRET_KEY=<at least 32 random characters>
+CORS_ALLOWED_ORIGIN=https://<site origin>
+# optional: JWT_ISSUER, JWT_AUDIENCE
+```
+
+These become `ConnectionStrings__DefaultConnection`, `Jwt__SecretKey` and `Cors__AllowedOrigins__0`. The `${VAR}` syntax is not expanded by .NET, so never put it in an `appsettings` file.
+
+### Front-end caching
+
+Everything under `_framework/` is fingerprinted and cached for a year. `index.html`, `css`, `js` and the WebTorrent service worker keep stable names, so nginx sends `Cache-Control: no-cache` and browsers revalidate on each visit. The API address for production is in `wwwroot/appsettings.Production.json`. The service worker needs HTTPS.
+
+Swagger is only enabled when the API runs in Development.
 
 ## 🚀 Starting to develop
 

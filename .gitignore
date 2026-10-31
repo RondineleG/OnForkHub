@@ -399,3 +399,7 @@ FodyWeavers.xsd
 vite.config.ts.timestamp-*
 
 coverage/
+
+# Local media and uploads
+/videos/
+/src/Presentations/OnForkHub.Api/uploads/
