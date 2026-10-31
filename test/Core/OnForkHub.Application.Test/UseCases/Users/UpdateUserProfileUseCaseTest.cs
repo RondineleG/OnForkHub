@@ -39,7 +39,7 @@ public class UpdateUserProfileUseCaseTest
         result.Data!.Name.Should().Be(request.Name);
         result.Data.Email.Should().Be(request.Email);
         await _userService.Received(1).GetByIdAsync(userId);
-        await _userService.Received(1).UpdateAsync(Arg.Is<UserEntity>(u => u.Id == userId));
+        await _userService.Received(1).UpdateAsync(Arg.Is<UserEntity>(u => u.Id == $"User/{userId}"));
     }
 
     [Fact]

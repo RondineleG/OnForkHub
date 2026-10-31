@@ -1,0 +1,22 @@
+@* OnForkHub mark, redrawn from docs/assets/logo-original.svg: peers on a dotted orbit, linked to a hub that plays.
+   Colors and the splash animation come from css/ofh.css. *@
+<svg class="brand-mark @Class" viewBox="4 4 56 56" aria-hidden="true" focusable="false">
+    <circle class="brand-mark-orbit" cx="32" cy="32" r="24" />
+    <path class="brand-mark-spokes" d="M45 32L51.4 32M41.19 41.19L45.72 45.72M32 45L32 51.4M22.81 41.19L18.28 45.72M19 32L12.6 32M22.81 22.81L18.28 18.28M32 19L32 12.6M41.19 22.81L45.72 18.28" />
+    <circle class="brand-mark-peer" cx="56" cy="32" r="3.1" />
+    <circle class="brand-mark-peer" cx="48.97" cy="48.97" r="3.1" />
+    <circle class="brand-mark-peer" cx="32" cy="56" r="3.1" />
+    <circle class="brand-mark-peer" cx="15.03" cy="48.97" r="3.1" />
+    <circle class="brand-mark-peer" cx="8" cy="32" r="3.1" />
+    <circle class="brand-mark-peer" cx="15.03" cy="15.03" r="3.1" />
+    <circle class="brand-mark-peer" cx="32" cy="8" r="3.1" />
+    <circle class="brand-mark-peer" cx="48.97" cy="15.03" r="3.1" />
+    <circle class="brand-mark-hub" cx="32" cy="32" r="11" />
+    <path class="brand-mark-play" d="M28.6 26.2Q28.6 24.6 30 25.4L37.8 30.9Q39.2 32 37.8 33.1L30 38.6Q28.6 39.4 28.6 37.8Z" />
+</svg>
+
+@code {
+    // Extra classes, e.g. brand-mark--live for the motion of the original.
+    [Parameter]
+    public string? Class { get; set; }
+}

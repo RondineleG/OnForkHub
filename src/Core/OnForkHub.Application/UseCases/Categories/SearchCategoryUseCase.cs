@@ -8,12 +8,12 @@ using OnForkHub.Core.Interfaces.Repositories;
 /// <summary>
 /// Use case for searching categories with filters.
 /// </summary>
-public class SearchCategoryUseCase(ICategoryRepositoryEF repository) : IUseCase<CategorySearchRequestDto, PagedResultDto<CategoryResponseDto>>
+public class SearchCategoryUseCase(ICategoryRepositoryEF repository) : IUseCase<CategorySearchRequest, PagedResponse<CategorySearchResponse>>
 {
     private readonly ICategoryRepositoryEF _repository = repository;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<PagedResultDto<CategoryResponseDto>>> ExecuteAsync(CategorySearchRequestDto request)
+    public async Task<RequestResult<PagedResponse<CategorySearchResponse>>> ExecuteAsync(CategorySearchRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -27,13 +27,13 @@ public class SearchCategoryUseCase(ICategoryRepositoryEF repository) : IUseCase<
 
         if (result.Status != EResultStatus.Success || result.Data.Items is null)
         {
-            return RequestResult<PagedResultDto<CategoryResponseDto>>.WithError(result.Message ?? "Failed to search categories");
+            return RequestResult<PagedResponse<CategorySearchResponse>>.WithError(result.Message ?? "Failed to search categories");
         }
 
-        var responseDtos = result.Data.Items.Select(CategoryResponseDto.FromCategory).ToList();
+        var responses = result.Data.Items.Select(CategorySearchResponse.FromCategory).ToList();
 
-        var pagedResult = PagedResultDto<CategoryResponseDto>.Create(responseDtos, request.Page, request.ItemsPerPage, result.Data.TotalCount);
+        var pagedResult = PagedResponse<CategorySearchResponse>.Create(responses, request.Page, request.ItemsPerPage, result.Data.TotalCount);
 
-        return RequestResult<PagedResultDto<CategoryResponseDto>>.Success(pagedResult);
+        return RequestResult<PagedResponse<CategorySearchResponse>>.Success(pagedResult);
     }
 }

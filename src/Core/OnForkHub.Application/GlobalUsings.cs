@@ -1,8 +1,5 @@
 global using System.ComponentModel.DataAnnotations;
 
-global using HotChocolate;
-global using HotChocolate.Types;
-
 global using OnForkHub.Application.Dtos.Base;
 global using OnForkHub.Application.Dtos.Category.Request;
 global using OnForkHub.Application.Services.Base;

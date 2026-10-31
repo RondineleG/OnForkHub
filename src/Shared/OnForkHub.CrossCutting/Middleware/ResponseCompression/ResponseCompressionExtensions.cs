@@ -17,7 +17,6 @@ public static class ResponseCompressionExtensions
     /// </summary>
     private static readonly string[] AdditionalMimeTypes =
     [
-        "application/graphql-response+json",
         "application/javascript",
         "application/json",
         "application/ld+json",

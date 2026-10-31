@@ -1,0 +1,12 @@
+@* DS radar spinner with the OnForkHub mark in place of the glyph. *@
+<div class="spinner" @attributes="Attributes">
+    <div class="spinner-ring"></div>
+    <div class="spinner-ring"></div>
+    <div class="spinner-sweep"></div>
+    <div class="spinner-icon"><BrandMark Class="brand-mark--live" /></div>
+</div>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? Attributes { get; set; }
+}

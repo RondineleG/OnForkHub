@@ -4,8 +4,6 @@ global using System.Text.Json;
 global using Asp.Versioning;
 global using Asp.Versioning.Builder;
 
-global using HotChocolate.Execution.Configuration;
-
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.OpenApi.Models;
@@ -24,9 +22,6 @@ global using OnForkHub.Core.Interfaces.UseCases;
 global using OnForkHub.Core.Interfaces.Validations;
 global using OnForkHub.Core.Requests;
 global using OnForkHub.Core.Validations;
-global using OnForkHub.CrossCutting.GraphQL.Base;
 global using OnForkHub.Persistence.Configurations;
 global using OnForkHub.Persistence.Contexts;
 global using OnForkHub.Persistence.Contexts.Base;
-
-global using Raven.Client.Documents;
