@@ -1,7 +1,9 @@
 @page "/"
 @using System.Globalization
+@using OnForkHub.Web.Services.Api
 @implements IAsyncDisposable
 @inject IJSRuntime JS
+@inject IVideoService VideoService
 
 <PageTitle>OnForkHub</PageTitle>
 
@@ -30,9 +32,9 @@
     </nav>
 
     <main class="shorts" aria-label="Vídeos">
-        @for (var i = 0; i < ShortsCatalog.Videos.Count; i++)
+        @for (var i = 0; i < _videos.Count; i++)
         {
-            var video = ShortsCatalog.Videos[i];
+            var video = _videos[i];
             <article class="short" data-index="@i" data-source="@video.TorrentUrl" data-state="idle" aria-label="@video.Title">
                 <div class="short-frame">
                     <canvas class="short-ambient" width="18" height="32" aria-hidden="true"></canvas>
@@ -165,6 +167,41 @@
     private ElementReference _feed;
 
     private IJSObjectReference? _module;
+
+    private readonly List<ShortVideo> _videos = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var apiVideos = await VideoService.GetAllAsync(page: 1, pageSize: 10);
+            if (apiVideos is { Count: > 0 })
+            {
+                foreach (var v in apiVideos)
+                {
+                    var source = !string.IsNullOrWhiteSpace(v.MagnetUri)
+                        ? v.MagnetUri
+                        : (!string.IsNullOrWhiteSpace(v.Url) ? v.Url : $"/api/v1/rest/videos/{v.Id}/stream");
+
+                    _videos.Add(new ShortVideo(
+                        Title: !string.IsNullOrWhiteSpace(v.Title) ? v.Title : "Sem título",
+                        Description: v.Description ?? string.Empty,
+                        Credit: "OnForkHub",
+                        TorrentUrl: source
+                    ));
+                }
+            }
+        }
+        catch
+        {
+            // Silencioso: fallback garantido para o catálogo estático
+        }
+
+        if (_videos.Count == 0)
+        {
+            _videos.AddRange(ShortsCatalog.Videos);
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

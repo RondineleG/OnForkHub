@@ -35,6 +35,8 @@ builder.Services.AddCors(options =>
                     "http://localhost:5000",
                     "https://localhost:5001",
                     "http://localhost:3000",
+                    "http://localhost:8001",
+                    "https://localhost:8000",
                 ];
             policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         }
