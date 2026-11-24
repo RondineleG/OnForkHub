@@ -17,7 +17,7 @@ namespace OnForkHub.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -177,11 +177,11 @@ namespace OnForkHub.Persistence.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("RevokedAt");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("Token");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("TokenHash");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -194,8 +194,8 @@ namespace OnForkHub.Persistence.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("UserId");
 
                     b.HasKey("Id");
@@ -203,9 +203,9 @@ namespace OnForkHub.Persistence.Migrations
                     b.HasIndex("ExpiresAt")
                         .HasDatabaseName("IX_RefreshTokens_ExpiresAt");
 
-                    b.HasIndex("Token")
+                    b.HasIndex("TokenHash")
                         .IsUnique()
-                        .HasDatabaseName("IX_RefreshTokens_Token");
+                        .HasDatabaseName("IX_RefreshTokens_TokenHash");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_RefreshTokens_UserId");
@@ -231,6 +231,13 @@ namespace OnForkHub.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("User");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -297,11 +304,11 @@ namespace OnForkHub.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<Guid?>("UploadId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UploadId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
@@ -316,12 +323,12 @@ namespace OnForkHub.Persistence.Migrations
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_Videos_CreatedAt");
 
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("IX_Videos_UpdatedAt");
+
                     b.HasIndex("UploadId")
                         .IsUnique()
                         .HasFilter("[UploadId] IS NOT NULL");
-
-                    b.HasIndex("UpdatedAt")
-                        .HasDatabaseName("IX_Videos_UpdatedAt");
 
                     b.HasIndex("UserId1");
 
@@ -598,10 +605,14 @@ namespace OnForkHub.Persistence.Migrations
                             b1.Property<string>("DefaultQuality")
                                 .IsRequired();
 
+                            b1.Property<double>("DownloadLimitMb");
+
                             b1.Property<bool>("EnableP2P");
 
                             b1.Property<string>("Language")
                                 .IsRequired();
+
+                            b1.Property<double>("UploadLimitMb");
 
                             b1.HasKey("UserId");
 

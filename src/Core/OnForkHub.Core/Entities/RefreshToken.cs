@@ -5,14 +5,15 @@ namespace OnForkHub.Core.Entities;
 /// </summary>
 public class RefreshToken : BaseEntity
 {
-    private const int MaxTokenLength = 500;
+    private const int MaxTokenHashLength = 64;
     private const int MaxUserAgentLength = 500;
     private const int MaxIpAddressLength = 45;
 
     /// <summary>
-    /// Gets the raw token value used to identify this refresh token.
+    /// Gets the SHA256 hash of the token value used to identify this refresh token.
+    /// The raw token is never persisted.
     /// </summary>
-    public string Token { get; private set; } = string.Empty;
+    public string TokenHash { get; private set; } = string.Empty;
 
     /// <summary>
     /// Gets the user ID this token belongs to.
@@ -59,10 +60,10 @@ public class RefreshToken : BaseEntity
     /// <param name="expiresAt">The expiration date and time.</param>
     /// <param name="createdByIp">The IP address that created this token.</param>
     /// <param name="userAgent">The user agent string.</param>
-    private RefreshToken(Id id, string token, string userId, DateTime expiresAt, string createdByIp, string userAgent)
+    private RefreshToken(Id id, string tokenHash, string userId, DateTime expiresAt, string createdByIp, string userAgent)
         : base(id, DateTime.UtcNow)
     {
-        Token = token;
+        TokenHash = tokenHash;
         UserId = userId;
         ExpiresAt = expiresAt;
         CreatedByIp = createdByIp;
@@ -72,17 +73,17 @@ public class RefreshToken : BaseEntity
     /// <summary>
     /// Creates a new refresh token.
     /// </summary>
-    /// <param name="token">The raw token value.</param>
+    /// <param name="tokenHash">The SHA256 hash of the token value.</param>
     /// <param name="userId">The user ID this token belongs to.</param>
     /// <param name="expiresAt">The expiration date and time.</param>
     /// <param name="createdByIp">The IP address that created this token.</param>
     /// <param name="userAgent">The user agent string.</param>
     /// <returns>A request result containing the created refresh token.</returns>
-    public static RequestResult<RefreshToken> Create(string token, string userId, DateTime expiresAt, string createdByIp, string userAgent)
+    public static RequestResult<RefreshToken> Create(string tokenHash, string userId, DateTime expiresAt, string createdByIp, string userAgent)
     {
-        if (string.IsNullOrWhiteSpace(token))
+        if (string.IsNullOrWhiteSpace(tokenHash))
         {
-            return RequestResult<RefreshToken>.WithError("Token is required");
+            return RequestResult<RefreshToken>.WithError("Token hash is required");
         }
 
         if (string.IsNullOrWhiteSpace(userId))
@@ -96,7 +97,7 @@ public class RefreshToken : BaseEntity
         }
 
         var id = ValueObjects.Id.Create();
-        var refreshToken = new RefreshToken(id, token, userId, expiresAt, createdByIp, userAgent);
+        var refreshToken = new RefreshToken(id, tokenHash, userId, expiresAt, createdByIp, userAgent);
         return RequestResult<RefreshToken>.Success(refreshToken);
     }
 

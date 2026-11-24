@@ -76,15 +76,15 @@ public sealed partial class RegisterEndpoint(
         }
 
         var user = userResult.Data;
-        var tokens = _tokenService.GenerateTokens(
-            userId: user.Id.ToString(),
+        var tokens = await _tokenService.GenerateTokensAsync(
+            userId: user.Id,
             userName: user.Name.Value,
-            roles: [CrossCutting.Authorization.Roles.User]
+            roles: [user.Role]
         );
 
         var response = new AuthResponse
         {
-            User = UserProfileResponse.FromUser(user, [CrossCutting.Authorization.Roles.User]),
+            User = UserProfileResponse.FromUser(user, [user.Role]),
             AccessToken = tokens.AccessToken,
             RefreshToken = tokens.RefreshToken,
             AccessTokenExpiration = tokens.AccessTokenExpiration,

@@ -1,5 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
 using OnForkHub.Application.Dtos.Video.Request;
 using OnForkHub.CrossCutting.Interfaces;
 
@@ -24,9 +26,11 @@ public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<VideoUpdate
         ConfigureEndpoint(
                 app.MapPut(
                     Route,
-                    async ([FromRoute] string id, [FromBody] VideoUpdateRequest request, CancellationToken cancellationToken) =>
+                    async ([FromRoute] string id, [FromBody] VideoUpdateRequest request, HttpContext httpContext, CancellationToken cancellationToken) =>
                     {
                         request.Id = id;
+                        request.RequesterUserId = httpContext.User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+                        request.RequesterIsAdmin = httpContext.User.IsInRole(CrossCutting.Authorization.Roles.Admin);
                         return await HandleUseCase(_useCase, _logger, request);
                     }
                 )

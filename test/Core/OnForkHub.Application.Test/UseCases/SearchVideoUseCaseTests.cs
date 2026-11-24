@@ -86,7 +86,7 @@ public class SearchVideoUseCaseTests
         _repository
             .SearchAsync(
                 Arg.Any<string?>(),
-                Arg.Any<long?>(),
+                Arg.Any<string?>(),
                 Arg.Any<string?>(),
                 Arg.Any<DateTime?>(),
                 Arg.Any<DateTime?>(),
@@ -145,7 +145,7 @@ public class SearchVideoUseCaseTests
     {
         var request = new VideoSearchRequest
         {
-            CategoryId = 123,
+            CategoryId = Guid.NewGuid().ToString("N"),
             Page = 1,
             ItemsPerPage = 10,
         };
@@ -153,12 +153,34 @@ public class SearchVideoUseCaseTests
         var emptyVideos = Enumerable.Empty<Video>();
 
         _repository
-            .SearchAsync(null, 123L, null, null, null, (int)VideoSortField.CreatedAt, true, 1, 10)
+            .SearchAsync(
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<DateTime?>(),
+                Arg.Any<DateTime?>(),
+                Arg.Any<int>(),
+                Arg.Any<bool>(),
+                Arg.Any<int>(),
+                Arg.Any<int>()
+            )
             .Returns(RequestResult<(IEnumerable<Video> Items, int TotalCount)>.Success((emptyVideos, 0)));
 
         await _useCase.ExecuteAsync(request);
 
-        await _repository.Received(1).SearchAsync(null, 123L, null, null, null, (int)VideoSortField.CreatedAt, true, 1, 10);
+        await _repository
+            .Received(1)
+            .SearchAsync(
+                Arg.Any<string?>(),
+                Arg.Is<string?>(s => s == request.CategoryId),
+                Arg.Any<string?>(),
+                Arg.Any<DateTime?>(),
+                Arg.Any<DateTime?>(),
+                Arg.Any<int>(),
+                Arg.Any<bool>(),
+                Arg.Any<int>(),
+                Arg.Any<int>()
+            );
     }
 
     [Fact]

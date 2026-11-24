@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
+using OnForkHub.CrossCutting.Authorization;
+
 /// <summary>
 /// Extension methods for configuring JWT authentication services.
 /// </summary>
@@ -67,6 +69,7 @@ public static class JwtExtensions
             });
 
         services.AddAuthorization();
+        services.AddRoleBasedAuthorization();
 
         return services;
     }

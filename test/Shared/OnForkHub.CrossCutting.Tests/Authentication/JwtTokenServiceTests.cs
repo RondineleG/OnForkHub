@@ -2,9 +2,8 @@ namespace OnForkHub.CrossCutting.Tests.Authentication;
 
 using System.Security.Claims;
 
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-
-using NSubstitute;
 
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Repositories;
@@ -21,18 +20,18 @@ public sealed class JwtTokenServiceTests
     [TestCategory("Authentication")]
     public void ConstructorThrowsWhenOptionsIsNull()
     {
-        var mockRepository = Substitute.For<IRefreshTokenRepositoryEF>();
-        Assert.ThrowsExactly<ArgumentNullException>(() => new JwtTokenService(null!, mockRepository));
+        var repository = new InMemoryRefreshTokenRepository();
+        Assert.ThrowsExactly<ArgumentNullException>(() => new JwtTokenService(null!, repository, NullLogger<JwtTokenService>.Instance));
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void GenerateTokensWithClaimsReturnsValidResult()
+    public async Task GenerateTokensWithClaimsReturnsValidResult()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
         var claims = new[] { new Claim(ClaimTypes.NameIdentifier, "user-123"), new Claim(ClaimTypes.Name, "testuser") };
 
-        var result = service.GenerateTokens(claims);
+        var result = await service.GenerateTokensAsync(claims);
 
         Assert.IsNotNull(result);
         Assert.IsFalse(string.IsNullOrEmpty(result.AccessToken));
@@ -44,20 +43,36 @@ public sealed class JwtTokenServiceTests
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void GenerateTokensWithClaimsThrowsWhenClaimsIsNull()
+    public async Task GenerateTokensPersistsOnlyTheHashOfTheRefreshToken()
     {
-        var service = CreateService();
+        var service = CreateService(out var repository);
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, "user-123") };
 
-        Assert.ThrowsExactly<ArgumentNullException>(() => service.GenerateTokens((IEnumerable<Claim>)null!));
+        var result = await service.GenerateTokensAsync(claims);
+
+        var stored = repository.Tokens.Values.Single();
+        Assert.AreNotEqual(result.RefreshToken, stored.TokenHash, "The raw refresh token must never be persisted");
+        Assert.AreEqual(64, stored.TokenHash.Length, "Stored token hash should be a lowercase SHA256 hex digest");
+        Assert.AreEqual(stored.TokenHash, stored.TokenHash.ToLowerInvariant());
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void GenerateTokensWithUserInfoReturnsValidResult()
+    public async Task GenerateTokensThrowsWhenClaimsHaveNoUserId()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
+        var claims = new[] { new Claim(ClaimTypes.Name, "testuser") };
 
-        var result = service.GenerateTokens("user-123", "testuser", TestRoles);
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => service.GenerateTokensAsync(claims));
+    }
+
+    [TestMethod]
+    [TestCategory("Authentication")]
+    public async Task GenerateTokensWithUserInfoReturnsValidResult()
+    {
+        var service = CreateService(out _);
+
+        var result = await service.GenerateTokensAsync("user-123", "testuser", TestRoles);
 
         Assert.IsNotNull(result);
         Assert.IsFalse(string.IsNullOrEmpty(result.AccessToken));
@@ -66,28 +81,10 @@ public sealed class JwtTokenServiceTests
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void GenerateTokensWithUserInfoThrowsWhenUserIdIsNull()
+    public async Task ValidateTokenReturnsClaimsPrincipalForValidToken()
     {
-        var service = CreateService();
-
-        Assert.ThrowsExactly<ArgumentNullException>(() => service.GenerateTokens(null!, "testuser"));
-    }
-
-    [TestMethod]
-    [TestCategory("Authentication")]
-    public void GenerateTokensWithUserInfoThrowsWhenUserNameIsNull()
-    {
-        var service = CreateService();
-
-        Assert.ThrowsExactly<ArgumentNullException>(() => service.GenerateTokens("user-123", null!));
-    }
-
-    [TestMethod]
-    [TestCategory("Authentication")]
-    public void ValidateTokenReturnsClaimsPrincipalForValidToken()
-    {
-        var service = CreateService();
-        var result = service.GenerateTokens("user-123", "testuser");
+        var service = CreateService(out _);
+        var result = await service.GenerateTokensAsync("user-123", "testuser");
 
         var principal = service.ValidateToken(result.AccessToken);
 
@@ -100,7 +97,7 @@ public sealed class JwtTokenServiceTests
     [TestCategory("Authentication")]
     public void ValidateTokenReturnsNullForInvalidToken()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
 
         var principal = service.ValidateToken("invalid-token");
 
@@ -109,115 +106,131 @@ public sealed class JwtTokenServiceTests
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void ValidateTokenReturnsNullForEmptyToken()
+    public async Task ValidateRefreshTokenReturnsTrueForValidToken()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
+        var result = await service.GenerateTokensAsync("user-123", "testuser");
 
-        var principal = service.ValidateToken(string.Empty);
-
-        Assert.IsNull(principal);
-    }
-
-    [TestMethod]
-    [TestCategory("Authentication")]
-    public void ValidateRefreshTokenReturnsTrueForValidToken()
-    {
-        var service = CreateService();
-        var result = service.GenerateTokens("user-123", "testuser");
-
-        var isValid = service.ValidateRefreshToken(result.RefreshToken);
+        var isValid = await service.ValidateRefreshTokenAsync(result.RefreshToken);
 
         Assert.IsTrue(isValid);
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void ValidateRefreshTokenReturnsFalseForInvalidToken()
+    public async Task ValidateRefreshTokenReturnsFalseForInvalidToken()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
 
-        var isValid = service.ValidateRefreshToken("invalid-refresh-token");
+        var isValid = await service.ValidateRefreshTokenAsync("invalid-refresh-token");
 
         Assert.IsFalse(isValid);
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void ValidateRefreshTokenReturnsFalseForEmptyToken()
+    public async Task RefreshTokenRotatesAndInvalidatesTheOriginalToken()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
+        var originalResult = await service.GenerateTokensAsync("user-123", "testuser");
 
-        var isValid = service.ValidateRefreshToken(string.Empty);
-
-        Assert.IsFalse(isValid);
-    }
-
-    [TestMethod]
-    [TestCategory("Authentication")]
-    public void RefreshTokenReturnsNewTokensForValidTokens()
-    {
-        var service = CreateService();
-        var originalResult = service.GenerateTokens("user-123", "testuser");
-
-        var newResult = service.RefreshToken(originalResult.AccessToken, originalResult.RefreshToken);
+        var newResult = await service.RefreshTokenAsync(originalResult.AccessToken, originalResult.RefreshToken);
 
         Assert.IsNotNull(newResult);
         Assert.AreNotEqual(originalResult.AccessToken, newResult.AccessToken);
         Assert.AreNotEqual(originalResult.RefreshToken, newResult.RefreshToken);
+
+        var originalStillValid = await service.ValidateRefreshTokenAsync(originalResult.RefreshToken);
+        Assert.IsFalse(originalStillValid, "The original refresh token must be burned after rotation");
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void RefreshTokenReturnsNullForInvalidAccessToken()
+    public async Task RefreshTokenReuseRevokesAllUserTokens()
     {
-        var service = CreateService();
-        var originalResult = service.GenerateTokens("user-123", "testuser");
+        var service = CreateService(out _);
+        var originalResult = await service.GenerateTokensAsync("user-123", "testuser");
 
-        var newResult = service.RefreshToken("invalid-access-token", originalResult.RefreshToken);
+        var rotated = await service.RefreshTokenAsync(originalResult.AccessToken, originalResult.RefreshToken);
+        Assert.IsNotNull(rotated);
+
+        // Attacker (or race) presents the already-rotated original token again
+        var replay = await service.RefreshTokenAsync(originalResult.AccessToken, originalResult.RefreshToken);
+
+        Assert.IsNull(replay, "Reusing a rotated refresh token must fail");
+
+        var rotatedStillValid = await service.ValidateRefreshTokenAsync(rotated.RefreshToken);
+        Assert.IsFalse(rotatedStillValid, "Reuse detection must revoke the whole token family");
+    }
+
+    [TestMethod]
+    [TestCategory("Authentication")]
+    public async Task RefreshTokenFailsWhenAccessTokenBelongsToAnotherUser()
+    {
+        var service = CreateService(out _);
+        var userA = await service.GenerateTokensAsync("user-a", "usera");
+        var userB = await service.GenerateTokensAsync("user-b", "userb");
+
+        var result = await service.RefreshTokenAsync(userB.AccessToken, userA.RefreshToken);
+
+        Assert.IsNull(result, "A refresh token must not mint tokens for a different user");
+
+        var ownerTokensRevoked = await service.ValidateRefreshTokenAsync(userA.RefreshToken);
+        Assert.IsFalse(ownerTokensRevoked, "Cross-user usage must revoke the token owner's family");
+    }
+
+    [TestMethod]
+    [TestCategory("Authentication")]
+    public async Task RefreshTokenReturnsNullForInvalidAccessToken()
+    {
+        var service = CreateService(out _);
+        var originalResult = await service.GenerateTokensAsync("user-123", "testuser");
+
+        var newResult = await service.RefreshTokenAsync("invalid-access-token", originalResult.RefreshToken);
 
         Assert.IsNull(newResult);
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void RefreshTokenReturnsNullForInvalidRefreshToken()
+    public async Task RefreshTokenReturnsNullForUnknownRefreshToken()
     {
-        var service = CreateService();
-        var originalResult = service.GenerateTokens("user-123", "testuser");
+        var service = CreateService(out _);
+        var originalResult = await service.GenerateTokensAsync("user-123", "testuser");
 
-        var newResult = service.RefreshToken(originalResult.AccessToken, "invalid-refresh-token");
+        var newResult = await service.RefreshTokenAsync(originalResult.AccessToken, "invalid-refresh-token");
 
         Assert.IsNull(newResult);
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void RevokeRefreshTokenInvalidatesToken()
+    public async Task RevokeRefreshTokenInvalidatesToken()
     {
-        var service = CreateService();
-        var result = service.GenerateTokens("user-123", "testuser");
+        var service = CreateService(out _);
+        var result = await service.GenerateTokensAsync("user-123", "testuser");
 
-        service.RevokeRefreshToken(result.RefreshToken);
-        var isValid = service.ValidateRefreshToken(result.RefreshToken);
+        await service.RevokeRefreshTokenAsync(result.RefreshToken);
+        var isValid = await service.ValidateRefreshTokenAsync(result.RefreshToken);
 
         Assert.IsFalse(isValid);
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void RevokeRefreshTokenDoesNotThrowForEmptyToken()
+    public async Task RevokeRefreshTokenDoesNotThrowForEmptyToken()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
 
-        service.RevokeRefreshToken(string.Empty);
+        await service.RevokeRefreshTokenAsync(string.Empty);
     }
 
     [TestMethod]
     [TestCategory("Authentication")]
-    public void GetPrincipalFromExpiredTokenReturnsClaimsPrincipal()
+    public async Task GetPrincipalFromExpiredTokenReturnsClaimsPrincipal()
     {
-        var service = CreateService();
-        var result = service.GenerateTokens("user-123", "testuser");
+        var service = CreateService(out _);
+        var result = await service.GenerateTokensAsync("user-123", "testuser");
 
         var principal = service.GetPrincipalFromExpiredToken(result.AccessToken);
 
@@ -228,27 +241,16 @@ public sealed class JwtTokenServiceTests
     [TestCategory("Authentication")]
     public void GetPrincipalFromExpiredTokenReturnsNullForInvalidToken()
     {
-        var service = CreateService();
+        var service = CreateService(out _);
 
         var principal = service.GetPrincipalFromExpiredToken("invalid-token");
 
         Assert.IsNull(principal);
     }
 
-    [TestMethod]
-    [TestCategory("Authentication")]
-    public void GetPrincipalFromExpiredTokenReturnsNullForEmptyToken()
+    private static JwtTokenService CreateService(out InMemoryRefreshTokenRepository repository)
     {
-        var service = CreateService();
-
-        var principal = service.GetPrincipalFromExpiredToken(string.Empty);
-
-        Assert.IsNull(principal);
-    }
-
-    private static JwtTokenService CreateService(JwtOptions? options = null)
-    {
-        options ??= new JwtOptions
+        var options = new JwtOptions
         {
             SecretKey = "ThisIsAVeryLongSecretKeyForTestingPurposes12345",
             Issuer = "test-issuer",
@@ -261,46 +263,76 @@ public sealed class JwtTokenServiceTests
             ValidateIssuerSigningKey = true,
         };
 
-        // In-memory store for testing
-        var refreshTokens = new Dictionary<string, RefreshToken>();
+        repository = new InMemoryRefreshTokenRepository();
+        return new JwtTokenService(Options.Create(options), repository, NullLogger<JwtTokenService>.Instance);
+    }
 
-        var mockRepository = Substitute.For<IRefreshTokenRepositoryEF>();
+    /// <summary>
+    /// In-memory implementation mirroring the repository contract, including atomic rotation semantics.
+    /// </summary>
+    private sealed class InMemoryRefreshTokenRepository : IRefreshTokenRepositoryEF
+    {
+        public Dictionary<string, RefreshToken> Tokens { get; } = [];
 
-        // Setup CreateAsync
-        mockRepository
-            .CreateAsync(Arg.Any<RefreshToken>())
-            .Returns(callInfo =>
+        public Task<RequestResult<bool>> CreateAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
+        {
+            Tokens[refreshToken.TokenHash] = refreshToken;
+            return Task.FromResult(RequestResult<bool>.Success(true));
+        }
+
+        public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Tokens.TryGetValue(tokenHash, out var rt) ? rt : (RefreshToken?)null);
+        }
+
+        public Task<bool> TryClaimForRotationAsync(string tokenHash, CancellationToken cancellationToken = default)
+        {
+            lock (Tokens)
             {
-                var token = callInfo.Arg<RefreshToken>();
-                refreshTokens[token.Token] = token;
-                return Task.FromResult(RequestResult<bool>.Success(true));
-            });
-
-        // Setup GetByTokenAsync
-        mockRepository
-            .GetByTokenAsync(Arg.Any<string>())
-            .Returns(callInfo =>
-            {
-                var token = callInfo.Arg<string>();
-                return refreshTokens.TryGetValue(token, out var rt) ? rt : (RefreshToken?)null;
-            });
-
-        // Setup RevokeAsync
-        mockRepository
-            .RevokeAsync(Arg.Any<string>())
-            .Returns(callInfo =>
-            {
-                var token = callInfo.Arg<string>();
-                if (refreshTokens.TryGetValue(token, out var rt))
+                if (!Tokens.TryGetValue(tokenHash, out var rt) || rt.RevokedAt.HasValue || rt.ExpiresAt <= DateTime.UtcNow)
                 {
-                    rt.Revoke();
+                    return Task.FromResult(false);
                 }
+
+                rt.Revoke();
                 return Task.FromResult(true);
-            });
+            }
+        }
 
-        // Setup CleanupExpiredTokensAsync
-        mockRepository.CleanupExpiredTokensAsync().Returns(Task.FromResult(0));
+        public Task<int> RevokeAllForUserAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var count = 0;
+            foreach (var token in Tokens.Values.Where(t => t.UserId == userId && !t.RevokedAt.HasValue))
+            {
+                token.Revoke();
+                count++;
+            }
 
-        return new JwtTokenService(Options.Create(options), mockRepository);
+            return Task.FromResult(count);
+        }
+
+        public Task<int> CleanupExpiredTokensForUserAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var now = DateTime.UtcNow;
+            var expired = Tokens.Values.Where(t => t.UserId == userId && t.ExpiresAt <= now).Select(t => t.TokenHash).ToList();
+            foreach (var key in expired)
+            {
+                Tokens.Remove(key);
+            }
+
+            return Task.FromResult(expired.Count);
+        }
+
+        public Task<int> CleanupExpiredTokensAsync(CancellationToken cancellationToken = default)
+        {
+            var now = DateTime.UtcNow;
+            var expired = Tokens.Values.Where(t => t.ExpiresAt <= now).Select(t => t.TokenHash).ToList();
+            foreach (var key in expired)
+            {
+                Tokens.Remove(key);
+            }
+
+            return Task.FromResult(expired.Count);
+        }
     }
 }

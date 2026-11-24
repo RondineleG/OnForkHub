@@ -32,5 +32,5 @@ public sealed class VideoUploadRequest
     /// <summary>
     /// Gets or sets the category IDs for the video.
     /// </summary>
-    public IReadOnlyList<long> CategoryIds { get; set; } = [];
+    public IReadOnlyList<string> CategoryIds { get; set; } = [];
 }

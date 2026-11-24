@@ -5,7 +5,7 @@ public abstract class BaseEntity : IAggregateRoot
     protected BaseEntity()
     {
         _entityId = ValueObjects.Id.Create();
-        Id = $"{GetCollectionName()}/{_entityId}";
+        Id = _entityId.ToString();
         CreatedAt = DateTime.UtcNow;
         ValidateInitialState();
     }
@@ -14,7 +14,7 @@ public abstract class BaseEntity : IAggregateRoot
     {
         ValidateConstructorParameters(id, createdAt, updatedAt);
         _entityId = id;
-        Id = $"{GetCollectionName()}/{id}";
+        Id = id.ToString();
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
     }
@@ -26,11 +26,6 @@ public abstract class BaseEntity : IAggregateRoot
     public string Id { get; set; }
 
     public DateTime? UpdatedAt { get; protected set; }
-
-    protected virtual string GetCollectionName()
-    {
-        return GetType().Name;
-    }
 
     protected void Update()
     {

@@ -1,6 +1,7 @@
 namespace OnForkHub.Application.Dtos.Video.Request;
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 /// <summary>
 /// Data transfer object for video update requests.
@@ -39,5 +40,17 @@ public sealed class VideoUpdateRequest
     /// <summary>
     /// Gets or sets the category IDs for the video.
     /// </summary>
-    public IReadOnlyList<long> CategoryIds { get; set; } = [];
+    public IReadOnlyList<string> CategoryIds { get; set; } = [];
+
+    /// <summary>
+    /// Server-populated identifier of the authenticated requester. Ignored if supplied by the client.
+    /// </summary>
+    [JsonIgnore]
+    public string? RequesterUserId { get; set; }
+
+    /// <summary>
+    /// Server-populated flag indicating whether the requester has the Admin role. Ignored if supplied by the client.
+    /// </summary>
+    [JsonIgnore]
+    public bool RequesterIsAdmin { get; set; }
 }

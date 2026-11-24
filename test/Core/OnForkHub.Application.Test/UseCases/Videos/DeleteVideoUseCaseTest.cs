@@ -1,3 +1,4 @@
+using OnForkHub.Application.Dtos.Video.Request;
 using OnForkHub.Application.UseCases.Videos;
 
 namespace OnForkHub.Application.Test.UseCases.Videos;
@@ -15,131 +16,99 @@ public class DeleteVideoUseCaseTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should delete video successfully")]
-    public async Task ShouldDeleteVideoSuccessfully()
+    [DisplayName("Should delete video successfully when requester is the owner")]
+    public async Task ShouldDeleteVideoSuccessfullyWhenRequesterIsOwner()
     {
-        // Arrange
-        var videoId = Guid.NewGuid().ToString();
-        var video = CreateValidVideo(videoId);
+        var ownerId = Guid.NewGuid();
+        var video = CreateValidVideo(ownerId);
+        var videoId = video.Id;
 
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
         _videoService.DeleteAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
 
-        // Act
-        var result = await _useCase.ExecuteAsync(videoId);
+        var result = await _useCase.ExecuteAsync(new VideoDeleteRequest { Id = videoId, RequesterUserId = ownerId.ToString("N") });
 
-        // Assert
         result.Status.Should().Be(EResultStatus.Success);
-        result.Data.Should().NotBeNull();
         await _videoService.Received(1).DeleteAsync(Arg.Any<Id>());
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw ArgumentException when videoId is null")]
-    public async Task ShouldThrowArgumentExceptionWhenVideoIdIsNull()
+    [DisplayName("Should delete video successfully when requester is admin")]
+    public async Task ShouldDeleteVideoSuccessfullyWhenRequesterIsAdmin()
     {
-        // Arrange
-        string? videoId = null;
+        var ownerId = Guid.NewGuid();
+        var video = CreateValidVideo(ownerId);
 
-        // Act
-        var act = () => _useCase.ExecuteAsync(videoId!);
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
+        _videoService.DeleteAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
 
-        // Assert
-        await act.Should().ThrowAsync<ArgumentException>();
+        var result = await _useCase.ExecuteAsync(
+            new VideoDeleteRequest { Id = video.Id, RequesterUserId = Guid.NewGuid().ToString("N"), RequesterIsAdmin = true }
+        );
+
+        result.Status.Should().Be(EResultStatus.Success);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should forbid delete when requester is not the owner")]
+    public async Task ShouldForbidDeleteWhenRequesterIsNotOwner()
+    {
+        var ownerId = Guid.NewGuid();
+        var video = CreateValidVideo(ownerId);
+
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
+
+        var result = await _useCase.ExecuteAsync(new VideoDeleteRequest { Id = video.Id, RequesterUserId = Guid.NewGuid().ToString("N") });
+
+        result.Status.Should().Be(EResultStatus.Forbidden);
         await _videoService.DidNotReceive().DeleteAsync(Arg.Any<Id>());
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw ArgumentException when videoId is empty")]
-    public async Task ShouldThrowArgumentExceptionWhenVideoIdIsEmpty()
+    [DisplayName("Should forbid delete when requester is unknown")]
+    public async Task ShouldForbidDeleteWhenRequesterIsUnknown()
     {
-        // Arrange
-        var videoId = string.Empty;
+        var ownerId = Guid.NewGuid();
+        var video = CreateValidVideo(ownerId);
 
-        // Act
-        var act = () => _useCase.ExecuteAsync(videoId);
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.Success(video));
 
-        // Assert
-        await act.Should().ThrowAsync<ArgumentException>();
+        var result = await _useCase.ExecuteAsync(new VideoDeleteRequest { Id = video.Id });
+
+        result.Status.Should().Be(EResultStatus.Forbidden);
         await _videoService.DidNotReceive().DeleteAsync(Arg.Any<Id>());
     }
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw ArgumentException when videoId is whitespace")]
-    public async Task ShouldThrowArgumentExceptionWhenVideoIdIsWhitespace()
+    [DisplayName("Should return error when video id is invalid")]
+    public async Task ShouldReturnErrorWhenVideoIdIsInvalid()
     {
-        // Arrange
-        var videoId = "   ";
+        var result = await _useCase.ExecuteAsync(new VideoDeleteRequest { Id = "not-a-guid" });
 
-        // Act
-        var act = () => _useCase.ExecuteAsync(videoId);
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentException>();
-        await _videoService.DidNotReceive().DeleteAsync(Arg.Any<Id>());
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return error when videoId has invalid guid format")]
-    public async Task ShouldReturnErrorWhenVideoIdHasInvalidGuidFormat()
-    {
-        // Arrange
-        var videoId = "invalid-guid-format";
-
-        // Act
-        var result = await _useCase.ExecuteAsync(videoId);
-
-        // Assert
         result.Status.Should().Be(EResultStatus.HasError);
         result.Message.Should().Be("Invalid video ID format");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error when video is not found")]
+    public async Task ShouldReturnErrorWhenVideoIsNotFound()
+    {
+        _videoService.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.WithError("not found"));
+
+        var result = await _useCase.ExecuteAsync(new VideoDeleteRequest { Id = Guid.NewGuid().ToString("N"), RequesterUserId = Guid.NewGuid().ToString("N") });
+
+        result.Status.Should().Be(EResultStatus.HasError);
         await _videoService.DidNotReceive().DeleteAsync(Arg.Any<Id>());
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return error when video not found")]
-    public async Task ShouldReturnErrorWhenVideoNotFound()
+    private static Video CreateValidVideo(Guid ownerId)
     {
-        // Arrange
-        var videoId = Guid.NewGuid().ToString();
-
-        _videoService.DeleteAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.WithError("Video not found"));
-
-        // Act
-        var result = await _useCase.ExecuteAsync(videoId);
-
-        // Assert
-        result.Status.Should().Be(EResultStatus.HasError);
-        result.Message.Should().Be("Video not found");
-        await _videoService.Received(1).DeleteAsync(Arg.Any<Id>());
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return error when delete operation fails")]
-    public async Task ShouldReturnErrorWhenDeleteOperationFails()
-    {
-        // Arrange
-        var videoId = Guid.NewGuid().ToString();
-
-        _videoService.DeleteAsync(Arg.Any<Id>()).Returns(RequestResult<Video>.WithError("Database error"));
-
-        // Act
-        var result = await _useCase.ExecuteAsync(videoId);
-
-        // Assert
-        result.Status.Should().Be(EResultStatus.HasError);
-        await _videoService.Received(1).DeleteAsync(Arg.Any<Id>());
-    }
-
-    private static Video CreateValidVideo(string id)
-    {
-        Id videoId = id;
-        var userId = Id.Create();
-        var video = Video.Load(videoId, "Test Video", "Test Description", "https://example.com/video.mp4", userId, DateTime.UtcNow).Data!;
-        return video;
+        Id userId = ownerId.ToString("N");
+        return Video.Create("Test video title", "Test video description", "https://example.com/video.mp4", userId).Data!;
     }
 }

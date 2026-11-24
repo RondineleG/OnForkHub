@@ -50,7 +50,7 @@ public interface IVideoService
     /// <param name="page">The page number.</param>
     /// <param name="size">The page size.</param>
     /// <returns>A list of videos.</returns>
-    Task<RequestResult<IEnumerable<Video>>> GetByCategoryIdAsync(long categoryId, int page, int size);
+    Task<RequestResult<IEnumerable<Video>>> GetByCategoryIdAsync(Id categoryId, int page, int size);
 
     /// <summary>
     /// Updates a video.
@@ -94,7 +94,7 @@ public interface IVideoService
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<RequestResult<(IEnumerable<Video> Items, int TotalCount)>> SearchAsync(
         string? searchTerm,
-        long? categoryId,
+        string? categoryId,
         string? userId,
         DateTime? fromDate,
         DateTime? toDate,

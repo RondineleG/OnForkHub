@@ -31,6 +31,7 @@ public class UserServiceTest
         var user = UserEntity.Create(userName, email, "hashed_password").Data!;
 
         _userRepository.ExistsByEmailAsync(email).Returns(false);
+        _userRepository.GetAllAsync(1, 1).Returns(RequestResult<IEnumerable<UserEntity>>.Success(Array.Empty<UserEntity>()));
         _userRepository.CreateAsync(Arg.Any<UserEntity>()).Returns(RequestResult<UserEntity>.Success(user));
 
         var result = await _userService.RegisterAsync(name, email, password);

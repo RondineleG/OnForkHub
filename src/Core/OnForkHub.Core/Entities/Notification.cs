@@ -152,11 +152,6 @@ public class Notification : BaseEntity
         }
     }
 
-    protected override string GetCollectionName()
-    {
-        return "notifications";
-    }
-
     protected override void ValidateEntityState()
     {
         base.ValidateEntityState();

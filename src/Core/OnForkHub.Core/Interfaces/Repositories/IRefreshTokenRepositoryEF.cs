@@ -1,48 +1,22 @@
 namespace OnForkHub.Core.Interfaces.Repositories;
 
-/// <summary>
-/// Repository interface for managing JWT refresh tokens.
-/// </summary>
 public interface IRefreshTokenRepositoryEF
 {
-    /// <summary>
-    /// Creates a new refresh token in the database.
-    /// </summary>
-    /// <param name="refreshToken">The refresh token entity to create.</param>
-    /// <returns>A request result indicating success or failure.</returns>
-    Task<RequestResult<bool>> CreateAsync(RefreshToken refreshToken);
+    Task<RequestResult<bool>> CreateAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default);
+
+    Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Finds a refresh token by its token value.
+    /// Atomically revokes an active token in a single conditional UPDATE.
+    /// Returns true only when this call was the one that revoked the token,
+    /// which makes it suitable as a rotation claim: concurrent rotations of the
+    /// same token cannot both succeed.
     /// </summary>
-    /// <param name="token">The token value to search for.</param>
-    /// <returns>The refresh token if found, null otherwise.</returns>
-    Task<RefreshToken?> GetByTokenAsync(string token);
+    Task<bool> TryClaimForRotationAsync(string tokenHash, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Gets all active (non-revoked, non-expired) tokens for a specific user.
-    /// </summary>
-    /// <param name="userId">The user ID to search for.</param>
-    /// <returns>A collection of active refresh tokens for the user.</returns>
-    Task<IReadOnlyList<RefreshToken>> GetActiveTokensByUserIdAsync(string userId);
+    Task<int> RevokeAllForUserAsync(string userId, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Revokes a specific refresh token.
-    /// </summary>
-    /// <param name="token">The token value to revoke.</param>
-    /// <returns>True if the token was revoked successfully, false otherwise.</returns>
-    Task<bool> RevokeAsync(string token);
+    Task<int> CleanupExpiredTokensForUserAsync(string userId, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Revokes all refresh tokens for a specific user.
-    /// </summary>
-    /// <param name="userId">The user ID whose tokens should be revoked.</param>
-    /// <returns>The number of tokens revoked.</returns>
-    Task<int> RevokeAllForUserAsync(string userId);
-
-    /// <summary>
-    /// Removes expired and revoked tokens from the database (cleanup).
-    /// </summary>
-    /// <returns>The number of tokens removed.</returns>
-    Task<int> CleanupExpiredTokensAsync();
+    Task<int> CleanupExpiredTokensAsync(CancellationToken cancellationToken = default);
 }

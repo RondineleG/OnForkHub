@@ -10,8 +10,8 @@ public class CategorySearchResponse
     public string Description { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the category ID.</summary>
-    /// <example>1.</example>
-    public long Id { get; set; }
+    /// <example>b7c2e8c4f0a34f1f9d3a5c6e7b8d9e0f.</example>
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the category name.</summary>
     /// <example>Animation.</example>
@@ -36,13 +36,9 @@ public class CategorySearchResponse
     {
         ArgumentNullException.ThrowIfNull(category);
 
-        // Extract numeric ID from the string format "CollectionName/NumericId"
-        var idParts = category.Id.Split('/');
-        var numericId = idParts.Length > 1 && long.TryParse(idParts[1], out var id) ? id : 0;
-
         return new CategorySearchResponse
         {
-            Id = numericId,
+            Id = category.Id,
             Name = category.Name.Value,
             Description = category.Description,
             CreatedAt = category.CreatedAt,

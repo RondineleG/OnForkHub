@@ -1,36 +1,42 @@
-using OnForkHub.Persistence.Contexts.Base;
-using OnForkHub.Persistence.Exceptions;
+using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Repositories;
 
 namespace OnForkHub.Persistence.Test.Repositories;
 
-public class CategoryRepositoryTest
+public class CategoryRepositoryTest : IDisposable
 {
     public CategoryRepositoryTest()
     {
-        _context = Substitute.For<IEntityFrameworkDataContext>();
+        var options = new DbContextOptionsBuilder<EntityFrameworkDataContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        _context = new EntityFrameworkDataContext(options);
         _categoryRepository = new CategoryRepositoryEF(_context);
     }
 
     private readonly CategoryRepositoryEF _categoryRepository;
 
-    private readonly IEntityFrameworkDataContext _context;
+    private readonly EntityFrameworkDataContext _context;
+
+    public void Dispose()
+    {
+        _context.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     [Fact]
     [Trait("Category", "Unit")]
     [DisplayName("Should create category successfully")]
     public async Task ShouldCreateCategorySuccessfully()
     {
-        var name = Name.Create("Test Category");
-        var category = Category.Create(name, "Test Description").Data!;
-        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
-        _context.Categories.Returns(categoryDatabaseSetMock);
+        var category = Category.Create(Name.Create("Test Category"), "Test Description").Data!;
 
         var result = await _categoryRepository.CreateAsync(category);
 
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().Be(category);
-        await _context.Received(1).SaveChangesAsync();
+        _context.Categories.Count().Should().Be(1);
     }
 
     [Fact]
@@ -38,18 +44,14 @@ public class CategoryRepositoryTest
     [DisplayName("Should delete category successfully")]
     public async Task ShouldDeleteCategorySuccessfully()
     {
-        long categoryId = 1;
-        var name = Name.Create("Test Category");
-        var category = Category.Create(name, "Test Description").Data!;
-        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
-        categoryDatabaseSetMock.FindAsync(categoryId).Returns(category);
-        _context.Categories.Returns(categoryDatabaseSetMock);
+        var category = Category.Create(Name.Create("Test Category"), "Test Description").Data!;
+        await _categoryRepository.CreateAsync(category);
 
-        var result = await _categoryRepository.DeleteAsync(categoryId);
+        Id id = category.Id;
+        var result = await _categoryRepository.DeleteAsync(id);
 
         result.Status.Should().Be(EResultStatus.Success);
-        result.Data.Should().Be(category);
-        await _context.Received(1).SaveChangesAsync();
+        _context.Categories.Count().Should().Be(0);
     }
 
     [Fact]
@@ -57,17 +59,15 @@ public class CategoryRepositoryTest
     [DisplayName("Should return category by id successfully")]
     public async Task ShouldReturnCategoryByIdSuccessfully()
     {
-        long categoryId = 1;
-        var name = Name.Create("Test Category");
-        var category = Category.Create(name, "Test Description").Data!;
-        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
-        categoryDatabaseSetMock.FindAsync(categoryId).Returns(category);
-        _context.Categories.Returns(categoryDatabaseSetMock);
+        var category = Category.Create(Name.Create("Test Category"), "Test Description").Data!;
+        await _categoryRepository.CreateAsync(category);
 
-        var result = await _categoryRepository.GetByIdAsync(categoryId);
+        Id id = category.Id;
+        var result = await _categoryRepository.GetByIdAsync(id);
 
         result.Status.Should().Be(EResultStatus.Success);
-        result.Data.Should().Be(category);
+        result.Data.Should().NotBeNull();
+        result.Data!.Id.Should().Be(category.Id);
     }
 
     [Fact]
@@ -75,12 +75,9 @@ public class CategoryRepositoryTest
     [DisplayName("Should return error when category not found for delete")]
     public async Task ShouldReturnErrorWhenCategoryNotFoundForDelete()
     {
-        long categoryId = 1;
-        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
-        categoryDatabaseSetMock.FindAsync(categoryId).Returns((Category?)null);
-        _context.Categories.Returns(categoryDatabaseSetMock);
+        Id id = Guid.NewGuid().ToString("N");
 
-        var result = await _categoryRepository.DeleteAsync(categoryId);
+        var result = await _categoryRepository.DeleteAsync(id);
 
         result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError.Should().NotBeNull();
@@ -92,12 +89,9 @@ public class CategoryRepositoryTest
     [DisplayName("Should return error when category not found in GetById")]
     public async Task ShouldReturnErrorWhenCategoryNotFoundInGetById()
     {
-        long categoryId = 1;
-        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
-        categoryDatabaseSetMock.FindAsync(categoryId).Returns((Category?)null);
-        _context.Categories.Returns(categoryDatabaseSetMock);
+        Id id = Guid.NewGuid().ToString("N");
 
-        var result = await _categoryRepository.GetByIdAsync(categoryId);
+        var result = await _categoryRepository.GetByIdAsync(id);
 
         result.Status.Should().Be(EResultStatus.HasError);
         result.RequestError.Should().NotBeNull();
@@ -116,19 +110,19 @@ public class CategoryRepositoryTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should throw exception when creating duplicate category")]
-    public async Task ShouldThrowExceptionWhenCreatingDuplicateCategory()
+    [DisplayName("Should find created category by its plain GUID id")]
+    public async Task ShouldFindCreatedCategoryByPlainGuidId()
     {
-        var name = Name.Create("Test Category");
-        var category = Category.Create(name, "Test Description").Data!;
-        var categoryDatabaseSetMock = Substitute.For<DbSet<Category>>();
-        _context.Categories.Returns(categoryDatabaseSetMock);
+        var category = Category.Create(Name.Create("Test Category"), "Test Description").Data!;
+        await _categoryRepository.CreateAsync(category);
 
-        var innerException = new Exception("duplicate key");
-        _context.SaveChangesAsync().ThrowsAsync(new DbUpdateException("Error", innerException));
+        category.Id.Should().NotContain("/");
+        Guid.TryParse(category.Id, out _).Should().BeTrue("entity ids must be plain GUIDs");
 
-        var act = () => _categoryRepository.CreateAsync(category);
+        Id id = category.Id;
+        var result = await _categoryRepository.GetByIdAsync(id);
 
-        await act.Should().ThrowAsync<UniqueConstraintException>().WithMessage("*with the same unique data already exists*");
+        result.Status.Should().Be(EResultStatus.Success);
+        result.Data.Should().NotBeNull();
     }
 }

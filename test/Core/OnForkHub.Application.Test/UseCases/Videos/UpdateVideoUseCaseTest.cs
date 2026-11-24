@@ -199,6 +199,8 @@ public class UpdateVideoUseCaseTest
         await _videoService.Received(1).UpdateAsync(existingVideo);
     }
 
+    private static readonly Guid OwnerGuid = Guid.NewGuid();
+
     private static VideoUpdateRequest CreateValidUpdateRequest()
     {
         return new VideoUpdateRequest
@@ -208,12 +210,13 @@ public class UpdateVideoUseCaseTest
             Description = "Updated Description",
             Url = "https://example.com/updated-video.mp4",
             CategoryIds = [],
+            RequesterUserId = OwnerGuid.ToString("N"),
         };
     }
 
     private static Video CreateValidVideo(string id)
     {
-        var userId = Id.Create();
+        Id userId = OwnerGuid.ToString("N");
         var video = Video.Create("Original Video", "Original Description", "https://example.com/original.mp4", userId).Data!;
         return video;
     }

@@ -7,7 +7,7 @@ public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, DeleteCategoryUseCas
 {
     private const int V1 = 1;
 
-    private static readonly string Route = GetVersionedRoute(V1) + "/{id:long}";
+    private static readonly string Route = GetVersionedRoute(V1) + "/{id}";
 
     private readonly ILogger<DeleteEndpoint> _logger = logger;
 
@@ -20,7 +20,7 @@ public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, DeleteCategoryUseCas
         ConfigureEndpoint(
                 app.MapDelete(
                     Route,
-                    async ([FromRoute] long id, CancellationToken cancellationToken) =>
+                    async ([FromRoute] string id, CancellationToken cancellationToken) =>
                     {
                         return await HandleDeleteUseCase(_useCase, _logger, id);
                     }
@@ -34,7 +34,7 @@ public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, DeleteCategoryUseCas
             .WithMetadata(new ApiExplorerSettingsAttribute { GroupName = $"v{V1}" })
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(CrossCutting.Authorization.Policies.CanManageContent);
 
         return Task.FromResult(RequestResult.Success());
     }

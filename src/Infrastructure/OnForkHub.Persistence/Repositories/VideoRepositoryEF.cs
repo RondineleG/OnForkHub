@@ -157,15 +157,15 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
     }
 
     /// <inheritdoc/>
-    public async Task<RequestResult<IEnumerable<Video>>> GetByCategoryIdAsync(long categoryId, int page, int size)
+    public async Task<RequestResult<IEnumerable<Video>>> GetByCategoryIdAsync(Id categoryId, int page, int size)
     {
         try
         {
-            var categoryIdString = categoryId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var categoryIdString = categoryId.ToString();
             var videos = await EntityFrameworkQueryableExtensions.ToListAsync(
                 _context
                     .Videos.AsNoTracking()
-                    .Where(v => v.Categories.Any(c => c.Id.Contains(categoryIdString)))
+                    .Where(v => v.Categories.Any(c => c.Id == categoryIdString))
                     .OrderByDescending(v => v.CreatedAt)
                     .Skip((page - 1) * size)
                     .Take(size)
@@ -205,7 +205,7 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
     /// <inheritdoc/>
     public async Task<RequestResult<(IEnumerable<Video> Items, int TotalCount)>> SearchAsync(
         string? searchTerm,
-        long? categoryId,
+        string? categoryId,
         string? userId,
         DateTime? fromDate,
         DateTime? toDate,
@@ -228,16 +228,16 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
             }
 
             // Apply category filter
-            if (categoryId.HasValue)
+            if (!string.IsNullOrWhiteSpace(categoryId) && Guid.TryParse(categoryId, out var categoryGuid))
             {
-                var categoryIdString = categoryId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                baseQuery = baseQuery.Where(v => v.Categories.Any(c => c.Id.Contains(categoryIdString)));
+                var categoryIdString = categoryGuid.ToString("N");
+                baseQuery = baseQuery.Where(v => v.Categories.Any(c => c.Id == categoryIdString));
             }
 
             // Apply user filter
-            if (!string.IsNullOrWhiteSpace(userId))
+            if (!string.IsNullOrWhiteSpace(userId) && Guid.TryParse(userId, out var userGuid))
             {
-                baseQuery = baseQuery.Where(v => v.UserId != null && v.UserId.ToString() == userId);
+                baseQuery = baseQuery.Where(v => v.UserId != null && v.UserId.Value == userGuid);
             }
 
             // Apply date range filters

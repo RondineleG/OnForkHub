@@ -35,9 +35,10 @@ public class VideoSearchRequestTests
     [DisplayName("Should set CategoryId property")]
     public void ShouldSetCategoryIdProperty()
     {
-        var dto = new VideoSearchRequest { CategoryId = 123 };
+        var categoryId = Guid.NewGuid().ToString("N");
+        var dto = new VideoSearchRequest { CategoryId = categoryId };
 
-        dto.CategoryId.Should().Be(123);
+        dto.CategoryId.Should().Be(categoryId);
     }
 
     [Fact]

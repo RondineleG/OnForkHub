@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.Interfaces.Repositories;
+using OnForkHub.Persistence.Contexts;
 using OnForkHub.Persistence.Contexts.Base;
 using OnForkHub.Persistence.Exceptions;
 
 /// <summary>
 /// Entity Framework repository implementation for RefreshToken entity.
+/// Refresh tokens are persisted as SHA256 hashes only; raw tokens never reach the database.
 /// </summary>
 public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRefreshTokenRepositoryEF
 {
@@ -16,14 +18,14 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     private readonly IEntityFrameworkDataContext _context = context;
 
     /// <inheritdoc/>
-    public async Task<RequestResult<bool>> CreateAsync(RefreshToken refreshToken)
+    public async Task<RequestResult<bool>> CreateAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(refreshToken);
 
         try
         {
             _context.RefreshTokens.Add(refreshToken);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
             return RequestResult<bool>.Success(true);
         }
         catch (DbUpdateException ex)
@@ -38,13 +40,11 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     }
 
     /// <inheritdoc/>
-    public async Task<RefreshToken?> GetByTokenAsync(string token)
+    public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
         try
         {
-            var refreshToken = await _context.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(rt => rt.Token == token);
-
-            return refreshToken;
+            return await _context.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -53,94 +53,117 @@ public class RefreshTokenRepositoryEF(IEntityFrameworkDataContext context) : IRe
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<RefreshToken>> GetActiveTokensByUserIdAsync(string userId)
+    public async Task<bool> TryClaimForRotationAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
         try
         {
-            var tokens = await _context
-                .RefreshTokens.AsNoTracking()
-                .Where(rt => rt.UserId == userId && !rt.RevokedAt.HasValue && rt.ExpiresAt > DateTime.UtcNow)
-                .OrderByDescending(rt => rt.CreatedAt)
-                .ToListAsync();
+            var now = DateTime.UtcNow;
 
-            return tokens.AsReadOnly();
+            if (!IsRelational())
+            {
+                // Portable fallback for non-relational providers (e.g. InMemory tests):
+                // correct single-threaded semantics, but without the atomic database-level claim.
+                var tracked = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, cancellationToken);
+                if (tracked is null || tracked.RevokedAt.HasValue || tracked.ExpiresAt <= now)
+                {
+                    return false;
+                }
+
+                tracked.Revoke();
+                await _context.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+
+            var updated = await _context
+                .RefreshTokens.Where(rt => rt.TokenHash == tokenHash && rt.RevokedAt == null && rt.ExpiresAt > now)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(rt => rt.RevokedAt, now), cancellationToken);
+
+            return updated == 1;
         }
         catch (Exception ex)
         {
-            throw new DatabaseOperationException("retrieve", $"Error retrieving refresh tokens for user: {ex.Message}");
+            throw new DatabaseOperationException("update", $"Error claiming refresh token for rotation: {ex.Message}");
         }
     }
 
     /// <inheritdoc/>
-    public async Task<bool> RevokeAsync(string token)
+    public async Task<int> RevokeAllForUserAsync(string userId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == token);
+            var now = DateTime.UtcNow;
 
-            if (refreshToken == null)
+            if (!IsRelational())
             {
-                return false;
+                var tokens = await _context.RefreshTokens.Where(rt => rt.UserId == userId && rt.RevokedAt == null).ToListAsync(cancellationToken);
+                foreach (var token in tokens)
+                {
+                    token.Revoke();
+                }
+
+                return await _context.SaveChangesAsync(cancellationToken);
             }
 
-            refreshToken.Revoke();
-            await _context.SaveChangesAsync();
-            return true;
+            return await _context
+                .RefreshTokens.Where(rt => rt.UserId == userId && rt.RevokedAt == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(rt => rt.RevokedAt, now), cancellationToken);
         }
-        catch (DbUpdateException ex)
-        {
-            var persistenceException = PersistenceExceptionHandler.HandleDbException(ex, "update", EntityName);
-            throw persistenceException;
-        }
-        catch (Exception ex) when (ex is not PersistenceException)
-        {
-            throw new DatabaseOperationException("update", $"Error revoking refresh token: {ex.Message}");
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<int> RevokeAllForUserAsync(string userId)
-    {
-        try
-        {
-            var tokens = await _context.RefreshTokens.Where(rt => rt.UserId == userId && !rt.RevokedAt.HasValue).ToListAsync();
-
-            foreach (var token in tokens)
-            {
-                token.Revoke();
-            }
-
-            return await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateException ex)
-        {
-            var persistenceException = PersistenceExceptionHandler.HandleDbException(ex, "update", EntityName);
-            throw persistenceException;
-        }
-        catch (Exception ex) when (ex is not PersistenceException)
+        catch (Exception ex)
         {
             throw new DatabaseOperationException("update", $"Error revoking all tokens for user: {ex.Message}");
         }
     }
 
     /// <inheritdoc/>
-    public async Task<int> CleanupExpiredTokensAsync()
+    public async Task<int> CleanupExpiredTokensForUserAsync(string userId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var expiredTokens = await _context.RefreshTokens.Where(rt => rt.ExpiresAt <= DateTime.UtcNow || rt.RevokedAt.HasValue).ToListAsync();
+            var now = DateTime.UtcNow;
 
-            _context.RefreshTokens.RemoveRange(expiredTokens);
-            return await _context.SaveChangesAsync();
+            // Only naturally expired tokens are removed: revoked-but-unexpired tokens must be kept
+            // as evidence so that reuse detection can revoke the whole token family.
+            if (!IsRelational())
+            {
+                var expired = await _context.RefreshTokens.Where(rt => rt.UserId == userId && rt.ExpiresAt <= now).ToListAsync(cancellationToken);
+                _context.RefreshTokens.RemoveRange(expired);
+                return await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            return await _context
+                .RefreshTokens.Where(rt => rt.UserId == userId && rt.ExpiresAt <= now)
+                .ExecuteDeleteAsync(cancellationToken);
         }
-        catch (DbUpdateException ex)
+        catch (Exception ex)
         {
-            var persistenceException = PersistenceExceptionHandler.HandleDbException(ex, "delete", EntityName);
-            throw persistenceException;
+            throw new DatabaseOperationException("delete", $"Error cleaning up expired tokens for user: {ex.Message}");
         }
-        catch (Exception ex) when (ex is not PersistenceException)
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> CleanupExpiredTokensAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var now = DateTime.UtcNow;
+
+            if (!IsRelational())
+            {
+                var expired = await _context.RefreshTokens.Where(rt => rt.ExpiresAt <= now).ToListAsync(cancellationToken);
+                _context.RefreshTokens.RemoveRange(expired);
+                return await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            return await _context.RefreshTokens.Where(rt => rt.ExpiresAt <= now).ExecuteDeleteAsync(cancellationToken);
+        }
+        catch (Exception ex)
         {
             throw new DatabaseOperationException("delete", $"Error cleaning up expired tokens: {ex.Message}");
         }
+    }
+
+    private bool IsRelational()
+    {
+        return _context is EntityFrameworkDataContext dbContext && dbContext.Database.IsRelational();
     }
 }

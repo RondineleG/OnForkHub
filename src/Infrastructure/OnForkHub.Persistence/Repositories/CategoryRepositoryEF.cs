@@ -26,11 +26,11 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
         }
     }
 
-    public async Task<RequestResult<Category>> DeleteAsync(long id)
+    public async Task<RequestResult<Category>> DeleteAsync(Id id)
     {
         try
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(_context.Categories, c => c.Id == id.ToString());
             if (category == null)
             {
                 return RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");
@@ -67,11 +67,11 @@ public class CategoryRepositoryEF(IEntityFrameworkDataContext context) : ICatego
         }
     }
 
-    public async Task<RequestResult<Category>> GetByIdAsync(long id)
+    public async Task<RequestResult<Category>> GetByIdAsync(Id id)
     {
         try
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(_context.Categories.AsNoTracking(), c => c.Id == id.ToString());
             return category != null
                 ? RequestResult<Category>.Success(category)
                 : RequestResult<Category>.WithError($"{EntityName} not found with ID: {id}.");

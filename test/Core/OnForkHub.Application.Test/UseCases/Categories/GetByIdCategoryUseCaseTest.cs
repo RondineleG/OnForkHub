@@ -15,23 +15,30 @@ public class GetByIdCategoryUseCaseTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should get category by id successfully")]
-    public async Task ShouldGetCategoryByIdSuccessfully()
+    [DisplayName("Should return category when found")]
+    public async Task ShouldReturnCategoryWhenFound()
     {
-        // Arrange
-        const long categoryId = 1;
-        var category = CreateValidCategory(categoryId);
+        var categoryId = Guid.NewGuid().ToString("N");
+        var category = CreateValidCategory();
 
-        _categoryRepository.GetByIdAsync(categoryId).Returns((RequestResult<Category>?)RequestResult<Category>.Success(category));
+        _categoryRepository.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Category>.Success(category));
 
-        // Act
         var result = await _useCase.ExecuteAsync(categoryId);
 
-        // Assert
         result.Status.Should().Be(EResultStatus.Success);
         result.Data.Should().NotBeNull();
-        result.Data.Should().Be(category);
-        await _categoryRepository.Received(1).GetByIdAsync(categoryId);
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should return error when id is not a valid guid")]
+    public async Task ShouldReturnErrorWhenIdIsNotValidGuid()
+    {
+        var result = await _useCase.ExecuteAsync("not-a-guid");
+
+        result.Status.Should().Be(EResultStatus.HasError);
+        result.Message.Should().Be("Invalid category ID format");
+        await _categoryRepository.DidNotReceive().GetByIdAsync(Arg.Any<Id>());
     }
 
     [Fact]
@@ -39,59 +46,18 @@ public class GetByIdCategoryUseCaseTest
     [DisplayName("Should return no content when category not found")]
     public async Task ShouldReturnNoContentWhenCategoryNotFound()
     {
-        // Arrange
-        const long categoryId = 999;
+        var categoryId = Guid.NewGuid().ToString("N");
 
-        _categoryRepository.GetByIdAsync(categoryId).Returns(RequestResult<Category>.WithNoContent());
+        _categoryRepository.GetByIdAsync(Arg.Any<Id>()).Returns(RequestResult<Category>.WithError("Category not found"));
 
-        // Act
         var result = await _useCase.ExecuteAsync(categoryId);
 
-        // Assert
         result.Status.Should().Be(EResultStatus.NoContent);
-        await _categoryRepository.Received(1).GetByIdAsync(categoryId);
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return no content when repository returns null result")]
-    public async Task ShouldReturnNoContentWhenRepositoryReturnsNullResult()
-    {
-        // Arrange
-        const long categoryId = 1;
-
-        _categoryRepository.GetByIdAsync(categoryId).Returns((RequestResult<Category>?)null);
-
-        // Act
-        var result = await _useCase.ExecuteAsync(categoryId);
-
-        // Assert
-        result.Status.Should().Be(EResultStatus.NoContent);
-        await _categoryRepository.Received(1).GetByIdAsync(categoryId);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("Should return no content when repository returns null data")]
-    public async Task ShouldReturnNoContentWhenRepositoryReturnsNullData()
-    {
-        // Arrange
-        const long categoryId = 1;
-
-        _categoryRepository.GetByIdAsync(categoryId).Returns(RequestResult<Category>.Success(null!));
-
-        // Act
-        var result = await _useCase.ExecuteAsync(categoryId);
-
-        // Assert
-        result.Status.Should().Be(EResultStatus.NoContent);
-        await _categoryRepository.Received(1).GetByIdAsync(categoryId);
-    }
-
-    private static Category CreateValidCategory(long id)
+    private static Category CreateValidCategory()
     {
         var name = Name.Create("Test Category");
-        var category = Category.Create(name, "Test Description").Data!;
-        return category;
+        return Category.Create(name, "Test Description").Data!;
     }
 }

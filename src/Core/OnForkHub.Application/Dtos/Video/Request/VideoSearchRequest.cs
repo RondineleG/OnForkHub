@@ -13,7 +13,7 @@ public sealed class VideoSearchRequest : PaginationRequest
     /// <summary>
     /// Gets or sets the category ID filter.
     /// </summary>
-    public long? CategoryId { get; set; }
+    public string? CategoryId { get; set; }
 
     /// <summary>
     /// Gets or sets the user ID filter.

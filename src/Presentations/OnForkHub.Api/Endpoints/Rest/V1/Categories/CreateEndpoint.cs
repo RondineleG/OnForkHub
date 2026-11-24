@@ -54,7 +54,7 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<CategoryReq
             .Produces<CategoryResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(CrossCutting.Authorization.Policies.CanManageContent);
 
         return Task.FromResult(RequestResult.Success());
     }

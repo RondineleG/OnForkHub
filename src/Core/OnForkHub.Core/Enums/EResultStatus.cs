@@ -15,4 +15,6 @@ public enum EResultStatus
     EntityAlreadyExists,
 
     NoContent,
+
+    Forbidden,
 }

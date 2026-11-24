@@ -25,7 +25,7 @@ public sealed partial class SearchVideosEndpoint(ILogger<SearchVideosEndpoint> l
                 Route,
                 async (
                     [FromQuery] string? q,
-                    [FromQuery] long? categoryId,
+                    [FromQuery] string? categoryId,
                     [FromQuery] string? userId,
                     [FromQuery] DateTime? from,
                     [FromQuery] DateTime? to,
@@ -56,7 +56,7 @@ public sealed partial class SearchVideosEndpoint(ILogger<SearchVideosEndpoint> l
 
     private async Task<IResult> HandleSearchAsync(
         string? q,
-        long? categoryId,
+        string? categoryId,
         string? userId,
         DateTime? from,
         DateTime? to,

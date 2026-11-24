@@ -137,6 +137,7 @@ public abstract class BaseEndPoint<TEntity>
             EResultStatus.EntityNotFound => Results.NotFound(response),
             EResultStatus.HasValidation => Results.UnprocessableEntity(response),
             EResultStatus.EntityAlreadyExists => Results.Conflict(response),
+            EResultStatus.Forbidden => Results.Json(response, statusCode: StatusCodes.Status403Forbidden),
             EResultStatus.HasError or EResultStatus.EntityHasError => Results.BadRequest(response),
             _ => Results.BadRequest(response),
         };

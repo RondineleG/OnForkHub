@@ -34,6 +34,12 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
                 return RequestResult<VideoUploadResponse>.WithError($"File size exceeds the maximum limit of {MaxFileSize / 1024 / 1024}MB");
             }
 
+            var validation = _fileStorageService.ValidateVideoFile(fileName, contentType, fileSize);
+            if (validation.Status != EResultStatus.Success)
+            {
+                return RequestResult<VideoUploadResponse>.WithError(validation.Message ?? "Invalid video file");
+            }
+
             var uploadResult = VideoUpload.Create(fileName, fileSize, contentType, userId, totalChunks);
             if (!uploadResult.Status.Equals(EResultStatus.Success) || uploadResult.Data is null)
             {
@@ -119,6 +125,16 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
                     upload.MarkAsFailed("Upload size mismatch.");
                     await _repository.UpdateAsync(upload);
                     return RequestResult<bool>.WithError("Upload size mismatch.");
+                }
+
+                await using (var inspection = new FileStream(assembledPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    if (!CrossCutting.Storage.VideoFileSignatureValidator.HasValidVideoSignature(inspection))
+                    {
+                        upload.MarkAsFailed("The file content is not a supported video format.");
+                        await _repository.UpdateAsync(upload);
+                        return RequestResult<bool>.WithError("The file content is not a supported video format.");
+                    }
                 }
 
                 await using var source = new FileStream(assembledPath, FileMode.Open, FileAccess.Read, FileShare.Read);

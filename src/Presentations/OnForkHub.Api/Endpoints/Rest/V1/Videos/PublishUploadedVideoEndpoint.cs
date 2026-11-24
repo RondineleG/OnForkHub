@@ -76,12 +76,13 @@ public sealed class PublishUploadedVideoEndpoint(
                         return Results.BadRequest(new { error = created.Message ?? "Invalid video metadata." });
                     }
 
-                    if (request.CategoryId <= 0)
+                    if (!Guid.TryParse(request.CategoryId, out _))
                     {
                         return Results.BadRequest(new { error = "A valid category is required." });
                     }
 
-                    var category = await categories.GetByIdAsync(request.CategoryId);
+                    Id categoryId = request.CategoryId;
+                    var category = await categories.GetByIdAsync(categoryId);
                     if (category.Status != EResultStatus.Success || category.Data is null)
                     {
                         return Results.BadRequest(new { error = "Category not found." });

@@ -1,6 +1,7 @@
 namespace OnForkHub.Application.Dtos.Video.Request;
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 using OnForkHub.Core.Entities;
 using OnForkHub.Core.ValueObjects;
@@ -36,13 +37,16 @@ public sealed class VideoCreateRequest
     /// <summary>
     /// Gets or sets the user ID who owns the video.
     /// </summary>
-    [Required(ErrorMessage = "The UserId field is required")]
+    /// <summary>
+    /// Server-populated from the authenticated user. Ignored if supplied by the client.
+    /// </summary>
+    [JsonIgnore]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the category IDs for the video.
     /// </summary>
-    public IReadOnlyList<long> CategoryIds { get; set; } = [];
+    public IReadOnlyList<string> CategoryIds { get; set; } = [];
 
     /// <summary>
     /// Creates a Video entity from this DTO.

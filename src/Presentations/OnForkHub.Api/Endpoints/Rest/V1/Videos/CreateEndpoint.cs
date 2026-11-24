@@ -1,5 +1,7 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
 using OnForkHub.Application.Dtos.Video.Request;
 using OnForkHub.CrossCutting.Interfaces;
 
@@ -24,8 +26,15 @@ public class CreateEndpoint(ILogger<CreateEndpoint> logger, IUseCase<VideoCreate
         ConfigureEndpoint(
                 app.MapPost(
                     Route,
-                    async ([FromBody] VideoCreateRequest request, CancellationToken cancellationToken) =>
+                    async ([FromBody] VideoCreateRequest request, HttpContext httpContext, CancellationToken cancellationToken) =>
                     {
+                        var userId = httpContext.User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+                        if (string.IsNullOrWhiteSpace(userId))
+                        {
+                            return Results.Unauthorized();
+                        }
+
+                        request.UserId = userId;
                         return await HandleCreateUseCase(_useCase, _logger, request);
                     }
                 )

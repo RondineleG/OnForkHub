@@ -5,6 +5,7 @@ namespace OnForkHub.Application.Test.UseCases.Categories;
 
 public class UpdateCategoryUseCaseTest
 {
+    private const string TestId = "0123456789abcdef0123456789abcdef";
     private readonly ICategoryRepositoryEF _categoryRepository;
     private readonly IEntityValidator<Category> _validator;
     private readonly UpdateCategoryUseCase _useCase;
@@ -22,8 +23,8 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldUpdateCategorySuccessfully()
     {
         // Arrange
-        var request = CreateValidUpdateRequest(1);
-        var existingCategory = CreateValidCategory(1);
+        var request = CreateValidUpdateRequest(TestId);
+        var existingCategory = CreateValidCategory(TestId);
 
         _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
         _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
@@ -52,7 +53,7 @@ public class UpdateCategoryUseCaseTest
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>();
-        await _categoryRepository.DidNotReceive().GetByIdAsync(Arg.Any<long>());
+        await _categoryRepository.DidNotReceive().GetByIdAsync(Arg.Any<Id>());
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldReturnErrorWhenCategoryNotFound()
     {
         // Arrange
-        var request = CreateValidUpdateRequest(1);
+        var request = CreateValidUpdateRequest(TestId);
 
         _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.WithError("Category not found"));
 
@@ -81,7 +82,7 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldReturnErrorWhenRepositoryReturnsNullData()
     {
         // Arrange
-        var request = CreateValidUpdateRequest(1);
+        var request = CreateValidUpdateRequest(TestId);
 
         _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(null!));
 
@@ -99,8 +100,8 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldReturnErrorWhenUpdateOperationFails()
     {
         // Arrange
-        var request = CreateValidUpdateRequest(1);
-        var existingCategory = CreateValidCategory(1);
+        var request = CreateValidUpdateRequest(TestId);
+        var existingCategory = CreateValidCategory(TestId);
 
         _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
         _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
@@ -119,8 +120,8 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldReturnValidationErrorsWhenValidationFails()
     {
         // Arrange
-        var request = CreateValidUpdateRequest(1);
-        var existingCategory = CreateValidCategory(1);
+        var request = CreateValidUpdateRequest(TestId);
+        var existingCategory = CreateValidCategory(TestId);
 
         _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
         _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Failure("Name is required", "Name"));
@@ -143,8 +144,8 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldReturnErrorWhenUpdateRepositoryFails()
     {
         // Arrange
-        var request = CreateValidUpdateRequest(1);
-        var existingCategory = CreateValidCategory(1);
+        var request = CreateValidUpdateRequest(TestId);
+        var existingCategory = CreateValidCategory(TestId);
 
         _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
         _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
@@ -165,8 +166,8 @@ public class UpdateCategoryUseCaseTest
     public async Task ShouldReturnErrorWhenUpdateRepositoryReturnsNullData()
     {
         // Arrange
-        var request = CreateValidUpdateRequest(1);
-        var existingCategory = CreateValidCategory(1);
+        var request = CreateValidUpdateRequest(TestId);
+        var existingCategory = CreateValidCategory(TestId);
 
         _categoryRepository.GetByIdAsync(request.Id).Returns(RequestResult<Category>.Success(existingCategory));
         _validator.ValidateUpdate(existingCategory).Returns(ValidationResult.Success());
@@ -180,7 +181,7 @@ public class UpdateCategoryUseCaseTest
         result.Message.Should().Be("Failed to update category");
     }
 
-    private static CategoryUpdateRequest CreateValidUpdateRequest(long id)
+    private static CategoryUpdateRequest CreateValidUpdateRequest(string id)
     {
         return new CategoryUpdateRequest
         {
@@ -189,7 +190,7 @@ public class UpdateCategoryUseCaseTest
         };
     }
 
-    private static Category CreateValidCategory(long id)
+    private static Category CreateValidCategory(string id)
     {
         var name = Name.Create("Original Category");
         var category = Category.Create(name, "Original Description").Data!;

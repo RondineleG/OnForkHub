@@ -40,6 +40,8 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         // PasswordHash property
         builder.Property(u => u.PasswordHash).HasMaxLength(500).IsRequired();
 
+        builder.Property(u => u.Role).HasMaxLength(50).IsRequired().HasDefaultValue("User");
+
         // Preferences as JSON column
         builder.OwnsOne(
             u => u.Preferences,

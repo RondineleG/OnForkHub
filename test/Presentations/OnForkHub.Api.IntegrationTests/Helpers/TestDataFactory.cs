@@ -74,7 +74,7 @@ public static class TestDataFactory
     /// <param name="userId">Optional user ID.</param>
     /// <param name="categoryIds">Optional category IDs.</param>
     /// <returns>Video creation request DTO.</returns>
-    public static VideoCreateRequest CreateVideoRequest(string? title = null, string? userId = null, IReadOnlyList<long>? categoryIds = null)
+    public static VideoCreateRequest CreateVideoRequest(string? title = null, string? userId = null, IReadOnlyList<string>? categoryIds = null)
     {
         return new VideoCreateRequest
         {
@@ -82,7 +82,7 @@ public static class TestDataFactory
             Description = "This is a test video description for integration testing purposes.",
             Url = "https://example.com/video.mp4",
             UserId = userId ?? Guid.NewGuid().ToString(),
-            CategoryIds = categoryIds ?? Array.Empty<long>(),
+            CategoryIds = categoryIds ?? Array.Empty<string>(),
         };
     }
 

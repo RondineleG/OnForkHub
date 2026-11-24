@@ -110,10 +110,10 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 AccessTokenExpiration = DateTime.UtcNow.AddHours(1),
                 RefreshTokenExpiration = DateTime.UtcNow.AddDays(7),
             };
-            mockTokenService.GenerateTokens(Arg.Any<IEnumerable<Claim>>()).Returns(tokenResult);
-            mockTokenService.GenerateTokens(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IEnumerable<string>>()).Returns(tokenResult);
-            mockTokenService.RefreshToken(Arg.Any<string>(), Arg.Is<string>(x => x == "test-refresh-token")).Returns(tokenResult);
-            mockTokenService.RefreshToken(Arg.Any<string>(), Arg.Is<string>(x => x != "test-refresh-token")).Returns((TokenResult?)null);
+            mockTokenService.GenerateTokensAsync(Arg.Any<IEnumerable<Claim>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokenResult);
+            mockTokenService.GenerateTokensAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IEnumerable<string>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokenResult);
+            mockTokenService.RefreshTokenAsync(Arg.Any<string>(), Arg.Is<string>(x => x == "test-refresh-token"), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokenResult);
+            mockTokenService.RefreshTokenAsync(Arg.Any<string>(), Arg.Is<string>(x => x != "test-refresh-token"), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns((TokenResult?)null);
             services.AddScoped(_ => mockTokenService);
 
             var mockUserService = Substitute.For<IUserService>();

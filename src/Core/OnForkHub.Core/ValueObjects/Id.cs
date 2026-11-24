@@ -32,18 +32,10 @@ public sealed class Id : ValueObject
 
     public static implicit operator Id(string value)
     {
-        if (value.Contains('/'))
-        {
-            var parts = value.Split('/');
+        // Tolerates legacy prefixed identifiers (e.g. "Video/{guid}") by using the segment after the last '/'.
+        var candidate = value.Contains('/') ? value[(value.LastIndexOf('/') + 1)..] : value;
 
-            var identifierPart = parts[1].Split('-')[0];
-            if (Guid.TryParse(identifierPart, out var guid))
-            {
-                return new Id(guid);
-            }
-        }
-
-        return Guid.TryParse(value, out var normalGuid) ? new Id(normalGuid) : throw new DomainException(IdResources.InvalidIdFormat);
+        return Guid.TryParse(candidate, out var guid) ? new Id(guid) : throw new DomainException(IdResources.InvalidIdFormat);
     }
 
     public static implicit operator string(Id id)

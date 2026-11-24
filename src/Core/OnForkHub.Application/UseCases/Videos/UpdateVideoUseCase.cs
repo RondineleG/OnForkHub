@@ -30,6 +30,12 @@ public class UpdateVideoUseCase(IVideoService videoService, IEntityValidator<Vid
         }
 
         var video = existingResult.Data;
+
+        if (!IsOwnerOrAdmin(video, request.RequesterUserId, request.RequesterIsAdmin))
+        {
+            return new RequestResult<Video> { Status = EResultStatus.Forbidden, Message = "You do not have permission to update this video" };
+        }
+
         var updateResult = video.UpdateVideo(request.Title, request.Description, request.Url);
 
         if (updateResult.Status != EResultStatus.Success)
@@ -48,5 +54,20 @@ public class UpdateVideoUseCase(IVideoService videoService, IEntityValidator<Vid
         return result.Status != EResultStatus.Success || result.Data is null
             ? RequestResult<Video>.WithError(result.Message ?? "Failed to update video")
             : RequestResult<Video>.Success(result.Data);
+    }
+
+    internal static bool IsOwnerOrAdmin(Video video, string? requesterUserId, bool requesterIsAdmin)
+    {
+        if (requesterIsAdmin)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(requesterUserId) || !Guid.TryParse(requesterUserId, out var requesterGuid))
+        {
+            return false;
+        }
+
+        return video.UserId is not null && video.UserId.Value == requesterGuid;
     }
 }

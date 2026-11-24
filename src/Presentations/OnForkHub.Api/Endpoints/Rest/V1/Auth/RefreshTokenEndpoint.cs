@@ -52,18 +52,18 @@ public sealed partial class RefreshTokenEndpoint(ILogger<RefreshTokenEndpoint> l
     [LoggerMessage(Level = LogLevel.Warning, Message = "Token refresh failed - invalid tokens")]
     private partial void LogTokenRefreshFailed();
 
-    private Task<IResult> HandleRefreshAsync(RefreshTokenRequest request)
+    private async Task<IResult> HandleRefreshAsync(RefreshTokenRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         LogTokenRefreshAttempt();
 
-        var tokens = _tokenService.RefreshToken(request.AccessToken, request.RefreshToken);
+        var tokens = await _tokenService.RefreshTokenAsync(request.AccessToken, request.RefreshToken);
 
         if (tokens is null)
         {
             LogTokenRefreshFailed();
-            return Task.FromResult(Results.Unauthorized());
+            return Results.Unauthorized();
         }
 
         var response = new
@@ -74,6 +74,6 @@ public sealed partial class RefreshTokenEndpoint(ILogger<RefreshTokenEndpoint> l
             refreshTokenExpiration = tokens.RefreshTokenExpiration,
         };
 
-        return Task.FromResult(Results.Ok(response));
+        return Results.Ok(response);
     }
 }

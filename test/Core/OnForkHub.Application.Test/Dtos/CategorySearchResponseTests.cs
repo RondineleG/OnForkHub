@@ -6,56 +6,18 @@ public class CategorySearchResponseTests
 {
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("FromCategory should throw ArgumentNullException when category is null")]
-    public void FromCategoryShouldThrowArgumentNullExceptionWhenCategoryIsNull()
-    {
-        Category? category = null;
-
-        var act = () => CategorySearchResponse.FromCategory(category!);
-
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
     [DisplayName("FromCategory should map all properties correctly")]
     public void FromCategoryShouldMapAllPropertiesCorrectly()
     {
         var category = Category.Create(Name.Create("Test Category"), "Test Description").Data!;
-        SetCategoryId(category, "Categories/123");
 
         var dto = CategorySearchResponse.FromCategory(category);
 
-        dto.Id.Should().Be(123);
+        dto.Id.Should().Be(category.Id);
+        Guid.TryParse(dto.Id, out _).Should().BeTrue("category ids are plain GUIDs");
         dto.Name.Should().Be("Test Category");
         dto.Description.Should().Be("Test Description");
         dto.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("FromCategory should handle ID without collection prefix")]
-    public void FromCategoryShouldHandleIdWithoutCollectionPrefix()
-    {
-        var category = Category.Create(Name.Create("Test Category"), "Test Description").Data!;
-        SetCategoryId(category, "456");
-
-        var dto = CategorySearchResponse.FromCategory(category);
-
-        dto.Id.Should().Be(0);
-    }
-
-    [Fact]
-    [Trait("Category", "Unit")]
-    [DisplayName("FromCategory should handle invalid numeric ID")]
-    public void FromCategoryShouldHandleInvalidNumericId()
-    {
-        var category = Category.Create(Name.Create("Test Category"), "Test Description").Data!;
-        SetCategoryId(category, "Categories/invalid");
-
-        var dto = CategorySearchResponse.FromCategory(category);
-
-        dto.Id.Should().Be(0);
     }
 
     [Fact]
@@ -65,7 +27,7 @@ public class CategorySearchResponseTests
     {
         var dto = new CategorySearchResponse();
 
-        dto.Id.Should().Be(0);
+        dto.Id.Should().Be(string.Empty);
         dto.Name.Should().Be(string.Empty);
         dto.Description.Should().Be(string.Empty);
         dto.UpdatedAt.Should().BeNull();
@@ -76,24 +38,19 @@ public class CategorySearchResponseTests
     [DisplayName("Should set all properties correctly")]
     public void ShouldSetAllPropertiesCorrectly()
     {
+        var id = Guid.NewGuid().ToString("N");
         var dto = new CategorySearchResponse
         {
-            Id = 123,
+            Id = id,
             Name = "Test Category",
             Description = "Test Description",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         };
 
-        dto.Id.Should().Be(123);
+        dto.Id.Should().Be(id);
         dto.Name.Should().Be("Test Category");
         dto.Description.Should().Be("Test Description");
         dto.UpdatedAt.Should().NotBeNull();
-    }
-
-    private static void SetCategoryId(Category category, string id)
-    {
-        var idProperty = typeof(Category).GetProperty("Id");
-        idProperty?.SetValue(category, id);
     }
 }

@@ -1,11 +1,14 @@
 namespace OnForkHub.Api.Endpoints.Rest.V1.Videos;
 
+using System.Security.Claims;
+
+using OnForkHub.Application.Dtos.Video.Request;
 using OnForkHub.CrossCutting.Interfaces;
 
 /// <summary>
 /// Endpoint for deleting a video.
 /// </summary>
-public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, IUseCase<string, Video> useCase) : BaseEndPoint<Video>, IEndpointAsync
+public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, IUseCase<VideoDeleteRequest, Video> useCase) : BaseEndPoint<Video>, IEndpointAsync
 {
     private const int V1 = 1;
 
@@ -13,7 +16,7 @@ public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, IUseCase<string, Vid
 
     private readonly ILogger<DeleteEndpoint> _logger = logger;
 
-    private readonly IUseCase<string, Video> _useCase = useCase;
+    private readonly IUseCase<VideoDeleteRequest, Video> _useCase = useCase;
 
     /// <inheritdoc/>
     public Task<RequestResult> RegisterAsync(WebApplication app)
@@ -23,9 +26,15 @@ public class DeleteEndpoint(ILogger<DeleteEndpoint> logger, IUseCase<string, Vid
         ConfigureEndpoint(
                 app.MapDelete(
                     Route,
-                    async ([FromRoute] string id, CancellationToken cancellationToken) =>
+                    async ([FromRoute] string id, HttpContext httpContext, CancellationToken cancellationToken) =>
                     {
-                        return await HandleDeleteUseCase(_useCase, _logger, id);
+                        var request = new VideoDeleteRequest
+                        {
+                            Id = id,
+                            RequesterUserId = httpContext.User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier),
+                            RequesterIsAdmin = httpContext.User.IsInRole(CrossCutting.Authorization.Roles.Admin),
+                        };
+                        return await HandleDeleteUseCase(_useCase, _logger, request);
                     }
                 )
             )

@@ -15,13 +15,15 @@ public class User : BaseEntity
 
     public string PasswordHash { get; private set; } = string.Empty;
 
+    public string Role { get; private set; } = "User";
+
     public string? AvatarUrl { get; private set; }
 
     public UserPreferences Preferences { get; private set; } = new UserPreferences();
 
     public IReadOnlyCollection<Video> Videos => _videos.AsReadOnly();
 
-    public static RequestResult<User> Create(Name name, string email, string passwordHash)
+    public static RequestResult<User> Create(Name name, string email, string passwordHash, string role = "User")
     {
         try
         {
@@ -30,6 +32,7 @@ public class User : BaseEntity
                 Name = name ?? throw new ArgumentNullException(nameof(name)),
                 Email = Email.Create(email),
                 PasswordHash = passwordHash ?? throw new ArgumentNullException(nameof(passwordHash)),
+                Role = string.IsNullOrWhiteSpace(role) ? "User" : role,
             };
 
             user.ValidateEntityState();
@@ -41,7 +44,7 @@ public class User : BaseEntity
         }
     }
 
-    public static RequestResult<User> Load(Id id, Name name, string email, string passwordHash, DateTime createdAt, DateTime? updatedAt = null)
+    public static RequestResult<User> Load(Id id, Name name, string email, string passwordHash, DateTime createdAt, DateTime? updatedAt = null, string role = "User")
     {
         try
         {
@@ -50,6 +53,7 @@ public class User : BaseEntity
                 Name = name ?? throw new ArgumentNullException(nameof(name)),
                 Email = Email.Create(email),
                 PasswordHash = passwordHash ?? throw new ArgumentNullException(nameof(passwordHash)),
+                Role = string.IsNullOrWhiteSpace(role) ? "User" : role,
             };
 
             user.ValidateEntityState();
@@ -131,6 +135,8 @@ public class User : BaseEntity
         }
 
         validationResult.AddErrorIf(() => string.IsNullOrWhiteSpace(PasswordHash), "PasswordHash is required", nameof(PasswordHash));
+
+        validationResult.AddErrorIf(() => string.IsNullOrWhiteSpace(Role), "Role is required", nameof(Role));
 
         if (validationResult.HasError)
         {

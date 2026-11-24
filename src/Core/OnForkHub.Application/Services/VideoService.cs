@@ -48,7 +48,7 @@ public sealed class VideoService(IVideoRepositoryEF videoRepository, IFileStorag
     }
 
     /// <inheritdoc/>
-    public async Task<RequestResult<IEnumerable<Video>>> GetByCategoryIdAsync(long categoryId, int page, int size)
+    public async Task<RequestResult<IEnumerable<Video>>> GetByCategoryIdAsync(Id categoryId, int page, int size)
     {
         return await ExecuteAsync(async () => await _videoRepository.GetByCategoryIdAsync(categoryId, page, size));
     }
@@ -118,7 +118,7 @@ public sealed class VideoService(IVideoRepositoryEF videoRepository, IFileStorag
     /// <inheritdoc/>
     public async Task<RequestResult<(IEnumerable<Video> Items, int TotalCount)>> SearchAsync(
         string? searchTerm,
-        long? categoryId,
+        string? categoryId,
         string? userId,
         DateTime? fromDate,
         DateTime? toDate,

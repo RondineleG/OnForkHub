@@ -9,7 +9,7 @@ public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<CategoryUpd
 {
     private const int V1 = 1;
 
-    private static readonly string Route = GetVersionedRoute(V1) + "/{id:long}";
+    private static readonly string Route = GetVersionedRoute(V1) + "/{id}";
 
     private readonly ILogger<UpdateEndpoint> _logger = logger;
 
@@ -22,7 +22,7 @@ public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<CategoryUpd
         ConfigureEndpoint(
                 app.MapPut(
                     Route,
-                    async ([FromRoute] long id, [FromBody] CategoryRequest request, CancellationToken cancellationToken) =>
+                    async ([FromRoute] string id, [FromBody] CategoryRequest request, CancellationToken cancellationToken) =>
                     {
                         var updateRequest = new CategoryUpdateRequest { Id = id, Category = request };
                         return await HandleUseCase(_useCase, _logger, updateRequest, cancellationToken);
@@ -38,7 +38,7 @@ public class UpdateEndpoint(ILogger<UpdateEndpoint> logger, IUseCase<CategoryUpd
             .Produces<RequestResult<Category>>(StatusCodes.Status200OK)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .RequireAuthorization();
+            .RequireAuthorization(CrossCutting.Authorization.Policies.CanManageContent);
 
         return Task.FromResult(RequestResult.Success());
     }

@@ -2,15 +2,15 @@ namespace OnForkHub.Api.Endpoints.Rest.V1.Categories;
 
 using OnForkHub.CrossCutting.Interfaces;
 
-public class GetByIdEndpoint(ILogger<GetByIdEndpoint> logger, IUseCase<long, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
+public class GetByIdEndpoint(ILogger<GetByIdEndpoint> logger, IUseCase<string, Category> useCase) : BaseEndPoint<Category>, IEndpointAsync
 {
     private const int V1 = 1;
 
-    private static readonly string Route = GetVersionedRoute(V1) + "/{id:long}";
+    private static readonly string Route = GetVersionedRoute(V1) + "/{id}";
 
     private readonly ILogger<GetByIdEndpoint> _logger = logger;
 
-    private readonly IUseCase<long, Category> _useCase = useCase;
+    private readonly IUseCase<string, Category> _useCase = useCase;
 
     public Task<RequestResult> RegisterAsync(WebApplication app)
     {
@@ -19,7 +19,7 @@ public class GetByIdEndpoint(ILogger<GetByIdEndpoint> logger, IUseCase<long, Cat
         ConfigureEndpoint(
                 app.MapGet(
                     Route,
-                    async ([FromRoute] long id, CancellationToken cancellationToken) =>
+                    async ([FromRoute] string id, CancellationToken cancellationToken) =>
                     {
                         return await HandleUseCase(_useCase, _logger, id, cancellationToken);
                     }

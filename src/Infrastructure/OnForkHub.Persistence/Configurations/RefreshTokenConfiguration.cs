@@ -19,13 +19,13 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
         builder.Property(rt => rt.Id).HasColumnName("Id").HasMaxLength(100).IsRequired();
 
-        // Token value - indexed for fast lookups
-        builder.Property(rt => rt.Token).HasColumnName("Token").HasMaxLength(500).IsRequired();
+        // SHA256 token hash - indexed for fast lookups; raw tokens are never persisted
+        builder.Property(rt => rt.TokenHash).HasColumnName("TokenHash").HasMaxLength(64).IsRequired();
 
-        builder.HasIndex(rt => rt.Token).HasDatabaseName("IX_RefreshTokens_Token").IsUnique();
+        builder.HasIndex(rt => rt.TokenHash).HasDatabaseName("IX_RefreshTokens_TokenHash").IsUnique();
 
         // User relationship
-        builder.Property(rt => rt.UserId).HasColumnName("UserId").HasMaxLength(36).IsRequired();
+        builder.Property(rt => rt.UserId).HasColumnName("UserId").HasMaxLength(100).IsRequired();
 
         builder.HasIndex(rt => rt.UserId).HasDatabaseName("IX_RefreshTokens_UserId");
 

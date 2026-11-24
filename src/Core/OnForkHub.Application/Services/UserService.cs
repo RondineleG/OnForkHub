@@ -23,9 +23,14 @@ public class UserService(IUserRepositoryEF userRepository) : BaseService, IUserS
             // Hash the password
             var passwordHash = BCrypt.HashPassword(password, BCrypt.GenerateSalt(12));
 
+            // Bootstrap: the very first registered user becomes the administrator
+            var existingUsers = await _userRepository.GetAllAsync(1, 1);
+            var isFirstUser = existingUsers.Data is null || !existingUsers.Data.Any();
+            var role = isFirstUser ? CrossCutting.Authorization.Roles.Admin : CrossCutting.Authorization.Roles.User;
+
             // Create user entity
             var nameResult = Name.Create(name);
-            var userResult = User.Create(nameResult, email, passwordHash);
+            var userResult = User.Create(nameResult, email, passwordHash, role);
 
             if (userResult.Status != EResultStatus.Success || userResult.Data is null)
             {
