@@ -25,7 +25,7 @@ public class CategoriesEndpointsTests(CustomWebApplicationFactory factory) : ICl
     public async Task CreateCategory_ReturnsCreated_WhenValid()
     {
         var request = new { Name = "Test Category", Description = "Test Description" };
-        var client = factory.CreateClientWithAuth();
+        var client = factory.CreateClientWithAuth(role: "Admin");
         var response = await client.PostAsJsonAsync("/api/v1/rest/categories", request);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -35,7 +35,7 @@ public class CategoriesEndpointsTests(CustomWebApplicationFactory factory) : ICl
     [Trait("Category", "Integration")]
     public async Task GetCategoryById_ReturnsNoContent_WhenNotFound()
     {
-        var response = await _client.GetAsync("/api/v1/rest/categories/999999");
+        var response = await _client.GetAsync("/api/v1/rest/categories/99999999999999999999999999999999");
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
@@ -44,8 +44,8 @@ public class CategoriesEndpointsTests(CustomWebApplicationFactory factory) : ICl
     public async Task UpdateCategory_ReturnsBadRequest_WhenNotFound()
     {
         var request = new { Name = "Updated Category", Description = "Updated Description" };
-        var client = factory.CreateClientWithAuth();
-        var response = await client.PutAsJsonAsync("/api/v1/rest/categories/999999", request);
+        var client = factory.CreateClientWithAuth(role: "Admin");
+        var response = await client.PutAsJsonAsync("/api/v1/rest/categories/99999999999999999999999999999999", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -54,8 +54,8 @@ public class CategoriesEndpointsTests(CustomWebApplicationFactory factory) : ICl
     [Trait("Category", "Integration")]
     public async Task DeleteCategory_ReturnsBadRequest_WhenNotFound()
     {
-        var client = factory.CreateClientWithAuth();
-        var response = await client.DeleteAsync("/api/v1/rest/categories/999999");
+        var client = factory.CreateClientWithAuth(role: "Admin");
+        var response = await client.DeleteAsync("/api/v1/rest/categories/99999999999999999999999999999999");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

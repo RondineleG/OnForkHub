@@ -267,11 +267,12 @@ public class NotificationTest
 
     [Fact]
     [Trait("Category", "Unit")]
-    [DisplayName("Should use correct collection name")]
-    public void ShouldUseCorrectCollectionName()
+    [DisplayName("Should use plain guid id without collection prefix")]
+    public void ShouldUsePlainGuidIdWithoutCollectionPrefix()
     {
         var notification = Notification.Create("Title", "Message", Id.Create(), ENotificationType.System).Data!;
 
-        notification.Id.Should().StartWith("notifications/");
+        notification.Id.Should().NotContain("/");
+        Guid.TryParse(notification.Id, out _).Should().BeTrue();
     }
 }

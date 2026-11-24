@@ -31,7 +31,7 @@ public sealed class VideoStreamingIntegrationTests(CustomWebApplicationFactory f
         var token = client.DefaultRequestHeaders.Authorization!.Parameter!;
         var claims = new JwtSecurityTokenHandler().ReadJwtToken(token).Claims;
         var userId = claims.First(c => c.Type is ClaimTypes.NameIdentifier or "nameid" or "sub").Value;
-        byte[] videoBytes = [10, 20, 30, 40, 50, 60];
+        byte[] videoBytes = [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6D, 0x70, 0x34, 0x32, 0x00, 0x00, 0x00, 0x00];
 
         Guid uploadId;
         await using (var initiateScope = factory.CreateScopeAsync())
@@ -60,6 +60,6 @@ public sealed class VideoStreamingIntegrationTests(CustomWebApplicationFactory f
         response.StatusCode.Should().Be(HttpStatusCode.PartialContent);
         response.Content.Headers.ContentRange!.From.Should().Be(1);
         response.Content.Headers.ContentRange.To.Should().Be(3);
-        (await response.Content.ReadAsByteArrayAsync()).Should().Equal(20, 30, 40);
+        (await response.Content.ReadAsByteArrayAsync()).Should().Equal(videoBytes[1], videoBytes[2], videoBytes[3]);
     }
 }

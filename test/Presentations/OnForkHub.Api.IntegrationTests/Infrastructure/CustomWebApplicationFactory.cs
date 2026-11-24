@@ -138,14 +138,14 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         return User.Load(id, name, "test@example.com", "hashed_password", DateTime.UtcNow).Data!;
     }
 
-    private static string GenerateTestJwt()
+    private static string GenerateTestJwt(string role = "User")
     {
         var userId = Guid.NewGuid().ToString();
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId),
             new Claim(ClaimTypes.Name, "Integration Test User"),
-            new Claim(ClaimTypes.Role, "User"),
+            new Claim(ClaimTypes.Role, role),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSecret));
@@ -167,10 +167,10 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     /// </summary>
     /// <param name="accessToken">Optional access token.</param>
     /// <returns>Configured HttpClient with Authorization header.</returns>
-    public HttpClient CreateClientWithAuth(string? accessToken = null)
+    public HttpClient CreateClientWithAuth(string? accessToken = null, string role = "User")
     {
         var client = CreateClient();
-        var token = string.IsNullOrWhiteSpace(accessToken) ? GenerateTestJwt() : accessToken;
+        var token = string.IsNullOrWhiteSpace(accessToken) ? GenerateTestJwt(role) : accessToken;
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         return client;
     }

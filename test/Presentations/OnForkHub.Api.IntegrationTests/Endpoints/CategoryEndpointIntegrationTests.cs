@@ -32,7 +32,7 @@ public sealed class CategoryEndpointIntegrationTests(CustomWebApplicationFactory
         var request = TestDataFactory.CreateCategoryRequest();
 
         // Act - Using auth mock
-        var client = factory.CreateClientWithAuth();
+        var client = factory.CreateClientWithAuth(role: "Admin");
         var response = await client.PostAsJsonAsync("/api/v1/rest/categories", request);
 
         // Assert
@@ -53,7 +53,7 @@ public sealed class CategoryEndpointIntegrationTests(CustomWebApplicationFactory
         var request = new CategoryRequest { Name = name, Description = "Test description" };
 
         // Act
-        var client = factory.CreateClientWithAuth();
+        var client = factory.CreateClientWithAuth(role: "Admin");
         var response = await client.PostAsJsonAsync("/api/v1/rest/categories", request);
 
         // Assert
@@ -73,7 +73,7 @@ public sealed class CategoryEndpointIntegrationTests(CustomWebApplicationFactory
         var request1 = TestDataFactory.CreateCategoryRequest(name: uniqueName);
 
         // Act
-        var client = factory.CreateClientWithAuth();
+        var client = factory.CreateClientWithAuth(role: "Admin");
         var response1 = await client.PostAsJsonAsync("/api/v1/rest/categories", request1);
 
         // Assert
