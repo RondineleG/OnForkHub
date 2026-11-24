@@ -2,7 +2,22 @@ name: Player JavaScript tests
 on:
   push:
     branches:
-      - feat/pair-programming
+      - main
+      - dev
+      - 'feat/**'
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+    paths:
+      - 'src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js'
+      - 'src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js'
+      - 'tests/webtorrentService.test.mjs'
+      - 'tools/p2p-seeder/**'
+      - '.github/workflows/player-tests.yml'
+  pull_request:
+    branches:
+      - main
+      - dev
     paths:
       - 'src/Presentations/OnForkHub.Web/wwwroot/js/webtorrentService.js'
       - 'src/Presentations/OnForkHub.Web/wwwroot/js/shortsFeed.js'

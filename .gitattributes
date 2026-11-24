@@ -1,0 +1,46 @@
+# Normalizacao de line endings do OnForkHub.
+# O padrao do projeto (.editorconfig) e CRLF para arquivos de codigo .NET.
+# Este arquivo garante checkout consistente em Windows, Linux e CI.
+
+* text=auto
+
+# Codigo .NET segue .editorconfig (end_of_line = crlf)
+*.cs       text eol=crlf
+*.razor    text eol=crlf
+*.csproj   text eol=crlf
+*.props    text eol=crlf
+*.targets  text eol=crlf
+*.sln      text eol=crlf
+*.slnx     text eol=crlf
+*.resx     text eol=crlf
+*.json     text eol=crlf
+
+# Scripts de shell e arquivos consumidos dentro de containers Linux: sempre LF
+*.sh       text eol=lf
+*.bash     text eol=lf
+*.mjs      text eol=lf
+*.js       text eol=lf
+Dockerfile* text eol=lf
+*.dockerignore text eol=lf
+docker-compose*.yml text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.conf     text eol=lf
+
+# Binarios: nunca converter
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.svg  binary
+*.mp4  binary
+*.webm binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
+*.pdf  binary
+*.zip  binary
+*.dll  binary
+*.exe  binary
