@@ -75,27 +75,23 @@ public sealed partial class InitiateUploadEndpoint(ILogger<InitiateUploadEndpoin
                 return Results.Unauthorized();
             }
 
-            if (!string.Equals(authenticatedUserId, request.UserId, StringComparison.OrdinalIgnoreCase))
-            {
-                return Results.Forbid();
-            }
-
+            // Ownership is derived from the authenticated identity; a client-supplied user id is never trusted.
             if (_logger.IsEnabled(LogLevel.Information))
             {
-                LogInitiateStarted(request.UserId, request.FileName, request.FileSize, request.TotalChunks);
+                LogInitiateStarted(authenticatedUserId, request.FileName, request.FileSize, request.TotalChunks);
             }
 
-            var result = await _uploadService.InitiateUploadAsync(request.FileName, request.FileSize, request.ContentType, request.UserId, request.TotalChunks);
+            var result = await _uploadService.InitiateUploadAsync(request.FileName, request.FileSize, request.ContentType, authenticatedUserId, request.TotalChunks);
 
             if (result.Status != EResultStatus.Success || result.Data is null)
             {
-                LogInitiateFailed(request.UserId, result.Message ?? "Unknown error");
+                LogInitiateFailed(authenticatedUserId, result.Message ?? "Unknown error");
                 return Results.BadRequest(new { error = result.Message ?? "Failed to initiate upload" });
             }
 
             if (_logger.IsEnabled(LogLevel.Information))
             {
-                LogInitiateCompleted(request.UserId, result.Data.Id);
+                LogInitiateCompleted(authenticatedUserId, result.Data.Id);
             }
 
             return Results.Created($"/api/v{V1}/videos/upload/{result.Data.Id}/status", result.Data);
