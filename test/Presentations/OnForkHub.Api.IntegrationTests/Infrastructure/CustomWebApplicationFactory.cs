@@ -87,8 +87,6 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                     d.ServiceType.Name.Contains("DbContext")
                     || d.ServiceType.Name.Contains("DbContextOptions")
                     || d.ServiceType == typeof(EntityFrameworkDataContext)
-                    || d.ServiceType == typeof(IUserService)
-                    || d.ServiceType == typeof(ITokenService)
                 )
                 .ToList();
 
@@ -102,32 +100,9 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 options.UseInMemoryDatabase($"TestDatabase_{_databaseId}");
             });
 
-            var mockTokenService = Substitute.For<ITokenService>();
-            var tokenResult = new TokenResult
-            {
-                AccessToken = GenerateTestJwt(),
-                RefreshToken = "test-refresh-token",
-                AccessTokenExpiration = DateTime.UtcNow.AddHours(1),
-                RefreshTokenExpiration = DateTime.UtcNow.AddDays(7),
-            };
-            mockTokenService.GenerateTokensAsync(Arg.Any<IEnumerable<Claim>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokenResult);
-            mockTokenService.GenerateTokensAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IEnumerable<string>>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokenResult);
-            mockTokenService.RefreshTokenAsync(Arg.Any<string>(), Arg.Is<string>(x => x == "test-refresh-token"), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns(tokenResult);
-            mockTokenService.RefreshTokenAsync(Arg.Any<string>(), Arg.Is<string>(x => x != "test-refresh-token"), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>()).Returns((TokenResult?)null);
-            services.AddScoped(_ => mockTokenService);
-
-            var mockUserService = Substitute.For<IUserService>();
-            mockUserService
-                .LoginAsync(Arg.Any<string>(), Arg.Is<string>(x => x == "Password123!"))
-                .Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
-            mockUserService
-                .LoginAsync(Arg.Any<string>(), Arg.Is<string>(x => x != "Password123!"))
-                .Returns(Task.FromResult(RequestResult<User>.WithError("Invalid credentials")));
-            mockUserService
-                .RegisterAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
-                .Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
-            mockUserService.GetByIdAsync(Arg.Any<Id>()).Returns(Task.FromResult(RequestResult<User>.Success(CreateTestUser())));
-            services.AddScoped(_ => mockUserService);
+            // Authentication runs end-to-end against the real services and the in-memory database:
+            // register/login issue real JWTs and BCrypt-verified credentials, so integration tests
+            // exercise the same pipeline as production.
         });
     }
 

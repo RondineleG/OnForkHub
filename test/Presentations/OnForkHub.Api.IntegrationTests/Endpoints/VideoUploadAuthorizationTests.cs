@@ -39,7 +39,7 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     [Trait("Category", "Integration")]
-    public async Task InitiateUpload_WithAnotherUserId_ReturnsForbidden()
+    public async Task InitiateUpload_WithAnotherUserIdInBody_IgnoresItAndCreatesForJwtUser()
     {
         using var client = factory.CreateClientWithAuth();
         var request = new
@@ -53,7 +53,9 @@ public sealed class VideoUploadAuthorizationTests(CustomWebApplicationFactory fa
 
         using var response = await client.PostAsJsonAsync("/api/v1/videos/upload/initiate", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Ownership is derived exclusively from the JWT: a client-supplied foreign user id
+        // is ignored rather than rejected, so the upload is created for the authenticated user.
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     /// <summary>

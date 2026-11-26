@@ -283,6 +283,61 @@ public class VideoUploadTest
         return VideoUpload.Create(fileName, fileSize, contentType, userId).Data!;
     }
 
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should attach storage path while processing")]
+    public void ShouldAttachStoragePathWhileProcessing()
+    {
+        var upload = CreateVideoUploadForCompletion();
+
+        upload.SetStoragePath("/storage/raw.mp4");
+
+        upload.StoragePath.Should().Be("/storage/raw.mp4");
+        upload.Status.Should().Be(EVideoUploadStatus.Processing, "attaching the raw file does not complete the upload");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should throw when attaching storage path before processing")]
+    public void ShouldThrowWhenAttachingStoragePathBeforeProcessing()
+    {
+        var upload = CreateValidVideoUpload();
+
+        var act = () => upload.SetStoragePath("/storage/raw.mp4");
+
+        act.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should complete with thumbnail and variants artifacts")]
+    public void ShouldCompleteWithThumbnailAndVariantsArtifacts()
+    {
+        var upload = CreateVideoUploadForCompletion();
+        upload.SetStoragePath("/storage/raw.mp4");
+
+        upload.MarkAsCompleted("/storage/raw.mp4", "/storage/thumb.jpg", "{\"720p\":\"/storage/v720.mp4\"}");
+
+        upload.Status.Should().Be(EVideoUploadStatus.Completed);
+        upload.ThumbnailPath.Should().Be("/storage/thumb.jpg");
+        upload.TranscodedVariants.Should().Contain("720p");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    [DisplayName("Should complete without artifacts in passthrough mode")]
+    public void ShouldCompleteWithoutArtifactsInPassthroughMode()
+    {
+        var upload = CreateVideoUploadForCompletion();
+        upload.SetStoragePath("/storage/raw.mp4");
+
+        upload.MarkAsCompleted("/storage/raw.mp4");
+
+        upload.Status.Should().Be(EVideoUploadStatus.Completed);
+        upload.ThumbnailPath.Should().BeNull();
+        upload.TranscodedVariants.Should().BeNull();
+    }
+
     private static VideoUpload CreateVideoUploadForCompletion()
     {
         var fileName = "video.mp4";
