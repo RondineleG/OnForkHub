@@ -26,7 +26,7 @@ public sealed class StreamUploadedVideoEndpoint(
         app.MapGet(
                 $"/api/v{V1}/videos/upload/{{uploadId:guid}}/stream",
                 [Authorize]
-                async (Guid uploadId, HttpContext context) =>
+                async (Guid uploadId, HttpContext context, string? quality = null) =>
                 {
                     var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
                         ?? context.User.FindFirstValue("sub");
@@ -52,7 +52,24 @@ public sealed class StreamUploadedVideoEndpoint(
                         return Results.Conflict(new { error = "Upload is not ready." });
                     }
 
-                    var file = await storage.GetAsync(upload.StoragePath);
+                    var streamSource = upload.StoragePath;
+                    if (!string.IsNullOrWhiteSpace(quality) && !string.IsNullOrWhiteSpace(upload.TranscodedVariants))
+                    {
+                        try
+                        {
+                            var variants = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(upload.TranscodedVariants);
+                            if (variants is not null && variants.TryGetValue(quality, out var variantUrl) && !string.IsNullOrWhiteSpace(variantUrl))
+                            {
+                                streamSource = variantUrl;
+                            }
+                        }
+                        catch (System.Text.Json.JsonException)
+                        {
+                            // Corrupted variant metadata: fall back to the original file.
+                        }
+                    }
+
+                    var file = await storage.GetAsync(streamSource);
                     if (file.Data is null)
                     {
                         return Results.NotFound();

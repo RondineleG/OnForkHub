@@ -1,6 +1,7 @@
 namespace OnForkHub.Core.Interfaces.Repositories;
 
 using OnForkHub.Core.Entities;
+using OnForkHub.Core.Enums;
 
 /// <summary>
 /// Repository interface for VideoUpload entity.
@@ -36,6 +37,12 @@ public interface IVideoUploadRepository
     /// <param name="pageSize">The page size.</param>
     /// <returns>A list of video uploads.</returns>
     Task<RequestResult<IEnumerable<VideoUpload>>> GetByUserIdAsync(string userId, int page, int pageSize);
+
+    /// <summary>
+    /// Returns uploads currently in the given status (e.g. Processing) ordered by creation date.
+    /// Used by the processing worker to recover items after a restart.
+    /// </summary>
+    Task<RequestResult<IEnumerable<VideoUpload>>> GetByStatusAsync(EVideoUploadStatus status, int page, int pageSize);
 
     /// <summary>
     /// Gets the total count of uploads for a user.

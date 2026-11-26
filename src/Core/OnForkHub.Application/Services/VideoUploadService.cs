@@ -14,7 +14,12 @@ using OnForkHub.Core.Responses;
 /// <summary>
 /// Service implementation for managing video uploads.
 /// </summary>
-public class VideoUploadService(IVideoUploadRepository repository, IFileStorageService fileStorageService, ILogger<VideoUploadService> logger)
+public class VideoUploadService(
+    IVideoUploadRepository repository,
+    IFileStorageService fileStorageService,
+    IVideoProcessingChannel processingQueue,
+    ILogger<VideoUploadService> logger
+)
     : BaseService,
         IVideoUploadService
 {
@@ -23,6 +28,7 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
     private readonly IVideoUploadRepository _repository = repository;
     private readonly IFileStorageService _fileStorageService = fileStorageService;
     private readonly ILogger<VideoUploadService> _logger = logger;
+    private readonly IVideoProcessingChannel _processingQueue = processingQueue;
 
     /// <inheritdoc/>
     public async Task<RequestResult<VideoUploadResponse>> InitiateUploadAsync(string fileName, long fileSize, string contentType, string userId, int totalChunks)
@@ -146,7 +152,9 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
                     return RequestResult<bool>.WithError(stored.Message ?? "Unable to persist uploaded file.");
                 }
 
-                upload.MarkAsCompleted(stored.Data);
+                // The upload stays in Processing: transcoding/thumbnails run asynchronously in the
+                // background worker and only then does the upload become Completed (publishable).
+                upload.SetStoragePath(stored.Data);
             }
 
             var updateResult = await _repository.UpdateAsync(upload);
@@ -154,7 +162,7 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
             {
                 return RequestResult<bool>.WithError(updateResult.Message ?? "Unable to save upload progress.");
             }
-            if (upload.Status == EVideoUploadStatus.Completed)
+            if (upload.Status == EVideoUploadStatus.Processing && upload.ReceivedChunks == upload.TotalChunks)
             {
                 try
                 {
@@ -168,6 +176,8 @@ public class VideoUploadService(IVideoUploadRepository repository, IFileStorageS
                 {
                     // Do not undo completed upload.
                 }
+
+                await _processingQueue.EnqueueAsync(uploadId);
             }
             return RequestResult<bool>.Success(true);
         });

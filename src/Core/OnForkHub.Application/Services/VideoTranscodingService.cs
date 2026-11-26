@@ -1,20 +1,19 @@
 namespace OnForkHub.Application.Services;
 
 using System.Diagnostics;
-using System.Globalization;
 
 using Microsoft.Extensions.Logging;
 
 using OnForkHub.Core.Interfaces.Services;
 
-/// <summary>
-/// Service implementation for video transcoding using FFmpeg.
-/// </summary>
 public sealed partial class VideoTranscodingService(ILogger<VideoTranscodingService> logger) : IVideoTranscodingService
 {
+    private static readonly object ProbeLock = new();
+
+    private static bool? _ffmpegAvailable;
+
     private readonly ILogger<VideoTranscodingService> _logger = logger;
 
-    /// <inheritdoc/>
     public async Task<TranscodingResult> TranscodeToAdaptiveBitrateAsync(
         string inputPath,
         string outputDirectory,
@@ -23,65 +22,130 @@ public sealed partial class VideoTranscodingService(ILogger<VideoTranscodingServ
     {
         try
         {
-            LogTranscodingStarted(inputPath, outputDirectory);
-
-            if (!Directory.Exists(outputDirectory))
+            if (!IsFFmpegAvailable())
             {
-                Directory.CreateDirectory(outputDirectory);
+                LogFFmpegUnavailable(inputPath);
+                return new TranscodingResult { Success = true, Skipped = true };
             }
 
-            // 1. Generate Thumbnail (capture frame at 5s)
-            var thumbnailPath = System.IO.Path.Combine(outputDirectory, "thumbnail.jpg");
-            var thumbArgs = $"-i \"{inputPath}\" -ss 00:00:05 -vframes 1 -q:v 2 -y \"{thumbnailPath}\"";
-            await RunFFmpegAsync(thumbArgs, cancellationToken);
+            LogTranscodingStarted(inputPath, outputDirectory);
+            Directory.CreateDirectory(outputDirectory);
 
-            // 2. Define resolutions and bitrates for DASH/HLS prep
-            var profiles = new[]
+            var thumbnailPath = Path.Combine(outputDirectory, "thumbnail.jpg");
+            await RunFFmpegAsync($"-ss 1 -i \"{inputPath}\" -frames:v 1 -q:v 2 -y \"{thumbnailPath}\"", cancellationToken);
+            if (!File.Exists(thumbnailPath))
             {
-                new
-                {
-                    Resolution = "1920x1080",
-                    Bitrate = "5000k",
-                    Name = "1080p",
-                },
-                new
-                {
-                    Resolution = "1280x720",
-                    Bitrate = "2500k",
-                    Name = "720p",
-                },
-                new
-                {
-                    Resolution = "854x480",
-                    Bitrate = "1000k",
-                    Name = "480p",
-                },
+                thumbnailPath = null;
+            }
+
+            // Profiles never upscale: the input resolution caps which variants are produced.
+            var inputHeight = await ProbeHeightAsync(inputPath, cancellationToken);
+            var candidates = new[]
+            {
+                (Name: "720p", Height: 720, Bitrate: "2500k"),
+                (Name: "480p", Height: 480, Bitrate: "1000k"),
+                (Name: "360p", Height: 360, Bitrate: "600k"),
             };
 
-            foreach (var profile in profiles)
+            var variants = new Dictionary<string, string>();
+            foreach (var profile in candidates)
             {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
+                cancellationToken.ThrowIfCancellationRequested();
 
-                var outputFile = System.IO.Path.Combine(outputDirectory, $"video_{profile.Name}.mp4");
-                var args = $"-i \"{inputPath}\" -vf scale={profile.Resolution} -b:v {profile.Bitrate} -c:a copy -y \"{outputFile}\"";
+                if (inputHeight.HasValue && inputHeight.Value <= profile.Height)
+                {
+                    continue;
+                }
 
+                var outputFile = Path.Combine(outputDirectory, $"video_{profile.Name}.mp4");
+                var args =
+                    $"-i \"{inputPath}\" -vf \"scale=-2:{profile.Height}\" -b:v {profile.Bitrate} "
+                    + $"-c:v libx264 -preset fast -c:a aac -movflags +faststart -y \"{outputFile}\"";
                 await RunFFmpegAsync(args, cancellationToken);
+
+                if (File.Exists(outputFile))
+                {
+                    variants[profile.Name] = outputFile;
+                }
             }
 
             LogTranscodingCompleted(inputPath);
-
-            return new TranscodingResult
-            {
-                Success = true,
-                ManifestPath = System.IO.Path.Combine(outputDirectory, "manifest.mpd"),
-                ThumbnailPath = thumbnailPath,
-            };
+            return new TranscodingResult { Success = true, ThumbnailPath = thumbnailPath, Variants = variants };
         }
         catch (Exception ex)
         {
             LogTranscodingError(ex, inputPath);
             return new TranscodingResult { Success = false, ErrorMessage = ex.Message };
+        }
+    }
+
+    private static bool IsFFmpegAvailable()
+    {
+        if (_ffmpegAvailable.HasValue)
+        {
+            return _ffmpegAvailable.Value;
+        }
+
+        lock (ProbeLock)
+        {
+            if (_ffmpegAvailable.HasValue)
+            {
+                return _ffmpegAvailable.Value;
+            }
+
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "ffmpeg",
+                    Arguments = "-version",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+
+                using var process = Process.Start(startInfo);
+                process?.WaitForExit(10_000);
+                _ffmpegAvailable = process is { ExitCode: 0 };
+            }
+            catch (Exception)
+            {
+                _ffmpegAvailable = false;
+            }
+
+            return _ffmpegAvailable.Value;
+        }
+    }
+
+    private static async Task<int?> ProbeHeightAsync(string inputPath, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "ffprobe",
+                Arguments = $"-v error -select_streams v:0 -show_entries stream=height -of csv=p=0 \"{inputPath}\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+            using var process = Process.Start(startInfo);
+            if (process is null)
+            {
+                return null;
+            }
+
+            var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
+            await process.WaitForExitAsync(cancellationToken);
+
+            return int.TryParse(output.Trim(), out var height) ? height : null;
+        }
+        catch (Exception)
+        {
+            return null;
         }
     }
 
@@ -99,13 +163,12 @@ public sealed partial class VideoTranscodingService(ILogger<VideoTranscodingServ
         using var process = new Process { StartInfo = startInfo };
         process.Start();
 
-        // FFmpeg writes progress to standard error
         var error = await process.StandardError.ReadToEndAsync(cancellationToken);
         await process.WaitForExitAsync(cancellationToken);
 
         if (process.ExitCode != 0)
         {
-            throw new Exception($"FFmpeg exited with code {process.ExitCode}: {error}");
+            throw new InvalidOperationException($"FFmpeg exited with code {process.ExitCode}: {error}");
         }
     }
 
@@ -114,6 +177,9 @@ public sealed partial class VideoTranscodingService(ILogger<VideoTranscodingServ
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Transcoding completed for {InputPath}")]
     private partial void LogTranscodingCompleted(string inputPath);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "ffmpeg not available on this host; skipping transcoding for {InputPath}")]
+    private partial void LogFFmpegUnavailable(string inputPath);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Error during transcoding of {InputPath}")]
     private partial void LogTranscodingError(Exception ex, string inputPath);

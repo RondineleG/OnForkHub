@@ -1,6 +1,7 @@
 namespace OnForkHub.Persistence.Repositories;
 
 using OnForkHub.Core.Entities;
+using OnForkHub.Core.Enums;
 using OnForkHub.Core.Interfaces.Repositories;
 using OnForkHub.Persistence.Contexts.Base;
 using OnForkHub.Persistence.Exceptions;
@@ -57,6 +58,12 @@ public class VideoUploadRepositoryEF(IEntityFrameworkDataContext context) : IVid
         ArgumentNullException.ThrowIfNull(upload);
         try
         {
+            var tracked = _context.VideoUploads.Local.FirstOrDefault(x => x.Id == upload.Id);
+            if (tracked is not null && !ReferenceEquals(tracked, upload))
+            {
+                _context.Entry(tracked).State = EntityState.Detached;
+            }
+
             _context.VideoUploads.Update(upload);
             await _context.SaveChangesAsync();
             return RequestResult<VideoUpload>.Success(upload);
@@ -91,6 +98,27 @@ public class VideoUploadRepositoryEF(IEntityFrameworkDataContext context) : IVid
     }
 
     /// <inheritdoc/>
+    public async Task<RequestResult<IEnumerable<VideoUpload>>> GetByStatusAsync(EVideoUploadStatus status, int page, int pageSize)
+    {
+        try
+        {
+            var uploads = await EntityFrameworkQueryableExtensions.ToListAsync(
+                _context
+                    .VideoUploads.AsNoTracking()
+                    .Where(x => x.Status == status)
+                    .OrderBy(x => x.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+            );
+
+            return RequestResult<IEnumerable<VideoUpload>>.Success(uploads);
+        }
+        catch (Exception ex)
+        {
+            return RequestResult<IEnumerable<VideoUpload>>.WithError($"Error retrieving {EntityName} list by status: {ex.Message}");
+        }
+    }
+
     public async Task<int> GetCountByUserIdAsync(string userId)
     {
         try

@@ -15,6 +15,25 @@ public class VideoRepositoryEF(IEntityFrameworkDataContext context) : IVideoRepo
         ArgumentNullException.ThrowIfNull(video);
         try
         {
+            // Disconnected-graph pattern: categories referenced by the video already exist in the
+            // store, but their keys are assigned in code (not database-generated), so EF cannot tell
+            // them apart from new entities during graph traversal. Attach them explicitly as
+            // Unchanged before adding the video, or EF would try to insert them again.
+            foreach (var category in video.Categories)
+            {
+                var trackedCategory = _context.Categories.Local.FirstOrDefault(x => x.Id == category.Id);
+                if (trackedCategory is not null && !ReferenceEquals(trackedCategory, category))
+                {
+                    _context.Entry(trackedCategory).State = EntityState.Detached;
+                    trackedCategory = null;
+                }
+
+                if (trackedCategory is null)
+                {
+                    _context.Categories.Attach(category);
+                }
+            }
+
             _context.Videos.Add(video);
             await _context.SaveChangesAsync();
             return RequestResult<Video>.Success(video);

@@ -38,6 +38,10 @@ public sealed class VideoUploadConfiguration : IEntityTypeConfiguration<VideoUpl
 
         builder.Property(x => x.ErrorMessage).HasMaxLength(1000);
 
+        builder.Property(x => x.ThumbnailPath).HasMaxLength(500);
+
+        builder.Property(x => x.TranscodedVariants).HasMaxLength(2000);
+
         builder.Property(x => x.CreatedAt).IsRequired();
 
         builder.Property(x => x.UpdatedAt);

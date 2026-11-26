@@ -34,6 +34,10 @@ public class VideoUpload : BaseEntity
 
     public string? ErrorMessage { get; private set; }
 
+    public string? ThumbnailPath { get; private set; }
+
+    public string? TranscodedVariants { get; private set; }
+
     public static RequestResult<VideoUpload> Create(string fileName, long fileSize, string contentType, Id userId, int totalChunks = 1)
     {
         try
@@ -79,7 +83,9 @@ public class VideoUpload : BaseEntity
         DateTime? completedAt,
         string? errorMessage,
         DateTime createdAt,
-        DateTime? updatedAt = null
+        DateTime? updatedAt = null,
+        string? thumbnailPath = null,
+        string? transcodedVariants = null
     )
     {
         try
@@ -97,6 +103,8 @@ public class VideoUpload : BaseEntity
                 StoragePath = storagePath,
                 CompletedAt = completedAt,
                 ErrorMessage = errorMessage,
+                ThumbnailPath = thumbnailPath,
+                TranscodedVariants = transcodedVariants,
             };
 
             upload.ValidateEntityState();
@@ -157,7 +165,23 @@ public class VideoUpload : BaseEntity
         Update();
     }
 
-    public void MarkAsCompleted(string storagePath)
+    public void SetStoragePath(string storagePath)
+    {
+        if (Status is not (EVideoUploadStatus.Processing or EVideoUploadStatus.Completed))
+        {
+            throw new DomainException("Storage path can only be attached while the upload is being processed.");
+        }
+
+        if (string.IsNullOrWhiteSpace(storagePath))
+        {
+            throw new DomainException("Storage path cannot be empty.");
+        }
+
+        StoragePath = storagePath;
+        Update();
+    }
+
+    public void MarkAsCompleted(string storagePath, string? thumbnailPath = null, string? transcodedVariants = null)
     {
         if (Status != EVideoUploadStatus.Processing)
         {
@@ -171,6 +195,8 @@ public class VideoUpload : BaseEntity
 
         Status = EVideoUploadStatus.Completed;
         StoragePath = storagePath;
+        ThumbnailPath = thumbnailPath ?? ThumbnailPath;
+        TranscodedVariants = transcodedVariants ?? TranscodedVariants;
         CompletedAt = DateTime.UtcNow;
         ProgressPercentage = 100;
         Update();

@@ -1,27 +1,29 @@
 namespace OnForkHub.Core.Interfaces.Services;
 
-/// <summary>
-/// Service for transcoding videos using FFmpeg.
-/// </summary>
 public interface IVideoTranscodingService
 {
-    /// <summary>
-    /// Transcodes a video file to multiple resolutions for adaptive bitrate streaming.
-    /// </summary>
-    /// <param name="inputPath">Path to the input video file.</param>
-    /// <param name="outputDirectory">Directory where transcoded files will be stored.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Transcoding result.</returns>
     Task<TranscodingResult> TranscodeToAdaptiveBitrateAsync(string inputPath, string outputDirectory, CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Result of a transcoding operation.
-/// </summary>
 public class TranscodingResult
 {
     public bool Success { get; set; }
+
     public string? ErrorMessage { get; set; }
-    public string? ManifestPath { get; set; }
+
+    /// <summary>
+    /// True when transcoding was skipped because ffmpeg is not available on the host.
+    /// The original file remains the streamable source in that case.
+    /// </summary>
+    public bool Skipped { get; set; }
+
+    /// <summary>
+    /// Filesystem path of the generated thumbnail, when ffmpeg is available.
+    /// </summary>
     public string? ThumbnailPath { get; set; }
+
+    /// <summary>
+    /// Filesystem paths of the generated progressive MP4 variants keyed by profile name (e.g. 720p, 480p).
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Variants { get; set; } = new Dictionary<string, string>();
 }

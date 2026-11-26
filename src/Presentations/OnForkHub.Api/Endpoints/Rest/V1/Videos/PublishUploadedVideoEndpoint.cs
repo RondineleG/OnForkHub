@@ -94,6 +94,11 @@ public sealed class PublishUploadedVideoEndpoint(
                         return Results.BadRequest(new { error = linked.Message ?? "Unable to associate category." });
                     }
 
+                    if (!string.IsNullOrWhiteSpace(upload.ThumbnailPath))
+                    {
+                        created.Data.UpdateThumbnail(upload.ThumbnailPath);
+                    }
+
                     created.Data.AssociateUpload(uploadId);
                     var result = await videos.CreateAsync(created.Data);
                     if (result.Status != EResultStatus.Success || result.Data is null)

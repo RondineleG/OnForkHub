@@ -84,6 +84,7 @@ public static class CommonServicesExtension
         services.AddScoped(typeof(IValidationBuilder<>), typeof(ValidationBuilder<>));
         services.AddScoped<IValidationService<Video>, ValidationService<Video>>();
         services.AddSingleton<DashManifestGenerator>();
+        services.AddSingleton<OnForkHub.Core.Interfaces.Services.IVideoProcessingChannel, OnForkHub.Application.Services.VideoProcessingChannel>();
         services.AddScoped<RealTimeNotificationService>();
         services.AddHostedService<VideoProcessingBackgroundService>();
         return services;
